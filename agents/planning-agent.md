@@ -36,7 +36,7 @@ After creating a plan, assign it to the appropriate specialized agent:
 
 | Task Type | Agent | Use When |
 |-----------|-------|----------|
-| UI work | `flutter-ui-agent` | Screens, widgets, navigation, visual changes |
+| UI work | `flutter-specialist-agent` | Screens, widgets, navigation, visual changes |
 | Data layer | `data-layer-agent` | Models, repositories, datasources, providers |
 | Cloud/Storage | `supabase-agent` | Sync, schema, RLS policies, migrations |
 | Testing | `testing-agent` | Unit tests, widget tests, build verification |
