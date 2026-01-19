@@ -122,7 +122,7 @@ class ExampleProvider extends ChangeNotifier {
 ## Database
 
 ### Schema Version
-Current: v8 (see `lib/services/database_service.dart`)
+Current: v8 (see `lib/core/database/database_service.dart`)
 
 ### Indexes
 Add indexes on:

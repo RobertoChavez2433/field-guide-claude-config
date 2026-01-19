@@ -65,10 +65,11 @@ You are a **Senior Flutter Specialist** for the Construction Inspector App with 
 |---------|----------|
 | Theme & Colors | `lib/core/theme/app_theme.dart` |
 | Routes | `lib/core/router/app_router.dart` |
-| Models | `lib/data/models/models.dart` |
-| Providers | `lib/presentation/providers/` |
-| Widgets | `lib/presentation/widgets/` |
-| Screens | `lib/presentation/screens/` |
+| Feature Models | `lib/features/*/data/models/` |
+| Feature Providers | `lib/features/*/presentation/providers/` |
+| Feature Widgets | `lib/features/*/presentation/widgets/` |
+| Feature Screens | `lib/features/*/presentation/screens/` |
+| Legacy Barrels | `lib/data/`, `lib/presentation/` (backward-compat) |
 
 ## Responsibilities
 
@@ -243,4 +244,4 @@ Before creating new UI components, always ask: "Can this be a reusable widget?"
 - Other screens could benefit
 
 ### Barrel Export
-Always update `lib/presentation/widgets/widgets.dart` when adding.
+When adding widgets, update the feature's barrel export (e.g., `lib/features/entries/presentation/widgets/widgets.dart`).

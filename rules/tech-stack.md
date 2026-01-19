@@ -65,7 +65,7 @@ flutter test test/path/to/test.dart
 | Notion Workflow | `Pre-devolopment and brainstorming/Screenshot examples/Latest Notion Page*.png` |
 | Requirements | `Pre-devolopment and brainstorming/PROJECT_SUMMARY.md` |
 | Architecture | `.claude/docs/architectural_patterns.md` |
-| Database Schema | `lib/services/database_service.dart:50-215` |
+| Database Schema | `lib/core/database/database_service.dart` |
 | Route Definitions | `lib/core/router/app_router.dart:15-100` |
 
 ## Supabase

@@ -21,13 +21,21 @@ Construction Inspector App with SQLite local database and planned Supabase cloud
 
 ```
 lib/
-├── data/
-│   ├── models/        # Entity classes (DailyEntry, Project, etc.)
-│   ├── repositories/  # Business logic + validation
-│   └── datasources/   # CRUD operations (local + remote)
-├── presentation/
-│   └── providers/     # State management (ChangeNotifier)
-└── services/          # Database initialization
+├── core/              # Router, theme, config, database
+├── shared/            # Base classes, common utilities
+├── features/          # Feature-first modules
+│   └── [feature]/
+│       ├── data/
+│       │   ├── models/       # Entity classes
+│       │   ├── repositories/ # Business logic + validation
+│       │   └── datasources/  # CRUD operations (local + remote)
+│       └── presentation/
+│           ├── providers/    # State management
+│           ├── screens/      # Full pages
+│           └── widgets/      # Reusable components
+├── data/              # LEGACY: Backward-compatible barrel re-exports
+├── presentation/      # LEGACY: Backward-compatible barrel re-exports
+└── services/          # Cross-cutting services
 ```
 
 ## Responsibilities
@@ -164,11 +172,12 @@ class ExampleProvider extends ChangeNotifier {
 
 | Purpose | Location |
 |---------|----------|
-| Database schema | `lib/services/database_service.dart` |
-| Model barrel | `lib/data/models/models.dart` |
-| Datasource barrel | `lib/data/datasources/local/local_datasources.dart` |
-| Repository barrel | `lib/data/repositories/repositories.dart` |
-| Provider barrel | `lib/presentation/providers/providers.dart` |
+| Database schema | `lib/core/database/database_service.dart` |
+| Feature models | `lib/features/*/data/models/` |
+| Feature datasources | `lib/features/*/data/datasources/` |
+| Feature repositories | `lib/features/*/data/repositories/` |
+| Feature providers | `lib/features/*/presentation/providers/` |
+| Legacy barrels | `lib/data/`, `lib/presentation/` (backward-compat) |
 | Main providers | `lib/main.dart` (MultiProvider setup) |
 
 ## Completed Components

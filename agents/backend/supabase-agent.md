@@ -247,10 +247,11 @@ Configure buckets, policies, file organization, cleanup orphaned files.
 
 | File | Purpose |
 |------|---------|
-| `supabase_schema_v2.sql` | Current Supabase schema |
-| `lib/services/database_service.dart` | Local SQLite schema (source of truth) |
-| `lib/services/sync_service.dart` | Sync logic between local and remote |
-| `lib/data/datasources/remote/` | Remote datasource implementations |
+| `supabase_schema_v3.sql` | Current Supabase schema |
+| `supabase_schema_v4_rls.sql` | RLS policies |
+| `lib/core/database/database_service.dart` | Local SQLite schema (source of truth) |
+| `lib/features/sync/` | Sync logic between local and remote |
+| `lib/features/*/data/datasources/remote/` | Remote datasource implementations |
 | `lib/core/config/supabase_config.dart` | Supabase connection config |
 
 ## Quality Checklist

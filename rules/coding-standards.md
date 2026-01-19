@@ -101,22 +101,29 @@ Use `AppTheme` constants, not hardcoded colors:
 
 ```
 lib/
-├── core/           # Router, theme (cross-cutting)
-├── data/
-│   ├── models/     # Entity classes
-│   ├── repositories/  # Business logic
-│   └── datasources/   # CRUD (local/ and remote/)
-├── presentation/
-│   ├── screens/    # Full pages
-│   ├── widgets/    # Reusable components
-│   └── providers/  # State management
-└── services/       # DB, sync, external APIs
+├── core/              # Router, theme, config, database
+├── shared/            # Base classes, common utilities
+├── features/          # Feature-first modules
+│   └── [feature]/
+│       ├── data/
+│       │   ├── models/       # Entity classes
+│       │   ├── repositories/ # Business logic
+│       │   └── datasources/  # CRUD (local/ and remote/)
+│       └── presentation/
+│           ├── providers/    # State management
+│           ├── screens/      # Full pages
+│           └── widgets/      # Reusable components
+├── data/              # LEGACY: Backward-compatible barrel re-exports
+├── presentation/      # LEGACY: Backward-compatible barrel re-exports
+└── services/          # Cross-cutting services
 ```
 
 ## Barrel Exports
 
-Always update when adding files:
+**Feature barrels** (preferred):
+- `lib/features/[feature]/data/data.dart`
+- `lib/features/[feature]/presentation/presentation.dart`
+
+**Legacy barrels** (backward-compat):
 - `lib/data/models/models.dart`
-- `lib/data/repositories/repositories.dart`
-- `lib/data/datasources/local/local_datasources.dart`
 - `lib/presentation/providers/providers.dart`

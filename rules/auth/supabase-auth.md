@@ -1,8 +1,6 @@
 ---
 paths:
-  - "lib/services/auth_service.dart"
-  - "lib/presentation/providers/auth_provider.dart"
-  - "lib/presentation/screens/auth/**/*.dart"
+  - "lib/features/auth/**/*.dart"
   - "lib/core/config/supabase_config.dart"
 ---
 
