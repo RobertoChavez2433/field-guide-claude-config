@@ -10,6 +10,11 @@ permissionMode: acceptEdits
 
 Ensures code quality through automated testing, static analysis, and build verification. Looks for ways to shorten code while maintaining quality. Apply KISS and DRY principles. Refactor and optimize.
 
+## Reference Documents
+@.claude/memory/tech-stack.md
+@.claude/memory/standards.md
+@.claude/memory/defects.md
+
 ## Quick Commands
 
 ```bash
@@ -50,18 +55,6 @@ Testing Progress:
 2. **Analyze** → Review errors and failures
 3. **Fix** → Apply fixes, one at a time
 4. **Repeat** → Until all pass
-
----
-
-## Progressive References
-
-For detailed guidance, read these files:
-
-| Topic | File |
-|-------|------|
-| Physical device testing | [testing/PHYSICAL_DEVICE_CHECKLIST.md](testing/PHYSICAL_DEVICE_CHECKLIST.md) |
-| 2026 Flutter patterns | [testing/FLUTTER_2026_PATTERNS.md](testing/FLUTTER_2026_PATTERNS.md) |
-| Test coverage guidance | [testing/TEST_COVERAGE_MATRIX.md](testing/TEST_COVERAGE_MATRIX.md) |
 
 ---
 
@@ -163,6 +156,31 @@ void dispose() {
 - Warnings: X
 - Info: X
 ```
+
+---
+
+## Defect Logging
+
+After testing, if you discover common mistakes or patterns that caused issues, **log them to `.claude/memory/defects.md`**.
+
+### When to Log Defects
+- Test failures caused by known anti-patterns
+- Async context issues (missing `mounted` check)
+- Dispose errors (async in dispose)
+- Sort/ordering issues in tests
+- Any recurring bug patterns worth documenting
+
+### Defect Format
+```markdown
+### YYYY-MM-DD: [Brief Title]
+**Issue**: What went wrong
+**Root Cause**: Why it happened
+**Prevention**: How to avoid in future
+**Ref**: @path/to/file.dart:line (if applicable)
+```
+
+### How to Log
+Use the Edit tool to add new defects **above** the `<!-- Add new defects above this line -->` marker in `.claude/memory/defects.md`.
 
 ---
 

@@ -13,7 +13,7 @@ Complete the current Claude Code session with proper handoff.
 - `.claude/plans/_state.md` - Update session state
 - `.claude/docs/current-plan.md` - Update plan status
 - `.claude/docs/latest-session.md` - Update session notes
-- `.clade/memory/defects.md` - Update defects
+- `.claude/memory/defects.md` - Update defects
 
 ### 2. Gather Session Summary
 Ask user for:
@@ -55,13 +55,6 @@ git diff --stat
 ```markdown
 # Last Session: [DATE]
 
-**Update `.claude/memory/defects.md`:**
-```markdown
-**Issue**: [What went wrong]
-**Root Cause**: [Why it went wrong]
-**Prevention**: [How to avoid]
-
-
 ## Summary
 [Session summary]
 
@@ -87,6 +80,14 @@ git diff --stat
 
 ## Blockers
 - [Any blockers or "None"]
+```
+
+**Update `.claude/memory/defects.md`** (if mistakes were made):
+```markdown
+### YYYY-MM-DD: [Brief Title]
+**Issue**: [What went wrong]
+**Root Cause**: [Why it went wrong]
+**Prevention**: [How to avoid in future]
 ```
 
 ### 5. Commit Changes
