@@ -47,8 +47,8 @@
 3. **Test PDF features** - Import, photo-to-PDF, folder export
 
 ### SYNC SERVICE POLISH
-1. **Run supabase_schema_v3.sql** on Supabase to add personnel_types tables
-2. **Run supabase_schema_v4_rls.sql** to enable RLS and fix security warnings
+1. **Run supabase/supabase_schema_v3.sql** on Supabase to add personnel_types tables
+2. **Run supabase/supabase_schema_v4_rls.sql** to enable RLS and fix security warnings
 3. **Test full sync** after schema updates
 
 ### FUTURE FEATURES

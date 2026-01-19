@@ -32,7 +32,18 @@
       "Bash(powershell -Command:*)",
       "Bash(git pull:*)",
       "Bash(git merge:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(sort:*)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(flutter devices:*)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "WebFetch(domain:developer.aashtoware.org)",
+      "WebFetch(domain:www.aashtoware.org)",
+      "WebFetch(domain:www.notion.so)",
+      "Bash(flutter doctor:*)",
+      "Bash(flutter run:*)"
     ]
   }
 }
