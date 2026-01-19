@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter --version:*)",
+      "Bash(dart --version:*)",
+      "Bash(flutter pub get:*)",
+      "Bash(where claude)",
+      "Bash(claude --version:*)",
+      "Bash(curl:*)",
+      "Bash(npm cache verify:*)",
+      "Bash(du:*)",
+      "Bash(ls:*)",
+      "Bash(git checkout:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(flutter test:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFeature-First Phase 2-3: Shared layer + Auth feature migration\n\nPhase 2 - Shared Layer Setup:\n- Moved base_local_datasource, base_remote_datasource to lib/shared/datasources/\n- Moved base_repository to lib/shared/repositories/\n- Moved sync_status to lib/shared/models/\n- Moved permission_dialog to lib/shared/widgets/\n- Updated 30+ files with new import paths\n- Created backward-compatible barrel re-exports\n\nPhase 3 - Auth Feature Migration:\n- Created lib/features/auth/ directory structure\n- Moved auth_service to features/auth/services/\n- Moved auth_provider to features/auth/presentation/providers/\n- Moved login, register, forgot_password screens to features/auth/presentation/screens/\n- Created barrel exports at each level\n\nCleanup:\n- Removed 6 tmpclaude-* temp files\n- Removed 17 redundant MD/txt files \\(old reports, quick start guides\\)\n\nAll 278 tests passing, 2 pre-existing info warnings\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(dir \"C:\\\\Users\\\\rseba\\\\Projects\\\\Field Guide App\\\\lib\\\\features\\\\contractors\\\\data\\\\datasources\\\\remote\")",
+      "Bash(tree:*)",
+      "Bash(test:*)",
+      "Bash(dir \"C:\\\\Users\\\\rseba\\\\Projects\\\\Field Guide App\\\\lib\\\\features\\\\entries\" /S /B)",
+      "Bash(if [ -f \"C:\\\\Users\\\\rseba\\\\Projects\\\\Field Guide App\\\\lib\\\\features\\\\quantities\\\\presentation\\\\presentation.dart\" ])",
+      "Bash(then cat \"C:\\\\Users\\\\rseba\\\\Projects\\\\Field Guide App\\\\lib\\\\features\\\\quantities\\\\presentation\\\\presentation.dart\")",
+      "Bash(else echo \"File does not exist\")",
+      "Bash(fi)",
+      "Bash(cd:*)",
+      "Bash(grep:*)",
+      "Skill(end-session)",
+      "Bash(wc:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(git pull:*)",
+      "Bash(git merge:*)",
+      "Bash(find:*)"
+    ]
+  }
+}
