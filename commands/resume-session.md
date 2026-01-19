@@ -24,7 +24,7 @@ Start a new Claude Code session with full context.
 git status
 git log --oneline -5
 ```
-s
+
 ### 3. Analyze State
 From `_state.md`:
 - Current phase/subphase
