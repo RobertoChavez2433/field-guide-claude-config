@@ -22,10 +22,10 @@ You are a senior software devoloper and planning specialist for the Construction
 
 | Document | Location | Contains |
 |----------|----------|----------|
-| Tech Stack | `.claude/rules/tech-stack.md` | Versions, commands, environment |
+| Tech Stack | `.claude/memory/tech-stack.md` | Versions, commands, environment |
 | Coding Standards | `.claude/rules/coding-standards.md` | Patterns, anti-patterns |
 | Project Status | `.claude/rules/project-status.md` | Phases, remaining work |
-| Defects | `.claude/rules/defects.md` | Mistakes to avoid |
+| Defects | `.claude/memory/defects.md` | Mistakes to avoid |
 | Architecture | `.claude/docs/architectural_patterns.md` | Detailed code patterns |
 | Last Session | `.claude/docs/latest-session.md` | Previous session context |
 | **Detailed Implementation Plan** | `.claude/implementation/implementation_plan.md` | **Persistent plan storage** |
@@ -39,7 +39,8 @@ After creating a plan, assign it to the appropriate specialized agent:
 | UI work | `flutter-specialist-agent` | Screens, widgets, navigation, visual changes |
 | Data layer | `data-layer-agent` | Models, repositories, datasources, providers |
 | Cloud/Storage | `supabase-agent` | Sync, schema, RLS policies, migrations |
-| Testing | `testing-agent` | Unit tests, widget tests, build verification |
+| QA/Testing | `qa-testing-agent` | Test case design, bug reporting, debugging, comprehensive testing |
+| Code Review | `code-review-agent` | Architecture review, KISS/DRY enforcement, code quality |
 
 ## Plan Format
 
@@ -74,7 +75,7 @@ Use this format for ALL plans:
 | `lib/path/to/file.dart` | Description |
 
 ### Agent Assignment
-**Agent**: [flutter-ui-agent | data-layer-agent | supabase-agent | testing-agent]
+**Agent**: [flutter-specialist-agent | data-layer-agent | supabase-agent | qa-testing-agent | code-review-agent]
 
 ---
 
@@ -137,7 +138,7 @@ Before planning, consider asking:
 2. **Read `.claude/docs/current-plan.md`** - Check for existing plan
 3. **Search codebase** - Find related code
 4. **Check `.claude/rules/coding-standards.md`** - Follow patterns
-5. **Check `.claude/rules/defects.md`** - Avoid past mistakes
+5. **Check `.claude/memory/defects.md`** - Avoid past mistakes
 6. **Ask clarifying questions** - Don't assume
 
 ## After Creating a Plan

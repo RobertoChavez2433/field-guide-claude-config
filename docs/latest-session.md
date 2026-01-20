@@ -1,62 +1,56 @@
-# Last Session: 2026-01-19 (Session 6)
+# Last Session: 2026-01-20 (Session 8)
 
 ## Summary
-Completed Phase 6 (theme constants) and Phase 7 (deprecation annotations) of the Code Quality Refactoring plan. Used 4 agents in parallel (2 flutter-specialist, 2 data-layer) for efficient implementation. All phases of code quality refactoring are now complete.
+Overhauled the agent system: created qa-testing-agent and code-review-agent to replace the old testing-agent. Fixed broken path references throughout .claude folder. Cleaned up old global plan files.
 
 ## Completed
-- [x] Phase 6: Replace hardcoded Colors with AppTheme constants
-  - confirmation_dialog.dart: Colors.white → AppTheme.textInverse
-  - quantities_screen.dart: Colors.white → AppTheme.textInverse
-  - project_setup_screen.dart: Colors.white → AppTheme.textInverse
-  - 3 other files already compliant (no changes needed)
-- [x] Phase 7: Add @deprecated annotations to legacy barrel exports
-  - 6 files in lib/data/ (models, repositories, datasources)
-  - 4 files in lib/presentation/providers/
-- [x] Verification: flutter analyze (0 errors, 10 info), flutter test (363 pass)
+- [x] Created qa-testing-agent.md (QA specialist with test case design, bug reporting)
+- [x] Created code-review-agent.md (senior reviewer with KISS/DRY/YAGNI principles)
+- [x] Deleted old testing-agent.md
+- [x] Fixed 4 broken path references in planning-agent.md and defects.md
+- [x] Updated agent tables in CLAUDE.md, resume-session.md, planning-agent.md
+- [x] Cleaned up 12 old plan files from ~/.claude/plans/
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| lib/shared/widgets/confirmation_dialog.dart | Colors.white → AppTheme.textInverse |
-| lib/features/quantities/presentation/screens/quantities_screen.dart | Colors.white → AppTheme.textInverse |
-| lib/features/projects/presentation/screens/project_setup_screen.dart | Colors.white → AppTheme.textInverse |
-| lib/data/datasources/local/local_datasources.dart | Added @deprecated annotation |
-| lib/data/datasources/remote/remote_datasources.dart | Added @deprecated annotation |
-| lib/data/models/models.dart | Added @deprecated annotation |
-| lib/data/models/photo.dart | Added @deprecated annotation |
-| lib/data/repositories/photo_repository.dart | Added @deprecated annotation |
-| lib/data/repositories/repositories.dart | Added @deprecated annotation |
-| lib/presentation/providers/calendar_format_provider.dart | Added @deprecated annotation |
-| lib/presentation/providers/photo_provider.dart | Added @deprecated annotation |
-| lib/presentation/providers/providers.dart | Added @deprecated annotation |
-| lib/presentation/providers/sync_provider.dart | Added @deprecated annotation |
+| .claude/agents/qa-testing-agent.md | Created (new QA agent) |
+| .claude/agents/code-review-agent.md | Created (new code review agent) |
+| .claude/agents/testing-agent.md | Deleted |
+| .claude/agents/planning-agent.md | Fixed 3 broken paths + updated agent table |
+| .claude/memory/defects.md | Removed invalid self-reference |
+| .claude/commands/resume-session.md | Updated agent reference table |
+| CLAUDE.md | Updated agents table |
 
 ## Plan Status
-- **Plan**: Code Quality Refactoring
+- **Plan**: Agent System Overhaul
 - **Status**: COMPLETE
-- **Completed**: Phases 0-7 (all phases)
-- **Remaining**: None (manual testing recommended)
+- **Remaining**: None
 
 ## Next Priorities
 1. Manual testing: Auth flows (login, register, password reset)
 2. Manual testing: Project CRUD, Entry creation
 3. Manual testing: Photo capture, PDF generation, Sync
 4. Manual testing: Theme switching (Light/Dark/High Contrast)
-5. Optional: Migrate deprecated imports in consuming files
+5. When ready, begin AASHTOWare Phase 9
 
 ## Decisions
-- Colors.transparent and Colors.black.withOpacity() left as-is (appropriate for overlays/shadows)
-- @deprecated uses library-level pattern with explicit migration guidance to feature modules
+- qa-testing-agent upgraded to sonnet model for deeper QA analysis
+- code-review-agent uses read-only tools (enforces review-only behavior)
+- Both agents required to log defects to `.claude/memory/defects.md`
+- Global ~/.claude/plans/ is Claude Code's standard location (documented)
 
 ## Blockers
 - None
 
 ## Verification
 - flutter analyze: 0 errors, 0 warnings, 10 info (expected deprecation messages)
-- flutter test: 363 tests pass
+- No code changes to Flutter project (all .claude folder changes are gitignored)
 
-## Code Stats
-- Lines added: 83
-- Lines removed: 21
-- Net addition: +62 lines (deprecation documentation)
+## New Agents Summary
+
+| Agent | Purpose | Model |
+|-------|---------|-------|
+| qa-testing-agent | Test case design, bug reporting, debugging, comprehensive testing | sonnet |
+| code-review-agent | Architecture review, KISS/DRY enforcement, code quality | sonnet |

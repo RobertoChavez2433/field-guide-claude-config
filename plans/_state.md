@@ -2,49 +2,39 @@
 
 ## Current Phase
 **Phase**: Session Complete - Ready for Manual Testing
-**Subphase**: App running on Android phone
-**Last Updated**: 2026-01-19
+**Subphase**: Agent system updated
+**Last Updated**: 2026-01-20
 
 ## Last Session Work
-- Created comprehensive AASHTOWARE_Implementation_Plan.md
-- Cleaned up outdated .claude files (6 files deleted):
-  - comprehensive_implementation_plan.md (superseded)
-  - whimsical-orbiting-cocke.md (merged into new plan)
-  - feature-first-reorganization-summary.md (historic)
-  - verification-checklist.md (historic)
-  - rules/defects.md (duplicate of memory/)
-  - rules/tech-stack.md (duplicate of memory/)
-- Updated current-plan.md with new AASHTOWare plan reference
-- Created desktop batch file: `C:\Users\rseba\Desktop\run_field_guide.bat`
-- **BONUS**: Created AppTerminology abstraction for MDOT mode prep
-- Built and launched app on Android phone (SM S938U)
+- Created new `qa-testing-agent.md` (replaces testing-agent)
+- Created new `code-review-agent.md` (KISS/DRY enforcement)
+- Deleted old `testing-agent.md`
+- Fixed broken paths in `planning-agent.md` (3 paths)
+- Fixed broken reference in `memory/defects.md`
+- Updated agent references in CLAUDE.md, resume-session.md, planning-agent.md
+- Cleaned up 12 old plan files from global ~/.claude/plans/ folder
 
-## AppTerminology Implementation
-New file: `lib/core/config/app_terminology.dart`
+## Agent System Updates
+New agents:
+- `qa-testing-agent` - QA specialist with test case design, bug reporting, debugging
+- `code-review-agent` - Senior reviewer with KISS/DRY/YAGNI principles
 
-Files updated:
-- `lib/features/entries/presentation/screens/home_screen.dart`
-- `lib/features/settings/presentation/screens/settings_screen.dart`
-- `lib/features/pdf/services/pdf_service.dart`
+Removed:
+- `testing-agent` (replaced by qa-testing-agent)
 
-This allows easy terminology switching when MDOT mode is implemented:
-- IDR <-> DWR
-- Bid Item <-> Pay Item
-- Contract Modification <-> Change Order
+Fixed paths:
+- `.claude/rules/tech-stack.md` → `.claude/memory/tech-stack.md`
+- `.claude/rules/defects.md` → `.claude/memory/defects.md`
 
 ## Decisions Made
-1. UniqueNameValidator handles all duplicate name checks centrally
-2. BaseListProvider provides common CRUD operations for project-scoped providers
-3. Phase 5 focused on extractable widgets first (dialogs, simple sections)
-4. Personnel and Quantities sections too complex to extract safely - deferred
-5. Shared widgets fully integrated into entry_wizard and report screens
-6. Colors.transparent and Colors.black.withOpacity() kept as-is (appropriate usage)
-7. @deprecated annotations use library-level pattern with migration guidance
-8. AASHTOWare plan consolidated all research into single comprehensive document
-9. AppTerminology abstraction created proactively to reduce MDOT branch size
+1. qa-testing-agent uses sonnet model (upgraded from haiku for deeper analysis)
+2. code-review-agent uses read-only tools (Read, Grep, Glob)
+3. Both agents required to log defects to `.claude/memory/defects.md`
+4. Global plan mode uses ~/.claude/plans/ (Claude Code standard behavior)
+5. Project plans go to `.claude/implementation/implementation_plan.md`
 
 ## Open Questions
-- None - ready for manual testing
+- None
 
 ## Next Steps
 1. Complete manual test suites 1-7 (see current-plan.md)
@@ -54,6 +44,12 @@ This allows easy terminology switching when MDOT mode is implemented:
 
 ## Session Log
 
+### 2026-01-20 (Session 8): Agent System Overhaul
+- **Created**: qa-testing-agent.md, code-review-agent.md
+- **Deleted**: testing-agent.md, 12 old global plan files
+- **Fixed**: 4 broken path references across .claude folder
+- **Updated**: CLAUDE.md, resume-session.md, planning-agent.md agent tables
+
 ### 2026-01-19 (Session 7): Cleanup, Planning & Terminology
 - **Created**: AASHTOWARE_Implementation_Plan.md (comprehensive 12-17 week plan)
 - **Deleted**: 6 outdated/duplicate files
@@ -61,32 +57,6 @@ This allows easy terminology switching when MDOT mode is implemented:
 - **Created**: Desktop batch file for running app
 - **Created**: AppTerminology abstraction (proactive MDOT prep)
 - **Built**: App on Android phone (SM S938U)
-
-**Key Deliverables:**
-- AASHTOWARE_Implementation_Plan.md integrates:
-  - Existing AASHTOWare research
-  - Notion analysis findings (MILogin, Alliance Program, costs)
-  - MDOT Special Provision 20SP-101A-01 requirements
-  - Phased implementation timeline (Phases 9-15)
-- Manual testing checklist with 7 test suites
-- AppTerminology.dart for dual-mode terminology support
-
-### 2026-01-19 (Session 6): Phases 6-7 Complete
-- **Phase 6 Complete**: Theme constants consolidation
-- **Phase 7 Complete**: Deprecation annotations added
-- Ran 4 agents in parallel for efficient implementation
-- 3 files updated with AppTheme constants (Colors.white -> AppTheme.textInverse)
-- 10 files marked @deprecated with migration guidance
-- Testing agent verified: 363 tests pass, 0 errors
-
-### 2026-01-19 (Session 5): Phase 5 Complete
-- **Phase 5 Complete**: Widget integration into screens
-- Integrated EntryBasicsSection, EntrySafetySection into entry_wizard_screen
-- Integrated showDeleteConfirmationDialog into report_screen
-- Fixed DropdownButtonFormField deprecation warning
-- Testing agent verified: 363 tests pass, 0 errors
-- Cleaned up 2 empty widget directories
-- Code reduction: -268 lines (156 added, 424 removed)
 
 ### Previous Sessions
 - See current-plan.md for Feature-First Reorganization history

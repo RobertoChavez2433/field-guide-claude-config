@@ -81,5 +81,6 @@ Do NOT start implementation until user confirms.
 | Data/Models | `data-layer-agent` |
 | Cloud/Sync | `supabase-agent` |
 | Auth | `auth-agent` |
-| Testing | `testing-agent` |
+| QA/Testing | `qa-testing-agent` |
+| Code Review | `code-review-agent` |
 | PDF | `pdf-agent` |

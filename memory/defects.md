@@ -12,8 +12,6 @@ Track Claude's mistakes to prevent repetition. Read before every session.
 
 ## Logged Defects
 
-@.claude/rules/defects.md
-
 ### 2026-01-19: Async in dispose()
 **Issue**: Called async `_saveIfEditing()` in `dispose()` - context already deactivated
 **Fix**: Use `WidgetsBindingObserver.didChangeAppLifecycleState` for lifecycle saves
