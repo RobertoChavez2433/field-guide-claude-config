@@ -24,6 +24,16 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-21 (Session 22)
+- Fixed 9 unused variable warnings in patrol test files
+- Updated 3 deprecated withOpacity() to withValues() calls
+- Code review scored 9.5/10
+- **Fixed patrol Java detection**: Installed Android SDK cmdline-tools
+- Flutter doctor now shows all green checkmarks
+- Patrol discovers 69 tests and starts building
+- Analyzer: 0 errors
+- 4 files changed: 3 patrol tests, 1 golden test
+
 ### 2026-01-21 (Session 21)
 - Implemented patrol test configuration fixes
 - QA agent verified patrol.yaml, .gitignore, archived manual aggregator

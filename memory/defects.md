@@ -107,4 +107,14 @@ Track Claude's mistakes to prevent repetition. Read before every session.
 **Fix**: Change patrol.yaml target to `integration_test/test_bundle.dart`
 **Ref**: @patrol.yaml:8, @integration_test/test_bundle.dart
 
+### 2026-01-21: Patrol CLI "Failed to read Java version" on Windows
+**Issue**: Patrol test command fails with "Error: Failed to read Java version" even though Java is installed
+**Root Cause**: Patrol CLI reads Java from `flutter doctor` output. Without Android SDK cmdline-tools installed, flutter doctor doesn't show Java version under Android toolchain.
+**Prevention**:
+- Ensure Android SDK Command-line Tools is installed via Android Studio SDK Manager (Tools → SDK Manager → SDK Tools tab)
+- Run `flutter doctor --android-licenses` to accept licenses
+- Verify `flutter doctor -v` shows "Java binary at:" under Android toolchain
+**Fix**: Install "Android SDK Command-line Tools (latest)" from SDK Manager
+**Ref**: https://github.com/leancodepl/patrol/issues/2160
+
 <!-- Add new defects above this line -->

@@ -50,7 +50,10 @@
       "Bash(powershell:*)",
       "Bash(java -version:*)",
       "Bash(pwsh -Command \"cd ''C:\\\\Users\\\\rseba\\\\Projects\\\\Field Guide App''; flutter devices\")",
-      "Bash(pwsh -Command \"cd 'C:\\\\Users\\\\rseba\\\\Projects\\\\Field Guide App'; patrol test:*)"
+      "Bash(pwsh -Command \"cd 'C:\\\\Users\\\\rseba\\\\Projects\\\\Field Guide App'; patrol test:*)",
+      "Bash(pwsh:*)",
+      "WebFetch(domain:patrol.leancode.co)",
+      "Bash(flutter clean:*)"
     ]
   }
 }
