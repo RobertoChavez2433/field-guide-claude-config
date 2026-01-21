@@ -1,7 +1,7 @@
 # Current Implementation Plan
 
 **Last Updated**: 2026-01-21
-**Status**: IN PROGRESS (Testing & Quality Verification)
+**Status**: READY FOR IMPLEMENTATION (Patrol Fix)
 **Plan Files**:
 - `.claude/implementation/implementation_plan.md` (Main plan)
 
@@ -9,51 +9,57 @@
 
 ## Overview
 
-**Current State**: Test Suite Verified, Patrol Integration Pending
-**Next Focus**: Debug patrol 0 tests issue, push changes
+**Current State**: Patrol root cause identified, fix plan ready
+**Next Focus**: Apply patrol.yaml fix, verify 69 tests execute
 
 ---
 
-## Session 18 Completed
+## Patrol Test Fix Plan
 
-### Test Suite Execution
-- [x] Unit tests: 613 passing (100%)
-- [x] Golden tests: 93 passing (100%)
-- [x] Fixed project search test expectation
+### Root Cause
+patrol.yaml targets `integration_test/patrol/test_bundle.dart` (manual aggregator with 0 patrolTest() declarations) instead of `integration_test/test_bundle.dart` (auto-generated with proper infrastructure).
 
-### Barrel Import Migration
-- [x] main.dart - feature-specific datasource/repository imports
-- [x] sync_service.dart - feature-specific remote datasource imports
+### The Fix
+```yaml
+# patrol.yaml - Change line 8
+targets:
+  - integration_test/test_bundle.dart  # NOT patrol/test_bundle.dart
+```
 
-### Patrol Configuration
-- [x] patrol.yaml - added 9 test targets
-- [x] patrol_cli - downgraded to 3.11.0 for compatibility
-- [ ] Patrol execution - builds but runs 0 tests
+---
+
+## Tasks
+
+### Task 1: Update patrol.yaml (CRITICAL)
+- [ ] Change target from `integration_test/patrol/test_bundle.dart` to `integration_test/test_bundle.dart`
+- **Agent**: qa-testing-agent
+
+### Task 2: Add .gitignore Entry (IMPORTANT)
+- [ ] Add `integration_test/test_bundle.dart` to .gitignore
+- **Agent**: qa-testing-agent
+
+### Task 3: Verify Tests Execute (CRITICAL)
+- [ ] Run `flutter clean && patrol build android`
+- [ ] Run `patrol test` and verify 69 tests discovered
+- [ ] Confirm tests actually execute (not 0)
+- **Agent**: qa-testing-agent
+
+### Task 4: Archive Manual Aggregator (CLEANUP)
+- [ ] Move `integration_test/patrol/test_bundle.dart` to archive
+- **Agent**: qa-testing-agent
+
+### Task 5: Document Setup (ENHANCEMENT)
+- [ ] Create `integration_test/patrol/README.md` explaining test organization
+- **Agent**: qa-testing-agent
 
 ---
 
 ## Test Suite Summary
 - Unit tests: 613 passing
 - Golden tests: 93 passing
-- Patrol tests: 9 targets configured, 0 running (issue)
-- **Total: 706 automated tests** (unit + golden)
-- **Analyzer**: 0 errors, 2 info warnings
-
----
-
-## Next Phase: Patrol Debugging
-
-### Priority 1: Debug Patrol Execution
-1. [ ] Run `patrol test --verbose --debug` for more info
-2. [ ] Check if `patrol bootstrap` is needed
-3. [ ] Verify Android instrumentation configuration
-
-### Priority 2: Push Changes
-4. [ ] Push barrel import migration to remote
-5. [ ] Push patrol.yaml config
-
-### Priority 3: Remaining Cleanup
-6. [ ] Address report_screen.dart async context warnings
+- Patrol tests: 69 tests (pending fix)
+- **Total: 706+ automated tests**
+- **Analyzer**: 0 errors, 0 warnings
 
 ---
 
@@ -64,16 +70,36 @@
 flutter test                           # All unit tests
 flutter test test/golden/              # Golden tests only
 patrol test                            # Patrol tests (requires device)
-patrol test --verbose --debug          # Debug patrol issues
 ```
 
-### Analysis
+### Patrol Fix Verification
 ```bash
-flutter analyze lib/ --no-fatal-infos
+flutter clean
+patrol build android
+patrol test --verbose
+```
+
+---
+
+## Expected Result After Fix
+```
+Test discovery: Found 69 tests in 9 groups
+  patrol.app_smoke_test (3 tests)
+  patrol.auth_flow_test (10 tests)
+  patrol.camera_permission_test (3 tests)
+  patrol.entry_management_test (11 tests)
+  patrol.location_permission_test (4 tests)
+  patrol.navigation_flow_test (14 tests)
+  patrol.offline_mode_test (10 tests)
+  patrol.photo_capture_test (5 tests)
+  patrol.project_management_test (9 tests)
+
+Executing tests...
+✓ 69 tests executed (not 0)
 ```
 
 ---
 
 ## Full Plan Details
 
-See `.claude/implementation/implementation_plan.md` for complete plan.
+See `.claude/implementation/implementation_plan.md` for complete project plan.

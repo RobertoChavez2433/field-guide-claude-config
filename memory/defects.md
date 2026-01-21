@@ -96,4 +96,15 @@ Track Claude's mistakes to prevent repetition. Read before every session.
 - test/features/locations/data/repositories/location_repository_test.dart (removed test at line 628-643)
 **Ref**: @test/features/projects/data/repositories/project_repository_test.dart, @test/features/locations/data/repositories/location_repository_test.dart
 
+### 2026-01-21: Patrol Tests Build but Execute 0 Tests
+**Issue**: 69 Patrol integration tests built successfully but Android Test Orchestrator reported "0 tests executed"
+**Root Cause**: patrol.yaml targeted `integration_test/patrol/test_bundle.dart` (manual aggregator) instead of `integration_test/test_bundle.dart` (auto-generated)
+**Why It Fails**: Manual aggregator has 0 `patrolTest()` declarations - just imports and calls `main()` on test modules. Android's PatrolJUnitRunner can't discover tests inside imported modules.
+**Prevention**:
+- ALWAYS target Patrol CLI's auto-generated `integration_test/test_bundle.dart`
+- Auto-generated bundle has proper infrastructure: test explorer, PatrolAppService, group wrapping
+- Do NOT create manual test aggregators - Patrol handles bundling automatically
+**Fix**: Change patrol.yaml target to `integration_test/test_bundle.dart`
+**Ref**: @patrol.yaml:8, @integration_test/test_bundle.dart
+
 <!-- Add new defects above this line -->

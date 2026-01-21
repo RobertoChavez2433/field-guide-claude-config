@@ -2,36 +2,40 @@
 
 ## Current Phase
 **Phase**: Testing & Quality Verification
-**Subphase**: Patrol Test Debugging
+**Subphase**: Patrol Test Fix Implementation
 **Last Updated**: 2026-01-21
 
 ## Last Session Work
-- Comprehensive project review with 3 parallel agents
-- Fixed async context warnings in report_screen.dart
-- Verified barrel import migration is COMPLETE
-- Deep investigation of patrol 0 tests issue
-- Code review: 7.5/10 health score
+- Launched 2 explore agents to research patrol test execution issue
+- Planning agent created comprehensive fix plan
+- **ROOT CAUSE IDENTIFIED**: patrol.yaml targets wrong test_bundle.dart file
 
 ## Decisions Made
-1. Barrel imports fully migrated - no deprecated imports remain
-2. patrol.yaml targets are auto-overridden by patrol's file discovery
-3. MainActivityTest.kt is NOT needed - PatrolJUnitRunner handles it
-4. JAVA_HOME and PATH setup required for patrol CLI
+1. patrol.yaml must target `integration_test/test_bundle.dart` (auto-generated), NOT `integration_test/patrol/test_bundle.dart` (manual aggregator)
+2. Manual aggregator has 0 patrolTest() declarations - Android can't discover tests
+3. Auto-generated bundle has proper infrastructure (test explorer, PatrolAppService, group wrapping)
+4. Fix is simple: change one line in patrol.yaml
 
 ## Open Questions
-1. Why does Android Test Orchestrator report 0 tests when APK builds correctly?
-2. Is there a communication issue between Dart test bundle and native runner?
-3. Would patrol develop mode provide debugging insight?
+None - root cause identified and fix plan ready
 
 ## Next Steps
-1. Try `patrol develop` for live debugging
-2. Check patrol 3.20.0 GitHub issues for known Android problems
-3. Add console logging to test_bundle.dart to verify execution
-4. Apply critical code review fixes (BaseListProvider firstWhere pattern)
+1. Update patrol.yaml target to `integration_test/test_bundle.dart`
+2. Add `integration_test/test_bundle.dart` to .gitignore
+3. Run `patrol test` to verify 69 tests execute
+4. Archive manual test aggregator
+5. Document patrol test organization
 
 ---
 
 ## Session Log
+
+### 2026-01-21 (Session 20): Patrol Root Cause Analysis
+- **Agents Used**: 2 explore agents + 1 planning agent
+- **Root Cause Found**: patrol.yaml targets manual aggregator (has 0 tests)
+- **Fix**: Change target to auto-generated test_bundle.dart
+- **Analyzer**: 0 errors, 0 warnings
+- **Git**: Clean (research-only session)
 
 ### 2026-01-21 (Session 19): Project Review & Patrol Deep Dive
 - **Agents Used**: 3 parallel (QA, Data Layer, Code Review)
