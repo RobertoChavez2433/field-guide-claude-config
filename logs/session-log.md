@@ -24,6 +24,40 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-21 (Session 17)
+- Fixed critical code review issues from Session 16
+- Migration v4: Added transaction wrapper + null-safe typeIds access
+- Seed data: Added updated_at to 6 insert locations
+- Patrol script: Dynamic device detection (no hardcoded device ID)
+- Patrol CLI 3.11.0 verified (bootstrap not needed)
+- Analyzer: 0 errors, 2 info warnings
+
+### 2026-01-20 (Session 16)
+- Launched 7 parallel agents (2 code-review, 2 QA, 2 flutter-specialist, 1 final)
+- Verified Java 21 working (exceeds JDK 17 requirement)
+- Code reviews: ceaf63a (7.5/10), d6e7874 (7/10), final (8.5/10)
+- Golden baselines: 93 tests, 93 PNG images generated
+- Import migrations: batch 2 complete, batch 1 mostly complete
+- Patrol: JDK verified, CLI installed, needs `patrol bootstrap`
+- Analyzer: 0 errors, 2 info warnings
+
+### 2026-01-20 (Session 15)
+- Researched Patrol startup issues (3 research + QA + planning agents)
+- ROOT CAUSE: JDK 17+ not configured (now resolved)
+- Created patrol-fix-plan.md with 6 tasks across 4 phases
+
+### 2026-01-20 (Session 14)
+- Launched 10 parallel agents (3 data-layer, 4 QA, 3 code-review)
+- Migrations: calendar_format_provider, sync_service imports
+- Golden tests: 52 new (states, components)
+- Patrol tests: 54 new (auth, projects, entries, navigation, offline)
+- Tests: 479 passing
+
+### 2026-01-20 (Session 13)
+- Security: Supabase credentials via environment variables
+- Provider safety: 6 providers fixed with firstOrNull pattern
+- Tests: 394 passing, Commit: 3c92904
+
 ### 2026-01-20 (Session 12)
 - Launched 8 parallel agents (3 data-layer, 2 QA, 3 code-review)
 - Data layer: updatedAt on 9 models, PhotoRepository RepositoryResult, migration safety

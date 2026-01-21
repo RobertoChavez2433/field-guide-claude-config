@@ -47,7 +47,10 @@
       "Bash(patrol test:*)",
       "Bash(flutter pub global activate:*)",
       "Bash(dart run patrol_cli test:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(java -version:*)",
+      "Bash(pwsh -Command \"cd ''C:\\\\Users\\\\rseba\\\\Projects\\\\Field Guide App''; flutter devices\")",
+      "Bash(pwsh -Command \"cd 'C:\\\\Users\\\\rseba\\\\Projects\\\\Field Guide App'; patrol test:*)"
     ]
   }
 }
