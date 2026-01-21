@@ -2,32 +2,47 @@
 
 ## Current Phase
 **Phase**: Testing & Quality Verification
-**Subphase**: Patrol Test Infrastructure Working, Test Fixes Needed
+**Subphase**: Comprehensive Test Fix Plan Created
 **Last Updated**: 2026-01-21
 
 ## Last Session Work
-- Ran patrol tests on device - tests now execute (no hang)
-- Fixed seed data service - added created_at/updated_at to entry_personnel and entry_quantities inserts
-- Fixed SyncService - made _supabase nullable to handle unconfigured Supabase
-- Disabled Gradle configuration-cache (incompatible with Flutter)
-- Code review: 8/10 - approved with minor suggestions
+- Launched 4 parallel research/QA agents to analyze test infrastructure
+- Research agent 1: Patrol test patterns, widget keys, permission handling
+- Research agent 2: Test infrastructure patterns, mocks, seed data
+- QA agent 1: Identified redundant tests (~4,400 lines can be removed)
+- QA agent 2: Identified 61 missing test files across unit/integration/widget
+- Planning agent: Created comprehensive patrol_test_fix_plan.md
 
 ## Decisions Made
-1. Made SyncService._supabase nullable with conditional initialization
-2. Used force-unwrap _supabase! protected by SupabaseConfig.isConfigured check
-3. Disabled org.gradle.configuration-cache due to Flutter incompatibility
+1. Will delete 4 redundant test files (widget_test + 3 datasource tests)
+2. Will consolidate model tests using generic test utility (75% reduction)
+3. Will add Key widgets to all form fields and buttons for test reliability
+4. Will replace text-based finders with Key-based finders in Patrol tests
+5. Will create AuthTestHelper and NavigationHelper for Patrol tests
 
 ## Open Questions
-None - patrol infrastructure working, test-specific fixes needed
+None - comprehensive plan ready for implementation
 
 ## Next Steps
-1. Fix patrol test failures (widget not found, permission issues)
-2. Add QUERY_ALL_PACKAGES permission for native automation tests
-3. Continue with CRITICAL items from implementation_plan.md
+1. Execute Phase 1: Delete redundant tests, consolidate model tests
+2. Execute Phase 2: Add Key widgets to auth, entry, project screens
+3. Execute Phase 3: Refactor test helpers, create Patrol helpers
+4. Execute Phase 4: Fix Patrol timing issues, widget finders
+5. Execute Phase 5: Fill coverage gaps (auth, sync, database tests)
 
 ---
 
 ## Session Log
+
+### 2026-01-21 (Session 26): Comprehensive Test Analysis + Fix Plan
+- **Agents Used**: 2 Explore (parallel) + 2 QA (parallel) + Planning
+- **Research Findings**:
+  - Only 28 Key widgets (need 100+ for reliable testing)
+  - 15+ inline mock classes duplicated across test files
+  - ~4,400 lines of redundant tests identified
+  - 61 missing test files identified
+- **Plan Created**: `.claude/implementation/patrol_test_fix_plan.md`
+- **Files Changed**: 1 (patrol_test_fix_plan.md - new)
 
 ### 2026-01-21 (Session 25): Patrol Test Execution + Infrastructure Fixes
 - **Agents Used**: QA agent + Code Review agent
