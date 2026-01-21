@@ -94,138 +94,19 @@ You are a **Senior Flutter Specialist** for the Construction Inspector App with 
    - Communication with stakeholders
 
 ## Code Patterns
-
-### Screen Structure
-```dart
-class MyScreen extends StatefulWidget {
-  const MyScreen({super.key});
-  @override
-  State<MyScreen> createState() => _MyScreenState();
-}
-
-class _MyScreenState extends State<MyScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadData());
-  }
-
-  @override
-  void dispose() {
-    // Always cleanup controllers/subscriptions
-    super.dispose();
-  }
-}
-```
-
-### Provider Pattern
-```dart
-// Read once for actions
-context.read<MyProvider>().doAction();
-
-// Watch for rebuilds (use deep in tree)
-Consumer<MyProvider>(
-  builder: (context, provider, _) => Widget(),
-);
-
-// Selective rebuilds
-Selector<EntryProvider, int>(
-  selector: (_, p) => p.entries.length,
-  builder: (context, count, _) => Text('$count entries'),
-);
-```
-
-### Async Safety
-```dart
-await asyncOperation();
-if (!mounted) return;  // ALWAYS check
-context.read<Provider>().update();
-```
-
-### Animation Pattern
-```dart
-class AnimatedWidget extends StatefulWidget {
-  @override
-  State<AnimatedWidget> createState() => _AnimatedWidgetState();
-}
-
-class _AnimatedWidgetState extends State<AnimatedWidget>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose(); // CRITICAL
-    super.dispose();
-  }
-}
-```
-
-### Performance Patterns
-```dart
-// Const constructors
-const SizedBox(height: 16);
-const Icon(Icons.add);
-
-// RepaintBoundary for expensive widgets
-RepaintBoundary(
-  child: CustomPaint(painter: ExpensivePainter()),
-);
-
-// Efficient list building
-ListView.builder(
-  itemCount: items.length,
-  itemExtent: 80, // Fixed height = faster
-  itemBuilder: (context, index) => ItemCard(item: items[index]),
-);
-
-// Image caching
-Image.file(
-  file,
-  cacheWidth: 400,
-  cacheHeight: 400,
-);
-```
+@.claude/rules/coding-standards.md (Screen, Provider, Async patterns)
+@.claude/rules/frontend/flutter-ui.md (Animation, Performance, Responsive patterns)
 
 ## Responsive Design
 
-### Breakpoints
-- Mobile: < 600px
-- Tablet: 600-1200px
-- Desktop: > 1200px
-
-### ResponsiveBuilder
-```dart
-ResponsiveBuilder(
-  mobile: (context, constraints) => MobileLayout(),
-  tablet: (context, constraints) => TabletLayout(),
-  desktop: (context, constraints) => DesktopLayout(),
-);
-```
+| Device | Width |
+|--------|-------|
+| Mobile | < 600px |
+| Tablet | 600-1200px |
+| Desktop | > 1200px |
 
 ## Quality Checklist
-
-### Before Submitting Code
-- [ ] Uses `AppTheme` constants (no hardcoded colors)
-- [ ] Follows 8px spacing grid
-- [ ] Touch targets minimum 44x44px
-- [ ] AnimationControllers disposed
-- [ ] `mounted` check after async
-- [ ] Const constructors where possible
-- [ ] Works on mobile/tablet/desktop
-- [ ] Loading/error/empty states handled
-- [ ] Accessible (contrast, touch targets)
-- [ ] Field-optimized (high contrast, glove-friendly)
+@.claude/rules/quality-checklist.md (Flutter UI section)
 
 ## Widget Catalog
 

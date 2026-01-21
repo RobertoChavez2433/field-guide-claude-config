@@ -63,110 +63,8 @@ lib/
 
 Reference: `lib/services/database_service.dart:50-215`
 
-## Model Pattern
-
-```dart
-class Example {
-  final String id;
-  final String name;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-
-  Example({
-    String? id,
-    required this.name,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  }) : id = id ?? const Uuid().v4(),
-       createdAt = createdAt ?? DateTime.now(),
-       updatedAt = updatedAt ?? DateTime.now();
-
-  Example copyWith({String? name}) {
-    return Example(
-      id: id,
-      name: name ?? this.name,
-      createdAt: createdAt,
-      updatedAt: DateTime.now(),
-    );
-  }
-
-  Map<String, dynamic> toMap() => {
-    'id': id,
-    'name': name,
-    'created_at': createdAt.toIso8601String(),
-    'updated_at': updatedAt.toIso8601String(),
-  };
-
-  factory Example.fromMap(Map<String, dynamic> map) => Example(
-    id: map['id'] as String,
-    name: map['name'] as String,
-    createdAt: DateTime.parse(map['created_at'] as String),
-    updatedAt: DateTime.parse(map['updated_at'] as String),
-  );
-}
-```
-
-## Datasource Pattern
-
-```dart
-class LocalExampleDatasource {
-  final DatabaseService _db;
-
-  LocalExampleDatasource(this._db);
-
-  Future<List<Example>> getAll() async {
-    final db = await _db.database;
-    final maps = await db.query('examples');
-    return maps.map((m) => Example.fromMap(m)).toList();
-  }
-
-  Future<Example?> getById(String id) async {
-    final db = await _db.database;
-    final maps = await db.query('examples', where: 'id = ?', whereArgs: [id]);
-    return maps.isEmpty ? null : Example.fromMap(maps.first);
-  }
-
-  Future<void> insert(Example item) async {
-    final db = await _db.database;
-    await db.insert('examples', item.toMap());
-  }
-
-  Future<void> update(Example item) async {
-    final db = await _db.database;
-    await db.update('examples', item.toMap(), where: 'id = ?', whereArgs: [item.id]);
-  }
-
-  Future<void> delete(String id) async {
-    final db = await _db.database;
-    await db.delete('examples', where: 'id = ?', whereArgs: [id]);
-  }
-}
-```
-
-## Provider Pattern
-
-```dart
-class ExampleProvider extends ChangeNotifier {
-  final ExampleRepository _repository;
-  List<Example> _items = [];
-  bool _isLoading = false;
-
-  List<Example> get items => _items;
-  bool get isLoading => _isLoading;
-
-  ExampleProvider(this._repository);
-
-  Future<void> loadItems() async {
-    _isLoading = true;
-    notifyListeners();
-
-    _items = await _repository.getAll();
-
-    _isLoading = false;
-    notifyListeners();
-  }
-}
-```
+## Code Patterns
+@.claude/rules/coding-standards.md (Model, Datasource, Provider patterns)
 
 ## Key Files
 
@@ -199,10 +97,4 @@ class ExampleProvider extends ChangeNotifier {
 | Photo datasource | Store photo metadata |
 
 ## Quality Checklist
-
-- [ ] All fields properly typed (null-safety)
-- [ ] Validation logic in repository layer
-- [ ] Barrel exports updated
-- [ ] Provider registered in main.dart
-- [ ] Error handling for database operations
-- [ ] Uses `addPostFrameCallback` pattern for loading
+@.claude/rules/quality-checklist.md (Data Layer section)

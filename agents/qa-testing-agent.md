@@ -172,24 +172,4 @@ void dispose() {
 ```
 
 ## Defect Logging (REQUIRED)
-
-After testing, if you discover bugs, anti-patterns, or recurring issues, **log them to `.claude/memory/defects.md`**.
-
-### When to Log
-- Test failures caused by known anti-patterns
-- Async context issues (missing `mounted` check)
-- Dispose errors (async in dispose)
-- Sort/ordering issues in tests
-- Any bug pattern worth documenting for prevention
-
-### Defect Format
-```markdown
-### YYYY-MM-DD: [Brief Title]
-**Issue**: What went wrong
-**Root Cause**: Why it happened
-**Prevention**: How to avoid in future
-**Ref**: @path/to/file.dart:line
-```
-
-### How to Log
-Use the Edit tool to add new defects **above** the `<!-- Add new defects above this line -->` marker in `.claude/memory/defects.md`.
+@.claude/rules/defect-logging.md

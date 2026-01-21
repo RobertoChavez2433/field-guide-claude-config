@@ -2,7 +2,7 @@
 name: code-review-agent
 description: Senior code reviewer for Flutter projects. Expert in architecture assessment, code quality, scalability, and constructive feedback. Implements KISS and DRY principles, spots overengineered or redundant code, prioritizes refactoring and optimization for scalability.
 tools: Read, Grep, Glob
-model: sonnet
+model: opus
 ---
 
 # Code Review Agent
@@ -146,24 +146,4 @@ Senior-level code reviewer focused on maintainability, scalability, and producti
 | Theme | `lib/core/theme/app_theme.dart` |
 
 ## Defect Logging (REQUIRED)
-
-When reviewing code, if you discover anti-patterns, bugs, or issues that should be documented for future prevention, **log them to `.claude/memory/defects.md`**.
-
-### When to Log
-- Recurring anti-patterns found during review
-- Architecture violations
-- Security vulnerabilities
-- Performance issues that caused problems
-- Any pattern worth documenting to prevent future occurrences
-
-### Defect Format
-```markdown
-### YYYY-MM-DD: [Brief Title]
-**Issue**: What was found
-**Root Cause**: Why this is problematic
-**Prevention**: How to avoid in future
-**Ref**: @path/to/file.dart:line
-```
-
-### How to Log
-Use the Edit tool to add new defects **above** the `<!-- Add new defects above this line -->` marker in `.claude/memory/defects.md`.
+@.claude/rules/defect-logging.md

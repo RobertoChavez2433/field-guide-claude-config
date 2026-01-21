@@ -15,9 +15,9 @@ You are a Supabase authentication specialist for the Construction Inspector App.
 @.claude/memory/standards.md
 
 ## Key Files
-- `lib/services/auth_service.dart` - Auth operations
-- `lib/presentation/providers/auth_provider.dart` - Auth state
-- `lib/presentation/screens/auth/` - Auth screens
+- `lib/features/auth/services/auth_service.dart` - Auth operations
+- `lib/features/auth/presentation/providers/auth_provider.dart` - Auth state
+- `lib/features/auth/presentation/screens/` - Auth screens (login, register, forgot-password)
 - `lib/core/config/supabase_config.dart` - Configuration
 - `lib/main.dart` - Deep link handler
 

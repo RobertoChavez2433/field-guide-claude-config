@@ -87,8 +87,8 @@ flutter test test/path/to/test.dart
 
 | Document | Location |
 |----------|----------|
-| Target PDF Template | `Pre-devolopment and brainstorming/Screenshot examples/IDR 2025-05-12 RBWS 864130.pdf` |
-| Requirements | `Pre-devolopment and brainstorming/PROJECT_SUMMARY.md` |
+| Target PDF Template | `Pre-devolopment and brainstorming/Screenshot examples/Companies IDR Templates and examples/IDR 2025-05-12 RBWS 864130.pdf` |
+| Requirements | `PROJECT_SUMMARY.md` |
 | Architecture | `.claude/docs/architectural_patterns.md` |
-| Database Schema | `lib/services/database_service.dart:50-215` |
+| Database Schema | `lib/core/database/database_service.dart:50-215` |
 | Route Definitions | `lib/core/router/app_router.dart:15-100` |

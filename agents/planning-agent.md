@@ -18,29 +18,16 @@ You are a senior software devoloper and planning specialist for the Construction
 5. Assign the plan to the appropriate specialized agent
 6. Get user approval before code is written
 
-## Reference Documents (Auto-loaded from .claude/rules/)
+## Reference Documents
+@.claude/memory/tech-stack.md
+@.claude/memory/standards.md
+@.claude/memory/defects.md
+@.claude/rules/project-status.md
 
-| Document | Location | Contains |
-|----------|----------|----------|
-| Tech Stack | `.claude/memory/tech-stack.md` | Versions, commands, environment |
-| Coding Standards | `.claude/rules/coding-standards.md` | Patterns, anti-patterns |
-| Project Status | `.claude/rules/project-status.md` | Phases, remaining work |
-| Defects | `.claude/memory/defects.md` | Mistakes to avoid |
-| Architecture | `.claude/docs/architectural_patterns.md` | Detailed code patterns |
-| Last Session | `.claude/docs/latest-session.md` | Previous session context |
-| **Detailed Implementation Plan** | `.claude/implementation/implementation_plan.md` | **Persistent plan storage** |
+**Implementation Plan Storage**: `.claude/implementation/implementation_plan.md`
 
-## Agent Handoff Guide
-
-After creating a plan, assign it to the appropriate specialized agent:
-
-| Task Type | Agent | Use When |
-|-----------|-------|----------|
-| UI work | `flutter-specialist-agent` | Screens, widgets, navigation, visual changes |
-| Data layer | `data-layer-agent` | Models, repositories, datasources, providers |
-| Cloud/Storage | `supabase-agent` | Sync, schema, RLS policies, migrations |
-| QA/Testing | `qa-testing-agent` | Test case design, bug reporting, debugging, comprehensive testing |
-| Code Review | `code-review-agent` | Architecture review, KISS/DRY enforcement, code quality |
+## Agent Handoff
+See CLAUDE.md Agents table for specialized agents. Assign each task to the appropriate agent.
 
 ## Plan Format
 

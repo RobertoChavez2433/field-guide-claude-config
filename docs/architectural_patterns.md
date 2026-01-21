@@ -6,19 +6,24 @@ This document captures the architectural decisions and patterns used throughout 
 
 ## Layer Architecture
 
-The app follows a **Clean Architecture** approach with clear separation:
+The app follows a **Feature-First Clean Architecture** with clear separation:
 
 ```
 lib/
-├── core/       # Cross-cutting concerns (routing, theming)
-├── data/       # Data layer (models, repositories, datasources)
-├── presentation/ # UI layer (screens, widgets, providers)
-└── services/   # Infrastructure services (database, sync)
+├── core/        # Cross-cutting (router, theme, config, database)
+├── shared/      # Base classes, common utilities
+├── features/    # 12 feature modules (auth, entries, projects, etc.)
+│   └── [feature]/
+│       ├── data/         # Models, repositories, datasources
+│       └── presentation/ # Screens, widgets, providers
+├── data/        # LEGACY: barrel re-exports
+├── presentation/# LEGACY: barrel re-exports
+└── services/    # Cross-cutting services
 ```
 
 ## Model Pattern
 
-All data models follow a consistent structure. Reference: `lib/data/models/project.dart:1-65`
+All data models follow a consistent structure. Reference: `lib/features/projects/data/models/project.dart:1-65`
 
 ### Standard Model Template
 
@@ -29,7 +34,7 @@ All data models follow a consistent structure. Reference: `lib/data/models/proje
 5. **toMap()** for SQLite/JSON serialization
 6. **fromMap()** factory for deserialization
 
-Example from `lib/data/models/contractor.dart:3-6`:
+Example from `lib/features/contractors/data/models/contractor.dart:3-6`:
 - Enums defined at file top (e.g., `ContractorType`)
 - Helper getters for enum checks (e.g., `isPrime`, `isSub`)
 
@@ -40,7 +45,7 @@ Example from `lib/data/models/contractor.dart:3-6`:
 
 ## Database Pattern
 
-Single SQLite database with foreign key relationships. Reference: `lib/services/database_service.dart:1-180`
+Single SQLite database with foreign key relationships. Reference: `lib/core/database/database_service.dart:1-180`
 
 ### Table Naming Convention
 
@@ -53,7 +58,7 @@ Indexes on:
 - All foreign key columns
 - Frequently filtered columns (e.g., `date`)
 
-Reference: `lib/services/database_service.dart:155-166`
+Reference: `lib/core/database/database_service.dart:155-166`
 
 ## Navigation Pattern
 
@@ -73,7 +78,7 @@ Uses **go_router** with shell routes for persistent bottom nav. Reference: `lib/
 
 ### Screen Structure
 
-Standard screen template from `lib/presentation/screens/home/home_screen.dart`:
+Standard screen template from `lib/features/entries/presentation/screens/home_screen.dart`:
 
 1. `StatefulWidget` for screens with local state
 2. `initState()` for initialization
@@ -88,7 +93,7 @@ List items rendered as tappable cards with:
 - Title and subtitle
 - Trailing status indicator or action button
 
-Reference: `lib/presentation/screens/project/project_list_screen.dart:35-85`
+Reference: `lib/features/projects/presentation/screens/project_list_screen.dart:35-85`
 
 ### Split View / Master-Detail Pattern
 
@@ -109,14 +114,14 @@ Used in Calendar screen for entry list + report preview:
 └─────────────────────────────────────────────────┘
 ```
 
-Implementation pattern (Reference: `lib/presentation/screens/home/home_screen.dart:395-410`):
+Implementation pattern (Reference: `lib/features/entries/presentation/screens/home_screen.dart:395-410`):
 - Track `_selectedEntryId` state for highlighting
 - Left panel: Fixed-width `SizedBox` with `ListView.builder`
 - Right panel: `Expanded` widget with scrollable content
 - Selection state updates preview via `setState()`
 - Edit buttons pass section identifier as query parameter
 
-Reference: `lib/presentation/screens/home/home_screen.dart:326-760`
+Reference: `lib/features/entries/presentation/screens/home_screen.dart:326-760`
 
 ### Form Organization
 
@@ -125,7 +130,7 @@ Multi-step forms use Flutter's `Stepper` widget with:
 - Custom controls builder for navigation buttons
 - Form state preserved across steps
 
-Reference: `lib/presentation/screens/entry_wizard/entry_wizard_screen.dart:80-95`
+Reference: `lib/features/entries/presentation/screens/entry_wizard_screen.dart:80-95`
 
 ## Theming Pattern
 
@@ -162,7 +167,7 @@ void initState() {
 }
 ```
 
-This prevents "setState during build" errors. Reference: `lib/presentation/screens/home/home_screen.dart:32-35`
+This prevents "setState during build" errors. Reference: `lib/features/entries/presentation/screens/home_screen.dart:32-35`
 
 ### Clickable Stat Cards Pattern
 
@@ -180,7 +185,7 @@ Widget _buildStatCard(String label, String value, IconData icon, Color color, {V
 }
 ```
 
-Reference: `lib/presentation/screens/dashboard/project_dashboard_screen.dart:265-295`
+Reference: `lib/features/dashboard/presentation/screens/project_dashboard_screen.dart:265-295`
 
 ## Offline-First Pattern
 
@@ -191,7 +196,7 @@ All syncable entities include `syncStatus` field:
 - `synced` - In sync with server
 - `error` - Sync failed
 
-Reference: `lib/data/models/daily_entry.dart:26`
+Reference: `lib/features/entries/data/models/daily_entry.dart:26`
 
 ### Photo Storage
 
@@ -199,13 +204,13 @@ Photos stored locally with:
 - `filePath` - Local device path
 - `remotePath` - Cloud storage URL (null until synced)
 
-Reference: `lib/data/models/photo.dart:1-65`
+Reference: `lib/features/photos/data/models/photo.dart:1-65`
 
 ## Barrel Exports
 
 Group related exports in a single file for cleaner imports.
 
-Reference: `lib/data/models/models.dart` exports all model files.
+Reference: `lib/data/models/models.dart` (legacy barrel export for backward compatibility).
 
 ## Enum Handling
 
@@ -219,4 +224,4 @@ Enums serialized/deserialized using `.name` and `.values.byName()`:
 type: ContractorType.values.byName(map['type'] as String)
 ```
 
-Reference: `lib/data/models/contractor.dart:47-53`
+Reference: `lib/features/contractors/data/models/contractor.dart:47-53`
