@@ -24,6 +24,17 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-21 (Session 31)
+- Executed name change "Construction Inspector" → "Field Guide" using 2 parallel Flutter Specialist agents
+- 20 files modified: Android, iOS, Windows, Web configs + Dart UI files + docs
+- Package name `construction_inspector` preserved (zero breaking changes)
+- Investigated 17 failing Patrol tests using 2 parallel Explore agents
+- QA agent validated findings: All failures are test-side issues (NOT app defects)
+- Planning agent created comprehensive 5-phase fix plan (579 lines)
+- Fix plan targets 95% pass rate (19/20 tests) in 9-13 hours
+- New file: `.claude/implementation/patrol_test_fix_plan_v2.md`
+- Key finding: App code quality is excellent, tests need instrumentation fixes
+
 ### 2026-01-21 (Session 30)
 - Fixed 3 critical/high bugs from code review using 2 parallel QA agents
 - Entry Wizard race condition: Added re-check after await in 2 locations

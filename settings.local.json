@@ -56,7 +56,8 @@
       "Bash(flutter clean:*)",
       "Bash(flutter emulators:*)",
       "Bash(adb devices:*)",
-      "Bash(patrol --version:*)"
+      "Bash(patrol --version:*)",
+      "Bash(dart analyze:*)"
     ]
   }
 }

@@ -1,39 +1,58 @@
 # Session State
 
 ## Current Phase
-**Phase**: Testing & Quality Verification + App Rename Planning
-**Subphase**: Bug Fixes Complete, Patrol Tests Running on Device
+**Phase**: Name Change Complete + Patrol Test Fix Plan Ready
+**Subphase**: Ready for Patrol Test Fixes (5-phase plan created)
 **Last Updated**: 2026-01-21
 
 ## Last Session Work
-- Fixed 3 critical/high bugs from code review (race condition, mock methods, import)
-- Ran Patrol tests on Samsung Galaxy S21+ - 3/20 passing, 17 failing
-- Fixed invalid `rethrow` in catchError callback (sync_service.dart)
-- Committed and pushed all fixes
+- Executed name change "Construction Inspector" → "Field Guide" (20 files)
+- Investigated all 17 failing Patrol tests with 2 Explore agents
+- QA validated findings: All 17 failures are test-side issues (NOT app defects)
+- Created comprehensive Patrol fix plan v2 (5 phases, 9-13 hours total)
 
 ## Decisions Made
-1. Name change will use Strategy 1 (Display Names Only) - non-breaking
-2. Package name `construction_inspector` will remain unchanged for stability
-3. Patrol tests now build and run - failures are test logic issues, not infrastructure
+1. Name change executed using Strategy 1 (Display Names Only) - zero breaking changes
+2. Package name `construction_inspector` remains unchanged for stability
+3. All Patrol test failures confirmed as test instrumentation issues, not app bugs
+4. 5-phase fix plan created targeting 95% pass rate (19/20 tests)
 
 ## Open Questions
-1. Investigate 17 failing Patrol tests (auth flow, camera, contractors)
-2. Timeline for deploying name change
+1. Timeline for executing Patrol test fix plan
+2. Prioritize Phase 1+2 (quick wins + screen Keys) for fastest improvement
 
 ## Known Issues (to fix next session)
-1. **HIGH**: 17 Patrol test failures - likely widget key/selector issues
-2. **MEDIUM**: Hardcoded delays in Patrol tests, test isolation issues
-3. **MEDIUM**: Hard-coded inspector name "Robert Sebastian" in settings
-4. **LOW**: Test process crash after contractors flow (memory/resource)
+1. **HIGH**: 17 Patrol test failures - comprehensive fix plan ready
+2. **MEDIUM**: Hardcoded inspector name "Robert Sebastian" in settings
+3. **LOW**: Test process crash after contractors flow (addressed in Phase 4)
 
 ## Next Steps
-1. Investigate failing Patrol tests (auth flow: 7, camera: 3, contractors: 4)
-2. Execute name change plan (Strategy 1)
-3. Run full unit test suite to verify bug fixes
+1. Execute Patrol fix Phase 1: Quick wins (icon, Key name, assertion) - 3 tests fixed
+2. Execute Patrol fix Phase 2: Screen Key additions - 7 tests fixed
+3. Continue through Phases 3-5 for 95% pass rate
 
 ---
 
 ## Session Log
+
+### 2026-01-21 (Session 31): Name Change + Patrol Investigation + Fix Plan
+- **Agents Used**: 6 (2 Explore + 2 Flutter Specialist + 1 QA + 1 Planning)
+- **Name Change Executed**:
+  - 20 files modified across all platforms (Android, iOS, Windows, Web)
+  - Display text changed: "Construction Inspector" → "Field Guide"
+  - Package name preserved: `construction_inspector`
+  - Zero breaking changes
+- **Patrol Test Investigation**:
+  - All 17 failures diagnosed with root causes
+  - QA validated: 95% confidence, all test-side issues
+  - App code quality rated excellent
+- **Fix Plan Created**:
+  - `.claude/implementation/patrol_test_fix_plan_v2.md` (579 lines)
+  - 5 phases: Quick wins, Screen Keys, Test patterns, Infrastructure, Verification
+  - Expected: 15% → 95% pass rate (19/20 tests)
+  - Effort: 9-13 hours total
+- **Files Changed**: 20 modified (name change)
+- **New Files**: patrol_test_fix_plan_v2.md
 
 ### 2026-01-21 (Session 30): Bug Fixes + Patrol Device Testing
 - **Agents Used**: 2 QA (parallel)
@@ -50,45 +69,6 @@
   - Failing: Auth validation (7), Camera permissions (3), Contractors CRUD (4)
 - **Commit**: ebc70d5 - fix: Resolve race condition and mock method mismatches
 - **Files Changed**: 5 modified (entry_wizard_screen, sync_service, mock_repositories, test_sorting, test_bundle)
-
-### 2026-01-21 (Session 29): Test Fixes + Name Change Plan + Code Reviews
-- **Agents Used**: 3 QA (parallel) + 1 Planning + 2 Code Review (parallel)
-- **QA Findings**:
-  - 53 test failures were stale cache, not actual code bugs
-  - `flutter clean && flutter pub get` resolves most issues
-  - Database tests have isolation issues (shared state)
-- **Name Change Plan Created**:
-  - Strategy 1 (Display Names Only) - 30 files, zero breaking changes
-  - Full documentation: `.claude/implementation/name_change_plan.md`
-- **Code Review Scores**:
-  - Test Infrastructure: 7.5/10 (critical import bug found)
-  - App Changes: 8.5/10 (race condition found)
-- **Critical Issue**: test_sorting.dart line 1 uses wrong package name
-- **High Issues**: MockProjectRepository missing methods, Entry Wizard race condition
-- **Files Changed**: 5 modified (sync_service, tests)
-
-### 2026-01-21 (Session 28): Phase 3, 4, 5 Implementation
-- **Agents Used**: 6 parallel (2 per phase) + QA verification + 2 code reviews
-- **Phase 3 Complete**:
-  - Created: test/helpers/mocks/ (mock_repositories, mock_providers, mock_services, mocks.dart)
-  - Created: test/helpers/test_sorting.dart
-  - Created: integration_test/helpers/ (auth_test_helper, navigation_helper, README)
-  - Created: patch_seed_data.py
-- **Phase 4 Complete**:
-  - Created: integration_test/patrol/test_config.dart (PatrolTestConfig)
-  - Modified 7 Patrol test files (replaced delays, Key finders)
-  - Fixed auth_flow, entry_management, photo_capture, camera_permission tests
-- **Phase 5 Complete**:
-  - Created: 14 new test files with 90+ tests
-  - Auth: auth_provider_test.dart (14 tests), auth_service_test.dart (15 tests)
-  - Sync: sync_provider_test.dart (19 tests), sync_service_test.dart (18 tests)
-  - Database: database_service_test.dart (25 tests)
-  - Contractors: 3 repository tests (77 tests), 2 model tests (32 tests)
-  - Quantities: entry_quantity_test.dart (18 tests)
-  - Patrol flows: contractors_flow, quantities_flow, settings_flow (15 tests)
-- **QA Results**: 578 passed, 53 failed (91.6%)
-- **Code Review Scores**: 7/10 (Phase 3&4), 8.5/10 (Phase 5)
-- **Files Changed**: 8 modified, 25+ created
 
 ### Previous Sessions
 - See .claude/logs/session-log.md for full history
