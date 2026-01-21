@@ -42,7 +42,12 @@
       "WebFetch(domain:developer.aashtoware.org)",
       "WebFetch(domain:www.aashtoware.org)",
       "Bash(flutter doctor:*)",
-      "Bash(git -C .claude diff --stat HEAD)"
+      "Bash(git -C .claude diff --stat HEAD)",
+      "Bash(patrol doctor)",
+      "Bash(patrol test:*)",
+      "Bash(flutter pub global activate:*)",
+      "Bash(dart run patrol_cli test:*)",
+      "Bash(powershell:*)"
     ]
   }
 }

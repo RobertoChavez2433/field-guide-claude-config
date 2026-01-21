@@ -24,6 +24,14 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-20 (Session 12)
+- Launched 8 parallel agents (3 data-layer, 2 QA, 3 code-review)
+- Data layer: updatedAt on 9 models, PhotoRepository RepositoryResult, migration safety
+- Golden tests: 29 tests, 7 files, 28 baseline images for themes/widgets
+- Patrol tests: 15 native tests for permissions and photo capture
+- Code reviews: All 8.5/10, no critical issues
+- Tests: 392 passing (363 unit + 29 golden)
+
 ### 2026-01-20 (Session 11)
 - Created session-log.md system for historical records (not agent-loaded)
 - Streamlined project-status.md: 66 → 35 lines (47% reduction)

@@ -1,48 +1,58 @@
 # Session State
 
 ## Current Phase
-**Phase**: Rules Files Optimization Complete
-**Subphase**: Session log system implemented
+**Phase**: Data Layer Migration & Testing Enhancement Complete
+**Subphase**: Import migrations, golden tests, patrol tests
 **Last Updated**: 2026-01-20
 
 ## Last Session Work
-- Created .claude/logs/session-log.md for historical records (not agent-loaded)
-- Streamlined project-status.md: 66 → 35 lines (47% reduction)
-- Streamlined coding-standards.md: 130 → 114 lines (12% reduction)
-- Updated /end-session skill to append to session log
-- Moved phase history and seed data out of agent context
+- Launched 10 parallel agents (3 data-layer, 4 QA, 3 code-review)
+- Migrated calendar_format_provider to features/entries
+- Updated sync_service.dart imports to feature-specific
+- Migrated test file imports (photo_service, photo_repository)
+- Created 52 new golden tests (8 test files)
+- Created 54 new patrol tests (5 test files)
+- Created CalendarFormatProvider unit tests (33 tests)
+- Code reviews scored 9/10 across all agents
 
 ## Decisions Made
-1. Create session-log.md NOT referenced by agents (saves context tokens)
-2. Historical data available when needed, not loaded by default
-3. /end-session skill appends session summaries to log
+1. Calendar format provider moved to features/entries (uses date/calendar)
+2. Legacy barrel file re-exports with deprecation notice
+3. Remote datasources already in correct locations - only sync_service imports updated
+4. Golden tests use custom static painters to avoid pumpAndSettle timeouts
+5. Patrol tests use defensive coding with conditional navigation
 
 ## Open Questions
 - None
 
 ## Next Steps
-1. Fix 5 critical issues from defects.md
-2. Add widget tests (Priority 1)
-3. Implement Option B integration tests
-4. Migrate deprecated barrel imports
+1. Generate golden test baselines: `flutter test --update-goldens test/golden/`
+2. Fix copyWithNull tests (pre-existing issue in project/location repos)
+3. Run Patrol tests on real device
+4. Add copyWithNull method to Project and Location models (or remove tests)
 
 ---
 
 ## Session Log
 
-### 2026-01-20 (Session 11): Rules Files Optimization
-- **Created**: .claude/logs/session-log.md (historical record, not agent-loaded)
-- **Modified**: project-status.md (66 → 35 lines), coding-standards.md (130 → 114 lines)
-- **Updated**: end-session.md skill to append to session log
-- **Savings**: ~47 lines (~600 tokens) from agent context
-- **Pushed**: Commit ceb1ce3 to field-guide-claude-config repo
+### 2026-01-20 (Session 14): Data Layer Migration & Testing Enhancement
+- **Agents**: 10 parallel (3 data-layer, 4 QA, 3 code-review)
+- **Migrations**: calendar_format_provider to features/entries, sync_service imports
+- **Golden Tests**: 52 new tests in 8 files (states, components)
+- **Patrol Tests**: 54 new tests in 5 files (auth, projects, entries, navigation, offline)
+- **Unit Tests**: 33 CalendarFormatProvider tests
+- **Code Reviews**: All 9/10, no critical issues
+- **Tests**: 479 passing, 2 pre-existing failures (copyWithNull)
 
-### 2026-01-20 (Session 10): Claude Config Efficiency Refactoring
-- **Created**: 4 shared files (defect-logging.md, sql-cookbook.md, pdf-workflows.md, quality-checklist.md)
-- **Modified**: 8 agents with @references
-- **Rewrote**: CLAUDE.md (142 → 69 lines)
-- **Fixed**: 32 broken paths across 3 files
-- **Pushed**: Commit 83b80bb to field-guide-claude-config repo
+### 2026-01-20 (Session 13): Security & Safety Improvements
+- **Agents**: 6 parallel (1 data-layer, 1 supabase, 2 flutter, 1 QA, 1 code-review)
+- **Security**: Supabase credentials via environment variables, offline-only fallback
+- **Provider Safety**: 6 providers fixed with firstOrNull pattern
+- **Import Migration**: 21 files migrated to feature-specific imports
+- **UI Keys**: 13 widget keys added for Patrol tests
+- **QA**: Passed, Code Review: 9/10
+- **Tests**: 394 passing
+- **Commit**: 3c92904
 
 ### Previous Sessions
 - See .claude/logs/session-log.md for full history
