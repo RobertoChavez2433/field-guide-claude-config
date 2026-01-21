@@ -99,31 +99,16 @@ Use `AppTheme` constants, not hardcoded colors:
 
 ## File Organization
 
+See @.claude/CLAUDE.md for complete project structure.
+
+**Feature module pattern**:
 ```
-lib/
-├── core/              # Router, theme, config, database
-├── shared/            # Base classes, common utilities
-├── features/          # Feature-first modules
-│   └── [feature]/
-│       ├── data/
-│       │   ├── models/       # Entity classes
-│       │   ├── repositories/ # Business logic
-│       │   └── datasources/  # CRUD (local/ and remote/)
-│       └── presentation/
-│           ├── providers/    # State management
-│           ├── screens/      # Full pages
-│           └── widgets/      # Reusable components
-├── data/              # LEGACY: Backward-compatible barrel re-exports
-├── presentation/      # LEGACY: Backward-compatible barrel re-exports
-└── services/          # Cross-cutting services
+features/[feature]/
+├── data/        # Models, repositories, datasources
+└── presentation/ # Providers, screens, widgets
 ```
 
 ## Barrel Exports
 
-**Feature barrels** (preferred):
-- `lib/features/[feature]/data/data.dart`
-- `lib/features/[feature]/presentation/presentation.dart`
-
-**Legacy barrels** (backward-compat):
-- `lib/data/models/models.dart`
-- `lib/presentation/providers/providers.dart`
+**Preferred**: `lib/features/[feature]/data/data.dart`, `.../presentation/presentation.dart`
+**Legacy**: `lib/data/models/models.dart`, `lib/presentation/providers/providers.dart`

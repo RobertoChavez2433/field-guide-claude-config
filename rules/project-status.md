@@ -1,65 +1,35 @@
 # Project Status
 
-## Current Phase
+## Current State
+- **Phase**: Feature-First Reorganization COMPLETE
+- **Tests**: 363 passing
+- **Analyzer**: 0 errors, 10 info warnings (expected deprecations)
 
-**Feature-First Reorganization COMPLETE.** All 12 features migrated to feature-first architecture. Core features implemented including PDF, UI redesign, Supabase auth, and offline-first sync.
+## Capabilities
+- 12 features: auth, projects, locations, contractors, quantities, entries, photos, pdf, sync, dashboard, settings, weather
+- PDF export with template filling
+- Supabase auth & offline-first sync
+- 3 theme modes (Light/Dark/High Contrast)
 
-## Completed Phases
+## Active Work
 
-| Phase | Summary |
-|-------|---------|
-| 1-4 | Core screens (Dashboard, Calendar, Report, Quantities, Entry Wizard) |
-| 4.5 | UI Polish - Theme colors, inline editing, silent auto-save |
-| 5 | PDF Export, Weather API, Photo Capture with GPS |
-| 6 | Cloud Sync - Supabase integration, offline-first, sync queue |
-| 7 | Photo Performance (isolates), Equipment Management, Dynamic Personnel Types |
-| 8 | Code Quality - Analyzer fixes, async safety, performance indexes |
-| 9 | Test Coverage (264 tests), bug fixes, photo naming/caption system |
-| 10 | PDF Template Filling - explicit field mapping, debug PDF tool, comprehensive pdf-agent |
-| 10.5 | UI Redesign - Modern theme system, 3 themes (Light/Dark/High Contrast), page transitions |
-| 11 | Authentication - Supabase email/password auth, login/register/forgot-password screens |
-| 12 | **Feature-First Reorganization** - Migrated all code to feature-first architecture (12 features: auth, projects, locations, contractors, quantities, entries, photos, pdf, sync, dashboard, settings, weather) |
+See `.claude/plans/_state.md` for current session focus.
 
-## Seed Data
+## Pending Tasks
 
-- **Project**: Springfield DWSRF Water System Improvements (#864130)
-- **Bid Items**: 131 items (~$7.8M total)
-- **Daily Entries**: 270 entries (July-December 2024)
-- **Locations**: 24 locations
-- **Contractors**: 17 contractors with equipment
+### Code Quality
+- Extract mega-screen dialogs (entry_wizard, report)
+- DRY refactoring in data layer
+- Migrate deprecated barrel imports
 
-## Remaining Work (Priority Order)
+### Sync Service
+- Run supabase_schema_v3.sql (personnel_types tables)
+- Run supabase_schema_v4_rls.sql (RLS policies)
 
-### IMMEDIATE (Before Merge)
-1. **Run flutter analyze** - Verify no new errors introduced
-2. **Run flutter test** - Ensure all 278 tests still pass
-3. **Review git diff** - Sanity check all changes
-4. **Commit and PR** - Merge feature-first reorganization to main
+### Future Features
+- AASHTOWare Integration (lib/features/aashtoware/)
+- Separate Photos/Attachments in report screen
 
-### CODE QUALITY (Optional Enhancements)
-1. **Extract mega-screen dialogs** - Split entry_wizard and report screens (see PRESENTATION_REVIEW.md)
-2. **DRY refactoring** - Consolidate duplicate patterns in data layer (see DATA_LAYER_REVIEW_REPORT.md)
-3. **Mark old paths as @deprecated** - Add deprecation notices to lib/data/ and lib/presentation/ barrels
+## Historical Data
 
-### VERIFICATION (High Priority)
-1. **Test auth flow** - Login, register, password reset
-2. **Test 3 theme modes** - Light, Dark, High Contrast visually
-3. **Test PDF features** - Import, photo-to-PDF, folder export
-
-### SYNC SERVICE POLISH
-1. **Run supabase/supabase_schema_v3.sql** on Supabase to add personnel_types tables
-2. **Run supabase/supabase_schema_v4_rls.sql** to enable RLS and fix security warnings
-3. **Test full sync** after schema updates
-
-### FUTURE FEATURES
-1. **AASHTOWare Integration** - Can now be implemented as a new feature in lib/features/aashtware/
-2. **Separate Photos/Attachments sections** in report screen
-
-## Repositories
-
-| Repo | Purpose | URL |
-|------|---------|-----|
-| **App Code** | Flutter codebase | https://github.com/RobertoChavez2433/construction-inspector-tracking-app |
-| **Claude Config** | `.claude/` folder | https://github.com/RobertoChavez2433/field-guide-claude-config |
-
-Note: `.claude/` folder and `CLAUDE.md` are gitignored from app repo, tracked in config repo
+Session log and phase history: `.claude/logs/session-log.md` (not agent-referenced)

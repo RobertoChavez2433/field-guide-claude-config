@@ -90,6 +90,14 @@ git diff --stat
 **Prevention**: [How to avoid in future]
 ```
 
+**Append to `.claude/logs/session-log.md`** (historical record, not loaded by agents):
+```markdown
+### YYYY-MM-DD (Session N)
+- [Summary of main work done]
+- [Key files modified]
+- [Notable decisions or changes]
+```
+
 ### 5. Commit Changes
 ```bash
 git add -A
