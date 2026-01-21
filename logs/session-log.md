@@ -24,6 +24,16 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-21 (Session 30)
+- Fixed 3 critical/high bugs from code review using 2 parallel QA agents
+- Entry Wizard race condition: Added re-check after await in 2 locations
+- MockProjectRepository: Added `getActiveProjects()` and `update()` method aliases
+- SyncService: Fixed invalid `rethrow` in catchError callback → `throw error`
+- Ran Patrol tests on Samsung Galaxy S21+ (Android 13): 3/20 passing (15%)
+- Passing tests: App launch, background/foreground, login screen display
+- Commit: ebc70d5 - fix: Resolve race condition and mock method mismatches
+- Files: entry_wizard_screen.dart, sync_service.dart, mock_repositories.dart
+
 ### 2026-01-21 (Session 29)
 - 3 QA agents investigated test failures - mostly stale cache, not actual bugs
 - 1 planning agent created 430-line name change plan (Construction Inspector → Field Guide)

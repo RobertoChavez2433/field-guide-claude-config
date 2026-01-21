@@ -251,4 +251,18 @@ Track Claude's mistakes to prevent repetition. Read before every session.
 **Fix Needed**: Add re-check after await: `if (_createdEntryId != null) return;`
 **Ref**: @lib/features/entries/presentation/screens/entry_wizard_screen.dart:136-152
 
+### 2026-01-21: Invalid rethrow in catchError Callback [FIXED]
+**Issue**: Patrol build failed with "Error: 'rethrow' can only be used in catch clauses" at lib/services/sync_service.dart:157
+**Root Cause**: Used `rethrow` statement inside a `.catchError()` callback. `rethrow` is only valid in `catch` blocks, not in error handler callbacks
+**Why It Fails**: Dart's `rethrow` keyword re-throws the current exception from the nearest enclosing catch clause. In a callback like `.catchError((error) { ... })`, there is no enclosing catch clause - the error is passed as a parameter
+**Prevention**:
+- In `catch` blocks: use `rethrow` to re-throw the caught exception
+- In `.catchError()` callbacks: use `throw error` to throw the error parameter
+- In `onError` callbacks: use `throw error` to throw the error parameter
+**Fix Applied**:
+- Changed line 157 from `rethrow;` to `throw error;`
+**Files Fixed**:
+- lib/services/sync_service.dart (line 157)
+**Ref**: @lib/services/sync_service.dart:151-159
+
 <!-- Add new defects above this line -->
