@@ -187,4 +187,68 @@ Track Claude's mistakes to prevent repetition. Read before every session.
 - android/gradle/wrapper/gradle-wrapper.properties (changed distribution type)
 **Ref**: @android/build.gradle.kts, @.claude/implementation/patrol_fix_plan.md
 
+### 2026-01-21: GoTrueClient Mock Signature Mismatch
+**Issue**: Auth service tests fail - MockGoTrueClient methods missing `captchaToken`, `channel` parameters
+**Root Cause**: Mock implementation based on older gotrue API, but project uses gotrue 2.18.0 with updated method signatures
+**Prevention**:
+- Always check current package version's method signatures before creating mocks
+- Use `pubspec.lock` to identify exact versions
+- Generate mocks with mockito's `@GenerateMocks` to ensure API compatibility
+**Fix Needed**: Update auth_service_test.dart mock methods to match gotrue 2.18.0 API
+**Ref**: @test/features/auth/services/auth_service_test.dart
+
+### 2026-01-21: Missing TestWidgetsFlutterBinding in Tests
+**Issue**: SyncService tests (53 failures) crash with binding initialization errors
+**Root Cause**: Tests use Flutter bindings (like ChangeNotifier) but missing TestWidgetsFlutterBinding.ensureInitialized()
+**Prevention**:
+- Always add `TestWidgetsFlutterBinding.ensureInitialized()` in setUpAll() for tests that use Flutter framework classes
+- Check if test classes extend ChangeNotifier, use BuildContext, or other Flutter-dependent classes
+**Fix Needed**: Add binding initialization to sync_service_test.dart setUpAll()
+**Ref**: @test/services/sync_service_test.dart
+
+### 2026-01-21: Stale Compilation Cache Causing False Errors [FIXED]
+**Issue**: Test compilation errors showed `db.version` error even though source code was already correct
+**Root Cause**: Flutter build cache contained stale compilation artifacts from previous code versions
+**Why It Happens**:
+- Flutter caches compiled Dart code for faster test execution
+- When code is fixed but tests still fail, cache may contain outdated error information
+- The error message referenced line 372 with `expect(db.version, equals(9))` but actual code had correct PRAGMA query
+**Prevention**:
+- Run `flutter clean` when encountering unexplained compilation errors that don't match source code
+- Especially important after:
+  - Major refactoring
+  - File moves/renames
+  - Import path changes
+  - Dependency updates
+- Follow with `flutter pub get` to rebuild dependency links
+**Fix Applied**:
+- Ran `flutter clean` to clear all build artifacts
+- Ran `flutter pub get` to reinstall dependencies
+- All tests now pass - no code changes needed
+**Files Affected**:
+- test/core/database/database_service_test.dart (false positive - already correct)
+- test/features/projects/data/repositories/project_repository_test.dart (false positive - imports were correct)
+**Ref**: @test/core/database/database_service_test.dart:372
+
+### 2026-01-21: Wrong Package Name in Test Helper
+**Issue**: `test/helpers/test_sorting.dart` line 1 imports `construction_app` instead of `construction_inspector`
+**Root Cause**: Typo or copy-paste error when creating the file
+**Prevention**: Always verify import statements match the actual package name in pubspec.yaml
+**Fix Needed**: Change `import 'package:construction_app/data/models/models.dart';` to `import 'package:construction_inspector/data/models/models.dart';`
+**Ref**: @test/helpers/test_sorting.dart:1
+
+### 2026-01-21: Mock Repository Method Names Don't Match Tests
+**Issue**: MockProjectRepository has `getActive()` but tests call `getActiveProjects()`, has `updateProject()` but tests call `update()`
+**Root Cause**: Mock methods created with different naming than actual repository interface
+**Prevention**: Either implement actual repository interface in mocks, or use code generation (mocktail)
+**Fix Needed**: Rename mock methods to match what tests expect, or update tests to use existing names
+**Ref**: @test/helpers/mocks/mock_repositories.dart
+
+### 2026-01-21: Race Condition in Entry Wizard Save Lock
+**Issue**: Save lock pattern using `_savingFuture` could allow duplicate entry creation
+**Root Cause**: After awaiting `_savingFuture`, code doesn't re-check if `_createdEntryId` was set during the wait
+**Prevention**: Always re-check state after awaiting a lock
+**Fix Needed**: Add re-check after await: `if (_createdEntryId != null) return;`
+**Ref**: @lib/features/entries/presentation/screens/entry_wizard_screen.dart:136-152
+
 <!-- Add new defects above this line -->

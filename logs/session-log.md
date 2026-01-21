@@ -24,6 +24,35 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-21 (Session 29)
+- 3 QA agents investigated test failures - mostly stale cache, not actual bugs
+- 1 planning agent created 430-line name change plan (Construction Inspector → Field Guide)
+- 2 code review agents reviewed all uncommitted code (7.5/10 test, 8.5/10 app)
+- CRITICAL bug found: test_sorting.dart line 1 uses wrong package name
+- HIGH bugs found: MockProjectRepository missing methods, Entry Wizard race condition
+- Created `.claude/implementation/name_change_plan.md` with Strategy 1 (display names only)
+- Decision: Keep package name `construction_inspector` for stability
+
+### 2026-01-21 (Session 28)
+- Executed Phase 3, 4, 5 of Patrol Test Fix Plan using 6 parallel agents (2 per phase)
+- Phase 3: Created shared mocks in test/helpers/mocks/, test sorting, auth/navigation helpers
+- Phase 4: Replaced fixed delays with waitUntilVisible, text finders with Key finders
+- Phase 5: Created 90+ new unit tests (auth, sync, database, contractors, quantities)
+- Created 15 new Patrol flow tests (contractors, quantities, settings)
+- QA verification: 578 passed, 53 failed (91.6% pass rate)
+- Code reviews: 7/10 (Phase 3&4), 8.5/10 (Phase 5)
+- 25+ new test files, 8 modified Patrol test files
+- Known issues: Auth mock signatures, SyncService binding, db.version getter
+
+### 2026-01-21 (Session 27)
+- Executed Phase 1 & 2 of Patrol Test Fix Plan using 6 parallel agents
+- Phase 1: Deleted 4 redundant test files (1,748 lines), created ModelTestSuite<T> utility
+- Phase 2: Added 34 Key widgets across 10 screens for Patrol testing
+- Fixed critical analyzer errors in home_screen.dart (TableCalendar API)
+- Fixed key naming inconsistency in settings_screen.dart
+- QA verification: 481 tests passing, code review: 8/10
+- 15 files changed: 10 modified, 4 deleted, 1 created
+
 ### 2026-01-21 (Session 26)
 - Launched 4 parallel research/QA agents to analyze test infrastructure
 - Created comprehensive patrol_test_fix_plan.md with 5 implementation phases

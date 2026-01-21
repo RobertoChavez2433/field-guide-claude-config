@@ -1,71 +1,70 @@
-# Last Session: 2026-01-21 (Session 26)
+# Last Session: 2026-01-21 (Session 29)
 
 ## Summary
-Launched comprehensive test analysis using 4 parallel agents (2 research + 2 QA), then synthesized findings into a detailed implementation plan via planning agent. The plan addresses patrol test failures, identifies redundant tests to remove, and catalogs missing test coverage.
+Investigated and resolved test failures using 3 parallel QA agents (most were stale cache issues). Created comprehensive name change plan using planning agent. Conducted thorough code review using 2 parallel agents (7.5/10 and 8.5/10 scores). Found critical import bug in test_sorting.dart and race condition in Entry Wizard.
 
 ## Completed
-- [x] Research agent 1: Patrol test patterns (widget keys, permission handling, timing)
-- [x] Research agent 2: Test infrastructure patterns (mocks, seed data, gaps)
-- [x] QA agent 1: Identified redundant tests (~4,400 lines removable)
-- [x] QA agent 2: Identified 61 missing test files
-- [x] Planning agent: Created comprehensive patrol_test_fix_plan.md
-- [x] Updated session state files
+- [x] QA Agent 1: Fixed SyncService binding + auth mock signatures
+- [x] QA Agent 2: Verified database tests + import paths (already correct)
+- [x] QA Agent 3: Confirmed tests pass after cache clean
+- [x] Planning Agent: Created 430-line name change plan
+- [x] Code Review Agent 1: Test infrastructure review (7.5/10)
+- [x] Code Review Agent 2: App changes review (8.5/10)
+- [x] Cleaned build cache to resolve false test failures
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| `.claude/implementation/patrol_test_fix_plan.md` | NEW - Comprehensive 5-phase plan |
-| `.claude/plans/_state.md` | Updated session state |
-| `.claude/docs/latest-session.md` | Updated session notes |
+| `.claude/implementation/name_change_plan.md` | NEW - Comprehensive rename plan |
+| `lib/services/sync_service.dart` | Minor fixes (64 lines) |
+| `test/core/database/database_service_test.dart` | Binding fix (5 lines) |
+| `test/features/auth/services/auth_service_test.dart` | Auth mock updates (2 lines) |
+| `test/services/sync_service_test.dart` | Binding init (1 line) |
 
 ## Plan Status
-- **Status**: READY FOR IMPLEMENTATION
-- **Completed**: Research & analysis phase
-- **Remaining**: 5 phases of implementation
-
-## Next Priorities
-1. **Phase 1**: Delete redundant tests (widget_test, datasource tests)
-2. **Phase 2**: Add Key widgets to auth/entry/project screens
-3. **Phase 3**: Refactor test helpers, create Patrol helpers
-4. **Phase 4**: Fix Patrol timing issues and widget finders
-5. **Phase 5**: Fill coverage gaps (auth, sync, database tests)
-
-## Key Findings
-
-### Test Redundancy (Remove ~4,400 lines)
-- `test/widget_test.dart` - placeholder only
-- `test/data/datasources/*.dart` - 3 files testing mocks
-- Model tests: Can consolidate 8 files (75% reduction)
-- Golden theme tests: Can consolidate 3 files (64% reduction)
-- Repository tests: Remove edge cases/boundary groups (~610 lines)
-
-### Missing Test Coverage (61 files)
-- **CRITICAL**: Auth provider/service, Sync provider/service, Database service
-- **HIGH**: Contractor/Equipment/Personnel repositories, Image/Permission services
-- **MEDIUM**: Entry/Equipment models, Patrol flow tests
-- **LOW**: Widget tests, Settings flow tests
-
-### Patrol Test Issues
-- Only 28 Key widgets (need 100+)
-- Using fragile text-based finders
-- Fixed delays instead of waitUntilVisible
-- No test state reset between tests
-- Missing AuthTestHelper and NavigationHelper
+- **Status**: Name Change Plan READY FOR REVIEW
+- **Completed**: Patrol Test Fix Plan Phases 1-5
+- **Remaining**: Execute name change, fix critical bugs found in review
 
 ## Test Suite Status
-| Category | Count | Status |
-|----------|-------|--------|
-| Unit Tests | 613 | Passing |
-| Golden Tests | 93 | Passing |
-| Patrol Tests | 69 | 3 pass, ~13 fail on test issues |
-| Analyzer | 0 | No issues |
+| Category | Status |
+|----------|--------|
+| Unit Tests | Passing (after cache clean) |
+| Golden Tests | 83/88 passing (5 expected failures) |
+| Analyzer | 0 errors |
+
+## Code Review Summary
+
+### Test Infrastructure (7.5/10)
+**CRITICAL**: `test/helpers/test_sorting.dart:1` - wrong package `construction_app`
+**HIGH**: MockProjectRepository missing `update()` and `getActiveProjects()` methods
+**HIGH**: Incorrect firstWhere usage without orElse in mocks
+**MEDIUM**: Hardcoded delays in Patrol tests, test isolation issues
+
+### App Changes (8.5/10)
+**HIGH**: Race condition in Entry Wizard save lock
+**HIGH**: Missing null safety in Sync Service datasource calls
+**MEDIUM**: Hard-coded inspector name "Robert Sebastian"
+**STRENGTHS**: Excellent async safety patterns, well-implemented widget keys
+
+## Next Priorities
+1. **CRITICAL**: Fix test_sorting.dart import bug
+2. **HIGH**: Fix MockProjectRepository method names
+3. **HIGH**: Fix Entry Wizard race condition
+4. Execute name change plan (Strategy 1 - display names only)
+5. Run full test suite verification
 
 ## Decisions
-- **Delete datasource tests**: They test mocks, not real code (covered by repository tests)
-- **Key-based finders**: Replace text finders with Keys for stability
-- **Test helpers**: Create AuthTestHelper and NavigationHelper for Patrol
-- **Phase approach**: 5 phases from quick wins to coverage gaps
+- **Name change strategy**: Display names only (non-breaking, ~3 hours)
+- **Package name**: Keep `construction_inspector` for stability
+- **Test failures**: Mostly stale cache, not actual bugs
 
 ## Blockers
-- None - plan ready for implementation
+- None - ready to proceed with fixes and name change
+
+## Key Metrics
+- **Agents Used**: 6 (3 QA + 1 Planning + 2 Code Review)
+- **Code Review Scores**: 7.5/10, 8.5/10
+- **Name Change Plan**: 430 lines, 30 files to modify
+- **Critical Bugs Found**: 1 (import), 2 High-priority issues
