@@ -41,7 +41,8 @@
       "WebSearch",
       "WebFetch(domain:developer.aashtoware.org)",
       "WebFetch(domain:www.aashtoware.org)",
-      "Bash(flutter doctor:*)"
+      "Bash(flutter doctor:*)",
+      "Bash(git -C .claude diff --stat HEAD)"
     ]
   }
 }

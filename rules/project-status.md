@@ -55,8 +55,11 @@
 1. **AASHTOWare Integration** - Can now be implemented as a new feature in lib/features/aashtware/
 2. **Separate Photos/Attachments sections** in report screen
 
-## GitHub
+## Repositories
 
-Repository: https://github.com/RobertoChavez2433/construction-inspector-tracking-app
+| Repo | Purpose | URL |
+|------|---------|-----|
+| **App Code** | Flutter codebase | https://github.com/RobertoChavez2433/construction-inspector-tracking-app |
+| **Claude Config** | `.claude/` folder | https://github.com/RobertoChavez2433/field-guide-claude-config |
 
-Note: `.claude/` folder and `CLAUDE.md` stay local (gitignored)
+Note: `.claude/` folder and `CLAUDE.md` are gitignored from app repo, tracked in config repo
