@@ -265,4 +265,20 @@ Track Claude's mistakes to prevent repetition. Read before every session.
 - lib/services/sync_service.dart (line 157)
 **Ref**: @lib/services/sync_service.dart:151-159
 
+### 2026-01-21: Router Accesses Supabase.instance Without Checking isConfigured [FIXED]
+**Issue**: Patrol tests crashed with "You must initialize the supabase instance before calling Supabase.instance"
+**Root Cause**: AppRouter.redirect function directly accessed `Supabase.instance.client.auth.currentUser` without checking if Supabase was configured. When tests run without Supabase environment variables, this crashes the app before it can even render.
+**Why It Fails**: Patrol tests don't have SUPABASE_URL and SUPABASE_ANON_KEY environment variables, so Supabase.initialize() was never called in main.dart (which has a conditional check), but the router still tried to access the singleton.
+**Prevention**:
+- ALWAYS check `SupabaseConfig.isConfigured` before accessing `Supabase.instance`
+- Use short-circuit evaluation: `SupabaseConfig.isConfigured && Supabase.instance.client.auth.currentUser != null`
+- Consider making auth state nullable or using a wrapper that handles unconfigured state
+**Fix Applied**:
+- Added import for SupabaseConfig
+- Changed line 21 to: `final isAuthenticated = SupabaseConfig.isConfigured && Supabase.instance.client.auth.currentUser != null;`
+**Files Fixed**:
+- lib/core/router/app_router.dart (lines 4, 21)
+**Impact**: Pass rate improved from 5% to 65% (12 additional tests now passing)
+**Ref**: @lib/core/router/app_router.dart:21
+
 <!-- Add new defects above this line -->
