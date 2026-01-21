@@ -24,6 +24,13 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-21 (Session 21)
+- Implemented patrol test configuration fixes
+- QA agent verified patrol.yaml, .gitignore, archived manual aggregator
+- Code review scored 8/10 - configuration correct
+- Analyzer: 0 errors
+- 3 files changed: patrol.yaml, .gitignore, deleted manual test_bundle.dart
+
 ### 2026-01-21 (Session 17)
 - Fixed critical code review issues from Session 16
 - Migration v4: Added transaction wrapper + null-safe typeIds access
