@@ -24,6 +24,13 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-20 (Session 11)
+- Created session-log.md system for historical records (not agent-loaded)
+- Streamlined project-status.md: 66 → 35 lines (47% reduction)
+- Streamlined coding-standards.md: 130 → 114 lines (12% reduction)
+- Updated /end-session skill to append to session log
+- Total savings: ~47 lines (~600 tokens) from agent context
+
 ### 2026-01-20 (Session 10)
 - Refactored .claude folder for efficiency using @references
 - Reduced total line count by ~580 lines across 10 files
