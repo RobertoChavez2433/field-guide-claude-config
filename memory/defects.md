@@ -117,4 +117,74 @@ Track Claude's mistakes to prevent repetition. Read before every session.
 **Fix**: Install "Android SDK Command-line Tools (latest)" from SDK Manager
 **Ref**: https://github.com/leancodepl/patrol/issues/2160
 
+### 2026-01-21: Patrol MainActivityTest.java Outdated API Pattern
+**Issue**: QA agent created MainActivityTest.java with `PatrolTestRule` API that doesn't exist in Patrol 3.20.0
+**Root Cause**: Using outdated documentation/patterns - PatrolTestRule was removed in newer Patrol versions
+**Prevention**:
+- ALWAYS check the Patrol example in the installed package: `~/.pub-cache/hosted/pub.dev/patrol-X.X.X/example/android/app/src/androidTest/`
+- Patrol 3.20.0+ requires `@RunWith(Parameterized.class)` pattern, NOT `@RunWith(PatrolJUnitRunner.class)`
+- The correct pattern uses `@Parameters` method calling `instrumentation.listDartTests()`
+**Fix**: Use Parameterized JUnit pattern from Patrol example
+**Ref**: @android/app/src/androidTest/java/com/fvconstruction/construction_inspector/MainActivityTest.java
+
+### 2026-01-21: Seed Data Missing NOT NULL Timestamps [FIXED]
+**Issue**: Patrol tests crash with `DatabaseException(NOT NULL constraint failed: entry_personnel.created_at)`
+**Root Cause**: SeedDataService.seedDatabase() INSERT statements for entry_personnel and entry_quantities missing created_at/updated_at columns
+**Why It Fails**: Database schema has NOT NULL constraints on these columns
+**Prevention**:
+- ALWAYS check database schema for NOT NULL columns before writing INSERT statements
+- Include created_at/updated_at in ALL insert operations for timestamped tables
+**Fix Applied**:
+- Added `created_at: now, updated_at: now` to entry_personnel insert
+- Added timestamps to all 12+ entry_quantities insert locations
+**Files Fixed**:
+- lib/core/database/seed_data_service.dart (lines 473-730)
+**Ref**: @lib/core/database/seed_data_service.dart:473
+
+### 2026-01-21: SyncService Crashes When Supabase Not Configured [FIXED]
+**Issue**: App crashes with "You must initialize the supabase instance before calling Supabase.instance"
+**Root Cause**: SyncService constructor accessed Supabase.instance.client unconditionally even when no credentials configured
+**Why It Fails**: Tests run without Supabase environment variables, but SyncService tries to access singleton
+**Prevention**:
+- ALWAYS check SupabaseConfig.isConfigured before accessing Supabase.instance
+- Make Supabase client fields nullable when configuration is optional
+**Fix Applied**:
+- Made _supabase field nullable: `final SupabaseClient? _supabase`
+- Conditional initialization: `_supabase = SupabaseConfig.isConfigured ? Supabase.instance.client : null`
+- Used force-unwrap `_supabase!` protected by existing isConfigured guard in syncAll()
+**Files Fixed**:
+- lib/services/sync_service.dart (lines 77, 107, 338-517)
+**Ref**: @lib/services/sync_service.dart:107
+
+### 2026-01-21: Gradle Configuration Cache Incompatible with Flutter [FIXED]
+**Issue**: Patrol build fails with "Configuration cache state could not be cached" error
+**Root Cause**: org.gradle.configuration-cache=true in gradle.properties incompatible with Flutter's Gradle plugin
+**Why It Fails**: Flutter's DependencyVersionChecker and Android Gradle plugin have serialization issues with Kotlin lazy delegates
+**Prevention**:
+- Do NOT enable org.gradle.configuration-cache for Flutter projects (as of 2026)
+- Test Gradle changes with `flutter build apk --config-only` before full build
+**Fix Applied**:
+- Commented out `org.gradle.configuration-cache=true` in gradle.properties
+**Files Fixed**:
+- android/gradle.properties (line 9)
+**Ref**: @android/gradle.properties
+
+### 2026-01-21: Patrol Test Hangs at Gradle Config Phase [FIXED]
+**Issue**: `patrol test --verbose` hung indefinitely at `flutter build apk --config-only` step
+**Root Cause**: Gradle circular dependency - `android/build.gradle.kts` lines 18-20 had `subprojects { evaluationDependsOn(":app") }` which creates a deadlock during configuration phase
+**Why It Fails**: `:app` IS a subproject, so it waits for itself to finish configuration, causing infinite wait
+**Prevention**:
+- NEVER use `evaluationDependsOn` in subprojects block for single-module Flutter projects
+- Flutter's Gradle plugin handles inter-project dependencies automatically
+- Test Gradle configuration with `flutter build apk --config-only` before full patrol test
+**Fix Applied**:
+- Deleted circular dependency block from android/build.gradle.kts
+- Added Gradle optimizations (daemon, parallel, caching) to gradle.properties
+- Changed gradle-wrapper.properties from -all.zip to -bin.zip (faster downloads)
+**Files Fixed**:
+- android/build.gradle.kts (deleted lines 18-20)
+- android/gradle.properties (added 9 optimization lines)
+- android/gradle/wrapper/gradle-wrapper.properties (changed distribution type)
+**Ref**: @android/build.gradle.kts, @.claude/implementation/patrol_fix_plan.md
+
 <!-- Add new defects above this line -->

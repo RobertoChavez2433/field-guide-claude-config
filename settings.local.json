@@ -53,7 +53,10 @@
       "Bash(pwsh -Command \"cd 'C:\\\\Users\\\\rseba\\\\Projects\\\\Field Guide App'; patrol test:*)",
       "Bash(pwsh:*)",
       "WebFetch(domain:patrol.leancode.co)",
-      "Bash(flutter clean:*)"
+      "Bash(flutter clean:*)",
+      "Bash(flutter emulators:*)",
+      "Bash(adb devices:*)",
+      "Bash(patrol --version:*)"
     ]
   }
 }

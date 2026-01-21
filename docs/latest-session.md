@@ -1,62 +1,56 @@
-# Last Session: 2026-01-21 (Session 22)
+# Last Session: 2026-01-21 (Session 25)
 
 ## Summary
-Code cleanup session + patrol setup fix. Fixed analyzer warnings, updated deprecated APIs, and resolved the recurring patrol Java detection issue by installing Android SDK cmdline-tools.
+Ran patrol integration tests on connected Android device. Tests now execute (no more hang) but have test-specific failures. Fixed three infrastructure issues: seed data missing NOT NULL timestamps, SyncService crashing on unconfigured Supabase, and Gradle configuration-cache incompatibility.
 
 ## Completed
-- [x] Fixed 9 unused variable warnings in patrol test files
-- [x] Updated 3 deprecated withOpacity() to withValues() calls
-- [x] Code review of all changes (9.5/10)
-- [x] Diagnosed patrol "Failed to read Java version" error
-- [x] Installed Android SDK Command-line Tools via SDK Manager
-- [x] Accepted Android SDK licenses
-- [x] Verified flutter doctor shows all green checkmarks
-- [x] Patrol test now discovers 69 tests and starts building
+- [x] Ran patrol tests on Samsung SM G996U device
+- [x] Confirmed Gradle hang fix from Session 24 works
+- [x] Fixed seed data service - added created_at/updated_at to entry_personnel insert
+- [x] Fixed seed data service - added created_at/updated_at to all entry_quantities inserts (12+ locations)
+- [x] Fixed SyncService - made _supabase nullable with conditional initialization
+- [x] Disabled Gradle configuration-cache (incompatible with Flutter)
+- [x] Code review: 8/10 - approved with minor suggestions
+- [x] Updated session state files
 
 ## Files Modified
 
 | File | Change |
 |------|--------|
-| `integration_test/patrol/entry_management_test.dart` | Removed unused `_rainyButton` |
-| `integration_test/patrol/offline_mode_test.dart` | Removed 5 unused variables |
-| `integration_test/patrol/project_management_test.dart` | Removed 3 unused variables |
-| `test/golden/pdf/pdf_import_widgets_test.dart` | Updated 3 withOpacity() to withValues() |
-
-## Environment Changes (not in git)
-
-| Change | Details |
-|--------|---------|
-| Android SDK cmdline-tools | Installed via Android Studio SDK Manager |
-| Android licenses | Accepted via `flutter doctor --android-licenses` |
+| `lib/core/database/seed_data_service.dart` | Added created_at/updated_at to entry_personnel and all entry_quantities inserts |
+| `lib/services/sync_service.dart` | Made _supabase nullable, conditional init, force-unwrap with guard |
+| `android/gradle.properties` | Disabled org.gradle.configuration-cache |
+| `.claude/plans/_state.md` | Updated session state |
+| `.claude/docs/latest-session.md` | Updated session notes |
 
 ## Plan Status
-- **Status**: COMPLETED (Code Cleanup + Patrol Setup)
-- **Completed**: All session tasks
-- **Remaining**: Run patrol tests and debug failures
+- **Status**: IN PROGRESS (Patrol tests executing, need test fixes)
+- **Completed**: Gradle hang fix, seed data fix, SyncService fix
+- **Remaining**: Fix test-specific failures (widget not found, permissions)
 
 ## Next Priorities
-1. **Run `patrol test --verbose`** - Execute 69 tests and analyze results
-2. **Debug test failures** - Fix any issues discovered
-3. **Continue CRITICAL items** - See implementation_plan.md
-
-## Decisions
-- **Patrol Java fix**: Root cause was missing cmdline-tools preventing flutter doctor from detecting Java
-- **Variable removal**: Removed entirely rather than underscore prefix
-
-## Blockers
-None - patrol is now configured correctly
+1. **Fix patrol test failures** - Widget not found, permission issues
+2. **Add QUERY_ALL_PACKAGES** - Required for native automation tests
+3. **Continue CRITICAL items** - From implementation_plan.md
 
 ## Test Results
+| Category | Status |
+|----------|--------|
+| Unit Tests | 613 passing |
+| Golden Tests | 93 passing |
+| Patrol Tests | Executing (3 pass, many fail on test-specific issues) |
+| Analyzer | 0 issues |
 
-| Category | Total | Status |
-|----------|-------|--------|
-| Unit Tests | 613 | ✓ All Pass |
-| Golden Tests | 93 | ✓ All Pass |
-| Patrol Tests | 69 | ✓ Ready to run |
-| Analyzer | 0 | ✓ No issues |
-| Flutter Doctor | ✓ | All green checkmarks |
+## Decisions
+- **Nullable _supabase**: Used conditional init + force-unwrap protected by guard
+- **Configuration cache**: Disabled due to Flutter Gradle plugin incompatibility
 
-## Code Review Score
-**Overall: 9.5/10**
-- Unused variable cleanup: 9/10
-- Deprecated API updates: 10/10
+## Code Review (8/10)
+**Suggestions:**
+1. Add defensive null guard at start of `_pushBaseData()` method
+2. Extract `_insertEntryQuantity()` helper to reduce duplication
+3. Pass `now` timestamp as parameter for consistency
+
+## Blockers
+- Patrol tests have test-specific failures (not infrastructure)
+- Tests need UI Key widgets and permission manifest updates
