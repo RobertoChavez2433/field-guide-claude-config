@@ -59,7 +59,10 @@
       "Bash(patrol --version:*)",
       "Bash(dart analyze:*)",
       "Bash(flutter build:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(dart pub global list:*)",
+      "Bash(flutter pub:*)",
+      "Bash(where:*)"
     ]
   }
 }
