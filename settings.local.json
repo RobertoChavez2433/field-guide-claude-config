@@ -62,7 +62,14 @@
       "Bash(xargs:*)",
       "Bash(dart pub global list:*)",
       "Bash(flutter pub:*)",
-      "Bash(where:*)"
+      "Bash(where:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh release list:*)",
+      "Bash(gh api:*)",
+      "Bash(git log:*)",
+      "WebFetch(domain:www.notion.so)",
+      "WebFetch(domain:notion.so)",
+      "Bash(claude install)"
     ]
   }
 }
