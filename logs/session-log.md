@@ -24,6 +24,22 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-21 (Session 40): Research + Planning
+- Launched 4 parallel research agents to investigate known issues
+- Memory crashes: Native resource accumulation (Dalvik, SQLite, Surface flinger)
+- MANAGE_EXTERNAL_STORAGE: HIGH Google Play rejection risk - FilePicker handles scoped storage
+- Permission.photos: Asymmetry - checks but never requests on Android 13+
+- Contractor test: Keyboard overlay blocks Save button
+- Created 846-line implementation plan with PowerShell batched test runner
+- Ready for implementation next session
+
+### 2026-01-21 (Session 39): Platform + Test Fixes
+- Updated compileSdk 35→36, Test Orchestrator 1.5.2→1.6.1
+- Added QUERY_ALL_PACKAGES permission for openApp()
+- Fixed test initialization timing with delays
+- Pass rate improved 75%→95% (19/20)
+- Commit: c3af9dd
+
 ### 2026-01-21 (Session 38 - Continued)
 - Fixed all 7 failing Patrol tests with offline-first auth bypass
 - Added 4 new UI keys (confirm_dialog_button, archive_confirm_button, project_create_button, project_edit_menu_item)

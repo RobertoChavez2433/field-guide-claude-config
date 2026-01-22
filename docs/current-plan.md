@@ -1,73 +1,58 @@
 # Current Implementation Plan
 
 **Last Updated**: 2026-01-21
-**Status**: TEST PATTERNS FIX - COMPLETE
-**Plan Files**:
-- `.claude/implementation/test_patterns_fix_plan.md` (579-line comprehensive plan) **COMPLETE**
-- `.claude/implementation/patrol_test_fix_plan_v2.md` (579-line patrol fix plan) **COMPLETE**
-- `.claude/implementation/name_change_plan.md` (430-line rename plan) **EXECUTED**
+**Status**: PATROL FULL SUITE FIX - IMPLEMENTATION COMPLETE
+**Plan File**: `.claude/implementation/implementation_plan.md` (846 lines)
 
 ---
 
 ## Overview
 
-**Completed**:
-- App rename "Construction Inspector" → "Field Guide" (20 files)
-- Patrol fix Phase 1: Quick wins (test file fixes)
-- Patrol fix Phase 2: Screen Key additions
-- Patrol fix Phase 3: Test pattern improvements (UI architecture alignment)
-- Patrol fix Phase 4: Infrastructure improvements (navigation keys, async safety)
-- Patrol fix Phase 5: Verification + platform updates
-- Platform update to 2026 standards (Android 35, iOS 15.0)
-- Offline-first auth bypass for tests
-- UI keys for Patrol tests (8 keys total)
+**Current Focus**: Run full 84-test Patrol suite without memory crashes + fix permission issues
 
-**Status**: ALL PHASES COMPLETE - Expected 100% Patrol pass rate
+**Previous Work Complete**:
+- App rename "Construction Inspector" -> "Field Guide"
+- Patrol fix Phases 1-5 complete
+- Platform update to 2026 standards
+- 19/20 individual tests passing (95%)
+
+**Session 41 Complete**: All 4 tasks implemented and code reviewed
 
 ---
 
-## Patrol Test Fix Phases
+## Plan Tasks - ALL COMPLETE
 
-### Phase 1: Quick Wins COMPLETE
-| Task | Status |
+### Task 1: Batched Test Runner (P0) - COMPLETE
+| Item | Detail |
 |------|--------|
-| Fix icon mismatch | DONE |
-| Fix Key names | DONE |
-| Add missing assertions | DONE |
+| Agent | `qa-testing-agent` |
+| File | `run_patrol_batched.ps1` |
+| Solution | PowerShell script with device reset between batches |
+| Status | DONE - file created, paths corrected after review |
 
-### Phase 2: Screen Key Additions COMPLETE
-| Task | Status |
+### Task 2: Remove MANAGE_EXTERNAL_STORAGE (P0) - COMPLETE
+| Item | Detail |
 |------|--------|
-| RegisterScreen AppBar keys | DONE |
-| ForgotPasswordScreen keys | DONE |
-| Photo capture keys | DONE |
-| ProjectSetup TabBar keys | DONE |
+| Agent | `data-layer-agent` |
+| Risk | HIGH Google Play rejection risk - MITIGATED |
+| Solution | Removed permission, FilePicker handles scoped storage |
+| Status | DONE - permission_service.dart updated |
 
-### Phase 3: Test Pattern Improvements COMPLETE
-| Task | Status |
+### Task 3: Fix Permission.photos Asymmetry (P1) - COMPLETE
+| Item | Detail |
 |------|--------|
-| Remove TabBar navigation logic | DONE |
-| Update weather to dropdown | DONE |
-| Use scrollUntilVisible pattern | DONE |
-| Replace text selectors with keys | DONE |
+| Agent | `data-layer-agent` |
+| Issue | Checked but never requested on Android 13+ |
+| Solution | Added Permission.photos.request() with legacy fallback |
+| Status | DONE - permission_service.dart updated |
 
-### Phase 4: Infrastructure Improvements COMPLETE
-| Task | Status |
+### Task 4: Fix Contractor Test (P2) - COMPLETE
+| Item | Detail |
 |------|--------|
-| Add 5 navigation keys to app_router | DONE |
-| Update navigation tests for keys | DONE |
-| Remove if-exists anti-patterns | DONE |
-| Fix async safety issues | DONE |
-
-### Phase 5: Verification COMPLETE
-| Task | Status |
-|------|--------|
-| Update platform to 2026 standards | DONE |
-| Add missing UI keys | DONE |
-| Fix code review issues | DONE |
-| Fix 7 failing tests | DONE |
-| Add offline-first auth bypass | DONE |
-**Agent**: `qa-testing-agent`
+| Agent | `qa-testing-agent` |
+| Issue | Keyboard overlays Save button |
+| Solution | Dismiss keyboard before tap, fixed async pattern |
+| Status | DONE - contractors_flow_test.dart updated |
 
 ---
 
@@ -77,27 +62,27 @@
 |----------|-------|--------|
 | Unit tests | 363 | Passing |
 | Golden tests | 29 | Passing |
-| Patrol tests | 20 | Expected 100% pass |
+| Patrol tests | 84 | Ready for batched execution |
 | Analyzer | 0 | No errors |
 
 ---
 
-## Code Review Summary (Session 38)
+## Next Steps
 
-| Score | iOS App Store | Google Play |
-|-------|--------------|-------------|
-| 7.5/10 | PASS | Review MANAGE_EXTERNAL_STORAGE |
+1. **Run batched tests**: `pwsh run_patrol_batched.ps1`
+2. **Update documentation**: tech-stack.md (compileSdk, Orchestrator versions)
+3. **Manual smoke test**: Verify on physical Android device
 
 ---
 
 ## Related Files
 
+- Full plan: `.claude/implementation/implementation_plan.md`
 - Session state: `.claude/plans/_state.md`
 - Latest session: `.claude/docs/latest-session.md`
 - Defect log: `.claude/memory/defects.md`
-- Platform docs: `.claude/docs/2026-platform-standards-update.md`
 
 ---
 
 **Last Updated**: 2026-01-21
-**Session**: 38
+**Session**: 41
