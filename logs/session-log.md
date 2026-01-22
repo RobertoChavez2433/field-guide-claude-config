@@ -24,6 +24,27 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-21 (Session 43): Context Resumption
+- Brief session - context resumed from Session 42
+- No code changes
+- Test expansion plan ready for implementation
+- Next: Widget key audit → Phase 1 tests
+
+### 2026-01-22 (Session 42): Test Expansion Planning
+- Updated tech-stack.md (compileSdk 36, Orchestrator 1.6.1)
+- Fixed PowerShell batched test runner (array iteration, patrol test, test summary parsing)
+- 3 exploration agents (test coverage, UI screens, data models)
+- Created 600+ line test expansion plan (120 new tests in 4 phases)
+- QA review: 8.5/10 - approved with modifications
+- Commit: 60240d8
+
+### 2026-01-21 (Session 41): Implementation
+- Executed 4-task implementation plan
+- Created run_patrol_batched.ps1 batched test runner
+- Fixed permission service issues
+- All 84 Patrol tests passing
+- Commit: 37b71e4
+
 ### 2026-01-21 (Session 40): Research + Planning
 - Launched 4 parallel research agents to investigate known issues
 - Memory crashes: Native resource accumulation (Dalvik, SQLite, Surface flinger)

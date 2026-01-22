@@ -64,8 +64,8 @@ Screen -> Provider -> Repository -> SQLite (local) -> Supabase (sync)
 ### Android
 | Component | Version | Notes |
 |-----------|---------|-------|
-| compileSdk | 35 | Android 15 - Latest stable |
-| targetSdk | 35 | Required for Play Store |
+| compileSdk | 36 | Android 16 - Latest stable |
+| targetSdk | 36 | Required for Play Store |
 | minSdk | 24 | Android 7.0 - Drops devices older than 7 years |
 | Gradle | 8.14 | Latest stable |
 | Kotlin | 2.2.20 | Latest stable |
@@ -80,7 +80,7 @@ Screen -> Provider -> Repository -> SQLite (local) -> Supabase (sync)
 ### Test Configuration
 | Setting | Value | Purpose |
 |---------|-------|---------|
-| Test Orchestrator | 1.5.2 | Proper test isolation |
+| Test Orchestrator | 1.6.1 | Proper test isolation |
 | JVM Heap (Tests) | 12G | Prevents OOM in long test runs |
 | Max Tests Per Batch | 5 | Memory resets between batches |
 | Patrol | 3.20.0 | Native automation |

@@ -304,4 +304,42 @@ Track Claude's mistakes to prevent repetition. Read before every session.
 **Impact**: Pass rate improved from 5% to 65% (12 additional tests now passing)
 **Ref**: @lib/core/router/app_router.dart:21
 
+### 2026-01-21: Settings Screen Missing Mounted Checks
+**Issue**: Multiple async methods in settings_screen.dart call setState() without checking mounted
+**Root Cause**: SharedPreferences operations are async but code doesn't guard against widget disposal during load
+**Prevention**: Always add `if (!mounted) return;` before setState() after any await
+**Files Affected**:
+- _loadSettings() line 50-56
+- _saveInspectorName() line 59-62
+- _saveInspectorInitials() line 65-68
+- _toggleAutoFetchWeather() line 71-74
+- _toggleAutoSyncWifi() line 77-80
+**Ref**: @lib/features/settings/presentation/screens/settings_screen.dart:50-80
+
+### 2026-01-21: Project Dashboard Missing Mounted Check
+**Issue**: _loadProjectData() uses context.read() after await Future.wait() without mounted check
+**Root Cause**: Provider access happens inside Future.wait block which executes after async operations complete
+**Prevention**: Capture provider references before async calls OR add mounted check after await
+**Ref**: @lib/features/dashboard/presentation/screens/project_dashboard_screen.dart:30-42
+
+### 2026-01-21: Excessive Hardcoded Delays in Patrol Tests
+**Issue**: Over 100 Future.delayed() calls with arbitrary 1-3 second delays throughout Patrol integration tests
+**Root Cause**: Using time-based waits instead of condition-based waits for element visibility
+**Prevention**:
+- Use `$.waitUntilVisible()` or `$.waitUntilExists()` instead of `Future.delayed()`
+- Only use delays for actual timing requirements (e.g., animation completion)
+- Extract common wait patterns to PatrolTestConfig helper methods
+**Impact**: Tests are slower than necessary and may be flaky on slower devices
+**Ref**: @integration_test/patrol/offline_mode_test.dart, @integration_test/patrol/settings_flow_test.dart
+
+### 2026-01-21: Patrol Tests Report Exit Code 1 Despite All Tests Passing
+**Issue**: Batched test runner reports all batches as "FAILED" but test summaries show 20/20 successful, 0 failed
+**Root Cause**: Gradle returns exit code 1 even when all instrumentation tests pass - known issue with Android Test Orchestrator and Patrol CLI
+**Prevention**:
+- Parse Patrol's "Test summary" output to determine actual pass/fail status
+- Don't rely solely on exit code for Patrol tests
+- Consider checking HTML test reports for true results
+**Impact**: CI/CD would incorrectly mark builds as failed; scripts report false negatives
+**Ref**: @run_patrol_batched.ps1:147-155
+
 <!-- Add new defects above this line -->

@@ -12,8 +12,8 @@
 ### Android
 | Component | Version | Notes |
 |-----------|---------|-------|
-| compileSdk | 35 (Android 15) | Latest stable for 2026 |
-| targetSdk | 35 | Required for Play Store |
+| compileSdk | 36 (Android 16) | Latest stable for 2026 |
+| targetSdk | 36 | Required for Play Store |
 | minSdk | 24 (Android 7.0) | Drops devices older than 7 years |
 | Gradle | 8.14 | Latest stable |
 | Android Gradle Plugin | 8.11.1 | Latest stable |
@@ -29,7 +29,7 @@
 ### Test Configuration
 | Component | Version | Purpose |
 |-----------|---------|---------|
-| Test Orchestrator | 1.5.2 | Proper test isolation |
+| Test Orchestrator | 1.6.1 | Proper test isolation |
 | Patrol | 3.20.0 | Native automation |
 | JVM Heap (Tests) | 12G | Prevents OOM in long test runs |
 | Max Tests Per Device | 5 | Memory exhaustion prevention |
