@@ -12,6 +12,24 @@ Track Claude's mistakes to prevent repetition. Read before every session.
 
 ## Logged Defects
 
+### 2026-01-21: Patrol openApp() Empty Package Name
+**Issue**: Patrol's `openApp()` native action passed empty package name causing test failure
+**Root Cause**: Patrol CLI doesn't always infer package name from patrol.yaml config
+**Prevention**: Always pass explicit appId: `$.native.openApp(appId: 'com.package.name')`
+**Ref**: @integration_test/patrol/app_smoke_test.dart:72
+
+### 2026-01-21: Test Orchestrator Version Doesn't Exist
+**Issue**: Build failed with "Could not find androidx.test:orchestrator:1.5.2"
+**Root Cause**: Documentation referenced non-existent version 1.5.2 (latest is 1.6.1)
+**Prevention**: Verify dependency versions exist in Maven before adding to build.gradle
+**Ref**: @android/app/build.gradle.kts
+
+### 2026-01-21: Patrol Tests Fail Before App Initializes
+**Issue**: Tests couldn't find login or home screen widgets immediately after app.main()
+**Root Cause**: pumpAndSettle() completes before async database/provider initialization
+**Prevention**: Add delay after pumpAndSettle for apps with async init: `await Future.delayed(Duration(seconds: 2)); await $.pump();`
+**Ref**: @integration_test/patrol/test_config.dart
+
 ### 2026-01-19: Async in dispose()
 **Issue**: Called async `_saveIfEditing()` in `dispose()` - context already deactivated
 **Fix**: Use `WidgetsBindingObserver.didChangeAppLifecycleState` for lifecycle saves
