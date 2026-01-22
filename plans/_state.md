@@ -1,88 +1,90 @@
 # Session State
 
 ## Current Phase
-**Phase**: E2E Test Plan - APPROVED WITH CHANGES
-**Subphase**: Pre-implementation checklist
+**Phase**: E2E Test Implementation - Phase 1 & 2 Complete
+**Subphase**: All journeys implemented, isolated tests migrated, ready for device validation
 **Last Updated**: 2026-01-21
 
-## Session 44 Work
-- Created comprehensive E2E test plan via 4-agent process:
-  1. Research Agent 1: Analyzed current test patterns (47 keys, 40% silent failures)
-  2. Research Agent 2: Mapped UI screens and journeys (21 screens, 71 existing keys)
-  3. QA Agent: Created 600+ line E2E test plan
-  4. Code Review Agent: Reviewed plan (8/10, approved with changes)
-- Cleaned up .claude folder (49 → 34 files)
-- Updated E2E plan with code review feedback
+## Session 46 Work
+- Fixed 3 code review issues from Session 45:
+  - Hardcoded delay in offline_sync_test.dart - replaced with condition-based wait
+  - Duplicate cancel_dialog_button key - renamed to entry_delete_cancel_button
+  - Missing await before .exists checks - added pumpAndSettle
+- Implemented Journey 4: Project management E2E tests (5 tests)
+- Implemented Journey 5: Photo flow E2E tests (3 tests)
+- Migrated 21 isolated tests (permissions, validation, navigation, lifecycle)
+- Code review of all changes (3 agents, ratings 3.5-4/5)
 
 ## Decisions Made
-1. Consolidate 84 tests → ~50 tests (33 E2E + 17 isolated)
-2. Add widget keys BEFORE implementing tests
-3. Use explicit assertions (no more silent `.exists` checks)
-4. Structured logging format: `[TEST_NAME][STEP N][TIMESTAMP]`
-5. Batch size: 5-7 tests per batch (9 batches total)
-6. Timeline: 3-4 weeks for implementation
+1. Use dynamic keys with IDs: `Key('entry_card_${entry.id}')`
+2. TestContext class for structured logging: `[TEST_NAME][STEP N][TIMESTAMP]`
+3. PatrolTestConfig presets: standard, slow, permissions
+4. Isolated tests use "Isolated:" prefix for easy identification
 
 ## Open Questions
-1. Should widget key audit be done manually or via automated script?
-2. Priority of E2E journeys: Entry lifecycle first, or project management?
+None - All E2E test plan items complete
 
-## Known Issues (All RESOLVED from previous sessions)
-1. **Memory crashes**: FIXED via batched test runner
-2. **MANAGE_EXTERNAL_STORAGE**: FIXED - removed
-3. **Permission.photos**: FIXED - asymmetry resolved
-4. **Contractor test**: FIXED - keyboard overlay resolved
-5. **Gradle exit code**: FIXED - parse test summary instead
+## Known Issues from Code Review (Session 46)
+1. **Hardcoded delays in photo_flow_test.dart**: 1-2 second delays for camera/gallery
+2. **Inconsistent helper initialization**: settings_theme_test.dart uses direct constructor
+3. **Duplicate camera button search logic**: DRY opportunity in isolated tests
+4. **Hardcoded delays in location_permission_test.dart**: Over 500ms threshold
 
-## Next Steps (E2E Test Implementation)
-1. **P0**: Widget key audit - verify existing vs needed keys
-2. **P1**: Add Phase 1 widget keys to UI files (6 files)
-3. **P2**: Create `PatrolTestHelpers` class with logging
-4. **P3**: Implement Journey 1: Entry lifecycle tests (3 tests)
-5. **P4**: Run Batch 1, fix issues, continue
+## Next Steps
+1. **P0**: Run E2E tests on device to validate implementation
+2. **P1**: Address code review findings (hardcoded delays, DRY refactoring)
+3. **P2**: Validate 100% assertion coverage on device
+4. **P3**: Continue with any remaining test plan items
 
 ## Session Handoff Notes
-**IMPORTANT**: E2E test plan approved with 8/10 score. Must complete pre-implementation checklist before starting:
-- Widget key audit
-- Remove hardcoded delays from helper class
-- Add retry logic for flaky operations
+**IMPORTANT**: All E2E test plan journeys (1-5) are now implemented with 21 isolated tests migrated. Tests are ready for device validation. Code review found minor issues primarily around hardcoded delays and DRY opportunities - not blocking for testing.
 
-### Session 44 Deliverables (2026-01-21)
+### Session 46 Deliverables (2026-01-21)
 
-**Files Created/Modified**:
-| File | Status | Description |
-|------|--------|-------------|
-| `.claude/implementation/e2e_test_plan.md` | NEW | 600+ line comprehensive E2E test plan |
-| `.claude/plans/_state.md` | MODIFIED | Updated session state |
-| `.claude/docs/latest-session.md` | MODIFIED | Session 44 summary |
-| 15 old files | DELETED | Cleaned up outdated plans |
+**Files Created**:
+| File | Description |
+|------|-------------|
+| `integration_test/patrol/e2e_tests/project_management_test.dart` | Journey 4: Create/edit project (5 tests) |
+| `integration_test/patrol/e2e_tests/photo_flow_test.dart` | Journey 5: Camera/gallery photo (3 tests) |
+| `integration_test/patrol/isolated/camera_permission_test.dart` | Camera permission scenarios (3 tests) |
+| `integration_test/patrol/isolated/location_permission_test.dart` | Location permission scenarios (3 tests) |
+| `integration_test/patrol/isolated/entry_validation_test.dart` | Entry validation (4 tests) |
+| `integration_test/patrol/isolated/auth_validation_test.dart` | Auth validation (3 tests) |
+| `integration_test/patrol/isolated/navigation_edge_test.dart` | Navigation edge cases (4 tests) |
+| `integration_test/patrol/isolated/app_lifecycle_test.dart` | App lifecycle (4 tests) |
+| `integration_test/patrol/isolated/README.md` | Documentation for isolated tests |
 
-**E2E Test Plan Summary**:
-- Current: 84 tests (crashes at ~20)
-- Target: ~50 tests (33 E2E + 17 isolated)
-- Batches: 9 batches of 5-7 tests
-- Runtime: 30-40 minutes (completes successfully)
-- Code Review: 8/10, approved with changes
+**Files Modified**:
+| File | Changes |
+|------|---------|
+| `offline_sync_test.dart` | Fixed hardcoded delay - condition-based wait |
+| `settings_theme_test.dart` | Fixed 11 missing awaits before .exists |
+| `entry_lifecycle_test.dart` | Fixed missing awaits before .exists |
+| `home_screen.dart` | Renamed duplicate key to entry_delete_cancel_button |
+
+**Code Review Summary**:
+- E2E test files: 3.5-4/5 (hardcoded delays, minor issues)
+- Isolated tests: 4/5 (DRY opportunities)
+- Last commit: 4/5 (approve with minor fixes)
 
 ---
 
 ## Session Log
 
-### 2026-01-21 (Session 44): E2E Test Plan Creation
-- **Focus**: Create comprehensive E2E test consolidation plan
-- **Agents Used**: 2 Explore + 1 QA + 1 Code Review
-- **Deliverables**: e2e_test_plan.md (600+ lines)
-- **Files Changed**: 1 new, 15 deleted (cleanup)
-- **Status**: Plan approved, ready for pre-implementation checklist
+### 2026-01-21 (Session 46): E2E Test Implementation Phase 2
+- **Focus**: Complete remaining E2E test plan + code review fixes
+- **Agents Used**: 1 Fix + 2 Journey 4 + 2 Journey 5 + 2 Isolated + 3 Code Review = 10 agents
+- **Deliverables**: 2 E2E test files, 6 isolated test files, 3 fixes
+- **Tests Added**: 8 E2E tests + 21 isolated tests = 29 new tests
+- **Files Changed**: 9 new, 4 modified
+- **Status**: All test plan journeys complete, ready for device validation
 
-### 2026-01-22 (Session 43): Context Resumption
-- **Focus**: Quick session - no code changes
-- **Status**: Plan ready for implementation
-
-### 2026-01-22 (Session 42): Test Expansion Planning
-- **Focus**: Analyze test gaps, create expansion plan
-- **Agents Used**: 3 Explore + 1 Planning + 1 QA Review
-- **Deliverables**: test_expansion_plan.md (superseded by e2e_test_plan.md)
-- **Status**: Superseded by E2E consolidation approach
+### 2026-01-21 (Session 45): E2E Test Implementation Phase 1
+- **Focus**: Multi-agent implementation of E2E test plan
+- **Agents Used**: 3 Research + 2 Implementation + 3 QA + 3 E2E + 3 Code Review = 14 agents
+- **Deliverables**: 3 E2E test files, enhanced helpers, 15+ widget keys
+- **Files Changed**: 4 new, 7 modified
+- **Status**: Implementation complete, pending device validation
 
 ### Previous Sessions
 - See .claude/logs/session-log.md for full history

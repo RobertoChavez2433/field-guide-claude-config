@@ -342,4 +342,22 @@ Track Claude's mistakes to prevent repetition. Read before every session.
 **Impact**: CI/CD would incorrectly mark builds as failed; scripts report false negatives
 **Ref**: @run_patrol_batched.ps1:147-155
 
+### 2026-01-21: Hardcoded Delay in E2E Test
+**Issue**: offline_sync_test.dart line 137 has `await Future.delayed(Duration(seconds: 3))` instead of condition-based wait
+**Root Cause**: Developer habit of using time-based waits for simplicity
+**Prevention**: Always use `$.waitUntilVisible()` or poll-based waits; reserve delays only for actual timing requirements (e.g., animations)
+**Ref**: @integration_test/patrol/e2e_tests/offline_sync_test.dart:137
+
+### 2026-01-21: Duplicate Widget Key Across Files
+**Issue**: `cancel_dialog_button` key used in both home_screen.dart:1588 and confirmation_dialog.dart
+**Root Cause**: Adding keys without checking for existing usage across codebase
+**Prevention**: Search codebase for key name before adding: `grep -r "Key('key_name')" lib/`
+**Ref**: @lib/features/entries/presentation/screens/home_screen.dart:1588, @lib/shared/widgets/confirmation_dialog.dart
+
+### 2026-01-21: Missing await Before .exists Checks in Tests
+**Issue**: Several Patrol tests use `($('widget').exists)` without await, which may return stale state
+**Root Cause**: Patrol's `.exists` property returns current state synchronously; tests may check before widget renders
+**Prevention**: Use `await $.waitUntilExists()` or `await $.waitUntilVisible()` before checking existence
+**Ref**: @integration_test/patrol/e2e_tests/entry_lifecycle_test.dart
+
 <!-- Add new defects above this line -->
