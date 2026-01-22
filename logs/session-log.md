@@ -24,6 +24,41 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-21 (Session 37)
+- Completed Phases 3 & 4 of test patterns fix plan with 2 parallel QA agents
+- Phase 3: Updated entry_management_test.dart (removed TabBar logic, added scrollUntilVisible, weather dropdown)
+- Phase 4: Added 5 navigation keys to app_router.dart, updated navigation_flow_test.dart
+- Comprehensive async safety code review across entire codebase (6 agents total)
+- Fixed HIGH: Silent failures in entry_wizard_screen (added mounted checks + error handling)
+- Fixed HIGH: Unsafe firstWhere in home_screen (changed to where().firstOrNull)
+- Verified CRITICAL issues were already safe (guarded by isNotEmpty checks)
+- 6 files modified: entry_management_test.dart, navigation_flow_test.dart, REQUIRED_UI_KEYS.md, app_router.dart, entry_wizard_screen.dart, home_screen.dart
+
+### 2026-01-21 (Session 36)
+- Implemented Phase 1 & 2 of test_patterns_fix_plan.md with 2 parallel agents
+- Verified all 37 widget keys already present across 7 files
+- Added 8 keys: confirmation_dialog.dart (7), photo_source_dialog.dart (1)
+- Code review: 7/10 - Keys complete, tests need architecture updates
+- Root cause identified: Tests expect TabBar wizard but UI uses scrolling form
+- 2 files modified: confirmation_dialog.dart, photo_source_dialog.dart
+
+### 2026-01-21 (Session 35)
+- Research and verification session using 4 parallel agents
+- Research agent: Analyzed last 2-3 commits, found 119+ text finders, 100+ conditional checks
+- Planning agent: Created test_patterns_fix_plan.md (579 lines, 5 phases)
+- Verified Supabase credentials fix: FULLY IMPLEMENTED
+- Verified ProjectProvider safety: ALL 13 providers safe
+- Improved BaseListProvider.getById() to use `.where().firstOrNull`
+- Updated implementation_plan.md marking CRITICAL items 4 & 5 complete
+- 2 lib files modified: base_list_provider.dart, personnel_type_provider.dart
+
+### 2026-01-21 (Session 34)
+- Executed Patrol Test Fix Plan Phase 5 (verification)
+- Discovered critical Supabase initialization crash in router
+- Fixed router to check SupabaseConfig.isConfigured before accessing Supabase.instance
+- Pass rate improved from 5% to 65% (13/20 tests passing)
+- 1 file modified: app_router.dart
+
 ### 2026-01-21 (Session 33)
 - Implemented Patrol Test Fix Plan Phases 3 & 4 using 2 parallel QA agents
 - Phase 3: Replaced text selectors with Key selectors, removed conditional if-exists patterns

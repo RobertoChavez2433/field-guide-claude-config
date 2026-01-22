@@ -103,8 +103,8 @@ flutter analyze
 1. [x] Fix inconsistent `updatedAt` tracking - DONE
 2. [x] Fix PhotoRepository error handling - DONE
 3. [x] Fix migration error handling - DONE
-4. [ ] Fix Supabase credentials (use environment variables)
-5. [ ] Fix ProjectProvider unsafe firstWhere calls
+4. [x] Fix Supabase credentials (use environment variables) - VERIFIED 2026-01-21
+5. [x] Fix ProjectProvider unsafe firstWhere calls - VERIFIED 2026-01-21 (all 13 providers safe)
 6. [ ] Add mounted checks to auto-save async operations
 7. [ ] Handle entry creation failure (show error to user)
 

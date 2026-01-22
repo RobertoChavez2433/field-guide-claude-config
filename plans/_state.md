@@ -1,87 +1,77 @@
 # Session State
 
 ## Current Phase
-**Phase**: Patrol Test Fix Plan - Phase 5 Complete
-**Subphase**: Verification done, additional fixes identified
+**Phase**: Test Patterns Fix - Phases 3 & 4 Complete
+**Subphase**: Ready for Phase 5 verification
 **Last Updated**: 2026-01-21
 
-## Last Session Work
-- Executed Phase 5: Ran patrol tests on device
-- Discovered critical Supabase initialization crash in router
-- Fixed router to check SupabaseConfig.isConfigured before accessing Supabase.instance
-- Pass rate improved from 5% to 65% (13/20 tests passing)
+## Last Session Work (Session 37)
+- Ran Phase 3 & 4 of test patterns fix using 2 QA agents in parallel
+- Phase 3: Updated Patrol tests to match UI architecture (TabBar → scrolling form, weather icons → dropdown)
+- Phase 4: Added 5 navigation keys to app_router.dart, fixed all navigation test selectors
+- Comprehensive async safety code review across entire codebase
+- Fixed HIGH priority issues: silent failures in entry_wizard_screen, unsafe firstWhere in home_screen
+- Verified CRITICAL issues were already safe (guarded by isNotEmpty checks)
 
 ## Decisions Made
-1. Phase 5 revealed router crash was blocking all tests
-2. Fixed with conditional Supabase check in app_router.dart
-3. 65% pass rate achieved - acceptable for current state
+1. Tests updated to match UI (not UI refactored to match tests) - KISS principle
+2. Navigation keys use `_nav_button` suffix convention
+3. Silent failures now have appropriate feedback (debug logging for auto-save, SnackBar for user actions)
 
 ## Open Questions
-1. Camera permission tests require authenticated state - need auth bypass or mock
-2. Native openApp() permission issue - may need AndroidManifest.xml update
+None - ready for Phase 5 verification
 
-## Known Issues (to fix next session)
-1. **HIGH**: Camera tests (3) fail - need `add_entry_fab` key (requires auth)
-2. **MEDIUM**: Native automation tests fail - `openApp()` needs QUERY_ALL_PACKAGES
-3. **MEDIUM**: Hardcoded inspector name "Robert Sebastian" in settings
-4. **LOW**: Some text finders remain in tests (could be converted to Keys)
+## Known Issues (resolved this session)
+1. ~~Tests expect TabBar wizard~~ - FIXED: Tests updated for scrolling form
+2. ~~Tests expect weather icon buttons~~ - FIXED: Tests use dropdown
+3. ~~Tests expect bottom nav keys~~ - FIXED: Added 5 nav keys + updated tests
+4. ~~Silent failure on entry creation~~ - FIXED: Added error handling
+5. ~~Unsafe firstWhere in home_screen~~ - FIXED: Changed to where().firstOrNull
 
 ## Next Steps
-1. Commit router fix
-2. Add auth bypass for tests requiring authenticated state
-3. Review and fix remaining 7 failing tests
+1. Run Phase 5: Full Patrol test suite verification on device
+2. Verify expected 85-90% pass rate achieved
+3. Update documentation with final test results
+
+## Session Handoff Notes
+**IMPORTANT**: All test pattern fixes are complete. The codebase is ready for Phase 5 verification.
+
+### Session 37 Key Changes (2026-01-21)
+
+**Patrol Test Fixes**:
+| File | Changes |
+|------|---------|
+| `entry_management_test.dart` | Removed TabBar logic, added scrollUntilVisible, weather dropdown |
+| `navigation_flow_test.dart` | Key-based selectors, removed if-exists anti-patterns |
+| `REQUIRED_UI_KEYS.md` | Complete documentation rewrite |
+
+**Navigation Keys Added** (app_router.dart):
+- `bottom_navigation_bar`
+- `dashboard_nav_button`
+- `calendar_nav_button`
+- `projects_nav_button`
+- `settings_nav_button`
+
+**Async Safety Fixes**:
+- `entry_wizard_screen.dart`: Added mounted checks + error handling for entry creation
+- `home_screen.dart`: Changed unsafe firstWhere to where().firstOrNull
+
+**Code Review Findings**:
+- CRITICAL issues: Already safe (guarded by isNotEmpty)
+- HIGH issues: Fixed this session
+- Codebase has good async safety patterns overall
 
 ---
 
 ## Session Log
 
-### 2026-01-21 (Session 33): Patrol Fix Phases 3 & 4 Implementation
-- **Agents Used**: 3 (2 implementation + 1 QA)
-- **Phase 3 Completed** (test pattern improvements):
-  - Replaced text selectors with Key selectors (Tests 5, 6, 8, 9)
-  - Removed conditional if-exists patterns
-  - Added try-catch for navigation fallback
-- **Phase 4 Completed** (infrastructure improvements):
-  - Increased camera test timeouts: 10s → 30s
-  - Added contractor dialog Keys: 4 Keys added
-  - Replaced swipe gesture with delete icon tap
-  - Added setUp/tearDown memory cleanup hooks
-- **QA Review**: All changes verified, 7-8.5/10 score
-- **Files Changed**: 4 modified (44 insertions, 37 deletions)
-
-### 2026-01-21 (Session 32): Patrol Fix Phases 1 & 2 Implementation
-- **Agents Used**: 5 (3 implementation + 1 QA + 1 Code Review)
-- **Phase 1 Completed** (test file fixes):
-  - Fixed icon mismatch: `Icons.visibility` → `Icons.visibility_outlined`
-  - Fixed Key name: `register_sign_in_link` → `register_back_to_login_button`
-  - Verified assertion already present for email validation
-- **Phase 2 Completed** (screen Key additions):
-  - Added `Key('register_screen_title')` to RegisterScreen AppBar
-  - Added `Key('forgot_password_screen_title')` to ForgotPasswordScreen AppBar
-  - Added `Key('photo_capture_camera')` to photo dialog camera ListTile
-  - Added 4 Keys to ProjectSetupScreen TabBar tabs
-- **QA Review**: All changes verified, 9/10 score
-- **Code Review**: Approved for commit, 9/10 score
-- **Files Changed**: 5 modified (9 insertions, 6 deletions)
-
-### 2026-01-21 (Session 31): Name Change + Patrol Investigation + Fix Plan
-- **Agents Used**: 6 (2 Explore + 2 Flutter Specialist + 1 QA + 1 Planning)
-- **Name Change Executed**:
-  - 20 files modified across all platforms (Android, iOS, Windows, Web)
-  - Display text changed: "Construction Inspector" → "Field Guide"
-  - Package name preserved: `construction_inspector`
-  - Zero breaking changes
-- **Patrol Test Investigation**:
-  - All 17 failures diagnosed with root causes
-  - QA validated: 95% confidence, all test-side issues
-  - App code quality rated excellent
-- **Fix Plan Created**:
-  - `.claude/implementation/patrol_test_fix_plan_v2.md` (579 lines)
-  - 5 phases: Quick wins, Screen Keys, Test patterns, Infrastructure, Verification
-  - Expected: 15% → 95% pass rate (19/20 tests)
-  - Effort: 9-13 hours total
-- **Files Changed**: 20 modified (name change)
-- **New Files**: patrol_test_fix_plan_v2.md
+### 2026-01-21 (Session 37): Phases 3 & 4 + Async Safety
+- **Agents Used**: 6 (2 QA + 1 Explore + 1 Code Review + 2 Flutter Specialist)
+- **Phase 3**: Updated test patterns for UI architecture
+- **Phase 4**: Added navigation keys + fixed navigation tests
+- **Async Safety Review**: Comprehensive codebase scan
+- **Files Changed**: 6 modified (402 insertions, 473 deletions - net reduction)
+- **Analyzer**: 0 errors
 
 ### Previous Sessions
 - See .claude/logs/session-log.md for full history

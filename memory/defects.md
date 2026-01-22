@@ -33,19 +33,24 @@ Track Claude's mistakes to prevent repetition. Read before every session.
 **Prevention**: Always handle both success and failure branches
 **Ref**: @lib/features/entries/presentation/screens/entry_wizard_screen.dart:217
 
-### 2026-01-20: ProjectProvider Unsafe firstWhere [FIXED]
+### 2026-01-20: ProjectProvider Unsafe firstWhere [FIXED - VERIFIED 2026-01-21]
 **Issue**: selectProject() and toggleActive() use unsafe .first and unchecked firstWhere
 **Root Cause**: .first on empty list throws, unchecked firstWhere throws
 **Prevention**: Always use .where().firstOrNull pattern instead of firstWhere without orElse
 **Fix Applied**: Replaced all unsafe firstWhere and .first calls with .where().firstOrNull pattern across all providers
+**Verification Status**: COMPLETE - All 13 providers verified safe, BaseListProvider.getById() improved
 **Files Fixed**:
 - project_provider.dart (selectProject, toggleActive, getProjectById)
 - entry_quantity_provider.dart (removeQuantity, getQuantityById)
 - bid_item_provider.dart (getBidItemByNumber)
 - contractor_provider.dart (primeContractor getter)
-- personnel_type_provider.dart (getTypeByShortCode, getTypeByName)
+- personnel_type_provider.dart (getTypeByShortCode, getTypeByName, reorderTypes)
 - photo_provider.dart (getPhotoById)
-**Ref**: @lib/features/projects/presentation/providers/project_provider.dart:117-130,235-262
+- base_list_provider.dart (getById - changed from try/catch firstWhere to .where().firstOrNull)
+- theme_provider.dart (safe - uses firstWhere with orElse)
+- calendar_format_provider.dart (safe - uses firstWhere with orElse)
+**Verified Safe**: auth_provider, equipment_provider, sync_provider, location_provider, daily_entry_provider (no unsafe patterns)
+**Ref**: @lib/features/projects/presentation/providers/project_provider.dart:117-130,235-262, @lib/shared/providers/base_list_provider.dart:178-180
 
 ### 2026-01-20: Hardcoded Supabase Credentials [FIXED]
 **Issue**: Supabase URL and anon key committed to git
