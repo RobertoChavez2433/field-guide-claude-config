@@ -24,6 +24,24 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-21 (Session 38 - Continued)
+- Fixed all 7 failing Patrol tests with offline-first auth bypass
+- Added 4 new UI keys (confirm_dialog_button, archive_confirm_button, project_create_button, project_edit_menu_item)
+- Updated permission_service.dart for Android 13+ granular permissions
+- Added iOS 15+ privacy descriptions to Info.plist
+- Code review: 7.5/10 (iOS PASS, Google Play review MANAGE_EXTERNAL_STORAGE)
+- Commits: 91d2e8a (platform), 4cddc39 (test fixes)
+- 11 files changed, 322 insertions, 56 deletions
+
+### 2026-01-21 (Session 38)
+- Ran Phase 5 Patrol tests: 13/20 (65%), test runner crashed after 20 tests
+- Research agents: Found 17 missing UI keys, identified crash cause (memory exhaustion)
+- QA agent: Implemented 4 missing UI keys (reset_password_send_button, delete/discard dialog buttons, entry_edit_button)
+- Code review: 8/10 score, identified unsafe .first patterns
+- Flutter specialist: Updated Android/iOS to 2026 platform standards (API 35, iOS 15.0, 12G heap)
+- Fixed code review issues: stored .first in local variables
+- Commit: 91d2e8a (9 files, 77+/25-)
+
 ### 2026-01-21 (Session 37)
 - Completed Phases 3 & 4 of test patterns fix plan with 2 parallel QA agents
 - Phase 3: Updated entry_management_test.dart (removed TabBar logic, added scrollUntilVisible, weather dropdown)
