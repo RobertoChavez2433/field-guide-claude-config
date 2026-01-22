@@ -1,83 +1,95 @@
 # Current Implementation Plan
 
 **Last Updated**: 2026-01-21
-**Status**: PATROL FULL SUITE FIX - IMPLEMENTATION COMPLETE
-**Plan File**: `.claude/implementation/implementation_plan.md` (846 lines)
+**Status**: E2E TEST PLAN - APPROVED WITH CHANGES
+**Plan File**: `.claude/implementation/e2e_test_plan.md` (600+ lines)
 
 ---
 
 ## Overview
 
-**Current Focus**: Run full 84-test Patrol suite without memory crashes + fix permission issues
+**Current Focus**: Consolidate 84 Patrol tests into ~50 E2E journey tests with explicit assertions and structured logging.
 
 **Previous Work Complete**:
 - App rename "Construction Inspector" -> "Field Guide"
 - Patrol fix Phases 1-5 complete
 - Platform update to 2026 standards
+- Batched test runner created
 - 19/20 individual tests passing (95%)
 
-**Session 41 Complete**: All 4 tasks implemented and code reviewed
+**Session 44 Complete**: E2E test plan created and code-reviewed (8/10)
 
 ---
 
-## Plan Tasks - ALL COMPLETE
+## Plan Summary
 
-### Task 1: Batched Test Runner (P0) - COMPLETE
-| Item | Detail |
-|------|--------|
-| Agent | `qa-testing-agent` |
-| File | `run_patrol_batched.ps1` |
-| Solution | PowerShell script with device reset between batches |
-| Status | DONE - file created, paths corrected after review |
-
-### Task 2: Remove MANAGE_EXTERNAL_STORAGE (P0) - COMPLETE
-| Item | Detail |
-|------|--------|
-| Agent | `data-layer-agent` |
-| Risk | HIGH Google Play rejection risk - MITIGATED |
-| Solution | Removed permission, FilePicker handles scoped storage |
-| Status | DONE - permission_service.dart updated |
-
-### Task 3: Fix Permission.photos Asymmetry (P1) - COMPLETE
-| Item | Detail |
-|------|--------|
-| Agent | `data-layer-agent` |
-| Issue | Checked but never requested on Android 13+ |
-| Solution | Added Permission.photos.request() with legacy fallback |
-| Status | DONE - permission_service.dart updated |
-
-### Task 4: Fix Contractor Test (P2) - COMPLETE
-| Item | Detail |
-|------|--------|
-| Agent | `qa-testing-agent` |
-| Issue | Keyboard overlays Save button |
-| Solution | Dismiss keyboard before tap, fixed async pattern |
-| Status | DONE - contractors_flow_test.dart updated |
+| Metric | Current | Target |
+|--------|---------|--------|
+| Total tests | 84 | ~50 |
+| E2E journey tests | 0 | 33 |
+| Isolated tests | 84 | 17 |
+| Silent failures | 40% | 0% |
+| Structured logging | 0% | 100% |
+| Memory crashes | At ~20 | None |
+| Runtime | Crashes | 30-40 min |
 
 ---
 
-## Test Suite Status
+## Pre-Implementation Checklist
 
-| Category | Count | Status |
-|----------|-------|--------|
-| Unit tests | 363 | Passing |
-| Golden tests | 29 | Passing |
-| Patrol tests | 84 | Ready for batched execution |
-| Analyzer | 0 | No errors |
+From code review (8/10, approved with changes):
+
+- [ ] Widget key audit - verify which keys exist vs need adding
+- [ ] Update helper class to remove hardcoded delays
+- [ ] Add retry logic to critical operations
+- [ ] Implement screenshot capture for failures
+- [ ] Verify single test runs before batch execution
 
 ---
 
-## Next Steps
+## Implementation Phases (3-4 weeks)
 
-1. **Run batched tests**: `pwsh run_patrol_batched.ps1`
-2. **Update documentation**: tech-stack.md (compileSdk, Orchestrator versions)
-3. **Manual smoke test**: Verify on physical Android device
+### Week 1: Foundation & Core Journeys
+- [ ] Create `PatrolTestHelpers` class with logging
+- [ ] Add Phase 1 widget keys to 6 UI files
+- [ ] Implement Journey 1: Entry lifecycle (3 tests)
+- [ ] Implement Journey 4: Project management (2 tests)
+- [ ] Run Batches 1-2
+
+### Week 2: Additional Journeys & Isolated Tests
+- [ ] Implement Journey 2: Offline/sync (2 tests)
+- [ ] Implement Journey 5: Photo flow (2 tests)
+- [ ] Migrate permission tests (6 tests)
+- [ ] Migrate validation tests (5 tests)
+- [ ] Run Batches 3-6
+
+### Week 3-4: Cleanup & Validation
+- [ ] Delete/archive old test files
+- [ ] Full regression (all 9 batches)
+- [ ] Fix flaky tests
+- [ ] Documentation update
+
+---
+
+## Test Batches
+
+| Batch | Tests | Type | Duration |
+|-------|-------|------|----------|
+| 1 | Entry lifecycle (5) | E2E | ~3 min |
+| 2 | Project & Settings (4) | E2E | ~2 min |
+| 3 | Offline & Photos (4) | E2E | ~3 min |
+| 4 | Navigation E2E (3) | E2E | ~2 min |
+| 5 | Camera permissions (3) | Isolated | ~2 min |
+| 6 | Location & Validation (5) | Isolated | ~2 min |
+| 7 | Auth & Nav edge (5) | Isolated | ~2 min |
+| 8 | App lifecycle (4) | Isolated | ~3 min |
+| 9 | Smoke tests (3) | E2E | ~2 min |
 
 ---
 
 ## Related Files
 
-- Full plan: `.claude/implementation/implementation_plan.md`
+- Full E2E plan: `.claude/implementation/e2e_test_plan.md`
 - Session state: `.claude/plans/_state.md`
 - Latest session: `.claude/docs/latest-session.md`
 - Defect log: `.claude/memory/defects.md`
@@ -85,4 +97,4 @@
 ---
 
 **Last Updated**: 2026-01-21
-**Session**: 41
+**Session**: 44

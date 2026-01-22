@@ -1,105 +1,88 @@
 # Session State
 
 ## Current Phase
-**Phase**: Test Expansion Planning - COMPLETE
-**Subphase**: Ready for implementation
+**Phase**: E2E Test Plan - APPROVED WITH CHANGES
+**Subphase**: Pre-implementation checklist
 **Last Updated**: 2026-01-21
 
-## Last Session Work (Session 43)
-- Context resumption from Session 42
-- Quick session - no code changes
-- Previous exploration agents completed their analysis
-- Test expansion plan remains ready for implementation
-
-## Session 42 Accomplishments (For Reference)
-- Updated tech-stack.md (compileSdk 36, Orchestrator 1.6.1)
-- Fixed PowerShell batched test script (array iteration + patrol test command)
-- Fixed Gradle exit code parsing (parse test summary, not exit code)
-- Ran code review on last 10 commits (found 3 new defects)
-- Comprehensive test coverage exploration (3 agents)
-- Created test expansion plan (120+ new tests in 4 phases)
-- QA review of plan (8.5/10 score - approve with modifications)
+## Session 44 Work
+- Created comprehensive E2E test plan via 4-agent process:
+  1. Research Agent 1: Analyzed current test patterns (47 keys, 40% silent failures)
+  2. Research Agent 2: Mapped UI screens and journeys (21 screens, 71 existing keys)
+  3. QA Agent: Created 600+ line E2E test plan
+  4. Code Review Agent: Reviewed plan (8/10, approved with changes)
+- Cleaned up .claude folder (49 → 34 files)
+- Updated E2E plan with code review feedback
 
 ## Decisions Made
-1. Parse Patrol test summary output instead of relying on Gradle exit code
-2. Test expansion: 4 phases (Validation, CRUD, Photos, E2E)
-3. Widget key audit required before implementing tests
-4. Photo tests require real devices (emulators lack camera hardware)
+1. Consolidate 84 tests → ~50 tests (33 E2E + 17 isolated)
+2. Add widget keys BEFORE implementing tests
+3. Use explicit assertions (no more silent `.exists` checks)
+4. Structured logging format: `[TEST_NAME][STEP N][TIMESTAMP]`
+5. Batch size: 5-7 tests per batch (9 batches total)
+6. Timeline: 3-4 weeks for implementation
 
 ## Open Questions
-1. Should widget keys be added before or in parallel with test implementation?
-2. Should batch strategy be updated for more realistic 5-test-per-run constraint?
+1. Should widget key audit be done manually or via automated script?
+2. Priority of E2E journeys: Entry lifecycle first, or project management?
 
-## Known Issues (All RESOLVED)
+## Known Issues (All RESOLVED from previous sessions)
 1. **Memory crashes**: FIXED via batched test runner
 2. **MANAGE_EXTERNAL_STORAGE**: FIXED - removed
 3. **Permission.photos**: FIXED - asymmetry resolved
 4. **Contractor test**: FIXED - keyboard overlay resolved
-5. **Gradle exit code**: FIXED - parse test summary instead of exit code
+5. **Gradle exit code**: FIXED - parse test summary instead
 
-## Next Steps (Test Expansion)
-1. **P0**: Widget key audit - identify missing keys needed for tests
-2. **P1**: Add missing widget keys to UI screens (flutter-specialist-agent)
-3. **P2**: Implement Phase 1 - Form Validation tests (32 tests)
-4. **P3**: Implement Phase 2 - CRUD Completeness tests (32 tests)
-5. **P4**: Implement Phase 3 - Photo workflows (15 tests)
-6. **P5**: Implement Phase 4 - E2E workflows (41 tests)
+## Next Steps (E2E Test Implementation)
+1. **P0**: Widget key audit - verify existing vs needed keys
+2. **P1**: Add Phase 1 widget keys to UI files (6 files)
+3. **P2**: Create `PatrolTestHelpers` class with logging
+4. **P3**: Implement Journey 1: Entry lifecycle tests (3 tests)
+5. **P4**: Run Batch 1, fix issues, continue
 
 ## Session Handoff Notes
-**IMPORTANT**: Test expansion plan complete and QA reviewed (8.5/10). Ready to implement 120+ new tests in 4 phases. Widget key audit required first.
+**IMPORTANT**: E2E test plan approved with 8/10 score. Must complete pre-implementation checklist before starting:
+- Widget key audit
+- Remove hardcoded delays from helper class
+- Add retry logic for flaky operations
 
-### Session 42 Key Deliverables (2026-01-22)
+### Session 44 Deliverables (2026-01-21)
 
 **Files Created/Modified**:
 | File | Status | Description |
 |------|--------|-------------|
-| `.claude/memory/tech-stack.md` | MODIFIED | compileSdk 36, Orchestrator 1.6.1 |
-| `.claude/CLAUDE.md` | MODIFIED | Platform version updates |
-| `run_patrol_batched.ps1` | MODIFIED | Fixed array iteration, patrol test command, test summary parsing |
-| `.claude/memory/defects.md` | MODIFIED | Added 4 new defects |
-| `.claude/implementation/test_expansion_plan.md` | NEW | 600+ line comprehensive test expansion plan |
+| `.claude/implementation/e2e_test_plan.md` | NEW | 600+ line comprehensive E2E test plan |
+| `.claude/plans/_state.md` | MODIFIED | Updated session state |
+| `.claude/docs/latest-session.md` | MODIFIED | Session 44 summary |
+| 15 old files | DELETED | Cleaned up outdated plans |
 
-**Test Expansion Plan Summary**:
-- Current: 85 tests across 13 files
-- Target: 205 tests across 16 files (+120 tests)
-- 4 Phases: Validation (32) → CRUD (32) → Photos (15) → E2E (41)
-- QA Review: 8.5/10, approve with modifications
-
-**Code Review Summary**:
-- Last 10 commits: 3 new defects found (mounted checks, hardcoded delays)
-- Session changes: Plan approved with modifications
+**E2E Test Plan Summary**:
+- Current: 84 tests (crashes at ~20)
+- Target: ~50 tests (33 E2E + 17 isolated)
+- Batches: 9 batches of 5-7 tests
+- Runtime: 30-40 minutes (completes successfully)
+- Code Review: 8/10, approved with changes
 
 ---
 
 ## Session Log
 
-### 2026-01-22 (Session 42): Test Expansion Planning
-- **Focus**: Analyze test gaps, create expansion plan
-- **Agents Used**: 3 Explore (test coverage, UI screens, data models) + 1 Planning + 1 QA Review
-- **Deliverables**: test_expansion_plan.md, defects.md updates, PowerShell fixes
-- **Files Changed**: 5 modified (+1 new plan)
-- **Status**: Plan complete, ready for implementation
+### 2026-01-21 (Session 44): E2E Test Plan Creation
+- **Focus**: Create comprehensive E2E test consolidation plan
+- **Agents Used**: 2 Explore + 1 QA + 1 Code Review
+- **Deliverables**: e2e_test_plan.md (600+ lines)
+- **Files Changed**: 1 new, 15 deleted (cleanup)
+- **Status**: Plan approved, ready for pre-implementation checklist
 
-### 2026-01-21 (Session 41): Implementation
-- **Focus**: Execute 4-task implementation plan
-- **Agents Used**: 4 implementation (parallel) + 2 code review (parallel)
-- **Deliverables**: run_patrol_batched.ps1, permission service fixes, test fixes
-- **Files Changed**: 3 modified (+1 new)
-- **Status**: Complete, ready for testing
-
-### 2026-01-21 (Session 40): Research + Planning
-- **Focus**: Investigate memory crashes, permission issues, test failures
-- **Agents Used**: 4 Explore agents + 1 Planning agent (parallel)
-- **Deliverable**: 846-line implementation plan
-- **Files Changed**: 1 (implementation_plan.md updated)
+### 2026-01-22 (Session 43): Context Resumption
+- **Focus**: Quick session - no code changes
 - **Status**: Plan ready for implementation
 
-### 2026-01-21 (Session 39): Patrol Platform + Test Fixes
-- **Focus**: Fix Patrol test infrastructure issues
-- **Test Results**: 19/20 passing (95%), up from 75%
-- **Platform**: compileSdk 36, orchestrator 1.6.1, QUERY_ALL_PACKAGES
-- **Test Infra**: Init delays, explicit appId, longer timeouts
-- **Files Changed**: 6 modified (72 insertions, 33 deletions)
+### 2026-01-22 (Session 42): Test Expansion Planning
+- **Focus**: Analyze test gaps, create expansion plan
+- **Agents Used**: 3 Explore + 1 Planning + 1 QA Review
+- **Deliverables**: test_expansion_plan.md (superseded by e2e_test_plan.md)
+- **Status**: Superseded by E2E consolidation approach
 
 ### Previous Sessions
 - See .claude/logs/session-log.md for full history
