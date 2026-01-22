@@ -24,6 +24,22 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-22 (Session 50): Token Optimization
+- Archived 30+ fixed defects to defects-archive.md (370→68 lines)
+- Consolidated _state.md, latest-session.md, current-plan.md into single file
+- Trimmed tech-stack.md (121→32 lines)
+- Simplified resume-session (reads 2 files instead of 8)
+- Updated end-session.md, planning-agent.md references
+- Estimated savings: ~4-5k tokens per session startup
+
+### 2026-01-22 (Session 49): Cleanup & Assessment
+- Verified E2E fix plan Tasks 1-4 complete (via Explore agent)
+- Deleted obsolete plan files: e2e_test_plan.md (1250 lines), e2e_fix_plan.md (356 lines)
+- Consolidated _state.md and current-plan.md
+- Cleaned global .claude caches: freed 1.77GB (debug, paste-cache, file-history, old sessions)
+- Committed test quality fixes: takeScreenshot() fix, DRY helper, delay reductions
+- Commit: 1c0efd6
+
 ### 2026-01-21 (Session 45): E2E Test Implementation
 - Multi-agent implementation: 14 agents total
 - Created 3 E2E test files (entry_lifecycle, offline_sync, settings_theme)
