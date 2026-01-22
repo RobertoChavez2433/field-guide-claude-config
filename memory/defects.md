@@ -12,6 +12,13 @@ Track Claude's mistakes to prevent repetition. Read before every session.
 
 ## Logged Defects
 
+### 2026-01-21: PatrolIntegrationTester.takeScreenshot() Doesn't Exist
+**Issue**: Patrol tests fail to build with "The method 'takeScreenshot' isn't defined for the type 'PatrolIntegrationTester'"
+**Root Cause**: patrol_test_helpers.dart:436 calls `$.takeScreenshot(name)` but this method doesn't exist in Patrol 3.20.0
+**Prevention**: Check Patrol API documentation before using methods; screenshot is likely `$.native.takeScreenshot()` or needs different approach
+**Fix Needed**: Remove or replace takeScreenshot call in patrol_test_helpers.dart:436
+**Ref**: @integration_test/patrol/helpers/patrol_test_helpers.dart:436
+
 ### 2026-01-21: Patrol openApp() Empty Package Name
 **Issue**: Patrol's `openApp()` native action passed empty package name causing test failure
 **Root Cause**: Patrol CLI doesn't always infer package name from patrol.yaml config

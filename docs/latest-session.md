@@ -1,83 +1,56 @@
-# Last Session: 2026-01-21 (Session 46)
+# Last Session: 2026-01-21 (Session 47)
 
 ## Summary
-E2E test implementation Phase 2. Fixed 3 code review issues from Session 45, then used 10 concurrent agents to complete remaining test plan items. Implemented Journey 4 (Project management - 5 tests), Journey 5 (Photo flow - 3 tests), and migrated 21 isolated tests. Code review ratings: 3.5-4/5. All E2E test plan journeys now complete.
+Research and planning session for E2E test code review fixes. Used Explore agent to find exact locations of all 4 known issues, then Planning agent to create comprehensive fix plan. Attempted device test run but discovered blocking build error - takeScreenshot() method doesn't exist in Patrol 3.20.0.
 
 ## Completed
-- [x] Fix: Hardcoded delay in offline_sync_test.dart - replaced with condition-based wait
-- [x] Fix: Duplicate cancel_dialog_button key - renamed to entry_delete_cancel_button
-- [x] Fix: Missing await before .exists checks - added pumpAndSettle
-- [x] E2E: Implemented Journey 4 (Project management - 5 tests)
-- [x] E2E: Implemented Journey 5 (Photo flow - 3 tests)
-- [x] Isolated: Camera permission tests (3 tests)
-- [x] Isolated: Location permission tests (3 tests)
-- [x] Isolated: Entry validation tests (4 tests)
-- [x] Isolated: Auth validation tests (3 tests)
-- [x] Isolated: Navigation edge tests (4 tests)
-- [x] Isolated: App lifecycle tests (4 tests)
-- [x] Code Review: All changes reviewed (3 agents, ratings 3.5-4/5)
+- [x] Research: Found exact line numbers for all 4 code review issues
+- [x] Plan: Created `.claude/implementation/e2e_fix_plan.md` with 5 tasks
+- [x] Defect: Logged takeScreenshot() blocking error
+
+## Not Completed
+- [ ] Device test run - blocked by build error
+- [ ] Code fixes - deferred per user request
 
 ## Files Created
-| File | Action | Description |
-|------|--------|-------------|
-| `project_management_test.dart` | Created | Journey 4: Create/edit project (5 tests) |
-| `photo_flow_test.dart` | Created | Journey 5: Camera/gallery photo (3 tests) |
-| `camera_permission_test.dart` | Created | Permission grant/denial/reopen (3 tests) |
-| `location_permission_test.dart` | Created | Permission grant/denial/weather (3 tests) |
-| `entry_validation_test.dart` | Created | Required fields, draft, submit (4 tests) |
-| `auth_validation_test.dart` | Created | Email, password validation (3 tests) |
-| `navigation_edge_test.dart` | Created | Tab switching, state, back (4 tests) |
-| `app_lifecycle_test.dart` | Created | Launch, background, restart (4 tests) |
-| `isolated/README.md` | Created | Documentation for isolated tests |
+| File | Description |
+|------|-------------|
+| `.claude/implementation/e2e_fix_plan.md` | 5-task fix plan for code review issues |
 
 ## Files Modified
-| File | Action | Description |
-|------|--------|-------------|
-| `offline_sync_test.dart` | Fixed | Replaced 3-second delay with condition-based wait |
-| `settings_theme_test.dart` | Fixed | Added await before 11 .exists checks |
-| `entry_lifecycle_test.dart` | Fixed | Added await before .exists checks |
-| `home_screen.dart` | Fixed | Renamed duplicate key to entry_delete_cancel_button |
+| File | Changes |
+|------|-------------|
+| `.claude/memory/defects.md` | Added takeScreenshot() defect |
+| `.claude/plans/_state.md` | Updated session state |
 
 ## Plan Status
-- Status: E2E Test Plan COMPLETE
-- Completed: All 5 journeys, 21 isolated tests, 3 code review fixes
-- Tests Added: 29 new tests (8 E2E + 21 isolated)
-- Total E2E Tests: 17 tests across 5 files
-- Total Isolated Tests: 21 tests across 6 files
+- Status: FIX PLAN READY - BLOCKED BY BUILD ERROR
+- Completed: Research, plan creation
+- Remaining: Fix takeScreenshot(), then 5 tasks in fix plan
 
 ## Next Priorities
-1. **P0**: Run E2E tests on device to validate implementation
-2. **P1**: Address minor code review findings (hardcoded delays, DRY)
-3. **P2**: Validate 100% assertion coverage on device
+1. **P0 BLOCKER**: Fix `patrol_test_helpers.dart:436` - remove/replace takeScreenshot()
+2. **P1**: Run E2E tests on device
+3. **P2**: Execute fix plan (5 tasks)
+4. **P3**: Validate assertion coverage
 
-## Code Review Findings (Session 46)
-### E2E Tests (3.5-4/5)
-- High: Hardcoded 1-2 second delays in photo_flow_test.dart
-- Medium: Inconsistent helper initialization in settings_theme_test.dart
-- All widget keys verified to exist in lib/ files
+## Research Findings
 
-### Isolated Tests (4/5)
-- High: Hardcoded delays >500ms in location_permission_test.dart
-- Medium: Duplicate camera button search logic (DRY opportunity)
-- 21 tests created with proper TestContext logging
+### Issue Locations (from Explore agent)
+| Issue | File | Lines |
+|-------|------|-------|
+| Photo delays | photo_flow_test.dart | 67, 75, 153, 162 |
+| Helper init | settings_theme_test.dart | 16, 88, 219, 276 |
+| Camera DRY | camera_permission_test.dart | 43-80, 145-183, 238-276, 304-321 |
+| Location delays | location_permission_test.dart | 22, 77, 105, 160, 186, 240 |
 
-### Last Commit (4/5)
-- Approve with minor fixes
-- TestContext implementation is solid
+## Blockers
+- **CRITICAL**: `takeScreenshot()` method doesn't exist in PatrolIntegrationTester (Patrol 3.20.0)
+- Location: `integration_test/patrol/helpers/patrol_test_helpers.dart:436`
+- Error: "The method 'takeScreenshot' isn't defined for the type 'PatrolIntegrationTester'"
 
 ## Agents Used
 | Agent | Task | Status |
 |-------|------|--------|
-| code-review-agent | Fix 3 issues | Complete |
-| flutter-specialist-agent | Journey 4 - Create project | Complete |
-| flutter-specialist-agent | Journey 4 - Edit project | Complete |
-| flutter-specialist-agent | Journey 5 - Camera photo | Complete |
-| flutter-specialist-agent | Journey 5 - Gallery photo | Complete |
-| qa-testing-agent | Isolated batch 1 (permissions, validation) | Complete |
-| qa-testing-agent | Isolated batch 2 (navigation, lifecycle) | Complete |
-| code-review-agent | Review E2E tests | Complete |
-| code-review-agent | Review isolated tests | Complete |
-| code-review-agent | Review last commit | Complete |
-
-## Blockers
-None - all E2E test plan items complete, ready for device validation
+| Explore | Research 4 known issues | Complete |
+| planning-agent | Create fix plan | Complete |

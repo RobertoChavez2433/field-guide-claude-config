@@ -1,43 +1,41 @@
 # Session State
 
 ## Current Phase
-**Phase**: E2E Test Implementation - Phase 1 & 2 Complete
-**Subphase**: All journeys implemented, isolated tests migrated, ready for device validation
+**Phase**: E2E Test Fix Plan Ready - Blocking Build Error
+**Subphase**: Fix takeScreenshot() method before device validation
 **Last Updated**: 2026-01-21
 
-## Session 46 Work
-- Fixed 3 code review issues from Session 45:
-  - Hardcoded delay in offline_sync_test.dart - replaced with condition-based wait
-  - Duplicate cancel_dialog_button key - renamed to entry_delete_cancel_button
-  - Missing await before .exists checks - added pumpAndSettle
-- Implemented Journey 4: Project management E2E tests (5 tests)
-- Implemented Journey 5: Photo flow E2E tests (3 tests)
-- Migrated 21 isolated tests (permissions, validation, navigation, lifecycle)
-- Code review of all changes (3 agents, ratings 3.5-4/5)
+## Session 47 Work
+- Researched 4 known code review issues with exact line numbers
+- Created comprehensive fix plan: `.claude/implementation/e2e_fix_plan.md`
+- Attempted device test run - discovered blocking build error
+- Logged defect: `takeScreenshot()` method doesn't exist in Patrol 3.20.0
 
 ## Decisions Made
-1. Use dynamic keys with IDs: `Key('entry_card_${entry.id}')`
-2. TestContext class for structured logging: `[TEST_NAME][STEP N][TIMESTAMP]`
-3. PatrolTestConfig presets: standard, slow, permissions
-4. Isolated tests use "Isolated:" prefix for easy identification
+1. Fix plan organized into 3 phases: Critical delays, Pattern standardization, Device validation
+2. All fix tasks assigned to qa-testing-agent
 
 ## Open Questions
-None - All E2E test plan items complete
+None
+
+## Blocking Issue (Session 47)
+**ERROR**: `patrol_test_helpers.dart:436` calls `$.takeScreenshot(name)` but method doesn't exist in PatrolIntegrationTester
+**Fix Needed**: Remove or replace the takeScreenshot call before tests can run
 
 ## Known Issues from Code Review (Session 46)
-1. **Hardcoded delays in photo_flow_test.dart**: 1-2 second delays for camera/gallery
-2. **Inconsistent helper initialization**: settings_theme_test.dart uses direct constructor
-3. **Duplicate camera button search logic**: DRY opportunity in isolated tests
-4. **Hardcoded delays in location_permission_test.dart**: Over 500ms threshold
+1. **Hardcoded delays in photo_flow_test.dart**: Lines 67, 75, 153, 162 (1-2 sec delays)
+2. **Inconsistent helper initialization**: settings_theme_test.dart lines 16, 88, 219, 276
+3. **Duplicate camera button search logic**: camera_permission_test.dart lines 43-80, 145-183, 238-276, 304-321
+4. **Hardcoded delays in location_permission_test.dart**: Lines 22, 77, 105, 160, 186, 240
 
 ## Next Steps
-1. **P0**: Run E2E tests on device to validate implementation
-2. **P1**: Address code review findings (hardcoded delays, DRY refactoring)
-3. **P2**: Validate 100% assertion coverage on device
-4. **P3**: Continue with any remaining test plan items
+1. **P0 BLOCKER**: Fix takeScreenshot() in patrol_test_helpers.dart:436
+2. **P1**: Run E2E tests on device to validate implementation
+3. **P2**: Address code review findings per fix plan
+4. **P3**: Validate 100% assertion coverage on device
 
 ## Session Handoff Notes
-**IMPORTANT**: All E2E test plan journeys (1-5) are now implemented with 21 isolated tests migrated. Tests are ready for device validation. Code review found minor issues primarily around hardcoded delays and DRY opportunities - not blocking for testing.
+**CRITICAL**: Tests cannot run until takeScreenshot() is fixed. The fix plan is ready at `.claude/implementation/e2e_fix_plan.md` with 5 tasks. Once the blocking error is fixed, device validation can proceed.
 
 ### Session 46 Deliverables (2026-01-21)
 
@@ -70,6 +68,13 @@ None - All E2E test plan items complete
 ---
 
 ## Session Log
+
+### 2026-01-21 (Session 47): E2E Fix Plan & Device Test Attempt
+- **Focus**: Research code review issues, create fix plan, run device tests
+- **Agents Used**: 1 Explore + 1 planning-agent = 2 agents
+- **Deliverables**: Fix plan with 5 tasks, defect logged
+- **Blocker Found**: takeScreenshot() doesn't exist in Patrol 3.20.0
+- **Status**: Plan ready, blocked by build error
 
 ### 2026-01-21 (Session 46): E2E Test Implementation Phase 2
 - **Focus**: Complete remaining E2E test plan + code review fixes
