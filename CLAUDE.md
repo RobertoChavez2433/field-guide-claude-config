@@ -59,6 +59,38 @@ lib/
 Screen -> Provider -> Repository -> SQLite (local) -> Supabase (sync)
 ```
 
+## Platform Requirements (2026 Standards)
+
+### Android
+| Component | Version | Notes |
+|-----------|---------|-------|
+| compileSdk | 35 | Android 15 - Latest stable |
+| targetSdk | 35 | Required for Play Store |
+| minSdk | 24 | Android 7.0 - Drops devices older than 7 years |
+| Gradle | 8.14 | Latest stable |
+| Kotlin | 2.2.20 | Latest stable |
+| Java | 17 | LTS version |
+
+### iOS
+| Component | Version | Notes |
+|-----------|---------|-------|
+| Minimum iOS | 15.0 | Drops iOS 13/14 for better performance |
+| Xcode | 15.0+ | Required for iOS 15+ support |
+
+### Test Configuration
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| Test Orchestrator | 1.5.2 | Proper test isolation |
+| JVM Heap (Tests) | 12G | Prevents OOM in long test runs |
+| Max Tests Per Batch | 5 | Memory resets between batches |
+| Patrol | 3.20.0 | Native automation |
+
+### Key Files
+- `android/app/build.gradle.kts` - SDK versions, test options
+- `android/gradle.properties` - JVM heap, Gradle settings
+- `ios/Runner.xcodeproj/project.pbxproj` - iOS deployment target
+- `.claude/docs/2026-platform-standards-update.md` - Full documentation
+
 ## Repositories
 | Repo | URL |
 |------|-----|

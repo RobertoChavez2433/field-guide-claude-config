@@ -7,6 +7,33 @@
 | Dart | 3.10+ | https://dart.dev/guides |
 | SDK | ^3.10.7 | pubspec.yaml |
 
+## Platform Requirements (2026 Standards)
+
+### Android
+| Component | Version | Notes |
+|-----------|---------|-------|
+| compileSdk | 35 (Android 15) | Latest stable for 2026 |
+| targetSdk | 35 | Required for Play Store |
+| minSdk | 24 (Android 7.0) | Drops devices older than 7 years |
+| Gradle | 8.14 | Latest stable |
+| Android Gradle Plugin | 8.11.1 | Latest stable |
+| Kotlin | 2.2.20 | Latest stable |
+| Java | 17 | LTS version |
+
+### iOS
+| Component | Version | Notes |
+|-----------|---------|-------|
+| Minimum iOS | 15.0 | Drops iOS 13/14 for better performance |
+| Xcode | 15.0+ | Required for iOS 15+ support |
+
+### Test Configuration
+| Component | Version | Purpose |
+|-----------|---------|---------|
+| Test Orchestrator | 1.5.2 | Proper test isolation |
+| Patrol | 3.20.0 | Native automation |
+| JVM Heap (Tests) | 12G | Prevents OOM in long test runs |
+| Max Tests Per Device | 5 | Memory exhaustion prevention |
+
 ## State Management
 | Package | Version | Docs |
 |---------|---------|------|
