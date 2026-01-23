@@ -1,23 +1,22 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 76
+**Last Updated**: 2026-01-23 | **Session**: 77
 
 ## Current Phase
 - **Phase**: E2E Test Stability - IN PROGRESS
-- **Status**: PR-3A complete, 12 PRs remaining
+- **Status**: PR-3B complete, 11 PRs remaining
 
-## Last Session (Session 76)
-**Summary**: Migrated auth_flow_test.dart and navigation_flow_test.dart from pumpAndSettle to explicit waits (PR-3A).
+## Last Session (Session 77)
+**Summary**: Migrated entry_lifecycle_test.dart and entry_management_test.dart from pumpAndSettle to explicit waits (PR-3B).
 
 **Key Changes**:
-- **PR-3A**: Migrated 28 pumpAndSettle calls in auth_flow_test.dart
-- **PR-3A**: Migrated 43 pumpAndSettle calls in navigation_flow_test.dart
-- **PR-3A**: Removed Future.delayed anti-pattern from auth test
-- **PR-3A**: Added explicit waitUntilVisible calls after navigation actions
+- **PR-3B**: Migrated 1 pumpAndSettle call in entry_lifecycle_test.dart
+- **PR-3B**: Migrated 40 pumpAndSettle calls in entry_management_test.dart
+- **PR-3B**: All calls replaced with pump() + existing waitUntilVisible patterns
 
 **Files Updated**:
-- `integration_test/patrol/e2e_tests/auth_flow_test.dart` - 28 pumpAndSettle → pump + waitUntilVisible
-- `integration_test/patrol/e2e_tests/navigation_flow_test.dart` - 43 pumpAndSettle → pump + waitUntilVisible
+- `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart` - 1 pumpAndSettle → pump
+- `integration_test/patrol/e2e_tests/entry_management_test.dart` - 40 pumpAndSettle → pump
 
 ## Active Plan
 **Status**: IN PROGRESS - Phase 3 started (PR-3A complete)
@@ -30,7 +29,7 @@
 - [x] PR-2A: Add TestModeConfig to main.dart + guard timers
 - [x] PR-2B: Disable animations (ADB commands documented)
 - [x] PR-3A: Migrate auth_flow_test.dart + navigation_flow_test.dart (~71 pumpAndSettle)
-- [ ] PR-3B: Migrate entry_lifecycle_test.dart + entry_management_test.dart
+- [x] PR-3B: Migrate entry_lifecycle_test.dart + entry_management_test.dart (~41 pumpAndSettle)
 - [ ] PR-3C: Migrate project_management_test.dart + contractors_flow_test.dart + quantities_flow_test.dart
 - [ ] PR-3D: Migrate settings_theme_test.dart + offline_sync_test.dart + photo_flow_test.dart
 
