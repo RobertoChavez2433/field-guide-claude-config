@@ -1,36 +1,31 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 81
+**Last Updated**: 2026-01-23 | **Session**: 82
 
 ## Current Phase
 - **Phase**: E2E Test Stability - IN PROGRESS
-- **Status**: PR-5A complete, Phase 5 (Service Stubs) started
+- **Status**: PR-5B complete, Phase 5 (Service Stubs) nearly done
 
-## Last Session (Session 81)
-**Summary**: Implemented PR-5A (Mock Supabase Auth) for testing auth flows without network.
+## Last Session (Session 82)
+**Summary**: Migrated isolated tests to explicit waits, completed PR-5B (Mock Weather API), and conducted code review of Phases 4 & 5.
 
 **Key Changes**:
-- **PR-5A**: Added mock auth mode to TestModeConfig (MOCK_AUTH, AUTO_LOGIN dart-defines)
-- **PR-5A**: Updated AuthProvider to support mock authentication internally
-- **PR-5A**: Added userEmail/userId getters for consistent access in both modes
-- **PR-5A**: Updated app_router to bypass auth when mock auth + auto-login enabled
-- **PR-5A**: Updated settings_screen to use new userEmail getter
-- **Fix**: Added missing today() implementations to RealTimeProvider/FixedTimeProvider
+- **Isolated Tests**: Migrated 6 test files, replaced 57 pumpAndSettle calls with explicit waits
+- **PR-5B**: Added MOCK_WEATHER dart-define flag to TestModeConfig
+- **PR-5B**: Updated WeatherService to return mock data (no network/location permissions needed)
+- **Code Review**: Phases 4 & 5 approved with minor suggestions
 
 **Files Updated**:
-- `lib/core/config/test_mode_config.dart` - Added MOCK_AUTH, AUTO_LOGIN, mock user config
-- `lib/features/auth/presentation/providers/auth_provider.dart` - Added mock auth support
-- `lib/core/router/app_router.dart` - Added mock auth bypass in redirect
-- `lib/features/settings/presentation/screens/settings_screen.dart` - Use userEmail getter
-- `lib/shared/time_provider.dart` - Fixed missing today() overrides
+- `integration_test/patrol/isolated/*.dart` - 6 files migrated to explicit waits
+- `lib/core/config/test_mode_config.dart` - Added MOCK_WEATHER, mockWeatherCondition, mockTempHigh, mockTempLow
+- `lib/features/weather/services/weather_service.dart` - Mock location (Denver) and mock weather data
 
-**Test Credentials** (mock mode):
-- Email: `test@example.com`
-- Password: `Test123!`
-- User ID: `test-user-001`
+**Code Review Findings**:
+- **Phase 4**: Approved. Minor: TestSeedData uses DateTime.now() (consider fixed dates)
+- **Phase 5**: Approved. Important: Router auth check inconsistency when useMockAuth=true but autoLogin=false
 
 ## Active Plan
-**Status**: IN PROGRESS - Phase 5 (Service Stubs) STARTED
+**Status**: IN PROGRESS - Phase 5 (Service Stubs) NEARLY COMPLETE
 
 **Plan Reference**: `.claude/plans/E2E_TEST_STABILITY_PLAN.md`
 
@@ -46,10 +41,11 @@
 - [x] PR-4A: State Reset + SharedPreferences Cleanup
 - [x] PR-4B: Fixed Clock/Time Provider
 - [x] PR-5A: Mock Supabase Auth
+- [x] Isolated tests migration (57 pumpAndSettle)
+- [x] PR-5B: Mock Weather API
 
 **Next Tasks**:
-- [ ] Migrate isolated/ tests (~60 pumpAndSettle remaining across 6 files)
-- [ ] PR-5B: Mock Weather API
+- [ ] PR-5C: Mock Supabase Data (optional - full offline)
 - [ ] PR-6A: Permission Automation
 - [ ] PR-7A: Enforce Key-Only Selectors
 
