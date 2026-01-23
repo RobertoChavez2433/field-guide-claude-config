@@ -1,31 +1,31 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 86
+**Last Updated**: 2026-01-23 | **Session**: 88
 
 ## Current Phase
-- **Phase**: E2E Test Stability - IN PROGRESS
-- **Status**: PR-7A complete, Phase 7 (Test Hygiene) started
+- **Phase**: CI Fix (Post E2E Stability)
+- **Status**: Plan created, ready to implement
 
-## Last Session (Session 86)
-**Summary**: Completed PR-7B (Test Independence Audit) - added explicit seed data initialization to tests using TestSeedData, documented independence pattern.
+## Last Session (Session 88)
+**Summary**: Diagnosed CI failures from PR-8 push. Created fix plan for 4 failing jobs.
 
-**Key Changes**:
-- Added `setUpAll` with `TestDatabaseHelper.ensureSeedData()` to 4 test files using seed data
-- Added "Test Independence" documentation section to test file headers
-- Updated README with comprehensive test independence section (PR-7B)
-- Tests now explicitly ensure seed data before running, can pass in any order
+**CI Failures Found**:
+1. E2E Code Quality - False positive: grep finding `Key('...')` in comments
+2. Flutter Analyze - 5 compilation errors (unused legacy helpers, mock field mismatches)
+3. Unit Tests - Failing due to compilation errors
 
-**Files Updated**:
-- `integration_test/patrol/e2e_tests/contractors_flow_test.dart` - Added setUpAll + ensureSeedData
-- `integration_test/patrol/e2e_tests/quantities_flow_test.dart` - Added setUpAll + ensureSeedData
-- `integration_test/patrol/e2e_tests/entry_management_test.dart` - Added setUpAll + ensureSeedData
-- `integration_test/patrol/isolated/entry_validation_test.dart` - Added setUpAll + ensureSeedData
-- `integration_test/patrol/README.md` - Added Test Independence section
+**Plan Created**: `.claude/plans/fizzy-sparking-steele.md`
 
-**Previous Session (Session 85)**: PR-7A (Enforce Key-Only Selectors) complete.
+**Files to Fix (Next Session)**:
+- `.github/workflows/e2e-tests.yml` - Fix grep to exclude comments
+- `integration_test/helpers/` - Delete entire folder (legacy, unused)
+- `test/helpers/mocks/mock_repositories.dart` - Fix Photo.entryId, Contractor.contactName
+- `test/features/auth/.../auth_provider_test.dart` - Fix nullable User
+
+**Previous Session (Session 87)**: Completed PR-8 (CI Guardrails).
 
 ## Active Plan
-**Status**: IN PROGRESS - Phase 6 (Device/Permissions) COMPLETE
+**Status**: COMPLETE
 
 **Plan Reference**: `.claude/plans/E2E_TEST_STABILITY_PLAN.md`
 
@@ -48,9 +48,10 @@
 - [x] PR-6B: Preflight Checklist + Documentation
 - [x] PR-7A: Enforce Key-Only Selectors (replaced find.byType with TestingKeys + seed data)
 - [x] PR-7B: Test Independence Audit (ensureSeedData + docs)
+- [x] PR-8: CI Guardrails (GitHub Actions + flake tracking)
 
 **Next Tasks**:
-- [ ] PR-8: CI Guardrails
+- [ ] Fix CI failures (see `.claude/plans/fizzy-sparking-steele.md`)
 
 ## Key Decisions
 - **Test consolidation**: Legacy tests move to `e2e_tests/`, permission tests stay in `isolated/`
@@ -64,7 +65,8 @@
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| E2E Test Stability | PLANNED (17 PRs) | `.claude/plans/E2E_TEST_STABILITY_PLAN.md` |
+| CI Fix | READY | `.claude/plans/fizzy-sparking-steele.md` |
+| E2E Test Stability | COMPLETE (17 PRs) | `.claude/plans/E2E_TEST_STABILITY_PLAN.md` |
 | E2E Key Coverage | COMPLETE | `.claude/plans/CODEX.md` |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 | Inspector Toolbox | Ready to start | `.claude/plans/memoized-sauteeing-mist-agent-a98b468.md` |

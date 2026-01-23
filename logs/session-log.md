@@ -24,6 +24,25 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-23 (Session 88): CI Failure Diagnosis
+- Diagnosed CI failures from PR-8 commit (14a7ed8)
+- Root causes identified:
+  - E2E Code Quality: grep matching Key() in comments (false positive)
+  - Flutter Analyze: 5 errors - unused legacy helpers, mock field mismatches
+  - Unit Tests: Compilation errors in mock_repositories.dart
+- Created fix plan: `.claude/plans/fizzy-sparking-steele.md`
+- No code changes (planning only session)
+
+### 2026-01-23 (Session 87): PR-8 - CI Guardrails + Code Review
+- **PR-8**: CI Guardrails - GitHub Actions workflows for E2E test stability
+  - `.github/workflows/e2e-tests.yml` - PR lint, smoke test, full suite on main
+  - `.github/workflows/nightly-e2e.yml` - 3x repetition, flake rate tracking (5% threshold)
+  - `scripts/check-pumpandsettle.sh` - Blocks PRs with new pumpAndSettle usage
+- **Code Review**: Phases 5C-8 - PASS with minor recommendations
+  - Priority 1: Fix README pumpAndSettle example, add ensureSeedData to more tests
+- **Commit**: `14a7ed8` feat(e2e): Add CI guardrails for E2E test stability (PR-8)
+- **E2E Test Stability Plan**: COMPLETE (17 PRs)
+
 ### 2026-01-23 (Session 86): PR-7B - Test Independence Audit
 - **PR-7B**: Test Independence Audit - ensure tests run in any order
   - Added `setUpAll` with `TestDatabaseHelper.ensureSeedData()` to 4 test files
