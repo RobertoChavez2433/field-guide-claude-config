@@ -24,6 +24,20 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-23 (Session 80): PR-4A/4B - Deterministic State
+- **PR-4A**: State Reset + SharedPreferences Cleanup
+  - Added clearSharedPreferences() to TestDatabaseHelper
+  - Added resetAllState() combining DB clear + prefs clear
+  - Added resetAndSeed() for full reset + data seeding
+  - Added convenience methods to PatrolTestConfig
+- **PR-4B**: Fixed Clock/Time Provider
+  - Created TimeProvider interface with now()/today() methods
+  - Added RealTimeProvider (production) and FixedTimeProvider (tests)
+  - Added AppTime static class with auto-selection based on test mode
+- **Files**: test_database_helper.dart, test_config.dart, time_provider.dart (NEW), shared.dart
+- **Commit**: `a5de5fe` feat(e2e): Add state reset and time provider for deterministic tests
+- **Next**: Migrate isolated/ tests (~60 pumpAndSettle remaining)
+
 ### 2026-01-23 (Session 79): PR-3D + Code Review Phases 1-3
 - **Completed PR-3D**: Migrated settings_theme_test.dart (23), offline_sync_test.dart (17), photo_flow_test.dart (11) from pumpAndSettle to pump()
 - **Code Review**: Ran code-review-agent on Phases 1-3, grade B+

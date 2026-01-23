@@ -1,36 +1,35 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 79
+**Last Updated**: 2026-01-23 | **Session**: 80
 
 ## Current Phase
 - **Phase**: E2E Test Stability - IN PROGRESS
-- **Status**: PR-3D complete, Phase 3 DONE, 7 PRs remaining
+- **Status**: PR-4A/4B complete, Phase 4 (Deterministic State) DONE
 
-## Last Session (Session 79)
-**Summary**: Completed PR-3D migration and ran code review on phases 1-3. Fixed critical issues found in review (missing TestingKeys, legacy pumpAndSettle in test_config.dart).
+## Last Session (Session 80)
+**Summary**: Implemented PR-4A (State Reset + SharedPreferences Cleanup) and PR-4B (Fixed Clock/Time Provider) for deterministic test state.
 
 **Key Changes**:
-- **PR-3D**: Migrated 23 pumpAndSettle in settings_theme_test.dart
-- **PR-3D**: Migrated 17 pumpAndSettle in offline_sync_test.dart
-- **PR-3D**: Migrated 11 pumpAndSettle in photo_flow_test.dart
-- **Code Review Fixes**: Added missing TestingKeys (loginScreen, bottomNavCalendar)
-- **Code Review Fixes**: Migrated legacy pumpAndSettle in test_config.dart
+- **PR-4A**: Added clearSharedPreferences() to TestDatabaseHelper
+- **PR-4A**: Added resetAllState() combining DB clear + prefs clear
+- **PR-4A**: Added resetAndSeed() for full reset + data seeding
+- **PR-4A**: Added convenience methods to PatrolTestConfig
+- **PR-4B**: Created TimeProvider interface (now(), today())
+- **PR-4B**: Added RealTimeProvider (production) and FixedTimeProvider (tests)
+- **PR-4B**: Added AppTime static class with auto-selection based on test mode
 
 **Files Updated**:
-- `integration_test/patrol/e2e_tests/settings_theme_test.dart` - 23 pumpAndSettle → pump
-- `integration_test/patrol/e2e_tests/offline_sync_test.dart` - 17 pumpAndSettle → pump
-- `integration_test/patrol/e2e_tests/photo_flow_test.dart` - 11 pumpAndSettle → pump
-- `integration_test/patrol/test_config.dart` - Legacy pumpAndSettle migrated
-- `lib/shared/testing_keys.dart` - Added loginScreen, bottomNavCalendar
-
-**Code Review Summary**: Grade B+ - Migration successful with good architecture. Suggested Phase 4 for isolated/ tests.
+- `integration_test/patrol/helpers/test_database_helper.dart` - Added state reset methods
+- `integration_test/patrol/test_config.dart` - Added resetState() convenience methods
+- `lib/shared/time_provider.dart` - NEW: TimeProvider abstraction
+- `lib/shared/shared.dart` - Added time_provider export
 
 ## Active Plan
-**Status**: IN PROGRESS - Phase 3 COMPLETE
+**Status**: IN PROGRESS - Phase 4 (Deterministic State) COMPLETE
 
 **Plan Reference**: `.claude/plans/E2E_TEST_STABILITY_PLAN.md`
 
-**Next Tasks** (Critical Path):
+**Completed Tasks**:
 - [x] PR-1A: Add wait helpers + fix patrol_test_helpers.dart (30 pumpAndSettle)
 - [x] PR-1B: Migrate app_smoke_test.dart (UNBLOCKS ALL TESTING)
 - [x] PR-2A: Add TestModeConfig to main.dart + guard timers
@@ -39,7 +38,14 @@
 - [x] PR-3B: Migrate entry_lifecycle_test.dart + entry_management_test.dart (~41 pumpAndSettle)
 - [x] PR-3C: Migrate project_management_test.dart + contractors_flow_test.dart + quantities_flow_test.dart (~81 pumpAndSettle)
 - [x] PR-3D: Migrate settings_theme_test.dart + offline_sync_test.dart + photo_flow_test.dart (~51 pumpAndSettle)
-- [ ] Phase 4: Migrate isolated/ tests (~67 pumpAndSettle remaining)
+- [x] PR-4A: State Reset + SharedPreferences Cleanup
+- [x] PR-4B: Fixed Clock/Time Provider
+
+**Next Tasks**:
+- [ ] Migrate isolated/ tests (~60 pumpAndSettle remaining across 6 files)
+- [ ] PR-5A: Mock Supabase Auth
+- [ ] PR-6A: Permission Automation
+- [ ] PR-7A: Enforce Key-Only Selectors
 
 ## Key Decisions
 - **Test consolidation**: Legacy tests move to `e2e_tests/`, permission tests stay in `isolated/`
