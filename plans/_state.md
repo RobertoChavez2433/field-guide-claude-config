@@ -1,30 +1,31 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 72
+**Last Updated**: 2026-01-23 | **Session**: 73
 
 ## Current Phase
-- **Phase**: E2E Test Stability - PLANNED
-- **Status**: Comprehensive 17-PR plan created, ready for implementation
+- **Phase**: E2E Test Stability - IN PROGRESS
+- **Status**: PR-1A complete, 16 PRs remaining
 
-## Last Session (Session 72)
-**Summary**: Reviewed and rewrote E2E_TEST_STABILITY_PLAN.md with PR-sized phases. Analyzed existing test infrastructure, identified gaps in original plan.
+## Last Session (Session 73)
+**Summary**: Implemented PR-1A - Added wait helpers and removed all 30 pumpAndSettle calls from patrol_test_helpers.dart.
 
-**Key Findings**:
-- Existing infrastructure is solid (TestSeedData, TestDatabaseHelper, PatrolTestHelpers all exist)
-- Original plan had 7 large PRs, revised to 17 PR-sized chunks
-- 282 total pumpAndSettle calls to migrate (30 in helpers, 252 in tests)
-- Missing: App test mode flag in main.dart
+**Key Changes**:
+- Added `waitForAppReady()` - waits for nav bar or login screen
+- Added `waitForScreen(Key)` - waits for specific screen
+- Added `waitWithTimeout(finder)` - capped retry with diagnostics
+- Added `pumpAndWait({milliseconds})` - lightweight pump + delay
+- Replaced all 30 `pumpAndSettle` calls with explicit waits
 
 **Files Updated**:
-- `.claude/plans/E2E_TEST_STABILITY_PLAN.md` - Comprehensive 17-PR plan with dependency graph
+- `integration_test/patrol/helpers/patrol_test_helpers.dart` - All helpers now use explicit waits
 
 ## Active Plan
-**Status**: READY - Plan approved, implementation can begin
+**Status**: IN PROGRESS - PR-1A complete
 
 **Plan Reference**: `.claude/plans/E2E_TEST_STABILITY_PLAN.md`
 
 **Next Tasks** (Critical Path):
-- [ ] PR-1A: Add wait helpers + fix patrol_test_helpers.dart (30 pumpAndSettle)
+- [x] PR-1A: Add wait helpers + fix patrol_test_helpers.dart (30 pumpAndSettle)
 - [ ] PR-1B: Migrate app_smoke_test.dart (UNBLOCKS ALL TESTING)
 - [ ] PR-2A: Add TestModeConfig to main.dart + guard timers
 - [ ] PR-3A-3D: Migrate remaining 10 E2E test files
