@@ -1,34 +1,38 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 83
+**Last Updated**: 2026-01-23 | **Session**: 84
 
 ## Current Phase
 - **Phase**: E2E Test Stability - IN PROGRESS
-- **Status**: PR-5C complete, Phase 5 (Service Stubs) COMPLETE
+- **Status**: PR-6A/6B complete, Phase 6 (Device/Permissions) COMPLETE
 
-## Last Session (Session 83)
-**Summary**: Completed PR-5C (Mock Supabase Data) - enables fully offline E2E tests by mocking sync operations.
+## Last Session (Session 84)
+**Summary**: Completed PR-6A (Permission Automation) and PR-6B (E2E Test Setup Documentation) concurrently.
 
 **Key Changes**:
-- **PR-5C**: Added MOCK_DATA dart-define flag to TestModeConfig
-- **PR-5C**: Created MockSyncAdapter implementing SyncAdapter interface
-- **PR-5C**: Updated SyncOrchestrator to use MockSyncAdapter when MOCK_DATA=true
-- **PR-5C**: Updated SyncService to skip network calls and queue operations in mock mode
+- **PR-6A**: Added `autoGrantAllPermissions()` helper to patrol_test_helpers.dart
+- **PR-6A**: Added `grantAllPermissions()` and `handleAnyPermissionDialog()` helpers
+- **PR-6A**: Added permission constants and `logPermissionCommands()` to PatrolTestConfig
+- **PR-6A**: Created `grant-permissions.sh` script for ADB permission automation
+- **PR-6B**: Created comprehensive E2E test setup documentation
 
 **Files Updated**:
-- `lib/core/config/test_mode_config.dart` - Added useMockData flag
-- `lib/features/sync/data/adapters/mock_sync_adapter.dart` - New mock adapter
-- `lib/features/sync/data/adapters/adapters.dart` - Added export
-- `lib/features/sync/application/sync_orchestrator.dart` - Conditional adapter selection
-- `lib/services/sync_service.dart` - Mock mode guards for syncAll() and queueOperation()
+- `integration_test/patrol/helpers/patrol_test_helpers.dart` - Permission automation helpers
+- `integration_test/patrol/test_config.dart` - Permission constants and logging
+- `integration_test/grant-permissions.sh` - New ADB permission grant script
+- `.claude/docs/e2e-test-setup.md` - New comprehensive setup guide
 
 **Usage**:
 ```bash
+# Grant all permissions before tests
+./integration_test/grant-permissions.sh
+
+# Run tests with full offline mode
 patrol test --dart-define=PATROL_TEST=true --dart-define=MOCK_DATA=true
 ```
 
 ## Active Plan
-**Status**: IN PROGRESS - Phase 5 (Service Stubs) COMPLETE
+**Status**: IN PROGRESS - Phase 6 (Device/Permissions) COMPLETE
 
 **Plan Reference**: `.claude/plans/E2E_TEST_STABILITY_PLAN.md`
 
@@ -47,10 +51,13 @@ patrol test --dart-define=PATROL_TEST=true --dart-define=MOCK_DATA=true
 - [x] Isolated tests migration (57 pumpAndSettle)
 - [x] PR-5B: Mock Weather API
 - [x] PR-5C: Mock Supabase Data (full offline capability)
+- [x] PR-6A: Permission Automation
+- [x] PR-6B: Preflight Checklist + Documentation
 
 **Next Tasks**:
-- [ ] PR-6A: Permission Automation
 - [ ] PR-7A: Enforce Key-Only Selectors
+- [ ] PR-7B: Test Independence Audit
+- [ ] PR-8: CI Guardrails
 
 ## Key Decisions
 - **Test consolidation**: Legacy tests move to `e2e_tests/`, permission tests stay in `isolated/`
