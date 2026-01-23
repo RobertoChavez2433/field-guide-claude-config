@@ -1,32 +1,36 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 74
+**Last Updated**: 2026-01-23 | **Session**: 75
 
 ## Current Phase
 - **Phase**: E2E Test Stability - IN PROGRESS
-- **Status**: PR-1B complete, 15 PRs remaining
+- **Status**: PR-2B complete, 13 PRs remaining
 
-## Last Session (Session 74)
-**Summary**: Implemented PR-1B - Migrated app_smoke_test.dart to use explicit waits instead of pumpAndSettle.
+## Last Session (Session 75)
+**Summary**: Implemented PR-2A (TestModeConfig) and PR-2B (ADB animation disable docs).
 
 **Key Changes**:
-- Replaced all 4 `pumpAndSettle` calls with helper methods
-- Removed all 4 `Future.delayed` hardcoded waits
-- Now uses `launchAppAndWait()`, `pressNativeHome()`, `bringAppToForeground()`, `navigateToSettings()`
-- Added proper test logging with `ctx.logComplete()`
+- **PR-2A**: Created `TestModeConfig` class to detect test mode via `PATROL_TEST=true`
+- **PR-2A**: Guards SyncService connectivity listener and debounced sync
+- **PR-2B**: Documented ADB commands to disable animations (cleaner than code changes)
 
 **Files Updated**:
-- `integration_test/patrol/e2e_tests/app_smoke_test.dart` - Migrated to explicit waits
+- `lib/core/config/test_mode_config.dart` - New TestModeConfig class
+- `lib/main.dart` - Import and log test mode status
+- `lib/services/sync_service.dart` - Guard background operations
+- `patrol.yaml` - Add dart_defines for PATROL_TEST
+- `integration_test/patrol/setup_patrol.md` - ADB animation disable commands
 
 ## Active Plan
-**Status**: IN PROGRESS - PR-1B complete (testing unblocked)
+**Status**: IN PROGRESS - Phase 2 complete (PR-2A, PR-2B)
 
 **Plan Reference**: `.claude/plans/E2E_TEST_STABILITY_PLAN.md`
 
 **Next Tasks** (Critical Path):
 - [x] PR-1A: Add wait helpers + fix patrol_test_helpers.dart (30 pumpAndSettle)
 - [x] PR-1B: Migrate app_smoke_test.dart (UNBLOCKS ALL TESTING)
-- [ ] PR-2A: Add TestModeConfig to main.dart + guard timers
+- [x] PR-2A: Add TestModeConfig to main.dart + guard timers
+- [x] PR-2B: Disable animations (ADB commands documented)
 - [ ] PR-3A-3D: Migrate remaining 10 E2E test files
 
 ## Key Decisions
