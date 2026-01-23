@@ -24,6 +24,21 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-23 (Session 69): E2E Auth + Legacy Migration (Phase 8)
+- **Completed Phase 8 of E2E Key Coverage Remediation Plan**
+- Moved legacy tests to `e2e_tests/`:
+  - `app_smoke_test.dart`, `auth_flow_test.dart`, `entry_management_test.dart`
+- Fixed hardcoded key in `auth_flow_test.dart`:
+  - Changed `Key('reset_password_submit_button')` to `TestingKeys.resetPasswordSendButton`
+- Deleted duplicate/superseded legacy files from `patrol/` root:
+  - `camera_permission_test.dart`, `location_permission_test.dart` (duplicates of isolated/)
+  - `project_management_test.dart` (duplicate of e2e_tests/)
+  - `settings_flow_test.dart`, `photo_capture_test.dart` (superseded by consolidated tests)
+- Updated `test_bundle.dart` with clean import structure (17 tests: 11 e2e + 6 isolated)
+- **Final Structure**: `patrol/` root has only `test_config.dart`
+- **Commit**: `36bb20f` feat(e2e): Migrate auth and legacy tests, clean duplicates (Phase 8)
+- **Next**: Phase 9 - Final cleanup + documentation
+
 ### 2026-01-23 (Session 66): E2E Contractor Flow Keys (Phase 5)
 - **Implemented Phase 5 of E2E Key Coverage Remediation Plan**
 - Added contractor keys to `lib/shared/testing_keys.dart`:

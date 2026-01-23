@@ -1,32 +1,31 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 68
+**Last Updated**: 2026-01-23 | **Session**: 69
 
 ## Current Phase
-- **Phase**: E2E Key Coverage Remediation - Phase 7 COMPLETE
-- **Status**: Offline/sync keys added and test migrated
+- **Phase**: E2E Key Coverage Remediation - Phase 8 COMPLETE
+- **Status**: Auth + legacy test migration done
 
-## Last Session (Session 68)
-**Summary**: Implemented Phase 7 of E2E remediation plan - added sync-related TestingKeys, added keys to settings_screen.dart for sync UI elements, consolidated legacy offline_mode_test.dart into e2e_tests/offline_sync_test.dart with 6 comprehensive tests.
+## Last Session (Session 69)
+**Summary**: Completed Phase 8 - migrated remaining legacy tests to e2e_tests/, fixed hardcoded key in auth_flow_test.dart, deleted duplicate legacy files, updated test_bundle.dart.
 
 **Files Modified**:
-- `lib/shared/testing_keys.dart` - Added 6 sync keys (offlineIndicator, pendingChangesCount, lastSyncTimestamp, syncProgressIndicator, syncErrorMessage, settingsSyncSection)
-- `lib/features/settings/presentation/screens/settings_screen.dart` - Added keys to sync section header, pending changes tile, error message tile
-- `integration_test/patrol/e2e_tests/offline_sync_test.dart` - Consolidated 6 tests using TestingKeys
-- `integration_test/test_bundle.dart` - Removed legacy import
-- `integration_test/patrol/offline_mode_test.dart` - Deleted legacy file
+- `integration_test/patrol/e2e_tests/auth_flow_test.dart` - Moved + fixed hardcoded Key('reset_password_submit_button') to use TestingKeys
+- `integration_test/patrol/e2e_tests/app_smoke_test.dart` - Moved from patrol/ root
+- `integration_test/patrol/e2e_tests/entry_management_test.dart` - Moved from patrol/ root
+- `integration_test/test_bundle.dart` - Updated imports and groups for new structure
 
-**Changes Made**:
-- Added sync section key to Cloud Sync header
-- Added pendingChangesCount key to pending changes ListTile
-- Added syncErrorMessage key to error display ListTile
-- Expanded offline_sync_test from 2 to 6 tests:
-  - Create entry and verify sync pending status
-  - Trigger manual sync from settings
-  - Verify sync status indicators in settings
-  - Toggle auto-sync WiFi setting
-  - Entry persists after app backgrounding
-  - Multiple entries queue for sync
+**Files Deleted** (duplicates/superseded):
+- `integration_test/patrol/project_management_test.dart` (duplicate of e2e_tests version)
+- `integration_test/patrol/camera_permission_test.dart` (duplicate of isolated version)
+- `integration_test/patrol/location_permission_test.dart` (duplicate of isolated version)
+- `integration_test/patrol/settings_flow_test.dart` (superseded by settings_theme_test)
+- `integration_test/patrol/photo_capture_test.dart` (merged into photo_flow_test)
+
+**Final Structure**:
+- `patrol/` root: Only test_config.dart remains
+- `patrol/e2e_tests/`: 11 consolidated E2E test files
+- `patrol/isolated/`: 6 permission/edge case test files
 
 ## Active Plan
 **Status**: IN PROGRESS
@@ -42,9 +41,9 @@
 - [x] Phase 5: Contractor flow keys + test migration
 - [x] Phase 6: Navigation + helper normalization
 - [x] Phase 7: Offline/sync keys + test migration
+- [x] Phase 8: Auth + legacy test migration
 
 **Next Tasks**:
-- [ ] Phase 8: Auth + legacy test migration
 - [ ] Phase 9: Final cleanup + documentation
 
 ## Key Decisions
