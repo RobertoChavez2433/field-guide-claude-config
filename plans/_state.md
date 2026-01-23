@@ -1,27 +1,32 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 78
+**Last Updated**: 2026-01-23 | **Session**: 79
 
 ## Current Phase
 - **Phase**: E2E Test Stability - IN PROGRESS
-- **Status**: PR-3C complete, 10 PRs remaining
+- **Status**: PR-3D complete, Phase 3 DONE, 7 PRs remaining
 
-## Last Session (Session 78)
-**Summary**: Migrated project_management_test.dart, contractors_flow_test.dart, and quantities_flow_test.dart from pumpAndSettle to explicit waits (PR-3C).
+## Last Session (Session 79)
+**Summary**: Completed PR-3D migration and ran code review on phases 1-3. Fixed critical issues found in review (missing TestingKeys, legacy pumpAndSettle in test_config.dart).
 
 **Key Changes**:
-- **PR-3C**: Migrated 19 pumpAndSettle calls in project_management_test.dart
-- **PR-3C**: Migrated 25 pumpAndSettle calls in contractors_flow_test.dart
-- **PR-3C**: Migrated 37 pumpAndSettle calls in quantities_flow_test.dart
-- **PR-3C**: Also removed hardcoded Future.delayed in project_management_test.dart
+- **PR-3D**: Migrated 23 pumpAndSettle in settings_theme_test.dart
+- **PR-3D**: Migrated 17 pumpAndSettle in offline_sync_test.dart
+- **PR-3D**: Migrated 11 pumpAndSettle in photo_flow_test.dart
+- **Code Review Fixes**: Added missing TestingKeys (loginScreen, bottomNavCalendar)
+- **Code Review Fixes**: Migrated legacy pumpAndSettle in test_config.dart
 
 **Files Updated**:
-- `integration_test/patrol/e2e_tests/project_management_test.dart` - 19 pumpAndSettle → pump
-- `integration_test/patrol/e2e_tests/contractors_flow_test.dart` - 25 pumpAndSettle → pump
-- `integration_test/patrol/e2e_tests/quantities_flow_test.dart` - 37 pumpAndSettle → pump
+- `integration_test/patrol/e2e_tests/settings_theme_test.dart` - 23 pumpAndSettle → pump
+- `integration_test/patrol/e2e_tests/offline_sync_test.dart` - 17 pumpAndSettle → pump
+- `integration_test/patrol/e2e_tests/photo_flow_test.dart` - 11 pumpAndSettle → pump
+- `integration_test/patrol/test_config.dart` - Legacy pumpAndSettle migrated
+- `lib/shared/testing_keys.dart` - Added loginScreen, bottomNavCalendar
+
+**Code Review Summary**: Grade B+ - Migration successful with good architecture. Suggested Phase 4 for isolated/ tests.
 
 ## Active Plan
-**Status**: IN PROGRESS - Phase 3 started (PR-3A complete)
+**Status**: IN PROGRESS - Phase 3 COMPLETE
 
 **Plan Reference**: `.claude/plans/E2E_TEST_STABILITY_PLAN.md`
 
@@ -33,7 +38,8 @@
 - [x] PR-3A: Migrate auth_flow_test.dart + navigation_flow_test.dart (~71 pumpAndSettle)
 - [x] PR-3B: Migrate entry_lifecycle_test.dart + entry_management_test.dart (~41 pumpAndSettle)
 - [x] PR-3C: Migrate project_management_test.dart + contractors_flow_test.dart + quantities_flow_test.dart (~81 pumpAndSettle)
-- [ ] PR-3D: Migrate settings_theme_test.dart + offline_sync_test.dart + photo_flow_test.dart
+- [x] PR-3D: Migrate settings_theme_test.dart + offline_sync_test.dart + photo_flow_test.dart (~51 pumpAndSettle)
+- [ ] Phase 4: Migrate isolated/ tests (~67 pumpAndSettle remaining)
 
 ## Key Decisions
 - **Test consolidation**: Legacy tests move to `e2e_tests/`, permission tests stay in `isolated/`
