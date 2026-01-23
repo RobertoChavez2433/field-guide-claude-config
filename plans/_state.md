@@ -1,35 +1,28 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 84
+**Last Updated**: 2026-01-23 | **Session**: 86
 
 ## Current Phase
 - **Phase**: E2E Test Stability - IN PROGRESS
-- **Status**: PR-6A/6B complete, Phase 6 (Device/Permissions) COMPLETE
+- **Status**: PR-7A complete, Phase 7 (Test Hygiene) started
 
-## Last Session (Session 84)
-**Summary**: Completed PR-6A (Permission Automation) and PR-6B (E2E Test Setup Documentation) concurrently.
+## Last Session (Session 86)
+**Summary**: Completed PR-7B (Test Independence Audit) - added explicit seed data initialization to tests using TestSeedData, documented independence pattern.
 
 **Key Changes**:
-- **PR-6A**: Added `autoGrantAllPermissions()` helper to patrol_test_helpers.dart
-- **PR-6A**: Added `grantAllPermissions()` and `handleAnyPermissionDialog()` helpers
-- **PR-6A**: Added permission constants and `logPermissionCommands()` to PatrolTestConfig
-- **PR-6A**: Created `grant-permissions.sh` script for ADB permission automation
-- **PR-6B**: Created comprehensive E2E test setup documentation
+- Added `setUpAll` with `TestDatabaseHelper.ensureSeedData()` to 4 test files using seed data
+- Added "Test Independence" documentation section to test file headers
+- Updated README with comprehensive test independence section (PR-7B)
+- Tests now explicitly ensure seed data before running, can pass in any order
 
 **Files Updated**:
-- `integration_test/patrol/helpers/patrol_test_helpers.dart` - Permission automation helpers
-- `integration_test/patrol/test_config.dart` - Permission constants and logging
-- `integration_test/grant-permissions.sh` - New ADB permission grant script
-- `.claude/docs/e2e-test-setup.md` - New comprehensive setup guide
+- `integration_test/patrol/e2e_tests/contractors_flow_test.dart` - Added setUpAll + ensureSeedData
+- `integration_test/patrol/e2e_tests/quantities_flow_test.dart` - Added setUpAll + ensureSeedData
+- `integration_test/patrol/e2e_tests/entry_management_test.dart` - Added setUpAll + ensureSeedData
+- `integration_test/patrol/isolated/entry_validation_test.dart` - Added setUpAll + ensureSeedData
+- `integration_test/patrol/README.md` - Added Test Independence section
 
-**Usage**:
-```bash
-# Grant all permissions before tests
-./integration_test/grant-permissions.sh
-
-# Run tests with full offline mode
-patrol test --dart-define=PATROL_TEST=true --dart-define=MOCK_DATA=true
-```
+**Previous Session (Session 85)**: PR-7A (Enforce Key-Only Selectors) complete.
 
 ## Active Plan
 **Status**: IN PROGRESS - Phase 6 (Device/Permissions) COMPLETE
@@ -53,10 +46,10 @@ patrol test --dart-define=PATROL_TEST=true --dart-define=MOCK_DATA=true
 - [x] PR-5C: Mock Supabase Data (full offline capability)
 - [x] PR-6A: Permission Automation
 - [x] PR-6B: Preflight Checklist + Documentation
+- [x] PR-7A: Enforce Key-Only Selectors (replaced find.byType with TestingKeys + seed data)
+- [x] PR-7B: Test Independence Audit (ensureSeedData + docs)
 
 **Next Tasks**:
-- [ ] PR-7A: Enforce Key-Only Selectors
-- [ ] PR-7B: Test Independence Audit
 - [ ] PR-8: CI Guardrails
 
 ## Key Decisions

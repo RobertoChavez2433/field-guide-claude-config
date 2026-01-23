@@ -24,6 +24,22 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-23 (Session 86): PR-7B - Test Independence Audit
+- **PR-7B**: Test Independence Audit - ensure tests run in any order
+  - Added `setUpAll` with `TestDatabaseHelper.ensureSeedData()` to 4 test files
+  - contractors_flow_test.dart, quantities_flow_test.dart, entry_management_test.dart, entry_validation_test.dart
+  - Added Test Independence documentation to test file headers
+  - Updated README with comprehensive Test Independence section
+- **Commit**: `86808a8` feat(e2e): Add test independence with explicit seed data (PR-7B)
+- **Next**: PR-8 (CI Guardrails)
+
+### 2026-01-23 (Session 85): PR-7A - Enforce Key-Only Selectors
+- **PR-7A**: Replace brittle find.byType selectors with TestingKeys + seed data IDs
+  - Replaced find.byType(Card/ListTile/TextField).first patterns
+  - Used TestSeedData.projectId, entryId, bidItemId, locationId
+  - 7 test files updated, ~10 brittle selectors fixed
+- **Commit**: `a917b75` feat(e2e): Enforce key-only selectors with seed data IDs (PR-7A)
+
 ### 2026-01-23 (Session 81): PR-5A - Mock Supabase Auth
 - **PR-5A**: Mock Supabase Auth for network-free testing
   - Added MOCK_AUTH, AUTO_LOGIN dart-define flags to TestModeConfig
