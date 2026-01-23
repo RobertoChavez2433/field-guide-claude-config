@@ -63,6 +63,15 @@ await $.waitUntilVisible(finder);
 **Pattern**: Using `rethrow` in .catchError() or onError callbacks
 **Prevention**: Use `throw error` in callbacks, `rethrow` only in catch blocks
 
+### Hardcoded Test Widget Keys
+**Pattern**: Using `Key('widget_name')` directly in both widgets and tests
+**Prevention**:
+- Always use `TestingKeys` class from `lib/shared/testing_keys.dart`
+- Never hardcode `Key('...')` in widgets or tests
+- Add new keys to TestingKeys when adding testable widgets
+**Impact**: 14+ tests excluded from test bundle, navigation helpers broken
+**Ref**: @.claude/plans/e2e-testing-remediation-plan.md
+
 ---
 
 <!-- Add new defects above this line -->

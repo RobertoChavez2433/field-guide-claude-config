@@ -29,6 +29,30 @@ Historical record of completed work. NOT loaded into agent context.
 - **Phase 2**: Updated 15 UI files to use TestingKeys instead of hardcoded Key() strings
 - **Files Created**: testing_keys.dart (centralized keys class)
 
+### 2026-01-22 (Session 59): E2E Remediation Complete (Phase 6-7)
+- **Phase 6**: Golden test comparator setup
+  - Created `test/flutter_test_config.dart` with TolerantGoldenFileComparator (0.1% tolerance)
+  - Deleted 20 failure images, added `.gitkeep`, updated `.gitignore`
+  - Updated `test/golden/README.md` with comprehensive documentation
+- **Phase 7**: Documentation updates
+  - Updated `integration_test/patrol/REQUIRED_UI_KEYS.md` with TestingKeys reference
+  - Created `.claude/docs/testing-guide.md` (complete E2E testing guide)
+  - Added "Hardcoded Test Widget Keys" defect to defects.md
+  - Updated `qa-testing-agent.md` to reference testing-guide.md
+- **E2E Testing Remediation Plan COMPLETE** (all 7 phases finished)
+- **Commit**: `cd33635` feat(e2e): Complete Phase 6-7 - golden test comparator and documentation
+- **Next**: Inspector Toolbox, Pagination, or other Future Work items
+
+### 2026-01-22 (Session 58): E2E TestingKeys Migration (Phase 4-5)
+- **Phase 4**: Added 11 missing tests to test_bundle.dart (5 e2e_tests, 6 isolated)
+- **Phase 5**: Migrated 23+ test files to use TestingKeys (~200 key replacements)
+- Added 7 new keys to TestingKeys: entryWizardSave, entryWizardFinalize, entryWizardComplete, entryWizardCancel, projectCancelButton, datePickerOk, datePickerCancel
+- Code review approved Phase 4-5
+- **Files Modified**: test_bundle.dart, testing_keys.dart, 23 test files
+- **Verification**: `flutter analyze integration_test/` - 0 errors
+- **Commits**: `ffee4fb`, `9173835`
+- **Next**: Phase 6-7 (golden test comparator, documentation)
+
 ### 2026-01-22 (Session 57): E2E Test Helpers (Phase 3) + Code Review
 - **Phase 3**: Updated 3 test helper files to use TestingKeys
 - Added `DialogType` enum to patrol_test_helpers.dart for handling 3 cancel button variants
