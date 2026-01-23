@@ -1,34 +1,33 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 71
+**Last Updated**: 2026-01-23 | **Session**: 72
 
 ## Current Phase
-- **Phase**: E2E Test Execution - BLOCKED
-- **Status**: pumpAndSettle timeout issue identified, fix plan created
+- **Phase**: E2E Test Stability - PLANNED
+- **Status**: Comprehensive 17-PR plan created, ready for implementation
 
-## Last Session (Session 71)
-**Summary**: Attempted to run full E2E test suite on connected device. Tests hang on `pumpAndSettle` in app_smoke_test.dart. Created detailed diagnostic report with fix plan.
-
-**Files Created**:
-- `.claude/plans/e2e-test-report-2026-01-23.md` - Detailed test report with root cause analysis and fix plan
+## Last Session (Session 72)
+**Summary**: Reviewed and rewrote E2E_TEST_STABILITY_PLAN.md with PR-sized phases. Analyzed existing test infrastructure, identified gaps in original plan.
 
 **Key Findings**:
-- Tests build successfully (16-35s)
-- First test ("app launches successfully") hangs indefinitely
-- Root cause: `pumpAndSettle` never settles due to continuous activity (timers, animations, auth listeners)
-- Build environment issue: stale lock files from crashed tests (resolved)
+- Existing infrastructure is solid (TestSeedData, TestDatabaseHelper, PatrolTestHelpers all exist)
+- Original plan had 7 large PRs, revised to 17 PR-sized chunks
+- 282 total pumpAndSettle calls to migrate (30 in helpers, 252 in tests)
+- Missing: App test mode flag in main.dart
 
-**Device**: Samsung Galaxy S21 Ultra (SM-G996U) - Android 13
+**Files Updated**:
+- `.claude/plans/E2E_TEST_STABILITY_PLAN.md` - Comprehensive 17-PR plan with dependency graph
 
 ## Active Plan
-**Status**: BLOCKED - Requires pumpAndSettle fix
+**Status**: READY - Plan approved, implementation can begin
 
-**Plan Reference**: `.claude/plans/e2e-test-report-2026-01-23.md`
+**Plan Reference**: `.claude/plans/E2E_TEST_STABILITY_PLAN.md`
 
-**Next Tasks**:
-- [ ] Fix app_smoke_test.dart - replace pumpAndSettle with explicit waits
-- [ ] Audit all 11 test files for pumpAndSettle usage
-- [ ] Consider app-level test mode to disable non-essential timers
+**Next Tasks** (Critical Path):
+- [ ] PR-1A: Add wait helpers + fix patrol_test_helpers.dart (30 pumpAndSettle)
+- [ ] PR-1B: Migrate app_smoke_test.dart (UNBLOCKS ALL TESTING)
+- [ ] PR-2A: Add TestModeConfig to main.dart + guard timers
+- [ ] PR-3A-3D: Migrate remaining 10 E2E test files
 
 ## Key Decisions
 - **Test consolidation**: Legacy tests move to `e2e_tests/`, permission tests stay in `isolated/`
@@ -42,7 +41,7 @@
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| E2E pumpAndSettle Fix | BLOCKING | `.claude/plans/e2e-test-report-2026-01-23.md` |
+| E2E Test Stability | PLANNED (17 PRs) | `.claude/plans/E2E_TEST_STABILITY_PLAN.md` |
 | E2E Key Coverage | COMPLETE | `.claude/plans/CODEX.md` |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 | Inspector Toolbox | Ready to start | `.claude/plans/memoized-sauteeing-mist-agent-a98b468.md` |

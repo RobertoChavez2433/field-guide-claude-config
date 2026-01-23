@@ -24,6 +24,14 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-23 (Session 72): E2E Stability Plan Revision
+- Reviewed existing E2E_TEST_STABILITY_PLAN.md and identified gaps
+- Analyzed test infrastructure: found TestSeedData, TestDatabaseHelper, PatrolTestHelpers all exist
+- Identified 282 pumpAndSettle calls (30 in helpers, 252 in tests)
+- Rewrote plan: 7 large PRs -> 17 PR-sized phases with dependency graph
+- Key gap: No app test mode flag exists in main.dart
+- Plan approved and saved to `.claude/plans/E2E_TEST_STABILITY_PLAN.md`
+
 ### 2026-01-23 (Session 71): E2E Test Execution - pumpAndSettle Issue
 - **Attempted full E2E test suite run on connected device**
 - Tests build successfully but hang on first test (app_smoke_test.dart)
