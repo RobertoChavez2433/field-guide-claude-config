@@ -24,6 +24,26 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-23 (Session 61): E2E Seed Data Fixtures (Phase 0)
+- **Implemented Phase 0 of E2E Key Coverage Remediation Plan**
+- Created `integration_test/patrol/fixtures/test_seed_data.dart`:
+  - TestSeedData class with deterministic IDs (test-project-001, test-location-001, etc.)
+  - Pre-built model instances for Project, Location, DailyEntry, Contractor, BidItem, Photo
+  - Collection getters for bulk operations
+- Created `integration_test/patrol/helpers/test_database_helper.dart`:
+  - seedTestData(), seedProjectSetup(), clearTestData() methods
+  - hasSeedData(), ensureSeedData() for test setup
+  - seedPhotoRecord() for photo metadata testing
+- Updated README files with seed data documentation
+- Minor fixes: photo_flow_test delta parameter, entry_validation_test import
+- **Commit**: `894dbdb` feat(e2e): Add seed data fixtures for deterministic testing (Phase 0)
+- **Next**: Phase 1 - Fix entry wizard test logic (scroll vs tap)
+
+### 2026-01-23 (Session 60): E2E Key Coverage Remediation Planning
+- Created comprehensive 10-phase plan in `.claude/plans/CODEX.md`
+- Analysis: 68 tests, 170+ text selectors, 11 legacy files to consolidate
+- 52 new keys to add, 95% pass rate target per PR
+
 ### 2026-01-22 (Session 56): E2E TestingKeys Implementation (Phase 1-2)
 - **Phase 1**: Created `lib/shared/testing_keys.dart` with 80+ centralized widget keys
 - **Phase 2**: Updated 15 UI files to use TestingKeys instead of hardcoded Key() strings

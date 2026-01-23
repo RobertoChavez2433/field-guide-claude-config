@@ -1,4 +1,4 @@
-# E2E Test Key Coverage Remediation Plan (PR-based)
+# E2E Test Key Coverage Remediation Plan
 
 **Goal**: Stabilize Patrol E2E tests by eliminating brittle text/icon selectors, ensuring every testable UI element has a TestingKeys entry, and consolidating legacy tests.
 
@@ -18,17 +18,15 @@
 
 ---
 
-## PR Plan
-
-### PR-0: Seed Data Fixture (BLOCKER)
+## Phase 0: Seed Data Fixture (BLOCKER)
 
 **Scope**: Create deterministic test data with known IDs for dynamic key testing.
 
-**Files to Create/Modify**
+### Files to Create/Modify
 - `integration_test/patrol/fixtures/test_seed_data.dart` (new)
 - `integration_test/patrol/helpers/test_database_helper.dart` (new)
 
-**Seed Data Required**
+### Seed Data Required
 ```dart
 // Known IDs for dynamic key testing
 const seedProjectId = 'test-project-001';
@@ -39,7 +37,7 @@ const seedBidItemId = 'test-biditem-001';
 const seedPhotoId = 'test-photo-001';
 ```
 
-**Verification**
+### Verification
 ```bash
 # Run smoke test with seed data
 patrol test integration_test/patrol/app_smoke_test.dart
@@ -47,23 +45,24 @@ patrol test integration_test/patrol/app_smoke_test.dart
 
 ---
 
-### PR-1: Entry Wizard Logic + Section Keys (CRITICAL)
+## Phase 1: Fix Entry Wizard Test Logic (CRITICAL)
 
-**Scope**: Fix mismatch where tests assume tabs but entry wizard uses a scrollable layout.
+**Scope**: Fix fundamental mismatch - tests assume tabs but entry wizard uses scrollable sections.
 
-**Problem**
+### Problem
 Tests tap `$('Quantities')`, `$('Activities')`, `$('Weather')` as tabs, but entry wizard is a `SingleChildScrollView` with Card sections.
 
-**Files to Modify**
+### Files to Modify
+
 | File | Changes |
 |------|---------|
-| `lib/shared/testing_keys.dart` | Add section keys + safety field keys |
+| `lib/shared/testing_keys.dart` | Add 5 section keys |
 | `lib/features/entries/presentation/screens/entry_wizard_screen.dart` | Assign section keys to Cards |
 | `lib/features/entries/presentation/widgets/entry_basics_section.dart` | Add wrapper key |
 | `lib/features/entries/presentation/widgets/entry_safety_section.dart` | Add wrapper key + 5 field keys |
 | `integration_test/patrol/helpers/patrol_test_helpers.dart` | Add `scrollToSection()` helper |
 
-**New Keys**
+### New Keys
 ```dart
 // Section headers for scroll targeting
 static const entryBasicsSection = Key('entry_basics_section');
@@ -80,7 +79,7 @@ static const entryWizardVisitors = Key('entry_wizard_visitors');
 static const entryWizardExtras = Key('entry_wizard_extras');
 ```
 
-**Test Logic Fix**
+### Test Logic Fix
 ```dart
 // BEFORE (fails - no tabs exist)
 await $('Quantities').tap();
@@ -89,12 +88,12 @@ await $('Quantities').tap();
 await h.scrollToSection(TestingKeys.entryQuantitiesSection);
 ```
 
-**Tests to Update**
-- `quantities_flow_test.dart` - Replace tab taps with scroll
+### Tests to Update
+- `quantities_flow_test.dart` - Replace all tab taps with scroll
 - `entry_management_test.dart` - Replace tab navigation
 - `e2e_tests/entry_lifecycle_test.dart` - Verify scroll works
 
-**Verification**
+### Verification
 ```bash
 patrol test integration_test/patrol/quantities_flow_test.dart
 patrol test integration_test/patrol/entry_management_test.dart
@@ -103,17 +102,18 @@ patrol test integration_test/patrol/entry_management_test.dart
 
 ---
 
-### PR-2: Settings Theme + Help/Version Keys
+## Phase 2: Settings Theme + Help/Version Keys
 
 **Scope**: Add keys to all settings interactive elements including theme options, help, and version tiles.
 
-**Files to Modify**
+### Files to Modify
+
 | File | Changes |
 |------|---------|
-| `lib/shared/testing_keys.dart` | Add settings keys |
+| `lib/shared/testing_keys.dart` | Add 10+ settings keys |
 | `lib/features/settings/presentation/screens/settings_screen.dart` | Assign keys to RadioListTiles, tiles |
 
-**New Keys**
+### New Keys
 ```dart
 // Theme options (individual RadioListTile keys)
 static const settingsThemeDark = Key('settings_theme_dark');
@@ -137,11 +137,11 @@ static const settingsAccountSection = Key('settings_account_section');
 static const settingsDataSection = Key('settings_data_section');
 ```
 
-**Tests to Update**
+### Tests to Update
 - `settings_flow_test.dart` - Replace `$('Dark')`, `$('Light')`, `$('About')` with keys
 - `e2e_tests/settings_theme_test.dart` - Use new theme keys
 
-**Verification**
+### Verification
 ```bash
 patrol test integration_test/patrol/settings_flow_test.dart
 patrol test integration_test/patrol/e2e_tests/settings_theme_test.dart
@@ -150,17 +150,18 @@ patrol test integration_test/patrol/e2e_tests/settings_theme_test.dart
 
 ---
 
-### PR-3: Centralize Dynamic Keys
+## Phase 3: Centralize Dynamic Keys
 
 **Scope**: Move all inline dynamic key patterns to TestingKeys helpers.
 
-**Files to Modify**
+### Files to Modify
+
 | File | Changes |
 |------|---------|
 | `lib/shared/testing_keys.dart` | Add 6 dynamic key helpers |
 | `lib/features/entries/presentation/screens/entry_wizard_screen.dart` | Use centralized helpers |
 
-**New Dynamic Key Helpers**
+### New Dynamic Key Helpers
 ```dart
 // Contractor/Equipment (currently inline)
 static Key contractorCheckbox(String id) => Key('contractor_checkbox_$id');
@@ -177,7 +178,7 @@ static Key bidItemPickerItem(String bidItemId) => Key('bid_item_picker_$bidItemI
 static Key locationCard(String locationId) => Key('location_card_$locationId');
 ```
 
-**Verification**
+### Verification
 ```bash
 patrol test integration_test/patrol/e2e_tests/entry_lifecycle_test.dart
 # Target: 95% pass
@@ -185,17 +186,18 @@ patrol test integration_test/patrol/e2e_tests/entry_lifecycle_test.dart
 
 ---
 
-### PR-4: Quantity Flow Keys + Test Migration
+## Phase 4: Quantity Flow Keys + Test Migration
 
-**Scope**: Add quantity-related keys and migrate `quantities_flow_test.dart` (~35 selectors).
+**Scope**: Add all quantity-related keys and migrate quantities_flow_test.dart (~35 selectors).
 
-**Files to Modify**
+### Files to Modify
+
 | File | Changes |
 |------|---------|
-| `lib/shared/testing_keys.dart` | Add quantity keys |
+| `lib/shared/testing_keys.dart` | Add 8 quantity keys |
 | `lib/features/entries/presentation/screens/entry_wizard_screen.dart` | Assign keys to quantity widgets |
 
-**New Keys**
+### New Keys
 ```dart
 // Quantity section controls
 static const quantityAddButton = Key('quantity_add_button');
@@ -212,11 +214,11 @@ static const bidItemPickerSearch = Key('bid_item_picker_search');
 static const bidItemPickerClose = Key('bid_item_picker_close');
 ```
 
-**Test Consolidation**
+### Test Consolidation
 - Move `integration_test/patrol/quantities_flow_test.dart` -> `integration_test/patrol/e2e_tests/quantities_flow_test.dart`
 - Update `test_bundle.dart` imports
 
-**Verification**
+### Verification
 ```bash
 patrol test integration_test/patrol/e2e_tests/quantities_flow_test.dart
 # Target: 95% pass (5/5 tests)
@@ -224,17 +226,18 @@ patrol test integration_test/patrol/e2e_tests/quantities_flow_test.dart
 
 ---
 
-### PR-5: Contractor Flow Keys + Test Migration
+## Phase 5: Contractor Flow Keys + Test Migration
 
-**Scope**: Add contractor-related keys and migrate `contractors_flow_test.dart` (~25 selectors).
+**Scope**: Add contractor-related keys and migrate contractors_flow_test.dart (~25 selectors).
 
-**Files to Modify**
+### Files to Modify
+
 | File | Changes |
 |------|---------|
-| `lib/shared/testing_keys.dart` | Add contractor keys |
+| `lib/shared/testing_keys.dart` | Add 6 contractor keys |
 | `lib/features/projects/presentation/screens/project_setup_screen.dart` | Assign keys |
 
-**New Keys**
+### New Keys
 ```dart
 // Contractor list
 static const contractorAddButton = Key('contractor_add_button');
@@ -248,10 +251,10 @@ static const contractorTypeSub = Key('contractor_type_sub');
 static const contractorTypeSupplier = Key('contractor_type_supplier');
 ```
 
-**Test Consolidation**
+### Test Consolidation
 - Move `integration_test/patrol/contractors_flow_test.dart` -> `integration_test/patrol/e2e_tests/contractors_flow_test.dart`
 
-**Verification**
+### Verification
 ```bash
 patrol test integration_test/patrol/e2e_tests/contractors_flow_test.dart
 # Target: 95% pass (4/4 tests)
@@ -259,16 +262,17 @@ patrol test integration_test/patrol/e2e_tests/contractors_flow_test.dart
 
 ---
 
-### PR-6: Navigation + Helper Normalization
+## Phase 6: Navigation + Helper Normalization
 
 **Scope**: Fix navigation helpers and remaining nav-related text selectors.
 
-**Files to Modify**
+### Files to Modify
+
 | File | Changes |
 |------|---------|
 | `integration_test/patrol/helpers/patrol_test_helpers.dart` | Refactor `navigateToTab()` to use Keys |
 
-**Helper Changes**
+### Helper Changes
 ```dart
 // BEFORE
 Future<void> navigateToTab(String tabKey, String tabName) async {
@@ -287,10 +291,10 @@ Future<void> navigateToProjects() => navigateToTab(TestingKeys.projectsNavButton
 Future<void> navigateToSettings() => navigateToTab(TestingKeys.settingsNavButton);
 ```
 
-**Tests to Update**
+### Tests to Update
 - `navigation_flow_test.dart` - Replace `$('Home')`, `$('Projects')`, `$('Settings')`
 
-**Verification**
+### Verification
 ```bash
 patrol test integration_test/patrol/navigation_flow_test.dart
 # Target: 95% pass (3/3 tests)
@@ -298,17 +302,18 @@ patrol test integration_test/patrol/navigation_flow_test.dart
 
 ---
 
-### PR-7: Offline/Sync Keys + Test Migration
+## Phase 7: Offline/Sync Keys + Test Migration
 
-**Scope**: Add sync status keys and migrate `offline_mode_test.dart` (~20 selectors).
+**Scope**: Add sync status keys and migrate offline_mode_test.dart (~20 selectors).
 
-**Files to Modify**
+### Files to Modify
+
 | File | Changes |
 |------|---------|
-| `lib/shared/testing_keys.dart` | Add sync keys |
+| `lib/shared/testing_keys.dart` | Add 5 sync keys |
 | `lib/features/sync/presentation/widgets/sync_status_indicator.dart` | Assign keys |
 
-**New Keys**
+### New Keys
 ```dart
 static const offlineIndicator = Key('offline_indicator');
 static const pendingChangesCount = Key('pending_changes_count');
@@ -317,10 +322,10 @@ static const syncProgressIndicator = Key('sync_progress_indicator');
 static const syncErrorMessage = Key('sync_error_message');
 ```
 
-**Test Consolidation**
+### Test Consolidation
 - Merge `integration_test/patrol/offline_mode_test.dart` into `integration_test/patrol/e2e_tests/offline_sync_test.dart`
 
-**Verification**
+### Verification
 ```bash
 patrol test integration_test/patrol/e2e_tests/offline_sync_test.dart
 # Target: 95% pass
@@ -328,11 +333,12 @@ patrol test integration_test/patrol/e2e_tests/offline_sync_test.dart
 
 ---
 
-### PR-8: Auth + Remaining Legacy Test Migration
+## Phase 8: Auth + Remaining Legacy Test Migration
 
 **Scope**: Migrate remaining legacy tests and add any missing auth keys.
 
-**Files to Consolidate**
+### Files to Consolidate
+
 | From | To | Action |
 |------|-----|--------|
 | `patrol/app_smoke_test.dart` | `e2e_tests/app_smoke_test.dart` | Move + update keys |
@@ -343,7 +349,7 @@ patrol test integration_test/patrol/e2e_tests/offline_sync_test.dart
 | `patrol/location_permission_test.dart` | `isolated/location_permission_test.dart` | Keep isolated |
 | `patrol/camera_permission_test.dart` | `isolated/camera_permission_test.dart` | Keep isolated |
 
-**Fix Hardcoded Key**
+### Fix Hardcoded Key
 ```dart
 // auth_flow_test.dart:334 - BEFORE
 final submitButton = $(Key('reset_password_submit_button'));
@@ -352,12 +358,12 @@ final submitButton = $(Key('reset_password_submit_button'));
 final submitButton = $(TestingKeys.resetPasswordSendButton);
 ```
 
-**Update `test_bundle.dart`**
+### Update test_bundle.dart
 - Remove old imports
 - Add new e2e_tests imports
 - Update group names
 
-**Verification**
+### Verification
 ```bash
 patrol test integration_test/test_bundle.dart
 # Target: 95% pass (65/68 tests)
@@ -365,11 +371,11 @@ patrol test integration_test/test_bundle.dart
 
 ---
 
-### PR-9: Final Cleanup + Documentation
+## Phase 9: Final Cleanup + Documentation
 
 **Scope**: Remove empty legacy files, update documentation, add CI validation.
 
-**Files to Delete**
+### Files to Delete
 - `integration_test/patrol/quantities_flow_test.dart` (moved)
 - `integration_test/patrol/contractors_flow_test.dart` (moved)
 - `integration_test/patrol/settings_flow_test.dart` (moved)
@@ -381,18 +387,18 @@ patrol test integration_test/test_bundle.dart
 - `integration_test/patrol/entry_management_test.dart` (moved)
 - `integration_test/patrol/project_management_test.dart` (duplicate)
 
-**Documentation Updates**
+### Documentation Updates
 - `integration_test/patrol/README.md` - Updated structure
 - `integration_test/patrol/REQUIRED_UI_KEYS.md` - Key inventory
 - `.claude/docs/testing-guide.md` - E2E testing best practices
 
-**CI Validation Script**
+### CI Validation Script
 ```bash
 # Add to CI - fails if any text selectors found
-rg "\\$\\('" integration_test/patrol/e2e_tests --type dart | grep -v "// content-verification" && exit 1 || exit 0
+rg "\\\$\\('" integration_test/patrol/e2e_tests --type dart | grep -v "// content-verification" && exit 1 || exit 0
 ```
 
-**Final Verification**
+### Final Verification
 ```bash
 # Full test suite
 patrol test integration_test/test_bundle.dart
@@ -405,8 +411,8 @@ rg "\$\('" integration_test/patrol/e2e_tests --type dart
 
 ## Summary
 
-| PR | Scope | Keys Added | Selectors Removed | Tests Fixed |
-|----|-------|------------|-------------------|-------------|
+| Phase | Scope | Keys Added | Selectors Removed | Tests Fixed |
+|-------|-------|------------|-------------------|-------------|
 | 0 | Seed Data | 0 | 0 | Enables dynamic keys |
 | 1 | Entry Wizard Logic | 10 | ~15 | 6 |
 | 2 | Settings Theme/Help | 13 | ~10 | 9 |
