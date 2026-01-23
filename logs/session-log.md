@@ -24,6 +24,66 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-22 (Session 54): E2E Compilation Error Fixes
+- **Fixed Patrol 3.20.0 API changes**:
+  - `dyScroll` → `delta: const Offset(0, -200)` in photo_flow_test.dart (3 occurrences)
+  - Added `flutter_test` import to project_management_test.dart, settings_theme_test.dart
+  - Replaced `$.native.selectAll()` with clear-and-type approach
+- **Verification**: `flutter analyze` - 0 errors
+- **Files**: photo_flow_test.dart, project_management_test.dart, settings_theme_test.dart
+
+### 2026-01-22 (Session 53): E2E Test Suite Execution & Fix Planning
+- **Full Test Suite**: Ran 23 Patrol E2E tests on Samsung Galaxy S21 (Android 13)
+- **Results**: 46/66 tests passing (69.7%)
+  - Passing: smoke, auth, contractors, quantities, settings, permissions, lifecycle, navigation_edge
+  - Failing: project_management (9), photo_capture (5), navigation_flow (2), offline_mode (2)
+  - Compilation errors: 4 test files
+- **Root Cause Research**:
+  - Widget keys exist but conditionally rendered (need wait logic)
+  - Patrol 3.20.0 API changes: `dyScroll` → `delta`, `selectAll()` removed
+  - `QUERY_ALL_PACKAGES` already configured (no action needed)
+- **Fix Plan Created**: `.claude/plans/dazzling-gathering-wirth-agent-a38eca9.md`
+- **Estimated Fix Effort**: 2-3 hours for 95%+ pass rate
+- **Files Modified**: None (test execution + planning session)
+
+### 2026-01-22 (Session 52): Notion Page Restructure
+- **Notion MCP Verified**: Search API working, found Field Guide App page
+- **Research First**: Explore agent documented current page structure (child pages, toggles, to-dos)
+- **New Sections Added to Notion**:
+  - Quick Status (Phase: Pre-Beta, Tests: 363, Blockers: 1 critical)
+  - Inspector Toolbox (NEW FEATURE) - 8 calculators listed
+  - Release Blockers (Pagination critical, Hardcoded name fixed, Deep link docs fixed)
+  - Roadmap to Beta (8 weeks)
+  - Pricing & Competitive Position ($19/mo vs $24-89 competitors)
+  - Quality Metrics (Architecture 7/10, Security 8/10, Performance 5/10)
+- **Updated**: "Tools section" to-do marked IN PROGRESS with checkmark
+- **Preserved**: All existing child pages and toggle content
+- **Files Modified**: None (Notion-only session)
+- **API Issues Resolved**:
+  - post-page requires object parent (not string)
+  - update-a-block takes block type directly (not nested in `type` object)
+- **Next**: Pagination implementation (critical), Toolbox feature structure
+
+### 2026-01-22 (Session 51): Comprehensive Review & Toolbox Planning
+- **Critical Code Review**: 6/10 score - NOT READY for production
+  - Architecture: 7/10, Security: 8/10, Performance: 5/10, Testing: 4/10
+  - Identified 3 release blockers: pagination, hardcoded name, deep link
+- **Release Blockers Fixed**:
+  - settings_screen.dart: Removed hardcoded 'Robert Sebastian' default
+  - main.dart: Documented deep link subscription as intentionally permanent
+- **Pricing Research**: $19/user/month competitive vs Fieldwire ($44+), PlanGrid ($39+)
+- **Inspector Toolbox Feature Planned**:
+  - 8 calculators (HMA, Concrete, Compaction, Aggregate, Grade, Rebar, Paint, Units)
+  - Plus: Checklists, Reference Guides, Templates, Field Utilities
+  - Full implementation plan: memoized-sauteeing-mist-agent-a98b468.md
+- **Notion Restructure Planned**: New hierarchy with Product/Development/Features/Documentation
+- **Config Updated**: Added Notion MCP server to Claude Code (needs restart)
+- **Plans Created**:
+  - memoized-sauteeing-mist.md (main comprehensive plan)
+  - memoized-sauteeing-mist-agent-a98b468.md (detailed Toolbox plan)
+- **Commit**: 2cd63f0
+- **Next**: Restart Claude Code for Notion MCP, restructure Notion pages, add pagination
+
 ### 2026-01-22 (Session 50): Token Optimization
 - Archived 30+ fixed defects to defects-archive.md (370→68 lines)
 - Consolidated _state.md, latest-session.md, current-plan.md into single file

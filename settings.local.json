@@ -69,7 +69,18 @@
       "Bash(git log:*)",
       "WebFetch(domain:www.notion.so)",
       "WebFetch(domain:notion.so)",
-      "Bash(claude install)"
+      "Bash(claude install)",
+      "mcp__notion__API-post-search",
+      "mcp__notion__API-get-block-children",
+      "mcp__notion__API-patch-block-children",
+      "mcp__notion__API-post-page",
+      "mcp__notion__API-update-a-block",
+      "Bash(claude mcp list:*)",
+      "Bash(claude mcp call notion mcp__notion__API-post-search '{\"\"query\"\": \"\"Field Guide App\"\"}')",
+      "mcp__notion__API-retrieve-a-page",
+      "mcp__notion__API-patch-page",
+      "mcp__notion__API-delete-a-block",
+      "Bash(python:*)"
     ]
   }
 }
