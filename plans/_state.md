@@ -1,32 +1,31 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 73
+**Last Updated**: 2026-01-23 | **Session**: 74
 
 ## Current Phase
 - **Phase**: E2E Test Stability - IN PROGRESS
-- **Status**: PR-1A complete, 16 PRs remaining
+- **Status**: PR-1B complete, 15 PRs remaining
 
-## Last Session (Session 73)
-**Summary**: Implemented PR-1A - Added wait helpers and removed all 30 pumpAndSettle calls from patrol_test_helpers.dart.
+## Last Session (Session 74)
+**Summary**: Implemented PR-1B - Migrated app_smoke_test.dart to use explicit waits instead of pumpAndSettle.
 
 **Key Changes**:
-- Added `waitForAppReady()` - waits for nav bar or login screen
-- Added `waitForScreen(Key)` - waits for specific screen
-- Added `waitWithTimeout(finder)` - capped retry with diagnostics
-- Added `pumpAndWait({milliseconds})` - lightweight pump + delay
-- Replaced all 30 `pumpAndSettle` calls with explicit waits
+- Replaced all 4 `pumpAndSettle` calls with helper methods
+- Removed all 4 `Future.delayed` hardcoded waits
+- Now uses `launchAppAndWait()`, `pressNativeHome()`, `bringAppToForeground()`, `navigateToSettings()`
+- Added proper test logging with `ctx.logComplete()`
 
 **Files Updated**:
-- `integration_test/patrol/helpers/patrol_test_helpers.dart` - All helpers now use explicit waits
+- `integration_test/patrol/e2e_tests/app_smoke_test.dart` - Migrated to explicit waits
 
 ## Active Plan
-**Status**: IN PROGRESS - PR-1A complete
+**Status**: IN PROGRESS - PR-1B complete (testing unblocked)
 
 **Plan Reference**: `.claude/plans/E2E_TEST_STABILITY_PLAN.md`
 
 **Next Tasks** (Critical Path):
 - [x] PR-1A: Add wait helpers + fix patrol_test_helpers.dart (30 pumpAndSettle)
-- [ ] PR-1B: Migrate app_smoke_test.dart (UNBLOCKS ALL TESTING)
+- [x] PR-1B: Migrate app_smoke_test.dart (UNBLOCKS ALL TESTING)
 - [ ] PR-2A: Add TestModeConfig to main.dart + guard timers
 - [ ] PR-3A-3D: Migrate remaining 10 E2E test files
 
