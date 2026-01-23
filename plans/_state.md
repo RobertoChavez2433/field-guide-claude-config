@@ -1,25 +1,30 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 64
+**Last Updated**: 2026-01-23 | **Session**: 65
 
 ## Current Phase
-- **Phase**: E2E Key Coverage Remediation - Phase 3 COMPLETE
-- **Status**: Dynamic keys centralized in TestingKeys
+- **Phase**: E2E Key Coverage Remediation - Phase 4 COMPLETE
+- **Status**: Quantity flow keys added and test migrated
 
-## Last Session (Session 64)
-**Summary**: Implemented Phase 3 of E2E remediation plan - centralized inline dynamic key patterns into TestingKeys helper methods.
+## Last Session (Session 65)
+**Summary**: Implemented Phase 4 of E2E remediation plan - added quantity dialog and bid item picker keys, assigned them to widgets, migrated quantities_flow_test.dart to e2e_tests/.
 
 **Files Modified**:
-- `lib/shared/testing_keys.dart` - Added 6 dynamic key helper methods
-- `lib/features/entries/presentation/screens/entry_wizard_screen.dart` - Updated to use centralized helpers
+- `lib/shared/testing_keys.dart` - Added 10 quantity/bid item picker keys
+- `lib/features/entries/presentation/screens/entry_wizard_screen.dart` - Assigned keys to quantity widgets
+- `integration_test/patrol/e2e_tests/quantities_flow_test.dart` - New migrated test
+- `integration_test/test_bundle.dart` - Updated imports/groups
+- `integration_test/patrol/quantities_flow_test.dart` - Deleted legacy file
 
-**Keys Added** (Dynamic Helpers):
-- Contractor/Equipment: `contractorCheckbox(id)`, `equipmentChip(id)`
-- Quantity actions: `quantityEditButton(bidItemId)`, `quantityDeleteButton(bidItemId)`
-- Bid item picker: `bidItemPickerItem(bidItemId)`
-- Location: `locationCard(locationId)`
+**Keys Added**:
+- Quantity dialog: `quantityAddButton`, `quantityDialog`, `quantityAmountField`, `quantityNotesField`, `quantityDialogSave`, `quantityDialogCancel`
+- Bid item picker: `bidItemPickerSheet`, `bidItemPickerSearch`, `bidItemPickerClose`, `bidItemPickerEmptyState`
 
-**Commit**: `217b279 feat(e2e): Centralize dynamic keys in TestingKeys (Phase 3)`
+**Widget Keys Assigned**:
+- Add Quantity button in quantities section
+- Quantity edit/delete buttons using dynamic helpers
+- Bid item picker components (sheet, search, close, list items)
+- Quantity dialog components (dialog, fields, buttons)
 
 ## Active Plan
 **Status**: IN PROGRESS
@@ -31,9 +36,9 @@
 - [x] Phase 1: Fix entry wizard test logic (scroll vs tap)
 - [x] Phase 2: Settings theme + help/version keys
 - [x] Phase 3: Centralize dynamic keys
+- [x] Phase 4: Quantity flow keys + test migration
 
 **Next Tasks**:
-- [ ] Phase 4: Quantity flow keys + test migration
 - [ ] Phase 5: Contractor flow keys + test migration
 - [ ] Phase 6: Navigation + helper normalization
 - [ ] Phase 7: Offline/sync keys + test migration
