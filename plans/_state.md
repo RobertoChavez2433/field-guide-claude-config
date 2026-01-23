@@ -1,28 +1,26 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 75
+**Last Updated**: 2026-01-23 | **Session**: 76
 
 ## Current Phase
 - **Phase**: E2E Test Stability - IN PROGRESS
-- **Status**: PR-2B complete, 13 PRs remaining
+- **Status**: PR-3A complete, 12 PRs remaining
 
-## Last Session (Session 75)
-**Summary**: Implemented PR-2A (TestModeConfig) and PR-2B (ADB animation disable docs).
+## Last Session (Session 76)
+**Summary**: Migrated auth_flow_test.dart and navigation_flow_test.dart from pumpAndSettle to explicit waits (PR-3A).
 
 **Key Changes**:
-- **PR-2A**: Created `TestModeConfig` class to detect test mode via `PATROL_TEST=true`
-- **PR-2A**: Guards SyncService connectivity listener and debounced sync
-- **PR-2B**: Documented ADB commands to disable animations (cleaner than code changes)
+- **PR-3A**: Migrated 28 pumpAndSettle calls in auth_flow_test.dart
+- **PR-3A**: Migrated 43 pumpAndSettle calls in navigation_flow_test.dart
+- **PR-3A**: Removed Future.delayed anti-pattern from auth test
+- **PR-3A**: Added explicit waitUntilVisible calls after navigation actions
 
 **Files Updated**:
-- `lib/core/config/test_mode_config.dart` - New TestModeConfig class
-- `lib/main.dart` - Import and log test mode status
-- `lib/services/sync_service.dart` - Guard background operations
-- `patrol.yaml` - Add dart_defines for PATROL_TEST
-- `integration_test/patrol/setup_patrol.md` - ADB animation disable commands
+- `integration_test/patrol/e2e_tests/auth_flow_test.dart` - 28 pumpAndSettle → pump + waitUntilVisible
+- `integration_test/patrol/e2e_tests/navigation_flow_test.dart` - 43 pumpAndSettle → pump + waitUntilVisible
 
 ## Active Plan
-**Status**: IN PROGRESS - Phase 2 complete (PR-2A, PR-2B)
+**Status**: IN PROGRESS - Phase 3 started (PR-3A complete)
 
 **Plan Reference**: `.claude/plans/E2E_TEST_STABILITY_PLAN.md`
 
@@ -31,7 +29,10 @@
 - [x] PR-1B: Migrate app_smoke_test.dart (UNBLOCKS ALL TESTING)
 - [x] PR-2A: Add TestModeConfig to main.dart + guard timers
 - [x] PR-2B: Disable animations (ADB commands documented)
-- [ ] PR-3A-3D: Migrate remaining 10 E2E test files
+- [x] PR-3A: Migrate auth_flow_test.dart + navigation_flow_test.dart (~71 pumpAndSettle)
+- [ ] PR-3B: Migrate entry_lifecycle_test.dart + entry_management_test.dart
+- [ ] PR-3C: Migrate project_management_test.dart + contractors_flow_test.dart + quantities_flow_test.dart
+- [ ] PR-3D: Migrate settings_theme_test.dart + offline_sync_test.dart + photo_flow_test.dart
 
 ## Key Decisions
 - **Test consolidation**: Legacy tests move to `e2e_tests/`, permission tests stay in `isolated/`
