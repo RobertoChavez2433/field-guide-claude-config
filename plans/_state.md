@@ -1,32 +1,32 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 66
+**Last Updated**: 2026-01-23 | **Session**: 68
 
 ## Current Phase
-- **Phase**: E2E Key Coverage Remediation - Phase 5 COMPLETE
-- **Status**: Contractor flow keys added and test migrated
+- **Phase**: E2E Key Coverage Remediation - Phase 7 COMPLETE
+- **Status**: Offline/sync keys added and test migrated
 
-## Last Session (Session 66)
-**Summary**: Implemented Phase 5 of E2E remediation plan - added contractor list and type option keys, assigned them to project_setup_screen.dart widgets, migrated contractors_flow_test.dart to e2e_tests/.
+## Last Session (Session 68)
+**Summary**: Implemented Phase 7 of E2E remediation plan - added sync-related TestingKeys, added keys to settings_screen.dart for sync UI elements, consolidated legacy offline_mode_test.dart into e2e_tests/offline_sync_test.dart with 6 comprehensive tests.
 
 **Files Modified**:
-- `lib/shared/testing_keys.dart` - Added 6 contractor keys
-- `lib/features/projects/presentation/screens/project_setup_screen.dart` - Assigned keys to contractor widgets
-- `integration_test/patrol/e2e_tests/contractors_flow_test.dart` - New migrated test
-- `integration_test/test_bundle.dart` - Updated imports/groups
-- `integration_test/patrol/contractors_flow_test.dart` - Deleted legacy file
+- `lib/shared/testing_keys.dart` - Added 6 sync keys (offlineIndicator, pendingChangesCount, lastSyncTimestamp, syncProgressIndicator, syncErrorMessage, settingsSyncSection)
+- `lib/features/settings/presentation/screens/settings_screen.dart` - Added keys to sync section header, pending changes tile, error message tile
+- `integration_test/patrol/e2e_tests/offline_sync_test.dart` - Consolidated 6 tests using TestingKeys
+- `integration_test/test_bundle.dart` - Removed legacy import
+- `integration_test/patrol/offline_mode_test.dart` - Deleted legacy file
 
-**Keys Added**:
-- Contractor list: `contractorAddButton`, `contractorEmptyState`
-- Dynamic keys: `contractorCard(id)`, `contractorDeleteButton(id)`
-- Type options: `contractorTypePrime`, `contractorTypeSub`
-
-**Widget Keys Assigned**:
-- Add Contractor button in project setup
-- Contractor cards (expansion tiles) with dynamic keys
-- Delete buttons on contractor cards
-- Empty state for contractors list
-- Dropdown menu items for Prime/Sub types
+**Changes Made**:
+- Added sync section key to Cloud Sync header
+- Added pendingChangesCount key to pending changes ListTile
+- Added syncErrorMessage key to error display ListTile
+- Expanded offline_sync_test from 2 to 6 tests:
+  - Create entry and verify sync pending status
+  - Trigger manual sync from settings
+  - Verify sync status indicators in settings
+  - Toggle auto-sync WiFi setting
+  - Entry persists after app backgrounding
+  - Multiple entries queue for sync
 
 ## Active Plan
 **Status**: IN PROGRESS
@@ -40,10 +40,10 @@
 - [x] Phase 3: Centralize dynamic keys
 - [x] Phase 4: Quantity flow keys + test migration
 - [x] Phase 5: Contractor flow keys + test migration
+- [x] Phase 6: Navigation + helper normalization
+- [x] Phase 7: Offline/sync keys + test migration
 
 **Next Tasks**:
-- [ ] Phase 6: Navigation + helper normalization
-- [ ] Phase 7: Offline/sync keys + test migration
 - [ ] Phase 8: Auth + legacy test migration
 - [ ] Phase 9: Final cleanup + documentation
 
@@ -52,6 +52,7 @@
 - **Seed data**: Created with known IDs (test-project-001, test-location-001, etc.)
 - **Scroll vs tap**: Tests now use scrollToSection() helper instead of tapping text labels
 - **Keys for everything**: Every testable UI element gets a TestingKey
+- **Navigation helpers**: Use Key directly, not string-based construction
 - **Target**: 95% pass rate after each PR
 
 ## Future Work
