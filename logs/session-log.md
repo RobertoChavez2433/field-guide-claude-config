@@ -24,6 +24,21 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-23 (Session 81): PR-5A - Mock Supabase Auth
+- **PR-5A**: Mock Supabase Auth for network-free testing
+  - Added MOCK_AUTH, AUTO_LOGIN dart-define flags to TestModeConfig
+  - Updated AuthProvider to support mock authentication internally
+  - Added mock signIn/signUp/signOut/resetPassword methods
+  - Added userEmail/userId getters for cross-mode access
+  - Updated app_router to bypass auth when mock auth + auto-login enabled
+  - Updated settings_screen to use new userEmail getter
+  - Fixed missing today() implementations in RealTimeProvider/FixedTimeProvider
+- **Files**: test_mode_config.dart, auth_provider.dart, app_router.dart, settings_screen.dart, time_provider.dart
+- **Commit**: `8e03ab4` feat(e2e): Add mock Supabase auth for network-free testing (PR-5A)
+- **Mock credentials**: test@example.com / Test123! / test-user-001
+- **Usage**: `--dart-define=MOCK_AUTH=true --dart-define=AUTO_LOGIN=true`
+- **Next**: PR-5B (Mock Weather API), PR-6A (Permission Automation)
+
 ### 2026-01-23 (Session 80): PR-4A/4B - Deterministic State
 - **PR-4A**: State Reset + SharedPreferences Cleanup
   - Added clearSharedPreferences() to TestDatabaseHelper

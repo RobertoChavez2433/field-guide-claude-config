@@ -1,31 +1,36 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 80
+**Last Updated**: 2026-01-23 | **Session**: 81
 
 ## Current Phase
 - **Phase**: E2E Test Stability - IN PROGRESS
-- **Status**: PR-4A/4B complete, Phase 4 (Deterministic State) DONE
+- **Status**: PR-5A complete, Phase 5 (Service Stubs) started
 
-## Last Session (Session 80)
-**Summary**: Implemented PR-4A (State Reset + SharedPreferences Cleanup) and PR-4B (Fixed Clock/Time Provider) for deterministic test state.
+## Last Session (Session 81)
+**Summary**: Implemented PR-5A (Mock Supabase Auth) for testing auth flows without network.
 
 **Key Changes**:
-- **PR-4A**: Added clearSharedPreferences() to TestDatabaseHelper
-- **PR-4A**: Added resetAllState() combining DB clear + prefs clear
-- **PR-4A**: Added resetAndSeed() for full reset + data seeding
-- **PR-4A**: Added convenience methods to PatrolTestConfig
-- **PR-4B**: Created TimeProvider interface (now(), today())
-- **PR-4B**: Added RealTimeProvider (production) and FixedTimeProvider (tests)
-- **PR-4B**: Added AppTime static class with auto-selection based on test mode
+- **PR-5A**: Added mock auth mode to TestModeConfig (MOCK_AUTH, AUTO_LOGIN dart-defines)
+- **PR-5A**: Updated AuthProvider to support mock authentication internally
+- **PR-5A**: Added userEmail/userId getters for consistent access in both modes
+- **PR-5A**: Updated app_router to bypass auth when mock auth + auto-login enabled
+- **PR-5A**: Updated settings_screen to use new userEmail getter
+- **Fix**: Added missing today() implementations to RealTimeProvider/FixedTimeProvider
 
 **Files Updated**:
-- `integration_test/patrol/helpers/test_database_helper.dart` - Added state reset methods
-- `integration_test/patrol/test_config.dart` - Added resetState() convenience methods
-- `lib/shared/time_provider.dart` - NEW: TimeProvider abstraction
-- `lib/shared/shared.dart` - Added time_provider export
+- `lib/core/config/test_mode_config.dart` - Added MOCK_AUTH, AUTO_LOGIN, mock user config
+- `lib/features/auth/presentation/providers/auth_provider.dart` - Added mock auth support
+- `lib/core/router/app_router.dart` - Added mock auth bypass in redirect
+- `lib/features/settings/presentation/screens/settings_screen.dart` - Use userEmail getter
+- `lib/shared/time_provider.dart` - Fixed missing today() overrides
+
+**Test Credentials** (mock mode):
+- Email: `test@example.com`
+- Password: `Test123!`
+- User ID: `test-user-001`
 
 ## Active Plan
-**Status**: IN PROGRESS - Phase 4 (Deterministic State) COMPLETE
+**Status**: IN PROGRESS - Phase 5 (Service Stubs) STARTED
 
 **Plan Reference**: `.claude/plans/E2E_TEST_STABILITY_PLAN.md`
 
@@ -40,10 +45,11 @@
 - [x] PR-3D: Migrate settings_theme_test.dart + offline_sync_test.dart + photo_flow_test.dart (~51 pumpAndSettle)
 - [x] PR-4A: State Reset + SharedPreferences Cleanup
 - [x] PR-4B: Fixed Clock/Time Provider
+- [x] PR-5A: Mock Supabase Auth
 
 **Next Tasks**:
 - [ ] Migrate isolated/ tests (~60 pumpAndSettle remaining across 6 files)
-- [ ] PR-5A: Mock Supabase Auth
+- [ ] PR-5B: Mock Weather API
 - [ ] PR-6A: Permission Automation
 - [ ] PR-7A: Enforce Key-Only Selectors
 
