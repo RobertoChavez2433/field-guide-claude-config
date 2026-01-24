@@ -24,6 +24,18 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-24 (Session 93): Auth Flow Test Final Fix
+- Fixed timing issue in `can sign in with valid preverified credentials` test
+- Added pumpAndSettle(10s) after sign-in tap for network operation
+- Added diagnostic logging for auth failure detection
+- All 11/11 auth_flow_test.dart tests now passing
+
+### 2026-01-24 (Session 92): Auth Test Credential Loading
+- Created .env.local with Supabase and E2E credentials
+- Updated run_patrol.ps1 and run_patrol_batched.ps1 to load credentials
+- Wired TestingKeys.loginScreen to login_screen.dart Scaffold
+- 10/11 tests passing after fix
+
 ### 2026-01-24 (Session 91): Auth Test Logout Dialog Fix
 - Fixed forceLogoutIfNeeded() not handling sign out confirmation dialog
 - Added `signOutConfirmButton` TestingKey and wired to settings_screen.dart
