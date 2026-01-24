@@ -16,34 +16,20 @@
 **Files**
 - `integration_test/patrol/helpers/patrol_test_helpers.dart`
 
-**Required Imports**
-```dart
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:construction_inspector/core/config/supabase_config.dart';
-```
-
 **Changes**
 - Add `forceLogoutIfNeeded()` helper that:
-  - Assumes app is already launched (call after `launchAppAndWait()`).
-  - If login UI is visible (`TestingKeys.loginSignInButton` exists), returns immediately.
-  - If Supabase is not configured, logs and returns (no-op).
-  - Otherwise calls `Supabase.instance.client.auth.signOut(scope: SignOutScope.local)` to avoid network dependency.
-  - Pumps frames and waits for login UI to appear.
+  - Launches the app (or assumes already launched).
+  - If login UI is visible, returns.
+  - Otherwise calls `Supabase.instance.client.auth.signOut()` and waits for login UI.
   - If still logged in after timeout, logs diagnostics and throws (no silent skip).
-- Update `waitForAppReady()` to treat `TestingKeys.loginSignInButton` as a valid "login screen" indicator (so no production UI key changes needed).
+- Update `waitForAppReady()` to treat `TestingKeys.loginSignInButton` as a valid “login screen” indicator (so no production UI key changes needed).
 
 **Why**
 - Currently tests skip when already authenticated; this hides failures and blocks auth coverage.
 - Logout must happen *after* Supabase initialization (post `app.main()`), so it belongs in a helper invoked from tests.
-- Using `SignOutScope.local` clears the local session without requiring network access.
 
-**Guard for unconfigured Supabase**
-```dart
-if (!SupabaseConfig.isConfigured) {
-  ctx.logStep('Supabase not configured, logout not needed');
-  return;
-}
-```
+**Notes**
+- If `SignOutScope.local` is available in the current Supabase SDK, prefer local sign-out to avoid network dependency; otherwise fall back to standard sign-out.
 
 **Verification**
 - Run `patrol test --target integration_test/patrol/e2e_tests/auth_flow_test.dart` and confirm login screen appears even if a session existed.
@@ -67,10 +53,9 @@ if (!SupabaseConfig.isConfigured) {
   - **Do not hardcode credentials in repo.**
   - Read from `String.fromEnvironment` / env vars, and fail with a clear message if missing.
 
-**Credentials**
-- Read from environment: `E2E_AUTH_EMAIL`, `E2E_AUTH_PASSWORD`
-- Tests should fail with clear message if credentials missing
-- **NEVER commit actual credentials to repo**
+**Credentials (local only, do not commit)**
+- Email: `rsebastian2433@gmail.com`
+- Password: `!T1esr11993`
 
 **Verification**
 - Auth tests run end-to-end using real Supabase and do not require email verification.
@@ -107,16 +92,3 @@ patrol test --dart-define=E2E_AUTH_EMAIL=$env:E2E_AUTH_EMAIL --dart-define=E2E_A
 - Real Supabase sign-in path passes using preverified account.
 - No test silently skips due to logged-in state.
 - Email verification is not required in any auth test.
-
----
-
-## CI Considerations
-
-For CI pipelines (GitHub Actions), credentials should be stored as encrypted secrets:
-```yaml
-env:
-  E2E_AUTH_EMAIL: ${{ secrets.E2E_AUTH_EMAIL }}
-  E2E_AUTH_PASSWORD: ${{ secrets.E2E_AUTH_PASSWORD }}
-```
-
-Tests that require credentials should be skipped in CI if secrets are not configured (with a clear warning), or run only on protected branches where secrets are available.
