@@ -24,6 +24,12 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-24 (Session 101): E2E Helper Pattern Migration
+- Converted entry_management_test.dart (11 tests) from raw app.main() to helper pattern
+- Added signInIfNeeded() to quantities_flow_test.dart (5 tests)
+- Verified no app.main() calls remain in e2e_tests
+- Commit: 8ecd040
+
 ### 2026-01-24 (Session 100): E2E Build Hang Root Cause Analysis
 - Investigated build hang at `flutter build apk --config-only`
 - Used planning agent to analyze all 12 E2E tests
