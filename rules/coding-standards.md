@@ -112,3 +112,14 @@ features/[feature]/
 
 **Preferred**: `lib/features/[feature]/data/data.dart`, `.../presentation/presentation.dart`
 **Legacy**: `lib/data/models/models.dart`, `lib/presentation/providers/providers.dart`
+
+## E2E Testing (Patrol)
+
+**NEVER use `pumpAndSettle()` or `pump(Duration)`** - unreliable, causes timeouts.
+
+Use condition-based waits from `PatrolTestHelpers`:
+```dart
+await h.waitForVisible(TestingKeys.someWidget);  // preferred
+await $.waitUntilVisible($(finder));             // core Patrol method
+await h.pumpAndWait(milliseconds: 300);          // light pump after actions
+```
