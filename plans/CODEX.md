@@ -35,71 +35,79 @@ Ensure every actionable UI element (buttons, tabs, dialogs, menu items, toggles,
   - `lib/features/auth/presentation/screens/register_screen.dart`
   - `lib/features/auth/presentation/screens/forgot_password_screen.dart`
 
-## Phase 1: Centralize Keys (PR Size: medium)
+## Phase 1: Centralize Keys (PR Size: medium) ✅ COMPLETE (Session 98)
 ### 1.1 Expand `TestingKeys` with comprehensive coverage
 - Step: Add new static keys and dynamic key helpers for all actions and dialogs identified in Phase 0.
 - Step: Add generic dialog action key helper (e.g., `confirmationDialogAction(String action)`), and remove ad-hoc `Key('confirmation_dialog_...')` usage.
 - Reason: Single source of truth avoids hardcoded selectors and flakiness.
 - Files:
-  - `lib/shared/testing_keys.dart`
-  - `lib/shared/widgets/confirmation_dialog.dart`
+  - `lib/shared/testing_keys.dart` ✅
+  - `lib/shared/widgets/confirmation_dialog.dart` ✅ (already wired)
 
-### 1.2 Wire dialog keys for shared components
+### 1.2 Wire dialog keys for shared components ✅ COMPLETE (Session 98)
 - Step: Add keys to storage permission dialog and shared photo dialogs.
 - Reason: These are common in E2E flows (export, photo capture) and need reliable selectors.
 - Files:
-  - `lib/shared/widgets/permission_dialog.dart`
-  - `lib/features/photos/presentation/widgets/photo_name_dialog.dart`
-  - `lib/features/photos/presentation/widgets/photo_source_dialog.dart`
-  - `lib/features/photos/presentation/widgets/photo_thumbnail.dart`
+  - `lib/shared/widgets/permission_dialog.dart` ✅ (4 keys)
+  - `lib/features/photos/presentation/widgets/photo_name_dialog.dart` ✅ (6 keys)
+  - `lib/features/photos/presentation/widgets/photo_source_dialog.dart` ✅ (already wired)
+  - `lib/features/photos/presentation/widgets/photo_thumbnail.dart` ✅ (already wired)
 
-## Phase 2: Feature Wiring (PR Size: large; split if needed)
-### 2.1 Auth flows
+## Phase 2: Feature Wiring (PR Size: large; split if needed) ✅ COMPLETE (Session 98)
+### 2.1 Auth flows ✅ COMPLETE (Session 98)
 - Step: Add keys to visibility toggles and any missing fields/buttons.
 - Reason: Auth tests and future login flows require stable selectors.
 - Files:
-  - `lib/features/auth/presentation/screens/login_screen.dart`
-  - `lib/features/auth/presentation/screens/register_screen.dart`
-  - `lib/features/auth/presentation/screens/forgot_password_screen.dart`
+  - `lib/features/auth/presentation/screens/login_screen.dart` ✅ (5 keys)
+  - `lib/features/auth/presentation/screens/register_screen.dart` ✅ (4 keys)
+  - `lib/features/auth/presentation/screens/forgot_password_screen.dart` ✅ (1 key)
 
-### 2.2 Dashboard + Projects
-- Step: Key “View Projects”, “Switch project”, and dashboard CTA buttons.
+### 2.2 Dashboard + Projects ✅ COMPLETE (Session 98)
+- Step: Key "View Projects", "Switch project", and dashboard CTA buttons.
 - Step: Key project list search open/close, retry, archive toggle, delete flows.
 - Step: Key project setup dialogs for locations/contractors/equipment/pay items.
 - Reason: Project creation/edit flows are core E2E paths.
 - Files:
-  - `lib/features/dashboard/presentation/screens/project_dashboard_screen.dart`
-  - `lib/features/projects/presentation/screens/project_list_screen.dart`
-  - `lib/features/projects/presentation/screens/project_setup_screen.dart`
+  - `lib/features/dashboard/presentation/screens/project_dashboard_screen.dart` ✅ (5 keys)
+  - `lib/features/projects/presentation/screens/project_list_screen.dart` ✅ (8 keys)
+  - `lib/features/projects/presentation/screens/project_setup_screen.dart` ✅ (24 keys)
 
-### 2.3 Settings + Personnel Types
+### 2.3 Settings + Personnel Types ✅ COMPLETE (Session 98)
 - Step: Key edit name/initials dialogs, sign-out dialog, clear cache dialog.
 - Step: Key personnel type add/edit/delete dialogs and actions.
 - Reason: Settings and personnel types are common cross-cutting test steps.
 - Files:
-  - `lib/features/settings/presentation/screens/settings_screen.dart`
-  - `lib/features/settings/presentation/screens/personnel_types_screen.dart`
+  - `lib/features/settings/presentation/screens/settings_screen.dart` ✅ (9 keys)
+  - `lib/features/settings/presentation/screens/personnel_types_screen.dart` ✅ (15 keys)
 
-### 2.4 Entries (Home, List, Wizard, Report)
+### 2.4 Entries (Home, List, Wizard, Report) ✅ COMPLETE (Session 98)
 - Step: Key calendar controls, view/create project CTAs, and preview actions.
 - Step: Key entries list filters, refresh, retry, delete dialog.
 - Step: Key entry wizard add personnel/equipment dialogs and action buttons.
 - Step: Key report actions (export/share/menu, photo dialog actions).
 - Reason: E2E entry flows rely on these elements.
 - Files:
-  - `lib/features/entries/presentation/screens/home_screen.dart`
-  - `lib/features/entries/presentation/screens/entries_list_screen.dart`
-  - `lib/features/entries/presentation/screens/entry_wizard_screen.dart`
-  - `lib/features/entries/presentation/screens/report_screen.dart`
+  - `lib/features/entries/presentation/screens/home_screen.dart` ✅ COMPLETE (Session 97)
+  - `lib/features/entries/presentation/screens/entries_list_screen.dart` ✅ COMPLETE (Session 98)
+  - `lib/features/entries/presentation/screens/entry_wizard_screen.dart` ✅ COMPLETE (Session 97)
+  - `lib/features/entries/presentation/screens/report_screen.dart` ✅ COMPLETE (Session 98)
 
-### 2.5 Quantities + PDF Import
+**Session 97 Keys Added**:
+- Home Screen (10 keys): `homeJumpToLatestButton`, `homeCreateProjectButton`, `homeViewProjectsButton`, `homeSwitchProjectButton`, `homeCreateEntryButton`, `homeViewFullReportButton`, `homeCalendarFormatMonth`, `homeCalendarFormatTwoWeeks`, `homeCalendarFormatWeek`
+- Entry Wizard (1 key): `wizardAddEquipmentButton(contractorId)`
+
+**Session 98 Keys Added**:
+- Entries List (8 keys): `entriesListFilterButton`, `entriesListClearFilterButton`, `entriesListRefreshButton`, `entriesListRetryButton`, `entriesListCreateEntryButton`, `entriesListClearFilterEmptyButton`, `entriesListDeleteCancelButton`, `entriesListDeleteConfirmButton`
+- Report Screen (50+ keys): Export, menu, sections, contractors, quantities, photos, PDF dialogs
+
+### 2.5 Quantities + PDF Import ✅ COMPLETE (Session 98)
 - Step: Key import/sort/search controls and PDF dialogs.
 - Step: Key import preview actions and edit dialogs.
 - Reason: Quantities and PDF import are complex flows and need stable hooks.
 - Files:
-  - `lib/features/quantities/presentation/screens/quantities_screen.dart`
-  - `lib/features/pdf/presentation/widgets/import_type_dialog.dart`
-  - `lib/features/pdf/presentation/screens/pdf_import_preview_screen.dart`
+  - `lib/features/quantities/presentation/screens/quantities_screen.dart` ✅ (8 keys)
+  - `lib/features/pdf/presentation/widgets/import_type_dialog.dart` ✅ (5 keys)
+  - `lib/features/pdf/presentation/screens/pdf_import_preview_screen.dart` ✅ (14 keys)
 
 ## Phase 3: Test Update (PR Size: small)
 ### 3.1 Update project setup E2E test to keys-only
