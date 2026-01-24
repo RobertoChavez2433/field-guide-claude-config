@@ -24,6 +24,15 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-24 (Session 100): E2E Build Hang Root Cause Analysis
+- Investigated build hang at `flutter build apk --config-only`
+- Used planning agent to analyze all 12 E2E tests
+- ROOT CAUSE: 3 tests using manual `app.main()` bypass helper lifecycle
+- Problem tests: app_smoke_test.dart (3), entry_management_test.dart (10), quantities_flow_test.dart
+- 9/12 tests already use correct helper pattern
+- Created detailed remediation plan: `.claude/plans/luminous-prancing-sparkle-agent-a6d26a9.md`
+- Next: Convert 3 problem tests to helper pattern
+
 ### 2026-01-24 (Session 99): Navigation Flow Test Fix
 - Updated navigation_flow_test.dart to use standardized helper pattern
 - All 14 tests converted from raw `app.main()` to `PatrolTestConfig.createHelpers()`

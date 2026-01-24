@@ -1,27 +1,26 @@
 # Session State
 
-**Last Updated**: 2026-01-24 | **Session**: 99
+**Last Updated**: 2026-01-24 | **Session**: 100
 
 ## Current Phase
 - **Phase**: E2E Test Suite Fixes
-- **Status**: Navigation flow test updated, Gradle infrastructure issues
+- **Status**: Root cause analysis complete, 3 tests need pattern migration
 
-## Last Session (Session 99)
-**Summary**: Updated navigation_flow_test.dart to use standardized helper pattern with sign-in flow.
+## Last Session (Session 100)
+**Summary**: Investigated E2E test build hang issue. Used planning agent to analyze all 12 E2E tests. Identified 3 tests not using helper pattern causing build to hang at `flutter build apk --config-only`.
 
-**Files Modified** (3 total):
-- `integration_test/patrol/e2e_tests/navigation_flow_test.dart` - All 14 tests updated to helper pattern
-- `integration_test/patrol/e2e_tests/project_setup_flow_test.dart` - Updated helper pattern
-- `integration_test/test_bundle.dart` - Minor import changes
+**Analysis Complete**:
+- Root cause: 3 tests using manual `app.main()` instead of helper pattern
+- 9/12 tests already correct
+- Plan document created at `.claude/plans/luminous-prancing-sparkle-agent-a6d26a9.md`
 
-**Changes Made**:
-- Replaced raw `app.main()` with `PatrolTestConfig.createHelpers($, 'test_name')`
-- Added `h.launchAppAndWait()` and `h.signInIfNeeded()` to all tests
-- Replaced `$.waitUntilVisible()` with `h.waitForVisible()`
-- Updated config from `PatrolTesterConfig` to `PatrolTestConfig.standard/slow`
+**Problem Tests Identified**:
+1. `app_smoke_test.dart` - Manual `app.main()` (3 tests)
+2. `entry_management_test.dart` - Manual `app.main()` (10 tests)
+3. `quantities_flow_test.dart` - Missing `signInIfNeeded()` call
 
 ## Active Plan
-**Status**: Test pattern migration in progress
+**Status**: READY TO IMPLEMENT
 
 **Completed**:
 - [x] Fix batched script to run tests individually
@@ -38,29 +37,32 @@
 - [x] CODEX Phase 2.4: Entries List + Report (PR 4)
 - [x] CODEX Phase 2.5: Quantities + PDF Import (PR 4)
 - [x] Update navigation_flow_test.dart to helper pattern
+- [x] Analyze E2E test build hang root cause
 
 **Next Tasks**:
-- [ ] Fix Gradle file lock issues (kill stale processes, clean build)
+- [x] Fix app_smoke_test.dart - already using correct helper pattern
+- [x] Fix entry_management_test.dart - converted 11 tests to helper pattern
+- [x] Fix quantities_flow_test.dart - added signInIfNeeded() to 5 tests
+- [ ] Verify build no longer hangs
 - [ ] Re-run full E2E test suite
 - [ ] CI Verification - Check GitHub Actions
 - [ ] Pagination - CRITICAL BLOCKER on all `getAll()` methods
 
 ## Key Decisions
+- **Build hang root cause**: Tests using `app.main()` bypass helper lifecycle, causing test discovery timeout
+- **Helper pattern mandatory**: All E2E tests must use `PatrolTestConfig.createHelpers()` + `h.launchAppAndWait()` + `h.signInIfNeeded()`
 - **Batched tests run individually**: Patrol bundles all tests regardless of --target, so run one file at a time
-- **Project selection required**: After sign-in, must select project before calendar access
-- **Permission handling in helpers**: openEntryWizard() now handles location permission dialogs
-- **IconButton 32px**: Reduced from 40px to fit 3-column layout on narrow screens
-- **_buildFormatButton modified**: Added optional `key` parameter to support TestingKeys
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Full E2E Suite Run | READY | Run after UI fixes confirmed |
+| Fix 3 E2E Tests | READY | See plan doc |
+| Full E2E Suite Run | BLOCKED | Fix tests first |
 | CI Verification | PENDING | Check GitHub Actions |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
-| CODEX Phase 2.1-2.3 | PENDING | Auth, Dashboard, Settings |
-| CODEX Phase 2.4 | PARTIAL | entries_list, report_screen remaining |
-| CODEX Phase 2.5 | PENDING | Quantities, PDF Import |
 
 ## Open Questions
 - None
+
+## Reference
+- Analysis: `.claude/plans/luminous-prancing-sparkle-agent-a6d26a9.md`
