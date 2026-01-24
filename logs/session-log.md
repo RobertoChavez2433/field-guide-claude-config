@@ -24,6 +24,14 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-24 (Session 96): UI Layout Overflow Fixes (PR 1)
+- Fixed 3 RenderFlex overflow bugs blocking E2E test execution
+- home_screen.dart: Added `mainAxisSize: MainAxisSize.min` to Column in report preview
+- home_screen.dart: Wrapped weather name Text in `Flexible` with `TextOverflow.ellipsis`
+- entry_wizard_screen.dart: Reduced IconButton constraints from 40 to 32, added `padding: EdgeInsets.zero`
+- Analyzer: 0 errors
+- Files: home_screen.dart, entry_wizard_screen.dart
+
 ### 2026-01-24 (Session 94): E2E Wait Pattern Standardization
 - Documented proper wait patterns in coding-standards.md (never use pumpAndSettle)
 - Fixed contractors_flow_test.dart - all 4 tests passing

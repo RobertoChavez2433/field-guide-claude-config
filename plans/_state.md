@@ -1,46 +1,51 @@
 # Session State
 
-**Last Updated**: 2026-01-24 | **Session**: 94
+**Last Updated**: 2026-01-24 | **Session**: 96
 
 ## Current Phase
-- **Phase**: E2E Test Pattern Standardization
-- **Status**: COMPLETE - Contractors flow tests passing
+- **Phase**: E2E Test Suite Fixes
+- **Status**: UNBLOCKED - UI overflow bugs fixed
 
-## Last Session (Session 94)
-**Summary**: Fixed contractors flow E2E tests and documented proper wait patterns. User requested documenting condition-based waits instead of pumpAndSettle.
-
-**Key Issue Fixed**: `dismissKeyboard()` was using `pressBack()` which closes dialogs on Android instead of just dismissing keyboard. Replaced with `scrollTo()`.
+## Last Session (Session 96)
+**Summary**: Fixed 3 RenderFlex overflow bugs that were blocking E2E test execution.
 
 **Files Modified**:
-- auth_flow_test.dart - Removed pumpAndSettle, use waitForVisible
-- contractors_flow_test.dart - Fixed navigation flow, replaced dismissKeyboard with scrollTo, added signInIfNeeded
-- patrol_test_helpers.dart - Added signInIfNeeded() helper
-- .claude/rules/coding-standards.md - Added E2E testing wait pattern guidance
+- home_screen.dart - Added mainAxisSize: MainAxisSize.min to Column in report preview, wrapped weather Text in Flexible
+- entry_wizard_screen.dart - Reduced IconButton constraints from 40 to 32, added padding: EdgeInsets.zero
 
-**Test Results**: 4/4 contractors_flow_test.dart passing
-
-**Previous Session (Session 93)**: Fixed auth flow test timing issues.
+**Fixes Applied**:
+1. Column overflow 741px in report preview - Added `mainAxisSize: MainAxisSize.min`
+2. Row overflow 44px in weather section - Wrapped weather name Text in `Flexible`
+3. Row overflow 11px in counter fields - Reduced IconButton size from 40 to 32
 
 ## Active Plan
-**Status**: COMPLETE
+**Status**: READY
 
-**Completed Tasks**:
-- [x] Document E2E wait patterns in coding-standards.md
-- [x] Remove pumpAndSettle from auth_flow_test.dart
-- [x] Fix contractors_flow_test.dart (all 4 tests passing)
-- [x] Add signInIfNeeded() helper
-- [x] Push both repos to remote
+**Completed**:
+- [x] Fix batched script to run tests individually
+- [x] Fix false positive skip pattern in tests
+- [x] Add project selection before calendar navigation
+- [x] Add permission handling in openEntryWizard()
+- [x] Fix UI layout overflow bugs (PR 1)
+
+**Next Tasks**:
+- [ ] Wire TestingKeys for Home Screen (PR 2)
+- [ ] Wire TestingKeys for Entry Wizard (PR 3)
+- [ ] Re-run full E2E test suite (PR 4)
+- [ ] CI Verification - Check GitHub Actions
+- [ ] Pagination - CRITICAL BLOCKER on all `getAll()` methods
 
 ## Key Decisions
-- **Never use pumpAndSettle()**: Use condition-based waits instead
-- **Never use dismissKeyboard() in dialogs**: pressBack closes dialogs on Android
-- **Use scrollTo()**: To make buttons visible without side effects
-- **Preferred wait methods**: waitForVisible(), $.waitUntilVisible(), pumpAndWait()
+- **Batched tests run individually**: Patrol bundles all tests regardless of --target, so run one file at a time
+- **Project selection required**: After sign-in, must select project before calendar access
+- **Permission handling in helpers**: openEntryWizard() now handles location permission dialogs
+- **IconButton 32px**: Reduced from 40px to fit 3-column layout on narrow screens
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Full E2E Suite Run | NEXT | Verify no regressions |
+| TestingKeys Wiring | PENDING | PR 2 & PR 3 from plan |
+| Full E2E Suite Run | READY | Run after UI fixes confirmed |
 | CI Verification | PENDING | Check GitHub Actions |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 
