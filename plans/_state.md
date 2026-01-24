@@ -1,28 +1,26 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 88
+**Last Updated**: 2026-01-23 | **Session**: 90
 
 ## Current Phase
-- **Phase**: CI Fix (Post E2E Stability)
-- **Status**: Plan created, ready to implement
+- **Phase**: Auth Flow Fix Planning
+- **Status**: Investigation complete, fix plan created (not implemented)
 
-## Last Session (Session 88)
-**Summary**: Diagnosed CI failures from PR-8 push. Created fix plan for 4 failing jobs.
+## Last Session (Session 90)
+**Summary**: Investigated why E2E tests aren't seeing the login screen.
 
-**CI Failures Found**:
-1. E2E Code Quality - False positive: grep finding `Key('...')` in comments
-2. Flutter Analyze - 5 compilation errors (unused legacy helpers, mock field mismatches)
-3. Unit Tests - Failing due to compilation errors
+**Root Cause Found**:
+- Supabase session persists across test runs
+- `TestDatabaseHelper.resetAllState()` clears SharedPreferences/DB but NOT Supabase auth
+- Router checks `Supabase.instance.client.auth.currentUser` - if session exists, bypasses login
 
-**Plan Created**: `.claude/plans/fizzy-sparking-steele.md`
+**Fix Plan Created**: `.claude/plans/purrfect-stargazing-dragon.md`
+- Add `clearSupabaseSession()` to TestDatabaseHelper
+- Add `setUpAll` to auth_flow_test.dart to clear session before tests
 
-**Files to Fix (Next Session)**:
-- `.github/workflows/e2e-tests.yml` - Fix grep to exclude comments
-- `integration_test/helpers/` - Delete entire folder (legacy, unused)
-- `test/helpers/mocks/mock_repositories.dart` - Fix Photo.entryId, Contractor.contactName
-- `test/features/auth/.../auth_provider_test.dart` - Fix nullable User
+**No commits** - plan left unstaged for next session.
 
-**Previous Session (Session 87)**: Completed PR-8 (CI Guardrails).
+**Previous Session (Session 89)**: Implemented 3 CI fix commits.
 
 ## Active Plan
 **Status**: COMPLETE
@@ -49,9 +47,12 @@
 - [x] PR-7A: Enforce Key-Only Selectors (replaced find.byType with TestingKeys + seed data)
 - [x] PR-7B: Test Independence Audit (ensureSeedData + docs)
 - [x] PR-8: CI Guardrails (GitHub Actions + flake tracking)
+- [x] PR-9: CI Fix (hardcoded Key check, legacy helpers, mock fields, nullable User)
 
 **Next Tasks**:
-- [ ] Fix CI failures (see `.claude/plans/fizzy-sparking-steele.md`)
+- [ ] Implement auth flow fix (add clearSupabaseSession to TestDatabaseHelper)
+- [ ] Add setUpAll to auth_flow_test.dart
+- [ ] Verify CI passes on GitHub
 
 ## Key Decisions
 - **Test consolidation**: Legacy tests move to `e2e_tests/`, permission tests stay in `isolated/`
@@ -65,8 +66,9 @@
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| CI Fix | READY | `.claude/plans/fizzy-sparking-steele.md` |
-| E2E Test Stability | COMPLETE (17 PRs) | `.claude/plans/E2E_TEST_STABILITY_PLAN.md` |
+| Auth Flow Fix | READY | `.claude/plans/purrfect-stargazing-dragon.md` |
+| CI Verification | PENDING (pushed) | Check GitHub Actions |
+| E2E Test Stability | COMPLETE (18 PRs) | `.claude/plans/E2E_TEST_STABILITY_PLAN.md` |
 | E2E Key Coverage | COMPLETE | `.claude/plans/CODEX.md` |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 | Inspector Toolbox | Ready to start | `.claude/plans/memoized-sauteeing-mist-agent-a98b468.md` |
