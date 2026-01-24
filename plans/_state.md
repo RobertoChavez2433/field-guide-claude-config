@@ -1,80 +1,60 @@
 # Session State
 
-**Last Updated**: 2026-01-24 | **Session**: 91
+**Last Updated**: 2026-01-24 | **Session**: 92
 
 ## Current Phase
 - **Phase**: Auth Flow E2E Test Fix
-- **Status**: forceLogoutIfNeeded confirmation dialog fix implemented
+- **Status**: Credentials and TestingKeys wiring fixed
 
-## Last Session (Session 91)
-**Summary**: Fixed auth test logout navigation - forceLogoutIfNeeded() wasn't handling the confirmation dialog.
+## Last Session (Session 92)
+**Summary**: Fixed E2E auth test infrastructure - Supabase credentials weren't being passed to test builds, and TestingKeys.loginScreen wasn't wired to the widget.
 
-**Root Cause**: Sign out tile shows a confirmation dialog before actually signing out. The helper tapped the tile but didn't confirm.
+**Root Causes Identified**:
+1. `SUPABASE_URL` and `SUPABASE_ANON_KEY` not passed via `--dart-define` during patrol test builds
+2. Without credentials, `SupabaseConfig.isConfigured` returns false → auth bypassed entirely
+3. `TestingKeys.loginScreen` was defined but never assigned to the Scaffold in login_screen.dart
 
-**Fix Implemented**:
-1. Added `signOutConfirmButton` key to TestingKeys
-2. Wired up key in settings_screen.dart `_showSignOutDialog()`
-3. Updated forceLogoutIfNeeded() in patrol_test_helpers.dart to tap confirm button
+**Fixes Implemented**:
+1. Created `.env.local` with Supabase and E2E credentials (gitignored)
+2. Updated `run_patrol.ps1` to load from `.env.local` and pass all credentials
+3. Updated `run_patrol_batched.ps1` with same credential loading
+4. Added `key: TestingKeys.loginScreen` to login_screen.dart Scaffold
 
 **Files Modified**:
-- lib/shared/testing_keys.dart (+1 line)
-- lib/features/settings/presentation/screens/settings_screen.dart (+1 line)
-- integration_test/patrol/helpers/patrol_test_helpers.dart (+11 lines)
+- lib/features/auth/presentation/screens/login_screen.dart (+1 line - TestingKeys.loginScreen)
+- run_patrol.ps1 (+52 lines - .env.local loading, Supabase credentials, -TestFile param)
+- run_patrol_batched.ps1 (+27 lines - .env.local loading, Supabase credentials)
+- .env.local (new - credentials file, gitignored)
 
-**Previous Session (Session 90)**: Investigated why E2E tests aren't seeing the login screen, created fix plan.
+**Previous Session (Session 91)**: Fixed forceLogoutIfNeeded() to handle sign out confirmation dialog.
 
 ## Active Plan
-**Status**: COMPLETE
-
-**Plan Reference**: `.claude/plans/E2E_TEST_STABILITY_PLAN.md`
+**Status**: IN PROGRESS - Infrastructure fixed, needs verification
 
 **Completed Tasks**:
-- [x] PR-1A: Add wait helpers + fix patrol_test_helpers.dart (30 pumpAndSettle)
-- [x] PR-1B: Migrate app_smoke_test.dart (UNBLOCKS ALL TESTING)
-- [x] PR-2A: Add TestModeConfig to main.dart + guard timers
-- [x] PR-2B: Disable animations (ADB commands documented)
-- [x] PR-3A: Migrate auth_flow_test.dart + navigation_flow_test.dart (~71 pumpAndSettle)
-- [x] PR-3B: Migrate entry_lifecycle_test.dart + entry_management_test.dart (~41 pumpAndSettle)
-- [x] PR-3C: Migrate project_management_test.dart + contractors_flow_test.dart + quantities_flow_test.dart (~81 pumpAndSettle)
-- [x] PR-3D: Migrate settings_theme_test.dart + offline_sync_test.dart + photo_flow_test.dart (~51 pumpAndSettle)
-- [x] PR-4A: State Reset + SharedPreferences Cleanup
-- [x] PR-4B: Fixed Clock/Time Provider
-- [x] PR-5A: Mock Supabase Auth
-- [x] Isolated tests migration (57 pumpAndSettle)
-- [x] PR-5B: Mock Weather API
-- [x] PR-5C: Mock Supabase Data (full offline capability)
-- [x] PR-6A: Permission Automation
-- [x] PR-6B: Preflight Checklist + Documentation
-- [x] PR-7A: Enforce Key-Only Selectors (replaced find.byType with TestingKeys + seed data)
-- [x] PR-7B: Test Independence Audit (ensureSeedData + docs)
-- [x] PR-8: CI Guardrails (GitHub Actions + flake tracking)
-- [x] PR-9: CI Fix (hardcoded Key check, legacy helpers, mock fields, nullable User)
+- [x] Identify why auth tests fail (credentials not passed)
+- [x] Create .env.local for credential storage
+- [x] Update run_patrol.ps1 with credential loading
+- [x] Update run_patrol_batched.ps1 with credential loading
+- [x] Wire TestingKeys.loginScreen to login_screen.dart
 
 **Next Tasks**:
-- [ ] Run auth_flow_test.dart on device to verify fix
-- [ ] If passing, commit clearSupabaseSession work from previous plan
-- [ ] Verify CI passes on GitHub
+- [ ] Run auth_flow_test.dart to verify fixes work end-to-end
+- [ ] Verify forceLogoutIfNeeded() navigates correctly when authenticated
+- [ ] Commit and push once tests pass
 
 ## Key Decisions
-- **Test consolidation**: Legacy tests move to `e2e_tests/`, permission tests stay in `isolated/`
-- **Seed data**: Created with known IDs (test-project-001, test-location-001, etc.)
-- **Scroll vs tap**: Tests now use scrollToSection() helper instead of tapping text labels
-- **Keys for everything**: Every testable UI element gets a TestingKey
-- **Navigation helpers**: Use Key directly, not string-based construction
-- **Target**: 95% pass rate after each PR
-- **pumpAndSettle fix**: Replace with `pump()` + explicit waits (waitUntilVisible)
+- **Credentials in .env.local**: Loaded automatically by runner scripts
+- **All 4 credentials needed**: SUPABASE_URL, SUPABASE_ANON_KEY, E2E_AUTH_EMAIL, E2E_AUTH_PASSWORD
+- **TestingKeys must be wired**: Defined keys are useless without being assigned to widgets
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Auth Flow Fix | READY | `.claude/plans/purrfect-stargazing-dragon.md` |
-| CI Verification | PENDING (pushed) | Check GitHub Actions |
+| Auth Flow Verification | NEXT | Run tests with new credential setup |
+| CI Verification | PENDING | Check GitHub Actions |
 | E2E Test Stability | COMPLETE (18 PRs) | `.claude/plans/E2E_TEST_STABILITY_PLAN.md` |
-| E2E Key Coverage | COMPLETE | `.claude/plans/CODEX.md` |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
-| Inspector Toolbox | Ready to start | `.claude/plans/memoized-sauteeing-mist-agent-a98b468.md` |
-| AASHTOWare Integration | Not started | `.claude/implementation/AASHTOWARE_Implementation_Plan.md` |
-| Mega-screen decomposition | Backlog | report_screen, entry_wizard_screen, home_screen |
 
 ## Open Questions
-None
+- Are there other TestingKeys defined but not wired to widgets?

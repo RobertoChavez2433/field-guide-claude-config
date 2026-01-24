@@ -81,6 +81,24 @@ await $.waitUntilVisible(finder);
 **Impact**: E2E tests fail because helpers can't tap dialog buttons
 **Example**: Sign out dialog "Sign Out" button needed `TestingKeys.signOutConfirmButton`
 
+### TestingKeys Defined But Not Wired
+**Pattern**: Adding a key to TestingKeys class but not assigning it to the actual widget
+**Prevention**:
+- When adding a TestingKey, immediately wire it to the widget: `key: TestingKeys.myKey`
+- Search for the key in lib/ to verify it's used: `grep -r "TestingKeys.myKey" lib/`
+- Test helpers using undefined keys will timeout waiting for widgets that "don't exist"
+**Impact**: `waitForAppReady()` timeouts, tests can't find screens/buttons
+**Example**: `TestingKeys.loginScreen` was defined but never added to login_screen.dart Scaffold
+
+### E2E Tests Missing Supabase Credentials
+**Pattern**: Running patrol tests without passing SUPABASE_URL and SUPABASE_ANON_KEY
+**Prevention**:
+- Always use `run_patrol.ps1` which loads from `.env.local`
+- Or manually pass: `--dart-define="SUPABASE_URL=xxx" --dart-define="SUPABASE_ANON_KEY=yyy"`
+- Without credentials, `SupabaseConfig.isConfigured` returns false → auth bypassed entirely
+**Impact**: App goes straight to home screen, auth tests fail expecting login screen
+**Example**: Tests timeout because `forceLogoutIfNeeded()` returns early when Supabase not configured
+
 ---
 
 <!-- Add new defects above this line -->
