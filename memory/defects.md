@@ -108,6 +108,25 @@ await $.waitUntilVisible(finder);
 **Impact**: Tests fail with "widget not found" because dialog was dismissed
 **Example**: contractors_flow_test save button not found after dismissKeyboard
 
+### Gradle File Lock on Test Results
+**Pattern**: Gradle creates .lck files in androidTest-results that prevent subsequent test runs
+**Prevention**:
+- Kill stale Java/Gradle processes before running tests
+- Clean test results: `rm -rf build/app/outputs/androidTest-results`
+- Use `pwsh -Command "Get-Process -Name java | Stop-Process -Force"` if needed
+**Impact**: Test execution fails with "Cannot access output property 'resultsDir'" error
+**Example**: `utp.0.log.lck` file prevents test runner from starting
+
+### Raw app.main() in Patrol Tests
+**Pattern**: Using `app.main()` directly without the helper pattern
+**Prevention**:
+- Always use `PatrolTestConfig.createHelpers($, 'test_name')`
+- Call `h.launchAppAndWait()` instead of `app.main()`
+- Call `h.signInIfNeeded()` after launch for authenticated screens
+- Use `h.waitForVisible()` instead of `$.waitUntilVisible()`
+**Impact**: Tests fail because no sign-in performed, stuck on login screen
+**Example**: navigation_flow_test couldn't find bottomNavigationBar because auth was required
+
 ---
 
 <!-- Add new defects above this line -->

@@ -24,6 +24,15 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-24 (Session 99): Navigation Flow Test Fix
+- Updated navigation_flow_test.dart to use standardized helper pattern
+- All 14 tests converted from raw `app.main()` to `PatrolTestConfig.createHelpers()`
+- Added `h.launchAppAndWait()` and `h.signInIfNeeded()` to each test
+- Replaced `$.waitUntilVisible()` with `h.waitForVisible()`
+- Encountered Gradle file lock issues preventing test execution
+- Logged 2 new defects: Gradle file lock, raw app.main() pattern
+- Files: navigation_flow_test.dart, project_setup_flow_test.dart, test_bundle.dart
+
 ### 2026-01-24 (Session 96): UI Layout Overflow Fixes (PR 1)
 - Fixed 3 RenderFlex overflow bugs blocking E2E test execution
 - home_screen.dart: Added `mainAxisSize: MainAxisSize.min` to Column in report preview

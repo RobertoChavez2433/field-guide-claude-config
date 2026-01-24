@@ -1,33 +1,27 @@
 # Session State
 
-**Last Updated**: 2026-01-24 | **Session**: 98
+**Last Updated**: 2026-01-24 | **Session**: 99
 
 ## Current Phase
 - **Phase**: E2E Test Suite Fixes
-- **Status**: CODEX.md COMPLETE - All TestingKeys wired
+- **Status**: Navigation flow test updated, Gradle infrastructure issues
 
-## Last Session (Session 98)
-**Summary**: Completed comprehensive TestingKeys wiring across all CODEX.md phases using 6 parallel agents.
+## Last Session (Session 99)
+**Summary**: Updated navigation_flow_test.dart to use standardized helper pattern with sign-in flow.
 
-**Files Modified** (19 total):
-- `lib/shared/testing_keys.dart` - Expanded from ~400 to ~990 lines
-- Auth screens (3): login, register, forgot_password
-- Dashboard/Projects (3): project_dashboard, project_list, project_setup
-- Settings (2): settings_screen, personnel_types
-- Entries (4): home_screen, entries_list, entry_wizard, report_screen
-- Quantities/PDF (3): quantities_screen, import_type_dialog, pdf_import_preview
-- Shared widgets (2): permission_dialog, photo_name_dialog
+**Files Modified** (3 total):
+- `integration_test/patrol/e2e_tests/navigation_flow_test.dart` - All 14 tests updated to helper pattern
+- `integration_test/patrol/e2e_tests/project_setup_flow_test.dart` - Updated helper pattern
+- `integration_test/test_bundle.dart` - Minor import changes
 
-**Keys Added** (~150 new keys):
-- Phase 1: 10 keys (permission + photo name dialogs)
-- Phase 2.1: 5 keys (auth visibility toggles)
-- Phase 2.2: 37 keys (dashboard + projects)
-- Phase 2.3: 24 keys (settings + personnel types)
-- Phase 2.4: 50+ keys (entries list + report screen)
-- Phase 2.5: 32 keys (quantities + PDF import)
+**Changes Made**:
+- Replaced raw `app.main()` with `PatrolTestConfig.createHelpers($, 'test_name')`
+- Added `h.launchAppAndWait()` and `h.signInIfNeeded()` to all tests
+- Replaced `$.waitUntilVisible()` with `h.waitForVisible()`
+- Updated config from `PatrolTesterConfig` to `PatrolTestConfig.standard/slow`
 
 ## Active Plan
-**Status**: CODEX.md COMPLETE
+**Status**: Test pattern migration in progress
 
 **Completed**:
 - [x] Fix batched script to run tests individually
@@ -43,8 +37,10 @@
 - [x] CODEX Phase 2.3: Settings + Personnel Types (PR 4)
 - [x] CODEX Phase 2.4: Entries List + Report (PR 4)
 - [x] CODEX Phase 2.5: Quantities + PDF Import (PR 4)
+- [x] Update navigation_flow_test.dart to helper pattern
 
 **Next Tasks**:
+- [ ] Fix Gradle file lock issues (kill stale processes, clean build)
 - [ ] Re-run full E2E test suite
 - [ ] CI Verification - Check GitHub Actions
 - [ ] Pagination - CRITICAL BLOCKER on all `getAll()` methods
