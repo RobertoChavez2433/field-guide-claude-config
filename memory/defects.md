@@ -99,6 +99,15 @@ await $.waitUntilVisible(finder);
 **Impact**: App goes straight to home screen, auth tests fail expecting login screen
 **Example**: Tests timeout because `forceLogoutIfNeeded()` returns early when Supabase not configured
 
+### dismissKeyboard() Closes Dialogs on Android
+**Pattern**: Using `h.dismissKeyboard()` (which calls `$.native.pressBack()`) inside dialogs
+**Prevention**:
+- Use `scrollTo()` to make buttons visible instead
+- Or tap outside text field to dismiss keyboard
+- Never use pressBack when inside a dialog - it closes the entire dialog
+**Impact**: Tests fail with "widget not found" because dialog was dismissed
+**Example**: contractors_flow_test save button not found after dismissKeyboard
+
 ---
 
 <!-- Add new defects above this line -->

@@ -24,6 +24,13 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-24 (Session 94): E2E Wait Pattern Standardization
+- Documented proper wait patterns in coding-standards.md (never use pumpAndSettle)
+- Fixed contractors_flow_test.dart - all 4 tests passing
+- Key fix: dismissKeyboard() uses pressBack() which closes dialogs on Android
+- Added signInIfNeeded() helper to patrol_test_helpers.dart
+- Updated defects.md with dismissKeyboard dialog issue
+
 ### 2026-01-24 (Session 93): Auth Flow Test Final Fix
 - Fixed timing issue in `can sign in with valid preverified credentials` test
 - Added pumpAndSettle(10s) after sign-in tap for network operation
