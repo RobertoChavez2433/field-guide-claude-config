@@ -1,26 +1,27 @@
 # Session State
 
-**Last Updated**: 2026-01-23 | **Session**: 90
+**Last Updated**: 2026-01-24 | **Session**: 91
 
 ## Current Phase
-- **Phase**: Auth Flow Fix Planning
-- **Status**: Investigation complete, fix plan created (not implemented)
+- **Phase**: Auth Flow E2E Test Fix
+- **Status**: forceLogoutIfNeeded confirmation dialog fix implemented
 
-## Last Session (Session 90)
-**Summary**: Investigated why E2E tests aren't seeing the login screen.
+## Last Session (Session 91)
+**Summary**: Fixed auth test logout navigation - forceLogoutIfNeeded() wasn't handling the confirmation dialog.
 
-**Root Cause Found**:
-- Supabase session persists across test runs
-- `TestDatabaseHelper.resetAllState()` clears SharedPreferences/DB but NOT Supabase auth
-- Router checks `Supabase.instance.client.auth.currentUser` - if session exists, bypasses login
+**Root Cause**: Sign out tile shows a confirmation dialog before actually signing out. The helper tapped the tile but didn't confirm.
 
-**Fix Plan Created**: `.claude/plans/purrfect-stargazing-dragon.md`
-- Add `clearSupabaseSession()` to TestDatabaseHelper
-- Add `setUpAll` to auth_flow_test.dart to clear session before tests
+**Fix Implemented**:
+1. Added `signOutConfirmButton` key to TestingKeys
+2. Wired up key in settings_screen.dart `_showSignOutDialog()`
+3. Updated forceLogoutIfNeeded() in patrol_test_helpers.dart to tap confirm button
 
-**No commits** - plan left unstaged for next session.
+**Files Modified**:
+- lib/shared/testing_keys.dart (+1 line)
+- lib/features/settings/presentation/screens/settings_screen.dart (+1 line)
+- integration_test/patrol/helpers/patrol_test_helpers.dart (+11 lines)
 
-**Previous Session (Session 89)**: Implemented 3 CI fix commits.
+**Previous Session (Session 90)**: Investigated why E2E tests aren't seeing the login screen, created fix plan.
 
 ## Active Plan
 **Status**: COMPLETE
@@ -50,8 +51,8 @@
 - [x] PR-9: CI Fix (hardcoded Key check, legacy helpers, mock fields, nullable User)
 
 **Next Tasks**:
-- [ ] Implement auth flow fix (add clearSupabaseSession to TestDatabaseHelper)
-- [ ] Add setUpAll to auth_flow_test.dart
+- [ ] Run auth_flow_test.dart on device to verify fix
+- [ ] If passing, commit clearSupabaseSession work from previous plan
 - [ ] Verify CI passes on GitHub
 
 ## Key Decisions

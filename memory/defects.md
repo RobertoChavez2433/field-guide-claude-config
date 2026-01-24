@@ -72,6 +72,15 @@ await $.waitUntilVisible(finder);
 **Impact**: 14+ tests excluded from test bundle, navigation helpers broken
 **Ref**: @.claude/plans/e2e-testing-remediation-plan.md
 
+### Missing TestingKeys for Dialog Buttons
+**Pattern**: UI dialogs (confirmation, sign out, delete) missing TestingKeys on action buttons
+**Prevention**:
+- When creating dialogs with action buttons, always add TestingKeys
+- Check if test helpers need to interact with the dialog (especially confirmation flows)
+- Common missing: confirm buttons, cancel buttons in AlertDialog actions
+**Impact**: E2E tests fail because helpers can't tap dialog buttons
+**Example**: Sign out dialog "Sign Out" button needed `TestingKeys.signOutConfirmButton`
+
 ---
 
 <!-- Add new defects above this line -->

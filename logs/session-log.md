@@ -24,6 +24,13 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-24 (Session 91): Auth Test Logout Dialog Fix
+- Fixed forceLogoutIfNeeded() not handling sign out confirmation dialog
+- Added `signOutConfirmButton` TestingKey and wired to settings_screen.dart
+- Updated patrol_test_helpers.dart to tap confirm button after sign out tile
+- Logged "Missing TestingKeys for Dialog Buttons" pattern to defects.md
+- Files: testing_keys.dart, settings_screen.dart, patrol_test_helpers.dart
+
 ### 2026-01-23 (Session 88): CI Failure Diagnosis
 - Diagnosed CI failures from PR-8 commit (14a7ed8)
 - Root causes identified:
