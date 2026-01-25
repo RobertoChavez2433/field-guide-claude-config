@@ -13,6 +13,14 @@ Critical patterns to avoid. Archive: `defects-archive.md`
 
 ## Active Patterns
 
+### Inadequate E2E Test Debugging
+**Pattern**: Declaring test success based on partial output without analyzing full logs for timeouts/hanging
+**Prevention**:
+- Always search full logs for `TimeoutException`, `hanging`, `stuck` patterns
+- Check test duration against expected times (>60s for simple tests = likely hanging)
+- Don't trust "passed" count until confirmed tests completed in reasonable time
+- Analyze logcat and test-results.log for widget not found / not hit-testable errors
+
 ### Async Context Safety
 **Pattern**: Using context after await without mounted check
 **Prevention**: Always `if (!mounted) return;` before setState/context after await

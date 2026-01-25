@@ -1,20 +1,24 @@
 # Session State
 
-**Last Updated**: 2026-01-25 | **Session**: 110
+**Last Updated**: 2026-01-25 | **Session**: 111
 
 ## Current Phase
-- **Phase**: CODEX Implementation - E2E Test Scrolling Fixes
-- **Status**: In progress - scroll fixes applied, tests need verification
+- **Phase**: CODEX Implementation - E2E Test Stability
+- **Status**: BLOCKED - Tests still hanging, changes need review/revert
 
-## Last Session (Session 110)
-**Summary**: Fixed E2E test scrolling issues in offline_sync_test.dart. Tests were failing because elements below the fold (settingsSyncSection, settingsAutoSyncToggle, settingsSyncTile) weren't being scrolled to before asserting visibility. Also fixed keyboard covering field issue in `fillEntryField` helper by adding a second scroll after tap.
+## Last Session (Session 111)
+**Summary**: Attempted CODEX plan fixes for E2E test stability. Changes made but tests still hanging - debugging was inadequate.
 
-**Files Modified**:
-- `integration_test/patrol/e2e_tests/offline_sync_test.dart` - Added scrollTo() calls before assertVisible for sync section elements
-- `integration_test/patrol/helpers/patrol_test_helpers.dart` - Added second scrollTo() after tap in fillEntryField to handle keyboard coverage
+**Changes Made (UNCOMMITTED - may need revert)**:
+- `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart` - resetAndSeed + direct scrollTo pattern
+- `integration_test/patrol/e2e_tests/entry_management_test.dart` - resetAndSeed + removed redundant section scroll
+- `integration_test/patrol/e2e_tests/offline_sync_test.dart` - resetAndSeed
+- `integration_test/patrol/helpers/patrol_test_helpers.dart` - Added scrollTo to incrementPersonnel, decrementPersonnel, fillEntryWizard
+
+**Issue**: Tests still hanging. Root cause not properly identified.
 
 ## Active Plan
-**Status**: IN PROGRESS
+**Status**: BLOCKED
 
 **Completed**:
 - [x] Add personnel types to TestSeedData (Phase 1.1)
@@ -33,8 +37,9 @@
 - [x] Fix offline_sync_test scrolling issues
 
 **Next Tasks**:
-- [ ] Run E2E tests to verify scrolling fixes work
-- [ ] Final verification (Phase 6.1) - Run all tests to verify stability
+- [ ] Review uncommitted changes - consider revert if broken
+- [ ] Properly debug hanging tests with full log analysis
+- [ ] Phase 6.1 verification after fixes confirmed working
 
 ## Key Decisions
 - **Scroll before assert pattern**: Always call `$(key).scrollTo()` before `h.assertVisible(key, ...)` for elements that may be below the fold
@@ -43,11 +48,12 @@
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| CODEX Phase 6 | NEXT | `.claude/plans/CODEX.md` |
+| CODEX Phase 6 | BLOCKED | `.claude/plans/CODEX.md` |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 
 ## Open Questions
-- None
+- Why are tests still hanging after scroll pattern changes?
+- Should Session 111 changes be reverted?
 
 ## Reference
 - CODEX Plan: `.claude/plans/CODEX.md`
