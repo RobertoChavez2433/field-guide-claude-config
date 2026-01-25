@@ -1,103 +1,125 @@
-# PR Plan: Stabilize E2E Entry + Sync Tests (Comprehensive Findings)
+# E2E Test Stability - PR Plan (v2)
 
-## Problem Summary
-Entry-related E2E tests still hang on hit-testable waits and scrolls. Failures now span Entry Wizard readiness (locations never hit-testable), scrolls to lower sections, and offline sync flows where `entry_wizard_activities` is found but not hit-testable. Logs show inconsistent artifacts (XML missing on one run, logcat files empty), making diagnosis slower.
+## Goals
+- Eliminate false positives from silent skips and non-hit-testable taps.
+- Make tests deterministic within batches where data persists across files.
+- Centralize stability logic in helpers and minimize per-test boilerplate.
 
-## Findings (Past + Current)
-- Entry Wizard location dropdown times out as not hit-testable (5s timeout), indicating locations never finish loading or UI never becomes hit-testable. Evidence: `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\TEST-SM-G996U - 13-_app-.xml`.
-- Entry Wizard lower sections (e.g., `entry_quantities_section`) time out in `scrollToWizardSection`, indicating scroll targeting isn’t reliable when sections aren’t hit-testable. Evidence: `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\testlog\test-results.log`.
-- `waitForEntryWizardReady` now times out at 20s in “Cancel entry creation” (wizard never reaches ready state). Evidence: `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\testlog\test-results.log`.
-- Offline sync tests now fail on `entry_wizard_activities` found but not hit-testable, indicating scroll/visibility regression in `fillEntryField` usage. Evidence: `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\testlog\test-results.log`.
-- Some tests still wait for calendar after submit, but app navigates to report on submit; mismatched expectations caused timeouts in prior runs. Evidence: `lib/features/entries/presentation/screens/entry_wizard_screen.dart`, `integration_test/patrol/e2e_tests/navigation_flow_test.dart`.
-- `TestingKeys.entryWizardSave` is defined but not wired in UI; tests referencing it timed out previously. Evidence: `lib/shared/testing_keys.dart`, `integration_test/patrol/e2e_tests/offline_sync_test.dart` (historical).
-- Logcat files for entry tests are zero bytes; XML report was missing in one run and reappeared later, reducing diagnostics. Evidence: `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\logcat-*.txt`, `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\TEST-SM-G996U - 13-_app-.xml`.
-- UTP log shows transport cancellation noise (HTTP/2 RST_STREAM); not necessarily causal but indicates unstable test reporting. Evidence: `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\utp.0.log`.
+## Known Behavior / Constraints
+- `run_patrol_batched.ps1` resets app data only between batches; data persists across files in the same batch.
+- Each `patrolTest` launches a fresh app instance; project selection must happen per test after app launch.
 
-## Phase 1: Re-audit logs + artifacts (PR Size: small)
-### 1.1 Re-check test artifacts while runs finish
-- Step: Re-scan the latest `test-results.log`, XML, and logcat for new errors and confirm the XML report exists every run.
-- Reason: Confirms we are acting on current failures and the right binaries are in use.
-- Files:
-  - `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\testlog\test-results.log`
-  - `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\TEST-SM-G996U - 13-_app-.xml`
-  - `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\logcat-*.txt`
+## PR 1: Readiness key + helper hardening
 
-### 1.2 Add log capture hooks for entry failures
-- Step: Capture `adb logcat -s flutter` output during entry tests into per-test files.
-- Reason: Current logcat files are empty for failing entry tests.
-- Files:
-  - `scripts/run_patrol.ps1` or `run_patrol_batched.ps1`
+### 1.1 Add a single project-selected readiness key
+Steps:
+1) Add `TestingKeys.dashboardProjectTitle` (or rename to `projectSelectedIndicator`, pick one) in `lib/shared/testing_keys.dart`.
+2) Wire it to the dashboard project title widget.
+Files:
+- `lib/shared/testing_keys.dart`
+- `lib/features/dashboard/...` (project title widget)
 
-## Phase 2: Make Entry Wizard readiness deterministic (PR Size: medium)
-### 2.1 Add explicit “ready” indicators
-- Step: Add `TestingKeys.entryWizardLocationLoading` (already wired) and optionally a new `entryWizardReady` key once providers finish loading.
-- Reason: Tests need a reliable signal that locations/contractors/bid items are loaded and the dropdown is hit-testable.
-- Files:
-  - `lib/features/entries/presentation/screens/entry_wizard_screen.dart`
-  - `lib/features/entries/presentation/widgets/entry_basics_section.dart`
-  - `lib/shared/testing_keys.dart`
+### 1.2 Add a fail-loud project selection helper
+Steps:
+1) Add `ensureSeedProjectSelectedOrFail()` in `patrol_test_helpers.dart`.
+2) Navigate to Projects, locate the seed project, `waitForHitTestable` + tap.
+3) Wait for the readiness key from 1.1; if missing, call `_logKeyDiagnostics` and throw.
+Files:
+- `integration_test/patrol/helpers/patrol_test_helpers.dart`
+- `integration_test/patrol/fixtures/test_seed_data.dart`
+- `lib/shared/testing_keys.dart`
 
-### 2.2 Strengthen readiness waits
-- Step: Update `waitForEntryWizardReady` to wait for either the “ready” key or the dropdown being hit-testable, and log provider load failures if any.
-- Reason: `waitForEntryWizardReady` is still timing out at 20s, which blocks multiple tests.
-- Files:
-  - `integration_test/patrol/helpers/patrol_test_helpers.dart`
+### 1.3 Harden `saveProject()` using hit-testable checks
+Steps:
+1) Replace `.exists` branching with hit-testable detection (short timeout).
+2) `safeTap(..., scroll: true)` the hit-testable button.
+3) If neither button is hit-testable, log diagnostics and throw.
+4) Post-save wait uses `waitForHitTestable(TestingKeys.addProjectFab, timeout: 5s)`; bump if needed.
+Files:
+- `integration_test/patrol/helpers/patrol_test_helpers.dart`
 
-### 2.3 Ensure deterministic test DB state
-- Step: Switch entry-focused tests to `TestDatabaseHelper.resetAndSeed()` in `setUpAll` or `setUp`.
-- Reason: Prevent stale DB state causing location/provider load issues.
-- Files:
-  - `integration_test/patrol/helpers/test_database_helper.dart`
-  - `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
-  - `integration_test/patrol/e2e_tests/entry_management_test.dart`
-  - `integration_test/patrol/e2e_tests/offline_sync_test.dart`
+### 1.4 Add an optional tap helper for coverage tests
+Steps:
+1) Add `tapIfHitTestable(Key key, {description})` that logs when missing but does not fail.
+2) Use this helper in coverage-style tests where optional UI is expected.
+Files:
+- `integration_test/patrol/helpers/patrol_test_helpers.dart`
 
-## Phase 3: Fix scroll + hit-testability (PR Size: medium)
-### 3.1 Align scroll pattern with the passing flow
-- Step: Replace `scrollToWizardSection` calls with direct `scrollTo()` on the actual field/button (same pattern as `fillEntryField`).
-- Reason: `scrollToWizardSection` is still failing to find `entry_quantities_section`.
-- Files:
-  - `integration_test/patrol/helpers/patrol_test_helpers.dart`
-  - `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
-  - `integration_test/patrol/e2e_tests/entry_management_test.dart`
+## PR 2: Data isolation strategy (per file)
 
-### 3.2 Make `fillEntryField` hit-testable-safe
-- Step: Add `ensureVisible` + hit-testable retry loop + keyboard dismiss before entry to avoid “found but not hit-testable” on `entry_wizard_activities`.
-- Reason: Offline sync tests now fail at the activities field despite the widget being found.
-- Files:
-  - `integration_test/patrol/helpers/patrol_test_helpers.dart`
-  - `integration_test/patrol/e2e_tests/offline_sync_test.dart`
+### 2.1 Adopt explicit reset/seed in files that mutate data
+Steps:
+1) Use `TestDatabaseHelper.resetAndSeed()` in `setUp` for tests that mutate data.
+2) Keep `ensureSeedData()` for read-only flows.
+Files:
+- `integration_test/patrol/helpers/test_database_helper.dart`
+- `integration_test/patrol/e2e_tests/quantities_flow_test.dart`
+- `integration_test/patrol/e2e_tests/entry_management_test.dart`
+- `integration_test/patrol/e2e_tests/project_setup_flow_test.dart`
+- `integration_test/patrol/e2e_tests/settings_theme_test.dart`
+- `integration_test/patrol/e2e_tests/project_management_test.dart`
+- `integration_test/patrol/e2e_tests/contractors_flow_test.dart`
+- `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
 
-## Phase 4: Align test expectations with actual navigation (PR Size: small)
-### 4.1 Ensure submit flows expect report screen
-- Step: Confirm all submit flows use `saveEntry(expectReport: true)` and only wait for calendar after navigating back.
-- Reason: Entry wizard submits always route to report; waiting for calendar causes timeouts.
-- Files:
-  - `integration_test/patrol/helpers/patrol_test_helpers.dart`
-  - `integration_test/patrol/e2e_tests/navigation_flow_test.dart`
-  - `integration_test/patrol/e2e_tests/offline_sync_test.dart`
-  - `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
+### 2.2 Batch-aware note (optional)
+Steps:
+1) Add a short comment in `run_patrol_batched.ps1` about data persistence within batch.
+Files:
+- `run_patrol_batched.ps1`
 
-## Phase 5: Restore exhaustive coverage with stability (PR Size: medium)
-### 5.1 Entry Wizard coverage after readiness/scroll fixes
-- Step: Re-enable full Entry Wizard button coverage only after readiness/scroll fixes are stable.
-- Reason: Prevents heavy coverage from amplifying flaky prerequisites.
-- Files:
-  - `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
+## PR 3: Flow test fixes (Batch 2 and 3)
 
-### 5.2 Report screen exhaustive coverage
-- Step: Ensure report screen button coverage test waits for report screen and uses hit-testable-safe interactions for edit dialogs, quantities, and photo flows.
-- Reason: Report coverage is required for the “exhaustive clickables” goal.
-- Files:
-  - `integration_test/patrol/e2e_tests/entry_management_test.dart`
-  - `lib/features/entries/presentation/screens/report_screen.dart`
+### 3.1 Quantities flow: require project selection
+Steps:
+1) At start of each test, call `h.ensureSeedProjectSelectedOrFail()`.
+2) Navigate to Calendar only after readiness key is visible.
+Files:
+- `integration_test/patrol/e2e_tests/quantities_flow_test.dart`
 
-## Phase 6: Verification (PR Size: small)
-### 6.1 Focused test runs
-- Step: Re-run entry, offline sync, and navigation tests after fixes.
-- Suggested commands:
-  - `pwsh -File run_patrol.ps1 -TestFile "integration_test/patrol/e2e_tests/entry_lifecycle_test.dart"`
-  - `pwsh -File run_patrol.ps1 -TestFile "integration_test/patrol/e2e_tests/entry_management_test.dart"`
-  - `pwsh -File run_patrol.ps1 -TestFile "integration_test/patrol/e2e_tests/offline_sync_test.dart"`
-  - `pwsh -File run_patrol.ps1 -TestFile "integration_test/patrol/e2e_tests/navigation_flow_test.dart"`
-- Reason: Confirms that readiness, scroll, and navigation fixes eliminate the timeouts.
+### 3.2 Entry management + project setup + settings theme
+Steps:
+1) Replace direct save taps with `h.saveProject()`.
+2) Replace add-photo direct taps with `h.safeTap(..., scroll: true)`.
+Files:
+- `integration_test/patrol/e2e_tests/entry_management_test.dart`
+- `integration_test/patrol/e2e_tests/project_setup_flow_test.dart`
+- `integration_test/patrol/e2e_tests/settings_theme_test.dart`
+
+## PR 4: Additional flow audits (Batch 4 and other gaps)
+
+### 4.1 Contractors flow
+Steps:
+1) Replace `.exists` + direct tap patterns for flow-critical actions with `safeTap`.
+2) If optional UI, use `tapIfHitTestable`.
+Files:
+- `integration_test/patrol/e2e_tests/contractors_flow_test.dart`
+
+### 4.2 Navigation and offline sync
+Steps:
+1) Audit for direct taps and missing project selection; use helpers as needed.
+2) Replace any `.exists`-gated taps on required steps.
+Files:
+- `integration_test/patrol/e2e_tests/navigation_flow_test.dart`
+- `integration_test/patrol/e2e_tests/offline_sync_test.dart`
+
+## PR 5: Coverage tests (keep optional behavior, reduce flake)
+
+### 5.1 Update coverage taps to be hit-testable aware
+Steps:
+1) Replace `.exists` gating with `tapIfHitTestable` to avoid "not hit-testable" failures.
+2) Keep non-failing behavior for optional UI.
+Files:
+- `integration_test/patrol/e2e_tests/ui_button_coverage_test.dart`
+
+## PR 6: Verification
+
+### 6.1 Execute batched runs
+Steps:
+1) Run `pwsh -File run_patrol_batched.ps1`.
+2) If time-limited, run only the batches containing modified files.
+Success criteria:
+- No silent skips; missing seeds fail with diagnostics.
+- No "widget found but not hit-testable" errors.
+- Quantities flow tests take >10s and interact with calendar.
+Files:
+- `run_patrol_batched.ps1`

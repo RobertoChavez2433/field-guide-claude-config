@@ -1,54 +1,58 @@
 # Session State
 
-**Last Updated**: 2026-01-25 | **Session**: 112
+**Last Updated**: 2026-01-25 | **Session**: 113
 
 ## Current Phase
 - **Phase**: CODEX Implementation - E2E Test Stability
-- **Status**: IN PROGRESS - Comprehensive fix plan created
+- **Status**: IN PROGRESS - PR 1 and PR 2 complete
 
-## Last Session (Session 112)
-**Summary**: Created comprehensive E2E test stability fix plan identifying 4 major defect patterns and 6-phase implementation.
+## Last Session (Session 113)
+**Summary**: Implemented CODEX.md PR 1 (Readiness key + helper hardening) and PR 2 (Data isolation strategy).
 
 **Key Deliverables**:
-1. Comprehensive fix plan with 6 phases covering 6 test files
-2. Documented 4 defect patterns:
-   - Missing project selection before calendar
-   - `.exists` check before tap (wrong!)
-   - Short timeout in saveProject()
-   - Direct tap without using helper
-3. Added 2 new defects to defects.md
+1. **PR 1.1**: Added `TestingKeys.dashboardProjectTitle` and wired to dashboard
+2. **PR 1.2**: Added `ensureSeedProjectSelectedOrFail()` helper for fail-loud project selection
+3. **PR 1.3**: Hardened `saveProject()` with hit-testable checks, bumped timeout to 10s
+4. **PR 1.4**: Added `tapIfHitTestable()` for optional/coverage-style taps
+5. **PR 2.2**: Added batch-aware comment to `run_patrol_batched.ps1`
 
 **Files Modified**:
-- `navigation_flow_test.dart` - Partially fixed (WIP from prior session)
-- `patrol_test_helpers.dart` - Scroll pattern improvements (WIP)
-- `test_bundle.dart` - Test configuration changes (WIP)
+- `lib/shared/testing_keys.dart` - Added dashboardProjectTitle key
+- `lib/features/dashboard/presentation/screens/project_dashboard_screen.dart` - Wired key to project name
+- `integration_test/patrol/helpers/patrol_test_helpers.dart` - Added ensureSeedProjectSelectedOrFail(), hardened saveProject(), added tapIfHitTestable()
+- `run_patrol_batched.ps1` - Added data persistence documentation
 
 ## Active Plan
-**Status**: READY TO IMPLEMENT
+**Status**: PR 1 & 2 COMPLETE - Ready for PR 3 (Flow test fixes)
 
-**Plan Location**: User's conversation (plan was presented but not saved to file)
+**Plan Location**: `.claude/plans/CODEX.md`
 
 **Implementation Phases**:
-1. [x] Fix patrol_test_helpers.dart - saveProject() timeout + scroll
-2. [ ] Fix quantities_flow_test.dart - Add project selection (5 tests)
-3. [ ] Fix photo_flow_test.dart - Replace .exists pattern (3 instances)
-4. [ ] Fix entry_management_test.dart - Replace direct tap (1 instance)
-5. [ ] Fix project_setup_flow_test.dart - Use h.saveProject() helper
-6. [ ] Fix settings_theme_test.dart - Use h.saveProject() helper
+1. [x] PR 1: Readiness key + helper hardening (ALL COMPLETE)
+   - [x] 1.1 Add dashboardProjectTitle key
+   - [x] 1.2 Add ensureSeedProjectSelectedOrFail()
+   - [x] 1.3 Harden saveProject()
+   - [x] 1.4 Add tapIfHitTestable()
+2. [x] PR 2: Data isolation strategy
+   - [x] 2.1 resetAndSeed() already exists in TestDatabaseHelper
+   - [x] 2.2 Batch-aware comment added
+3. [ ] PR 3: Flow test fixes (quantities, entry_management, project_setup, settings_theme)
+4. [ ] PR 4: Additional flow audits (contractors, navigation, offline_sync)
+5. [ ] PR 5: Coverage tests (ui_button_coverage)
+6. [ ] PR 6: Verification run
 
 ## Key Decisions
 - **Scroll before tap pattern**: Always `scrollTo()` before `tap()` for below-fold widgets
 - **Avoid .exists guard**: Use `waitForVisible()` instead to fail explicitly
-- **Project context for calendar**: Always select project before navigating to calendar if testing entries
+- **Project context for calendar**: Use `ensureSeedProjectSelectedOrFail()` before calendar tests
+- **Hit-testable detection**: Use `finder.hitTestable()` instead of `.exists` checks
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| CODEX Phase 6 verification | NEXT | After E2E stability fixes |
+| PR 3-6 flow fixes | NEXT | `.claude/plans/CODEX.md` |
+| CODEX Phase 6 verification | AFTER PR 6 | After E2E stability fixes |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
-
-## Open Questions
-- Should plan be saved to `.claude/plans/` for persistence?
 
 ## Reference
 - CODEX Plan: `.claude/plans/CODEX.md`
