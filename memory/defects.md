@@ -180,6 +180,26 @@ await $.waitUntilVisible(finder);
 **Impact**: Test failure - "Found 0 widgets with key [<'key_name'>]"
 **Example**: settingsSyncSection, settingsAutoSyncToggle fail because they're below the fold in settings
 
+### .exists Doesn't Mean Hit-Testable
+**Pattern**: Using `.exists` to check if widget is ready before `.tap()`
+**Prevention**:
+- `.exists` returns true for widgets that are in the widget tree but below the fold (not visible)
+- These widgets will fail tap() with "Found 1 widget but not hit-testable"
+- Always use `safeTap(..., scroll: true)` for widgets that may be below the fold
+- Or explicitly: `$(finder).scrollTo()` before `$(finder).tap()`
+**Impact**: Tests fail with "Found 1 widget but not hit-testable" errors
+**Example**: `if (!await addPhotoButton.exists) { await scroll... } await tap()` - widget exists but isn't visible
+
+### Silent Skip with if(widget.exists)
+**Pattern**: Using `if (widget.exists) { ... }` which silently skips when widget not visible
+**Prevention**:
+- Never use `.exists` as a guard before test actions - it causes silent test failures
+- If widget should exist, use `waitForVisible()` and let it fail explicitly
+- Ensure proper test setup (e.g., project selected before calendar for entry FAB)
+- Tests that complete in 2s when they should take 30s are likely silently skipping
+**Impact**: False positive tests that complete instantly without testing anything
+**Example**: `if (addEntryFab.exists) { ... }` skips entire test when calendar has no project context
+
 ---
 
 <!-- Add new defects above this line -->

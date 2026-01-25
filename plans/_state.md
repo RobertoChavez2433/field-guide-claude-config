@@ -1,59 +1,54 @@
 # Session State
 
-**Last Updated**: 2026-01-25 | **Session**: 111
+**Last Updated**: 2026-01-25 | **Session**: 112
 
 ## Current Phase
 - **Phase**: CODEX Implementation - E2E Test Stability
-- **Status**: BLOCKED - Tests still hanging, changes need review/revert
+- **Status**: IN PROGRESS - Comprehensive fix plan created
 
-## Last Session (Session 111)
-**Summary**: Attempted CODEX plan fixes for E2E test stability. Changes made but tests still hanging - debugging was inadequate.
+## Last Session (Session 112)
+**Summary**: Created comprehensive E2E test stability fix plan identifying 4 major defect patterns and 6-phase implementation.
 
-**Changes Made (UNCOMMITTED - may need revert)**:
-- `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart` - resetAndSeed + direct scrollTo pattern
-- `integration_test/patrol/e2e_tests/entry_management_test.dart` - resetAndSeed + removed redundant section scroll
-- `integration_test/patrol/e2e_tests/offline_sync_test.dart` - resetAndSeed
-- `integration_test/patrol/helpers/patrol_test_helpers.dart` - Added scrollTo to incrementPersonnel, decrementPersonnel, fillEntryWizard
+**Key Deliverables**:
+1. Comprehensive fix plan with 6 phases covering 6 test files
+2. Documented 4 defect patterns:
+   - Missing project selection before calendar
+   - `.exists` check before tap (wrong!)
+   - Short timeout in saveProject()
+   - Direct tap without using helper
+3. Added 2 new defects to defects.md
 
-**Issue**: Tests still hanging. Root cause not properly identified.
+**Files Modified**:
+- `navigation_flow_test.dart` - Partially fixed (WIP from prior session)
+- `patrol_test_helpers.dart` - Scroll pattern improvements (WIP)
+- `test_bundle.dart` - Test configuration changes (WIP)
 
 ## Active Plan
-**Status**: BLOCKED
+**Status**: READY TO IMPLEMENT
 
-**Completed**:
-- [x] Add personnel types to TestSeedData (Phase 1.1)
-- [x] Add missing TestingKeys (Phase 2.1)
-- [x] Wire keys to entry_wizard_screen.dart dialogs (Phase 2.2)
-- [x] Wire keys to report_screen.dart elements (Phase 2.3)
-- [x] Add wizard navigation helpers (Phase 2.4)
-- [x] Rebuild entry_lifecycle_test.dart (Phase 3.1)
-- [x] Expand Entry Wizard button coverage (Phase 3.2)
-- [x] Consolidate entry_management_test.dart (Phase 4.1)
-- [x] Per-screen button coverage tests (Phase 5.1)
-- [x] Code review of last 15 commits
-- [x] Add ui_button_coverage_test.dart to test_bundle.dart
-- [x] DRY refactor: Weather icon/color/name methods → WeatherHelpers
-- [x] Standardize helper pattern (PatrolTestConfig.createHelpers)
-- [x] Fix offline_sync_test scrolling issues
+**Plan Location**: User's conversation (plan was presented but not saved to file)
 
-**Next Tasks**:
-- [ ] Review uncommitted changes - consider revert if broken
-- [ ] Properly debug hanging tests with full log analysis
-- [ ] Phase 6.1 verification after fixes confirmed working
+**Implementation Phases**:
+1. [x] Fix patrol_test_helpers.dart - saveProject() timeout + scroll
+2. [ ] Fix quantities_flow_test.dart - Add project selection (5 tests)
+3. [ ] Fix photo_flow_test.dart - Replace .exists pattern (3 instances)
+4. [ ] Fix entry_management_test.dart - Replace direct tap (1 instance)
+5. [ ] Fix project_setup_flow_test.dart - Use h.saveProject() helper
+6. [ ] Fix settings_theme_test.dart - Use h.saveProject() helper
 
 ## Key Decisions
-- **Scroll before assert pattern**: Always call `$(key).scrollTo()` before `h.assertVisible(key, ...)` for elements that may be below the fold
-- **Keyboard coverage fix**: After tapping a text field, scroll again to ensure field is visible above keyboard
+- **Scroll before tap pattern**: Always `scrollTo()` before `tap()` for below-fold widgets
+- **Avoid .exists guard**: Use `waitForVisible()` instead to fail explicitly
+- **Project context for calendar**: Always select project before navigating to calendar if testing entries
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| CODEX Phase 6 | BLOCKED | `.claude/plans/CODEX.md` |
+| CODEX Phase 6 verification | NEXT | After E2E stability fixes |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 
 ## Open Questions
-- Why are tests still hanging after scroll pattern changes?
-- Should Session 111 changes be reverted?
+- Should plan be saved to `.claude/plans/` for persistence?
 
 ## Reference
 - CODEX Plan: `.claude/plans/CODEX.md`

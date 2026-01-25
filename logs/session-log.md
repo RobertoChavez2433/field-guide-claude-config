@@ -24,6 +24,18 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-25 (Session 112): E2E Test Stability Planning
+- Created comprehensive 6-phase fix plan for E2E test stability
+- Identified 4 major defect patterns across 6 test files
+- Logged 2 new defects: `.exists` doesn't mean hit-testable, silent skip with if(widget.exists)
+- Focus: quantities_flow, photo_flow, entry_management, project_setup_flow, settings_theme tests
+- Files: _state.md, defects.md
+
+### 2026-01-25 (Session 111): CODEX Plan Fixes (WIP)
+- Attempted E2E fixes from prior CODEX plan - tests still hanging
+- Modified navigation_flow_test, patrol_test_helpers, test_bundle (uncommitted)
+- Issues remain unresolved - new comprehensive plan created in Session 112
+
 ### 2026-01-25 (Session 110): E2E Test Scrolling Fixes
 - Fixed offline_sync_test.dart failures due to elements below the fold
 - Added scrollTo() before assertVisible for settingsSyncSection, settingsAutoSyncToggle, settingsSyncTile
