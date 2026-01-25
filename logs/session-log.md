@@ -24,6 +24,13 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-24 (Session 102): E2E Test Fixes - Overflow & Scroll
+- Fixed home_screen.dart LayoutBuilder syntax error (missing closing brackets)
+- Added scrollTo() before tap() in fillEntryField() and selectFromDropdown()
+- Fixed saveEntry(asDraft:true) to use unsaved changes dialog flow
+- Added defects for repeated test runs and missing scrollTo()
+- Needs manual verification with clean app state
+
 ### 2026-01-24 (Session 101): E2E Helper Pattern Migration
 - Converted entry_management_test.dart (11 tests) from raw app.main() to helper pattern
 - Added signInIfNeeded() to quantities_flow_test.dart (5 tests)

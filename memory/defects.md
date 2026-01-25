@@ -127,6 +127,33 @@ await $.waitUntilVisible(finder);
 **Impact**: Tests fail because no sign-in performed, stuck on login screen
 **Example**: navigation_flow_test couldn't find bottomNavigationBar because auth was required
 
+### Git Bash Silent Output on Windows
+**Pattern**: Running Flutter/Patrol commands through Git Bash loses stdout/stderr
+**Prevention**:
+- Always run E2E tests through PowerShell: `pwsh -File run_patrol_batched.ps1`
+- Or wrap commands: `pwsh -Command "flutter build apk --debug"`
+- Git Bash swallows output from Flutter's build system
+**Impact**: Commands appear to complete instantly with no output, debugging impossible
+**Example**: `flutter build apk --debug 2>&1` returns nothing in Git Bash but works in PowerShell
+
+### Repeated Test Runs Corrupt App State
+**Pattern**: Running E2E tests repeatedly without resetting device/app state between runs
+**Prevention**:
+- Reset app state before running tests: `adb shell pm clear com.fvconstruction.construction_inspector`
+- Use `run_patrol_batched.ps1` which resets between batches
+- Don't spam tests trying to debug - one run, analyze, fix, reset, retry
+**Impact**: Tests that would pass fail due to stale database/login state from prior runs
+**Example**: Auth tests fail because user already signed in from previous test run
+
+### Test Helper Missing scrollTo() Before tap()
+**Pattern**: Calling `$(finder).tap()` on widgets that may be below the fold
+**Prevention**:
+- Always call `$(finder).scrollTo()` before `$(finder).tap()` for form fields
+- Widgets found but "not hit-testable" means they're off-screen
+- Apply to: `fillEntryField()`, `selectFromDropdown()`, `saveEntry()`
+**Impact**: TimeoutException - "Found 1 widget... did not find any visible (hit-testable) widgets"
+**Example**: entry_wizard_activities field exists but couldn't be tapped until scrolled into view
+
 ---
 
 <!-- Add new defects above this line -->
