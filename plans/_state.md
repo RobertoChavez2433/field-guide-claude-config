@@ -1,33 +1,27 @@
 # Session State
 
-**Last Updated**: 2026-01-24 | **Session**: 104
+**Last Updated**: 2026-01-24 | **Session**: 105
 
 ## Current Phase
-- **Phase**: CODEX Implementation - Phases 1-2 Complete
-- **Status**: Personnel types seed data and TestingKeys wired
+- **Phase**: CODEX Implementation - Phases 1-3 Complete
+- **Status**: Entry lifecycle tests rebuilt with comprehensive coverage
 
-## Last Session (Session 104)
-**Summary**: Implemented CODEX Phase 1 and Phase 2. Added personnel types seed data, wired TestingKeys to dialogs, and created wizard navigation helpers.
+## Last Session (Session 105)
+**Summary**: Implemented CODEX Phase 3. Rebuilt entry_lifecycle_test.dart with comprehensive flow including all wizard sections, button coverage testing, draft save flow, and validation testing.
 
 **Files Modified**:
-- `integration_test/patrol/fixtures/test_seed_data.dart` - Personnel type IDs and models
-- `integration_test/patrol/helpers/test_database_helper.dart` - Insert/clear personnel types
-- `integration_test/patrol/helpers/patrol_test_helpers.dart` - Wizard navigation helpers
-- `lib/shared/testing_keys.dart` - photoSourceDialog, reportAddContractorSheet
-- `lib/features/entries/presentation/screens/entry_wizard_screen.dart` - Dialog keys wired
-- `lib/features/entries/presentation/screens/report_screen.dart` - Contractor sheet key wired
-- `lib/features/photos/presentation/widgets/photo_source_dialog.dart` - Root key added
+- `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart` - Complete rewrite with 4 comprehensive tests
 
 **Key Deliverables**:
-- PersonnelType seed data: foremanType, operatorType, laborerType
-- TestingKeys wired to Add Personnel Type dialog (5 keys)
-- TestingKeys wired to Add Equipment dialog (5 keys)
-- Photo source dialog root key added
-- Report add contractor sheet key added
-- New helpers: scrollToWizardSection, ensureWeatherPopulated, fillEntryWizard, incrementPersonnel, decrementPersonnel
+- Test 1: Complete entry creation + report edit flow (full wizard coverage)
+- Test 2: Entry wizard button coverage (weather fetch, personnel add/increment/decrement, equipment, quantities, photo)
+- Test 3: Draft save and edit flow
+- Test 4: Entry validation prevents empty submission
+- All tests use deterministic seed data (TestSeedData.*)
+- All tests use helper-driven steps with explicit logging
 
 ## Active Plan
-**Status**: CODEX PHASES 1-2 COMPLETE
+**Status**: CODEX PHASES 1-3 COMPLETE
 
 **Completed**:
 - [x] Add personnel types to TestSeedData (Phase 1.1)
@@ -35,10 +29,10 @@
 - [x] Wire keys to entry_wizard_screen.dart dialogs (Phase 2.2)
 - [x] Wire keys to report_screen.dart elements (Phase 2.3)
 - [x] Add wizard navigation helpers (Phase 2.4)
+- [x] Rebuild entry_lifecycle_test.dart (Phase 3.1)
+- [x] Expand Entry Wizard button coverage (Phase 3.2)
 
-**Next Tasks (Phase 3+)**:
-- [ ] Rebuild entry_lifecycle_test.dart (Phase 3.1)
-- [ ] Expand Entry Wizard button coverage (Phase 3.2)
+**Next Tasks (Phase 4+)**:
 - [ ] Consolidate entry_management_test.dart (Phase 4.1)
 - [ ] Per-screen button coverage tests (Phase 5.1)
 - [ ] Final verification (Phase 6.1)
@@ -47,17 +41,18 @@
 - **Contractor deletion**: Delete from PROJECT (permanent) - seed data resets between tests anyway
 - **Personnel types**: Add to seed data, not create via dialog during tests
 - **Wizard navigation**: Use scrollTo() helper for below-fold sections
+- **Test structure**: 4 focused tests covering creation, button coverage, draft, and validation
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| CODEX Phase 3 | NEXT | `.claude/plans/merry-nibbling-walrus.md` |
-| CODEX Phase 4-6 | PENDING | `.claude/plans/merry-nibbling-walrus.md` |
+| CODEX Phase 4 | NEXT | `.claude/plans/CODEX.md` |
+| CODEX Phase 5-6 | PENDING | `.claude/plans/CODEX.md` |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 
 ## Open Questions
-- None - ready for Phase 3 implementation
+- None - ready for Phase 4 implementation
 
 ## Reference
-- CODEX Plan: `.claude/plans/merry-nibbling-walrus.md`
+- CODEX Plan: `.claude/plans/CODEX.md`
 - Branch: `New-Entry_Lifecycle-Redesign`
