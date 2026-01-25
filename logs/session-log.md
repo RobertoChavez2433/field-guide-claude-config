@@ -24,6 +24,13 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-25 (Session 110): E2E Test Scrolling Fixes
+- Fixed offline_sync_test.dart failures due to elements below the fold
+- Added scrollTo() before assertVisible for settingsSyncSection, settingsAutoSyncToggle, settingsSyncTile
+- Fixed keyboard coverage issue in fillEntryField helper - added second scrollTo() after tap
+- Added 2 new defect patterns to defects.md
+- Files: offline_sync_test.dart, patrol_test_helpers.dart
+
 ### 2026-01-24 (Session 109): Code Review Fixes + DRY Refactor
 - Implemented code review fixes from Session 108
 - Added ui_button_coverage_test.dart to test_bundle.dart

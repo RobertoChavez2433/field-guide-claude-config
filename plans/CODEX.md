@@ -1,150 +1,103 @@
-# PR Plan: Rebuild Entry Lifecycle + Entry Management E2E Tests
+# PR Plan: Stabilize E2E Entry + Sync Tests (Comprehensive Findings)
 
 ## Problem Summary
-- Current entry tests are fragmented and rely on ad hoc scrolling, which does not match the structured logging + helper-driven style used in `auth_flow_test.dart` and `contractors_flow_test.dart`. This increases flakiness and makes failures hard to diagnose. Files: `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`, `integration_test/patrol/e2e_tests/entry_management_test.dart`, `integration_test/patrol/helpers/patrol_test_helpers.dart`.
-- The requested flow exercises several Entry Wizard sections (location, weather, personnel, equipment, quantities, activities) that are spread across multiple widgets and dialogs. Some dialogs do not yet wire their fields/actions to `TestingKeys`, which blocks reliable interaction. Files: `lib/features/entries/presentation/screens/entry_wizard_screen.dart`, `lib/features/entries/presentation/widgets/entry_basics_section.dart`, `lib/shared/testing_keys.dart`.
-- You want end-to-end tests to press all clickable/tappable UI elements and open their dialogs, so missing keys or untested buttons are a coverage gap. Files: `lib/shared/testing_keys.dart`, `integration_test/patrol/REQUIRED_UI_KEYS.md`.
-- The seed data names/IDs must be used directly instead of hardcoded strings to keep tests deterministic. Files: `integration_test/patrol/fixtures/test_seed_data.dart`, `integration_test/patrol/helpers/patrol_test_helpers.dart`.
+Entry-related E2E tests still hang on hit-testable waits and scrolls. Failures now span Entry Wizard readiness (locations never hit-testable), scrolls to lower sections, and offline sync flows where `entry_wizard_activities` is found but not hit-testable. Logs show inconsistent artifacts (XML missing on one run, logcat files empty), making diagnosis slower.
 
-## Target Flow (for the rebuilt entry lifecycle test)
-Login -> View projects -> Select seed project -> Calendar bottom nav -> Create entry:
-- Choose a location (seed location)
-- Weather auto-fetch (verify auto-filled temps; if not filled, tap `TestingKeys.weatherFetchButton`)
-- Add a personnel type, increment counts (+1 each)
-- Toggle equipment for prime and sub contractor
-- Select a subcontractor
-- Add activities paragraph
-- Add quantities (choose multiple bid items)
-- Delete a contractor (actual delete of the subcontractor record created for tests)
-- Delete a personnel type
-- Generate report and verify report screen
-- Exhaustively test the report edit screen: press all clickable/tappable elements and open/close every dialog on the report screen
+## Findings (Past + Current)
+- Entry Wizard location dropdown times out as not hit-testable (5s timeout), indicating locations never finish loading or UI never becomes hit-testable. Evidence: `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\TEST-SM-G996U - 13-_app-.xml`.
+- Entry Wizard lower sections (e.g., `entry_quantities_section`) time out in `scrollToWizardSection`, indicating scroll targeting isn’t reliable when sections aren’t hit-testable. Evidence: `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\testlog\test-results.log`.
+- `waitForEntryWizardReady` now times out at 20s in “Cancel entry creation” (wizard never reaches ready state). Evidence: `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\testlog\test-results.log`.
+- Offline sync tests now fail on `entry_wizard_activities` found but not hit-testable, indicating scroll/visibility regression in `fillEntryField` usage. Evidence: `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\testlog\test-results.log`.
+- Some tests still wait for calendar after submit, but app navigates to report on submit; mismatched expectations caused timeouts in prior runs. Evidence: `lib/features/entries/presentation/screens/entry_wizard_screen.dart`, `integration_test/patrol/e2e_tests/navigation_flow_test.dart`.
+- `TestingKeys.entryWizardSave` is defined but not wired in UI; tests referencing it timed out previously. Evidence: `lib/shared/testing_keys.dart`, `integration_test/patrol/e2e_tests/offline_sync_test.dart` (historical).
+- Logcat files for entry tests are zero bytes; XML report was missing in one run and reappeared later, reducing diagnostics. Evidence: `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\logcat-*.txt`, `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\TEST-SM-G996U - 13-_app-.xml`.
+- UTP log shows transport cancellation noise (HTTP/2 RST_STREAM); not necessarily causal but indicates unstable test reporting. Evidence: `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\utp.0.log`.
 
-## Open Questions / Assumptions
-- Contractor deletion should be performed in the Contractors setup UI using `TestingKeys.contractorDeleteButton(...)` (not just deselecting in the Entry Wizard). If that delete action is missing, we will add it.
-- Weather auto-fetch: the test will assert auto-filled values if available, otherwise it will tap `TestingKeys.weatherFetchButton` and verify temps are populated (no hard fail on fetch errors unless you want it strict).
-- Personnel types may be empty by default; the flow will add a type via the Entry Wizard dialog, which currently has no TestingKeys wired to its fields/buttons.
-
-## Phase 1: Map the UI and required keys (PR Size: small)
-### 1.1 Compare entry tests to auth/contractor test style
-- Step: Review auth and contractor tests to capture the expected structure: helper-driven steps, explicit waits, and logging.
-- Reason: Rebuilt entry tests should follow this pattern for consistent diagnostics.
+## Phase 1: Re-audit logs + artifacts (PR Size: small)
+### 1.1 Re-check test artifacts while runs finish
+- Step: Re-scan the latest `test-results.log`, XML, and logcat for new errors and confirm the XML report exists every run.
+- Reason: Confirms we are acting on current failures and the right binaries are in use.
 - Files:
-  - `integration_test/patrol/e2e_tests/auth_flow_test.dart`
-  - `integration_test/patrol/e2e_tests/contractors_flow_test.dart`
-  - `integration_test/patrol/helpers/patrol_test_helpers.dart`
+  - `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\testlog\test-results.log`
+  - `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\TEST-SM-G996U - 13-_app-.xml`
+  - `C:\Users\rseba\Projects\Field Guide App\build\app\outputs\androidTest-results\connected\debug\SM-G996U - 13\logcat-*.txt`
 
-### 1.2 Map each target flow step to concrete widgets and keys
-- Step: Trace the Entry Wizard and Report UI to list which keys are already wired and which are missing for:
-  - Location + weather controls
-  - Contractor selection
-  - Personnel type add/delete
-  - Equipment add/toggle/delete
-  - Quantities add/select/edit/delete
-  - Generate report
-- Reason: The new tests must use `TestingKeys` end-to-end; missing wiring must be identified before rebuilding tests.
+### 1.2 Add log capture hooks for entry failures
+- Step: Capture `adb logcat -s flutter` output during entry tests into per-test files.
+- Reason: Current logcat files are empty for failing entry tests.
 - Files:
+  - `scripts/run_patrol.ps1` or `run_patrol_batched.ps1`
+
+## Phase 2: Make Entry Wizard readiness deterministic (PR Size: medium)
+### 2.1 Add explicit “ready” indicators
+- Step: Add `TestingKeys.entryWizardLocationLoading` (already wired) and optionally a new `entryWizardReady` key once providers finish loading.
+- Reason: Tests need a reliable signal that locations/contractors/bid items are loaded and the dropdown is hit-testable.
+- Files:
+  - `lib/features/entries/presentation/screens/entry_wizard_screen.dart`
   - `lib/features/entries/presentation/widgets/entry_basics_section.dart`
-  - `lib/features/entries/presentation/screens/entry_wizard_screen.dart`
-  - `lib/features/entries/presentation/screens/report_screen.dart`
   - `lib/shared/testing_keys.dart`
 
-### 1.3 Align seed data usage with deterministic IDs
-- Step: Document which seed IDs/names will be used for location, contractors, and bid items in the new test flow.
-- Reason: Avoid hardcoded strings and reduce flaky selector failures.
-- Files:
-  - `integration_test/patrol/fixtures/test_seed_data.dart`
-
-### 1.4 Build a UI coverage checklist (clickables + dialogs)
-- Step: Enumerate every clickable/tappable element and dialog across the entry + report + contractor setup surfaces and map them to `TestingKeys`.
-- Step: Flag any missing keys for addition in Phase 2.
-- Reason: You want a comprehensive suite that presses all UI buttons and opens all dialogs, so we need a coverage matrix before writing tests.
-- Files:
-  - `lib/shared/testing_keys.dart`
-  - `integration_test/patrol/REQUIRED_UI_KEYS.md`
-
-## Phase 2: Add missing TestingKeys and helpers for the flow (PR Size: medium)
-### 2.1 Wire Entry Wizard dialogs to TestingKeys
-- Step: Add keys for the add-personnel-type dialog fields and actions, and the add-equipment dialog fields/actions.
-- Step: Add keys for delete actions if the test requires explicit deletion (personnel type delete, equipment delete, contractor delete).
-- Reason: The flow requires creating and removing items reliably without relying on text-only finders or long-press gestures.
-- Files:
-  - `lib/shared/testing_keys.dart`
-  - `lib/features/entries/presentation/screens/entry_wizard_screen.dart`
-
-### 2.2 Add helper methods to match auth/contractor test style
-- Step: Extend helpers with targeted, logged actions (ex: select seed project, wait for weather auto-fill, add personnel type, increment counters, toggle equipment, add quantities, delete personnel type, generate report).
-- Reason: Keeps entry tests short and readable like `auth_flow_test.dart` and `contractors_flow_test.dart`.
+### 2.2 Strengthen readiness waits
+- Step: Update `waitForEntryWizardReady` to wait for either the “ready” key or the dropdown being hit-testable, and log provider load failures if any.
+- Reason: `waitForEntryWizardReady` is still timing out at 20s, which blocks multiple tests.
 - Files:
   - `integration_test/patrol/helpers/patrol_test_helpers.dart`
 
-### 2.3 Add delete contractor coverage in setup flow
-- Step: Add or wire delete buttons for contractor cards in project setup so tests can delete the subcontractor created for testing.
-- Step: Add helper for delete confirmation dialog handling on contractor delete.
-- Reason: The requested flow includes deleting the subcontractor record, which is currently only testable if delete UI is keyed.
+### 2.3 Ensure deterministic test DB state
+- Step: Switch entry-focused tests to `TestDatabaseHelper.resetAndSeed()` in `setUpAll` or `setUp`.
+- Reason: Prevent stale DB state causing location/provider load issues.
 - Files:
-  - `lib/shared/testing_keys.dart`
-  - `lib/features/projects/presentation/screens/project_setup_screen.dart`
-  - `integration_test/patrol/helpers/patrol_test_helpers.dart`
+  - `integration_test/patrol/helpers/test_database_helper.dart`
+  - `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
+  - `integration_test/patrol/e2e_tests/entry_management_test.dart`
+  - `integration_test/patrol/e2e_tests/offline_sync_test.dart`
 
-## Phase 3: Rebuild entry_lifecycle_test.dart (PR Size: medium)
-### 3.1 Replace existing tests with one full-flow scenario
-- Step: Create a single "E2E: entry creation + report edit flow" test that follows the target flow exactly and uses helper methods with explicit waits and logging.
-- Step: Use `TestSeedData.projectId`, `TestSeedData.locationId`, `TestSeedData.subContractorId`, `TestSeedData.bidItemId`/`bidItemId2` for deterministic selection.
-- Step: On the report screen, tap every clickable/tappable element and open/close all dialogs (export, menu, edit sections, add quantity, add photo, delete dialogs), then assert sections via `TestingKeys.report*`.
-- Reason: This provides end-to-end coverage plus exhaustive report edit coverage in a single, stable test.
+## Phase 3: Fix scroll + hit-testability (PR Size: medium)
+### 3.1 Align scroll pattern with the passing flow
+- Step: Replace `scrollToWizardSection` calls with direct `scrollTo()` on the actual field/button (same pattern as `fillEntryField`).
+- Reason: `scrollToWizardSection` is still failing to find `entry_quantities_section`.
+- Files:
+  - `integration_test/patrol/helpers/patrol_test_helpers.dart`
+  - `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
+  - `integration_test/patrol/e2e_tests/entry_management_test.dart`
+
+### 3.2 Make `fillEntryField` hit-testable-safe
+- Step: Add `ensureVisible` + hit-testable retry loop + keyboard dismiss before entry to avoid “found but not hit-testable” on `entry_wizard_activities`.
+- Reason: Offline sync tests now fail at the activities field despite the widget being found.
+- Files:
+  - `integration_test/patrol/helpers/patrol_test_helpers.dart`
+  - `integration_test/patrol/e2e_tests/offline_sync_test.dart`
+
+## Phase 4: Align test expectations with actual navigation (PR Size: small)
+### 4.1 Ensure submit flows expect report screen
+- Step: Confirm all submit flows use `saveEntry(expectReport: true)` and only wait for calendar after navigating back.
+- Reason: Entry wizard submits always route to report; waiting for calendar causes timeouts.
+- Files:
+  - `integration_test/patrol/helpers/patrol_test_helpers.dart`
+  - `integration_test/patrol/e2e_tests/navigation_flow_test.dart`
+  - `integration_test/patrol/e2e_tests/offline_sync_test.dart`
+  - `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
+
+## Phase 5: Restore exhaustive coverage with stability (PR Size: medium)
+### 5.1 Entry Wizard coverage after readiness/scroll fixes
+- Step: Re-enable full Entry Wizard button coverage only after readiness/scroll fixes are stable.
+- Reason: Prevents heavy coverage from amplifying flaky prerequisites.
 - Files:
   - `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
-  - `integration_test/patrol/fixtures/test_seed_data.dart`
 
-### 3.2 Expand coverage to hit more Entry Wizard UI buttons
-- Step: Add sub-steps to exercise all buttons and dialogs in the Entry Wizard during the same flow:
-  - Tap `TestingKeys.weatherFetchButton` (if auto-fetch did not populate temps).
-  - Add personnel type via dialog (name + short code), then increment and decrement counters via `TestingKeys.personnelIncrement(...)` / `TestingKeys.personnelDecrement(...)`.
-  - Add equipment via dialog, toggle equipment chips, and confirm delete equipment flow (if delete UI is added).
-  - Add quantity via quantity dialog + bid item picker search, edit quantity inline, then delete a quantity.
-  - Open add photo flow and cancel (to hit the buttons without needing a real file).
-- Reason: Ensures exhaustive coverage of all Entry Wizard clickables.
-- Files:
-  - `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
-  - `integration_test/patrol/helpers/patrol_test_helpers.dart`
-  - `lib/shared/testing_keys.dart`
-  - `lib/features/entries/presentation/screens/entry_wizard_screen.dart`
-
-## Phase 4: Rebuild entry_management_test.dart (PR Size: medium)
-### 4.1 Consolidate to a small set of focused, stable tests
-- Step: Replace the current multi-test set with 2-3 tests that validate key entry behaviors (open wizard, edit existing entry, cancel flow) using the same helper-driven style.
-- Step: Remove redundant, brittle scroll-based tests in favor of the new helpers.
-- Reason: Keeps entry management tests consistent with the auth/contractor patterns and avoids flakiness.
+### 5.2 Report screen exhaustive coverage
+- Step: Ensure report screen button coverage test waits for report screen and uses hit-testable-safe interactions for edit dialogs, quantities, and photo flows.
+- Reason: Report coverage is required for the “exhaustive clickables” goal.
 - Files:
   - `integration_test/patrol/e2e_tests/entry_management_test.dart`
-  - `integration_test/patrol/helpers/patrol_test_helpers.dart`
-
-### 4.2 Keep a separate report-screen coverage test (optional backstop)
-- Step: If desired, keep a focused report test that opens a seeded entry report and replays all report clickables as a safety net.
-- Reason: Provides a faster regression check when the full entry lifecycle test is too slow.
-- Files:
-  - `integration_test/patrol/e2e_tests/entry_management_test.dart`
-  - `lib/shared/testing_keys.dart`
   - `lib/features/entries/presentation/screens/report_screen.dart`
-
-## Phase 5: Expand comprehensive UI button coverage (PR Size: medium)
-### 5.1 Add per-screen "button coverage" tests
-- Step: Create targeted tests that open each screen and press all tappable widgets, then open and close each dialog:
-  - Projects list + project setup tabs
-  - Contractors setup
-  - Quantities screen
-  - Settings screen (toggles, dialogs)
-- Reason: Provides broad, deterministic coverage of all UI clickables beyond entry/report flows.
-- Files:
-  - `integration_test/patrol/e2e_tests/*`
-  - `integration_test/patrol/helpers/patrol_test_helpers.dart`
-  - `lib/shared/testing_keys.dart`
 
 ## Phase 6: Verification (PR Size: small)
-### 5.1 Targeted patrol runs
-- Step: Run rebuilt entry tests individually to verify stability.
+### 6.1 Focused test runs
+- Step: Re-run entry, offline sync, and navigation tests after fixes.
 - Suggested commands:
   - `pwsh -File run_patrol.ps1 -TestFile "integration_test/patrol/e2e_tests/entry_lifecycle_test.dart"`
   - `pwsh -File run_patrol.ps1 -TestFile "integration_test/patrol/e2e_tests/entry_management_test.dart"`
-- Reason: Confirms the new flows work end-to-end without the existing stuck states.
+  - `pwsh -File run_patrol.ps1 -TestFile "integration_test/patrol/e2e_tests/offline_sync_test.dart"`
+  - `pwsh -File run_patrol.ps1 -TestFile "integration_test/patrol/e2e_tests/navigation_flow_test.dart"`
+- Reason: Confirms that readiness, scroll, and navigation fixes eliminate the timeouts.

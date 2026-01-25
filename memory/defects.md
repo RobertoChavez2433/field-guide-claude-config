@@ -154,6 +154,24 @@ await $.waitUntilVisible(finder);
 **Impact**: TimeoutException - "Found 1 widget... did not find any visible (hit-testable) widgets"
 **Example**: entry_wizard_activities field exists but couldn't be tapped until scrolled into view
 
+### Keyboard Covers Text Field After Tap
+**Pattern**: Tapping a text field opens the keyboard, which then covers the field making it not hit-testable
+**Prevention**:
+- After tapping a text field, call `scrollTo()` again before `enterText()`
+- The keyboard opening can shift content, making previously visible fields unreachable
+- Updated `fillEntryField()` helper to scroll after tap
+**Impact**: TimeoutException - "Found 1 widget... did not find any visible (hit-testable) widgets"
+**Example**: entry_wizard_activities field tapped, keyboard opened, field no longer visible for text entry
+
+### assertVisible Without Scroll for Below-Fold Elements
+**Pattern**: Calling `h.assertVisible(key, message)` on elements that are below the fold without scrolling first
+**Prevention**:
+- Always call `$(key).scrollTo()` before `h.assertVisible(key, ...)` for elements that may be below the fold
+- Settings screen sync section is particularly prone to this - many items above it
+- The assertVisible helper only checks visibility, it doesn't scroll
+**Impact**: Test failure - "Found 0 widgets with key [<'key_name'>]"
+**Example**: settingsSyncSection, settingsAutoSyncToggle fail because they're below the fold in settings
+
 ---
 
 <!-- Add new defects above this line -->

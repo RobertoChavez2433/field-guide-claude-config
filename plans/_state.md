@@ -1,25 +1,20 @@
 # Session State
 
-**Last Updated**: 2026-01-24 | **Session**: 109
+**Last Updated**: 2026-01-25 | **Session**: 110
 
 ## Current Phase
-- **Phase**: CODEX Implementation - Phases 1-5 Complete + Code Review Fixes
-- **Status**: Code review fixes implemented, ready for Phase 6 verification
+- **Phase**: CODEX Implementation - E2E Test Scrolling Fixes
+- **Status**: In progress - scroll fixes applied, tests need verification
 
-## Last Session (Session 109)
-**Summary**: Implemented code review fixes from Session 108: added missing test to bundle, DRY refactored weather icon/color/name methods into shared `WeatherHelpers`, and standardized test helper pattern across 10 test files.
+## Last Session (Session 110)
+**Summary**: Fixed E2E test scrolling issues in offline_sync_test.dart. Tests were failing because elements below the fold (settingsSyncSection, settingsAutoSyncToggle, settingsSyncTile) weren't being scrolled to before asserting visibility. Also fixed keyboard covering field issue in `fillEntryField` helper by adding a second scroll after tap.
 
 **Files Modified**:
-- `lib/shared/weather_helpers.dart` - NEW: Extension methods + static helpers for WeatherCondition
-- `lib/shared/shared.dart` - Added weather_helpers export
-- `lib/features/entries/presentation/screens/entries_list_screen.dart` - Replaced private weather methods with WeatherHelpers
-- `lib/features/entries/presentation/screens/report_screen.dart` - Replaced private weather methods with extension methods
-- `lib/features/entries/presentation/screens/home_screen.dart` - Replaced private weather methods with extension methods
-- `integration_test/test_bundle.dart` - Added ui_button_coverage_test import and group
-- 10 E2E test files - Standardized to use `PatrolTestConfig.createHelpers()`
+- `integration_test/patrol/e2e_tests/offline_sync_test.dart` - Added scrollTo() calls before assertVisible for sync section elements
+- `integration_test/patrol/helpers/patrol_test_helpers.dart` - Added second scrollTo() after tap in fillEntryField to handle keyboard coverage
 
 ## Active Plan
-**Status**: CODEX PHASES 1-5 COMPLETE + FIXES APPLIED
+**Status**: IN PROGRESS
 
 **Completed**:
 - [x] Add personnel types to TestSeedData (Phase 1.1)
@@ -35,13 +30,15 @@
 - [x] Add ui_button_coverage_test.dart to test_bundle.dart
 - [x] DRY refactor: Weather icon/color/name methods → WeatherHelpers
 - [x] Standardize helper pattern (PatrolTestConfig.createHelpers)
+- [x] Fix offline_sync_test scrolling issues
 
 **Next Tasks**:
+- [ ] Run E2E tests to verify scrolling fixes work
 - [ ] Final verification (Phase 6.1) - Run all tests to verify stability
 
 ## Key Decisions
-- **WeatherHelpers**: Created extension on `WeatherCondition` for `.icon`, `.color`, `.displayName` + static `WeatherHelpers` class for nullable values
-- **Test pattern**: Standardized on `PatrolTestConfig.createHelpers($, 'name')` over direct `PatrolTestHelpers.create()`
+- **Scroll before assert pattern**: Always call `$(key).scrollTo()` before `h.assertVisible(key, ...)` for elements that may be below the fold
+- **Keyboard coverage fix**: After tapping a text field, scroll again to ensure field is visible above keyboard
 
 ## Future Work
 | Item | Status | Reference |
