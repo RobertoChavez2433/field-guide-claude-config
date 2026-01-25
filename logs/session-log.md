@@ -24,6 +24,37 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-24 (Session 109): Code Review Fixes + DRY Refactor
+- Implemented code review fixes from Session 108
+- Added ui_button_coverage_test.dart to test_bundle.dart
+- DRY refactor: Created `lib/shared/weather_helpers.dart` with extension methods on WeatherCondition
+- Removed duplicate `_getWeatherIcon`, `_getWeatherColor`, `_getWeatherName` from 3 screens
+- Standardized test helper pattern: 10 E2E tests → `PatrolTestConfig.createHelpers()`
+- Files: 16 modified (4 lib/, 11 test/, 1 new)
+
+### 2026-01-24 (Session 108): Code Review - Last 15 Commits
+- Ran 2 parallel code-review agents on 39 changed files
+- Production code (20 files): Strong adherence to coding standards, mounted checks present
+- Test code (16 files): Found ui_button_coverage_test.dart missing from test_bundle.dart
+- Identified DRY opportunities: weather icon/color methods duplicated, dialog patterns similar
+- No code changes (review-only session)
+
+### 2026-01-24 (Session 107): CODEX Phase 5 - UI Button Coverage Tests
+- Created ui_button_coverage_test.dart with 6 comprehensive tests
+- Coverage: Settings, Project Setup, Quantities, Dashboard, Home/Calendar, Projects List
+- All tests use non-destructive pattern (cancel dialogs, don't delete/archive)
+- Commit: `c87cb49`
+
+### 2026-01-24 (Session 106): CODEX Phase 4 - Entry Management Consolidation
+- Consolidated entry_management_test.dart with 3 focused tests
+- Edit existing entry, cancel entry creation, report screen coverage
+- Commit: `8832db4`
+
+### 2026-01-24 (Session 105): CODEX Phase 3 - Entry Lifecycle Rebuild
+- Rebuilt entry_lifecycle_test.dart with 4 comprehensive tests
+- Create/save, multi-day entry, photos flow, complete wizard flow
+- Commit: `3d5b70e`
+
 ### 2026-01-24 (Session 104): CODEX Phase 1-2 Implementation
 - Added personnel types seed data (Foreman, Operator, Laborer) to TestSeedData
 - Wired TestingKeys to Add Personnel Type and Add Equipment dialogs in entry_wizard

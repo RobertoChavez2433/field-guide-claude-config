@@ -1,27 +1,25 @@
 # Session State
 
-**Last Updated**: 2026-01-24 | **Session**: 107
+**Last Updated**: 2026-01-24 | **Session**: 109
 
 ## Current Phase
-- **Phase**: CODEX Implementation - Phases 1-5 Complete
-- **Status**: Comprehensive UI button coverage tests implemented
+- **Phase**: CODEX Implementation - Phases 1-5 Complete + Code Review Fixes
+- **Status**: Code review fixes implemented, ready for Phase 6 verification
 
-## Last Session (Session 107)
-**Summary**: Implemented CODEX Phase 5. Created ui_button_coverage_test.dart with 6 comprehensive tests covering all tappable UI elements across major screens.
+## Last Session (Session 109)
+**Summary**: Implemented code review fixes from Session 108: added missing test to bundle, DRY refactored weather icon/color/name methods into shared `WeatherHelpers`, and standardized test helper pattern across 10 test files.
 
 **Files Modified**:
-- `integration_test/patrol/e2e_tests/ui_button_coverage_test.dart` - NEW: 6 comprehensive button coverage tests
-
-**Key Deliverables**:
-- Test 5.1: Settings screen - theme options, toggles, dialogs (inspector name, initials, clear cache, personnel types, sign out)
-- Test 5.2: Project setup tabs - locations, contractors, pay items, details tabs with all dialogs
-- Test 5.3: Quantities screen - sort menu, search field, import dialog, quantity card actions
-- Test 5.4: Dashboard - stat cards navigation, switch project, new entry button
-- Test 5.5: Home/Calendar - calendar navigation, format toggles, FAB, jump to latest
-- Test 5.6: Projects list - add project FAB, filter toggle, search, archive toggle
+- `lib/shared/weather_helpers.dart` - NEW: Extension methods + static helpers for WeatherCondition
+- `lib/shared/shared.dart` - Added weather_helpers export
+- `lib/features/entries/presentation/screens/entries_list_screen.dart` - Replaced private weather methods with WeatherHelpers
+- `lib/features/entries/presentation/screens/report_screen.dart` - Replaced private weather methods with extension methods
+- `lib/features/entries/presentation/screens/home_screen.dart` - Replaced private weather methods with extension methods
+- `integration_test/test_bundle.dart` - Added ui_button_coverage_test import and group
+- 10 E2E test files - Standardized to use `PatrolTestConfig.createHelpers()`
 
 ## Active Plan
-**Status**: CODEX PHASES 1-5 COMPLETE
+**Status**: CODEX PHASES 1-5 COMPLETE + FIXES APPLIED
 
 **Completed**:
 - [x] Add personnel types to TestSeedData (Phase 1.1)
@@ -33,14 +31,17 @@
 - [x] Expand Entry Wizard button coverage (Phase 3.2)
 - [x] Consolidate entry_management_test.dart (Phase 4.1)
 - [x] Per-screen button coverage tests (Phase 5.1)
+- [x] Code review of last 15 commits
+- [x] Add ui_button_coverage_test.dart to test_bundle.dart
+- [x] DRY refactor: Weather icon/color/name methods → WeatherHelpers
+- [x] Standardize helper pattern (PatrolTestConfig.createHelpers)
 
-**Next Tasks (Phase 6)**:
+**Next Tasks**:
 - [ ] Final verification (Phase 6.1) - Run all tests to verify stability
 
 ## Key Decisions
-- **Test organization**: Created dedicated ui_button_coverage_test.dart for systematic UI coverage
-- **Coverage strategy**: Each test focuses on one screen/area and exercises all buttons/dialogs
-- **Non-destructive**: All tests cancel dialogs rather than making actual changes (no sign out, no delete, no archive)
+- **WeatherHelpers**: Created extension on `WeatherCondition` for `.icon`, `.color`, `.displayName` + static `WeatherHelpers` class for nullable values
+- **Test pattern**: Standardized on `PatrolTestConfig.createHelpers($, 'name')` over direct `PatrolTestHelpers.create()`
 
 ## Future Work
 | Item | Status | Reference |
@@ -49,7 +50,7 @@
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 
 ## Open Questions
-- None - ready for Phase 6 verification (test runs)
+- None
 
 ## Reference
 - CODEX Plan: `.claude/plans/CODEX.md`
