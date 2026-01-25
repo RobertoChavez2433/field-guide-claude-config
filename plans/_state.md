@@ -1,58 +1,56 @@
 # Session State
 
-**Last Updated**: 2026-01-25 | **Session**: 115
+**Last Updated**: 2026-01-25 | **Session**: 116
 
 ## Current Phase
-- **Phase**: CODEX Implementation - E2E Test Stability
-- **Status**: PR 1-5 COMPLETE - Ready for PR 6 (Verification)
+- **Phase**: E2E Test Stability - Focused Verification
+- **Status**: 5 active tests, 8 sidelined for later
 
-## Last Session (Session 115)
-**Summary**: Implemented CODEX.md PR 5 (Coverage tests) - Replaced all .exists patterns with tapIfHitTestable() in ui_button_coverage_test.dart.
+## Last Session (Session 116)
+**Summary**: Reorganized E2E test infrastructure - sidelined 8 unstable tests to focus on getting 5 core tests to 100% stability.
 
 **Key Deliverables**:
-1. **PR 5.1**: Settings screen test - Updated all button taps to use tapIfHitTestable
-2. **PR 5.2**: Project setup test - Replaced seed project guard with ensureSeedProjectSelectedOrFail
-3. **PR 5.3**: Quantities screen test - Updated sort, search, import, and card action buttons
-4. **PR 5.4**: Dashboard test - Updated stat cards, new entry button, view all quantities
-5. **PR 5.5**: Calendar test - Updated navigation, format toggles, FAB, jump to latest
-6. **PR 5.6**: Projects list test - Updated FAB, filter toggle, search, archive toggle
+1. Created `integration_test/patrol/sidelined/` folder for deferred tests
+2. Moved `run_patrol_batched.ps1` to sidelined folder
+3. Updated `run_patrol_debug.ps1` to run only 5 active tests
+4. Built debug APK to desktop
 
 **Files Modified**:
-- `integration_test/patrol/e2e_tests/ui_button_coverage_test.dart`
+- `run_patrol_debug.ps1` - Now single-batch with 5 active tests
+- `integration_test/patrol/sidelined/run_patrol_batched.ps1` - Moved here
 
 ## Active Plan
-**Status**: PR 1-5 COMPLETE - Ready for PR 6 (Verification run)
+**Status**: Verification phase - focus on 5 core tests
 
-**Plan Location**: `.claude/plans/CODEX.md`
+**Active Tests** (5):
+- auth_flow_test.dart
+- app_smoke_test.dart
+- entry_lifecycle_test.dart
+- entry_management_test.dart
+- project_setup_flow_test.dart
 
-**Implementation Phases**:
-1. [x] PR 1: Readiness key + helper hardening (ALL COMPLETE)
-   - [x] 1.1 Add dashboardProjectTitle key
-   - [x] 1.2 Add ensureSeedProjectSelectedOrFail()
-   - [x] 1.3 Harden saveProject()
-   - [x] 1.4 Add tapIfHitTestable()
-2. [x] PR 2: Data isolation strategy
-   - [x] 2.1 resetAndSeed() already exists in TestDatabaseHelper
-   - [x] 2.2 Batch-aware comment added
-3. [x] PR 3: Flow test fixes (quantities, entry_management, project_setup, settings_theme)
-4. [x] PR 4: Additional flow audits (contractors, navigation, offline_sync)
-5. [x] PR 5: Coverage tests (ui_button_coverage)
-6. [ ] PR 6: Verification run
+**Sidelined Tests** (8):
+- contractors_flow_test.dart
+- project_management_test.dart
+- quantities_flow_test.dart
+- settings_theme_test.dart
+- navigation_flow_test.dart
+- offline_sync_test.dart
+- photo_flow_test.dart
+- ui_button_coverage_test.dart
 
 ## Key Decisions
-- **Scroll before tap pattern**: Always `scrollTo()` before `tap()` for below-fold widgets
-- **Avoid .exists guard**: Use `waitForVisible()` instead to fail explicitly
-- **Project context for calendar**: Use `ensureSeedProjectSelectedOrFail()` before calendar tests
-- **Hit-testable detection**: Use `finder.hitTestable()` instead of `.exists` checks
-- **Coverage tests**: Use `tapIfHitTestable()` for optional UI elements
+- **Focus strategy**: Get 5 core tests to 100% before expanding
+- **Sidelined location**: `integration_test/patrol/sidelined/`
+- **Runner script**: Use `run_patrol_debug.ps1` for active tests
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| PR 6: Verification run | NEXT | `.claude/plans/CODEX.md` |
+| Verify 5 active tests pass | NEXT | `run_patrol_debug.ps1` |
+| Restore sidelined tests | LATER | `integration_test/patrol/sidelined/` |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 
 ## Reference
-- CODEX Plan: `.claude/plans/CODEX.md`
 - Branch: `New-Entry_Lifecycle-Redesign`
-- Latest commit: (pending) - feat(e2e): Implement CODEX PR5
+- Runner: `pwsh -File run_patrol_debug.ps1`

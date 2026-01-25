@@ -1,125 +1,124 @@
-# E2E Test Stability - PR Plan (v2)
+# E2E Test Determinism & Logging - PR Plan
 
 ## Goals
-- Eliminate false positives from silent skips and non-hit-testable taps.
-- Make tests deterministic within batches where data persists across files.
-- Centralize stability logic in helpers and minimize per-test boilerplate.
+- Eliminate silent passes and flaky timeouts by enforcing fail-loud preconditions.
+- Make navigation and entry flows deterministic with screen-ready markers.
+- Improve logging so failures show app state, not just the missing widget.
 
-## Known Behavior / Constraints
-- `run_patrol_batched.ps1` resets app data only between batches; data persists across files in the same batch.
-- Each `patrolTest` launches a fresh app instance; project selection must happen per test after app launch.
+## PR 1: Logging & diagnostics baseline
 
-## PR 1: Readiness key + helper hardening
-
-### 1.1 Add a single project-selected readiness key
+### 1.1 Add a compact screen-state logger
 Steps:
-1) Add `TestingKeys.dashboardProjectTitle` (or rename to `projectSelectedIndicator`, pick one) in `lib/shared/testing_keys.dart`.
-2) Wire it to the dashboard project title widget.
-Files:
-- `lib/shared/testing_keys.dart`
-- `lib/features/dashboard/...` (project title widget)
-
-### 1.2 Add a fail-loud project selection helper
-Steps:
-1) Add `ensureSeedProjectSelectedOrFail()` in `patrol_test_helpers.dart`.
-2) Navigate to Projects, locate the seed project, `waitForHitTestable` + tap.
-3) Wait for the readiness key from 1.1; if missing, call `_logKeyDiagnostics` and throw.
+1) Add `logScreenState({String context})` to `patrol_test_helpers.dart`.
+2) Log presence + hit-testable status of:
+   - bottom nav
+   - dashboard cards
+   - projects FAB
+   - calendar FAB
+   - entry wizard close
+3) Call `logScreenState()` at the start of each navigation and entry test.
 Files:
 - `integration_test/patrol/helpers/patrol_test_helpers.dart`
-- `integration_test/patrol/fixtures/test_seed_data.dart`
-- `lib/shared/testing_keys.dart`
-
-### 1.3 Harden `saveProject()` using hit-testable checks
-Steps:
-1) Replace `.exists` branching with hit-testable detection (short timeout).
-2) `safeTap(..., scroll: true)` the hit-testable button.
-3) If neither button is hit-testable, log diagnostics and throw.
-4) Post-save wait uses `waitForHitTestable(TestingKeys.addProjectFab, timeout: 5s)`; bump if needed.
-Files:
-- `integration_test/patrol/helpers/patrol_test_helpers.dart`
-
-### 1.4 Add an optional tap helper for coverage tests
-Steps:
-1) Add `tapIfHitTestable(Key key, {description})` that logs when missing but does not fail.
-2) Use this helper in coverage-style tests where optional UI is expected.
-Files:
-- `integration_test/patrol/helpers/patrol_test_helpers.dart`
-
-## PR 2: Data isolation strategy (per file)
-
-### 2.1 Adopt explicit reset/seed in files that mutate data
-Steps:
-1) Use `TestDatabaseHelper.resetAndSeed()` in `setUp` for tests that mutate data.
-2) Keep `ensureSeedData()` for read-only flows.
-Files:
-- `integration_test/patrol/helpers/test_database_helper.dart`
-- `integration_test/patrol/e2e_tests/quantities_flow_test.dart`
+- `integration_test/patrol/e2e_tests/navigation_flow_test.dart`
 - `integration_test/patrol/e2e_tests/entry_management_test.dart`
-- `integration_test/patrol/e2e_tests/project_setup_flow_test.dart`
-- `integration_test/patrol/e2e_tests/settings_theme_test.dart`
-- `integration_test/patrol/e2e_tests/project_management_test.dart`
-- `integration_test/patrol/e2e_tests/contractors_flow_test.dart`
 - `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
-
-### 2.2 Batch-aware note (optional)
-Steps:
-1) Add a short comment in `run_patrol_batched.ps1` about data persistence within batch.
-Files:
-- `run_patrol_batched.ps1`
-
-## PR 3: Flow test fixes (Batch 2 and 3)
-
-### 3.1 Quantities flow: require project selection
-Steps:
-1) At start of each test, call `h.ensureSeedProjectSelectedOrFail()`.
-2) Navigate to Calendar only after readiness key is visible.
-Files:
 - `integration_test/patrol/e2e_tests/quantities_flow_test.dart`
 
-### 3.2 Entry management + project setup + settings theme
+### 1.2 Harden failure diagnostics
 Steps:
-1) Replace direct save taps with `h.saveProject()`.
-2) Replace add-photo direct taps with `h.safeTap(..., scroll: true)`.
+1) Ensure `safeTap`, `waitForVisible`, and `waitForHitTestable` log both `exists` and `hitTestable` on failure.
+2) Add a short list of “expected next keys” to `dumpFailureDiagnostics` for common flows (dashboard, projects, calendar, entry wizard).
 Files:
+- `integration_test/patrol/helpers/patrol_test_helpers.dart`
+
+## PR 2: Fail‑loud preconditions (no silent passes)
+
+### 2.1 Replace silent skips with explicit failures
+Steps:
+1) Search for `return;` after `exists` checks in flow tests and replace with fail‑loud helpers.
+2) Convert flow tests to `ensureSeedProjectSelectedOrFail()` where needed.
+Files:
+- `integration_test/patrol/e2e_tests/quantities_flow_test.dart`
+- `integration_test/patrol/e2e_tests/photo_flow_test.dart`
 - `integration_test/patrol/e2e_tests/entry_management_test.dart`
-- `integration_test/patrol/e2e_tests/project_setup_flow_test.dart`
-- `integration_test/patrol/e2e_tests/settings_theme_test.dart`
-
-## PR 4: Additional flow audits (Batch 4 and other gaps)
-
-### 4.1 Contractors flow
-Steps:
-1) Replace `.exists` + direct tap patterns for flow-critical actions with `safeTap`.
-2) If optional UI, use `tapIfHitTestable`.
-Files:
-- `integration_test/patrol/e2e_tests/contractors_flow_test.dart`
-
-### 4.2 Navigation and offline sync
-Steps:
-1) Audit for direct taps and missing project selection; use helpers as needed.
-2) Replace any `.exists`-gated taps on required steps.
-Files:
 - `integration_test/patrol/e2e_tests/navigation_flow_test.dart`
 - `integration_test/patrol/e2e_tests/offline_sync_test.dart`
+- `integration_test/patrol/e2e_tests/contractors_flow_test.dart`
 
-## PR 5: Coverage tests (keep optional behavior, reduce flake)
-
-### 5.1 Update coverage taps to be hit-testable aware
+### 2.2 Make coverage tests explicit about skips
 Steps:
-1) Replace `.exists` gating with `tapIfHitTestable` to avoid "not hit-testable" failures.
-2) Keep non-failing behavior for optional UI.
+1) Add `tapIfHitTestable` return value handling that logs “SKIPPED” when missing.
+2) Add a counter and fail the test if skips exceed a threshold (ex: >20%).
 Files:
+- `integration_test/patrol/helpers/patrol_test_helpers.dart`
 - `integration_test/patrol/e2e_tests/ui_button_coverage_test.dart`
+
+## PR 3: Navigation determinism
+
+### 3.1 Require project selection for nav tests
+Steps:
+1) Add `await h.ensureSeedProjectSelectedOrFail();` to all navigation tests that expect dashboard/calendar to work.
+2) After each tab tap, `waitForVisible` a screen‑specific key (dashboard card, add project FAB, add entry FAB, settings tile).
+Files:
+- `integration_test/patrol/e2e_tests/navigation_flow_test.dart`
+
+### 3.2 Remove raw `.tap()` for tabs
+Steps:
+1) Replace tab taps with `safeTap` to guarantee hit‑testable interaction.
+2) Ensure each nav action ends with a readiness check.
+Files:
+- `integration_test/patrol/e2e_tests/navigation_flow_test.dart`
+
+## PR 4: Entry‑flow waits and timeouts
+
+### 4.1 Replace fixed sleeps with condition waits
+Steps:
+1) Remove `pumpAndWait` delays that follow deterministic actions (open wizard, open report, save entry).
+2) Replace with `waitForHitTestable` on the next expected element.
+Files:
+- `integration_test/patrol/e2e_tests/entry_management_test.dart`
+- `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
+- `integration_test/patrol/e2e_tests/quantities_flow_test.dart`
+
+### 4.2 Tighten entry wizard readiness
+Steps:
+1) Reduce `waitForEntryWizardReady` default timeout if stable (ex: 12s).
+2) Add a single retry when loading is detected to avoid long stalls.
+Files:
+- `integration_test/patrol/helpers/patrol_test_helpers.dart`
+
+### 4.3 Report screen readiness
+Steps:
+1) Add a report‑screen readiness key (or reliable existing key).
+2) Update `waitForReportScreen()` to use the readiness key instead of menu button.
+Files:
+- `lib/shared/testing_keys.dart`
+- `lib/features/report/...` (report header widget)
+- `integration_test/patrol/helpers/patrol_test_helpers.dart`
+
+## PR 5: Batch data isolation
+
+### 5.1 Reset/seed per test in state‑mutating files
+Steps:
+1) Use `resetAndSeed()` in `setUp()` for files that write data.
+2) Keep `ensureSeedData()` for read‑only flows.
+Files:
+- `integration_test/patrol/helpers/test_database_helper.dart`
+- `integration_test/patrol/e2e_tests/entry_management_test.dart`
+- `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
+- `integration_test/patrol/e2e_tests/quantities_flow_test.dart`
+- `integration_test/patrol/e2e_tests/project_management_test.dart`
+- `integration_test/patrol/e2e_tests/contractors_flow_test.dart`
 
 ## PR 6: Verification
 
-### 6.1 Execute batched runs
+### 6.1 Run batched tests
 Steps:
 1) Run `pwsh -File run_patrol_batched.ps1`.
-2) If time-limited, run only the batches containing modified files.
+2) If time‑limited, run only affected batches.
 Success criteria:
-- No silent skips; missing seeds fail with diagnostics.
-- No "widget found but not hit-testable" errors.
-- Quantities flow tests take >10s and interact with calendar.
+- No silent passes; missing preconditions fail with diagnostics.
+- Navigation tests no longer stall on Projects.
+- Entry flow tests avoid long fixed waits and complete within expected time.
 Files:
 - `run_patrol_batched.ps1`

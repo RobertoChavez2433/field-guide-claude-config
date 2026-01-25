@@ -24,6 +24,14 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-25 (Session 116): E2E Test Reorganization
+- Sidelined 8 unstable tests to focus on 5 core tests
+- Created `integration_test/patrol/sidelined/` folder
+- Moved `run_patrol_batched.ps1` to sidelined
+- Updated `run_patrol_debug.ps1` for single-batch execution
+- Built debug APK to desktop
+- Files: run_patrol_debug.ps1, sidelined/run_patrol_batched.ps1
+
 ### 2026-01-25 (Session 112): E2E Test Stability Planning
 - Created comprehensive 6-phase fix plan for E2E test stability
 - Identified 4 major defect patterns across 6 test files
