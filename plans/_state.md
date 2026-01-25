@@ -1,60 +1,63 @@
 # Session State
 
-**Last Updated**: 2026-01-24 | **Session**: 102
+**Last Updated**: 2026-01-24 | **Session**: 104
 
 ## Current Phase
-- **Phase**: E2E Test Suite Fixes
-- **Status**: Code fixes applied, needs manual verification with clean app state
+- **Phase**: CODEX Implementation - Phases 1-2 Complete
+- **Status**: Personnel types seed data and TestingKeys wired
 
-## Last Session (Session 102)
-**Summary**: Fixed E2E test failures related to location permission dialogs and RenderFlex overflow. Fixed home_screen.dart syntax error, added scrollTo() to test helpers for fields below fold, fixed saveEntry(asDraft:true) to use proper dialog flow.
+## Last Session (Session 104)
+**Summary**: Implemented CODEX Phase 1 and Phase 2. Added personnel types seed data, wired TestingKeys to dialogs, and created wizard navigation helpers.
 
 **Files Modified**:
-- `lib/features/entries/presentation/screens/home_screen.dart` - Fixed LayoutBuilder bracket syntax, removed unnecessary null check
-- `integration_test/patrol/helpers/patrol_test_helpers.dart` - Added scrollTo() before tap(), fixed save draft flow
-- `patrol.yaml` - MOCK_WEATHER=true already present
-- `run_patrol_batched.ps1` - MOCK_WEATHER=true already present
-- `lib/services/photo_service.dart` - Mock location check already present
+- `integration_test/patrol/fixtures/test_seed_data.dart` - Personnel type IDs and models
+- `integration_test/patrol/helpers/test_database_helper.dart` - Insert/clear personnel types
+- `integration_test/patrol/helpers/patrol_test_helpers.dart` - Wizard navigation helpers
+- `lib/shared/testing_keys.dart` - photoSourceDialog, reportAddContractorSheet
+- `lib/features/entries/presentation/screens/entry_wizard_screen.dart` - Dialog keys wired
+- `lib/features/entries/presentation/screens/report_screen.dart` - Contractor sheet key wired
+- `lib/features/photos/presentation/widgets/photo_source_dialog.dart` - Root key added
+
+**Key Deliverables**:
+- PersonnelType seed data: foremanType, operatorType, laborerType
+- TestingKeys wired to Add Personnel Type dialog (5 keys)
+- TestingKeys wired to Add Equipment dialog (5 keys)
+- Photo source dialog root key added
+- Report add contractor sheet key added
+- New helpers: scrollToWizardSection, ensureWeatherPopulated, fillEntryWizard, incrementPersonnel, decrementPersonnel
 
 ## Active Plan
-**Status**: IN PROGRESS - NEEDS MANUAL VERIFICATION
+**Status**: CODEX PHASES 1-2 COMPLETE
 
 **Completed**:
-- [x] Fix batched script to run tests individually
-- [x] Fix false positive skip pattern in tests
-- [x] Add project selection before calendar navigation
-- [x] Add permission handling in openEntryWizard()
-- [x] Fix UI layout overflow bugs (PR 1)
-- [x] Wire TestingKeys for Home Screen (PR 2)
-- [x] Wire TestingKeys for Entry Wizard (PR 3)
-- [x] CODEX Phase 1-2.5: All TestingKeys complete
-- [x] Update navigation_flow_test.dart to helper pattern
-- [x] Fix home_screen.dart LayoutBuilder syntax error
-- [x] Add scrollTo() to fillEntryField() and selectFromDropdown()
-- [x] Fix saveEntry(asDraft:true) to use unsaved changes dialog
+- [x] Add personnel types to TestSeedData (Phase 1.1)
+- [x] Add missing TestingKeys (Phase 2.1)
+- [x] Wire keys to entry_wizard_screen.dart dialogs (Phase 2.2)
+- [x] Wire keys to report_screen.dart elements (Phase 2.3)
+- [x] Add wizard navigation helpers (Phase 2.4)
 
-**Next Tasks**:
-- [ ] Reset device/app state completely
-- [ ] Manually verify entry_lifecycle tests pass
-- [ ] Re-run full E2E test suite with clean state
-- [ ] CI Verification - Check GitHub Actions
-- [ ] Pagination - CRITICAL BLOCKER on all `getAll()` methods
+**Next Tasks (Phase 3+)**:
+- [ ] Rebuild entry_lifecycle_test.dart (Phase 3.1)
+- [ ] Expand Entry Wizard button coverage (Phase 3.2)
+- [ ] Consolidate entry_management_test.dart (Phase 4.1)
+- [ ] Per-screen button coverage tests (Phase 5.1)
+- [ ] Final verification (Phase 6.1)
 
 ## Key Decisions
-- **Save draft flow**: Uses unsaved changes dialog (close wizard -> tap Save Draft in dialog), not a direct button
-- **Test helper scrollTo**: Fields below the fold need scrollTo() before tap() or they fail as "not hit-testable"
-- **Don't spam tests**: Running tests repeatedly without state reset corrupts app state and causes false failures
+- **Contractor deletion**: Delete from PROJECT (permanent) - seed data resets between tests anyway
+- **Personnel types**: Add to seed data, not create via dialog during tests
+- **Wizard navigation**: Use scrollTo() helper for below-fold sections
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Verify E2E Tests | NEEDS MANUAL TEST | Reset state first |
-| Full E2E Suite Run | BLOCKED | Verify fixes first |
-| CI Verification | PENDING | Check GitHub Actions |
+| CODEX Phase 3 | NEXT | `.claude/plans/merry-nibbling-walrus.md` |
+| CODEX Phase 4-6 | PENDING | `.claude/plans/merry-nibbling-walrus.md` |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 
 ## Open Questions
-- Do all 3 entry_lifecycle tests pass with clean app state?
+- None - ready for Phase 3 implementation
 
 ## Reference
-- Analysis: `.claude/plans/luminous-prancing-sparkle-agent-a6d26a9.md`
+- CODEX Plan: `.claude/plans/merry-nibbling-walrus.md`
+- Branch: `New-Entry_Lifecycle-Redesign`
