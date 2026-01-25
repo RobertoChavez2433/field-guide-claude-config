@@ -1,54 +1,57 @@
 # Session State
 
-**Last Updated**: 2026-01-25 | **Session**: 118
+**Last Updated**: 2026-01-25 | **Session**: 119
 
 ## Current Phase
-- **Phase**: Calendar View Redesign (CODEX Phase 1 Complete)
-- **Status**: Layout restructure implemented, tests updated
+- **Phase**: Calendar View Redesign (CODEX Phase 1-3 Complete)
+- **Status**: All phases implemented, ready for testing
 
-## Last Session (Session 118)
-**Summary**: Implemented CODEX Phase 0 (investigation) and Phase 1 (layout restructure). Transformed calendar screen from horizontal split layout to vertical stacked layout with horizontal entry list.
+## Last Session (Session 119)
+**Summary**: Completed CODEX Phase 2 (inline editing stability) and Phase 3 (test coverage expansion).
 
 **Key Deliverables**:
-1. Phase 0: Full codebase investigation - identified all affected files, TestingKeys, and test dependencies
-2. Phase 1: Layout restructure complete:
-   - Converted Row split to Column layout
-   - Entry list now horizontal scroll (120px height, full width)
-   - Report preview now full-width scrollable (Expanded)
-   - Removed "View Full Report" button (double-tap entry card navigates to report)
-   - Added 3 new TestingKeys: `homeEntryListHorizontal`, `homeReportPreviewSection`, `homeReportPreviewScrollView`
-3. Updated `_openSeedEntryReport` test helper for new navigation pattern
+1. Phase 2: Inline Editing Stability & Accessibility
+   - Added scroll controller for keyboard-aware scrolling
+   - Focus listeners scroll text fields into view when keyboard opens
+   - Added dynamic bottom padding for keyboard clearance
+   - Keyboard dismiss on drag enabled
+
+2. Phase 3: Test Coverage Expansion
+   - Added `homeEmptyDayState` TestingKey for empty day testing
+   - Added `TestSeedData.entry2` and `entryId2` for multi-entry testing
+   - Created `calendar_view_test.dart` with 2 tests:
+     - Empty day state test (verifies blank state + Create Entry button)
+     - Multi-entry horizontal scroll test (verifies entry switching + report preview updates)
+   - Updated test bundle to include new tests
 
 **Files Modified**:
-- `lib/features/entries/presentation/screens/home_screen.dart` - Layout restructure
-- `lib/shared/testing_keys.dart` - 3 new keys
-- `integration_test/patrol/e2e_tests/entry_management_test.dart` - Helper update
+- `lib/features/entries/presentation/screens/home_screen.dart` - Phase 2 keyboard handling
+- `lib/shared/testing_keys.dart` - Added homeEmptyDayState
+- `integration_test/patrol/fixtures/test_seed_data.dart` - Added entry2/entryId2
+- `integration_test/patrol/helpers/test_database_helper.dart` - Handle entry2 cleanup
+- `integration_test/patrol/e2e_tests/calendar_view_test.dart` - New Phase 3 tests
+- `integration_test/test_bundle.dart` - Added calendar_view_test
 
 ## Active Plan
-**Status**: CODEX Phase 1 COMPLETE
+**Status**: CODEX Phases 0-3 COMPLETE
 
 **Plan Location**: `.claude/plans/CODEX.md`
 
 **Completed Phases**:
 - ✅ Phase 0: Investigation + Baseline Verification
 - ✅ Phase 1: Layout Restructure (UI + Tests)
-
-**Remaining Phases**:
-- ⏳ Phase 2: Inline Editing Stability & Accessibility (Polish PR)
-- ⏳ Phase 3: Test Coverage Expansion (Optional PR)
+- ✅ Phase 2: Inline Editing Stability & Accessibility
+- ✅ Phase 3: Test Coverage Expansion
 
 ## Key Decisions
-- **Entry list**: Horizontal scroll (cards side-by-side, 200px each)
-- **Report section**: Full preview with ALL sections visible, scrollable, AND editable inline
-- **Navigation**: Double-tap entry card to open full report (replaced "View Full Report" button)
-- **TestingKeys**: 3 new keys added and wired
+- **Keyboard handling**: Focus listeners + Scrollable.ensureVisible() for text field visibility
+- **Empty day testing**: Navigate to 2 days before reference date (no entries)
+- **Multi-entry testing**: Added second entry on same day as first entry
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| CODEX Phase 2: Inline editing polish | NEXT | `.claude/plans/CODEX.md` |
-| CODEX Phase 3: Test coverage expansion | LATER | `.claude/plans/CODEX.md` |
-| Verify E2E tests pass with new layout | PENDING | `run_patrol_debug.ps1` |
+| Run E2E tests to verify changes | NEXT | `pwsh -File run_patrol_debug.ps1` |
 | Restore sidelined tests | LATER | `integration_test/patrol/sidelined/` |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 
