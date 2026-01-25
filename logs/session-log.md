@@ -24,6 +24,13 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-24 (Session 104): CODEX Phase 1-2 Implementation
+- Added personnel types seed data (Foreman, Operator, Laborer) to TestSeedData
+- Wired TestingKeys to Add Personnel Type and Add Equipment dialogs in entry_wizard
+- Added photoSourceDialog and reportAddContractorSheet keys
+- Created wizard navigation helpers (scrollToWizardSection, fillEntryWizard, etc.)
+- Commit: `9a11a3f` on branch `New-Entry_Lifecycle-Redesign`
+
 ### 2026-01-24 (Session 103): CODEX Comprehensive Plan Creation
 - Reviewed CODEX.md plan for rebuilding Entry Lifecycle E2E tests
 - Explored codebase with 3 parallel agents (entry tests, entry wizard, report screen)
