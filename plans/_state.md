@@ -1,26 +1,27 @@
 # Session State
 
-**Last Updated**: 2026-01-24 | **Session**: 106
+**Last Updated**: 2026-01-24 | **Session**: 107
 
 ## Current Phase
-- **Phase**: CODEX Implementation - Phases 1-4 Complete
-- **Status**: Entry management tests consolidated with focused coverage
+- **Phase**: CODEX Implementation - Phases 1-5 Complete
+- **Status**: Comprehensive UI button coverage tests implemented
 
-## Last Session (Session 106)
-**Summary**: Implemented CODEX Phase 4. Consolidated entry_management_test.dart from 11 redundant tests down to 3 focused tests with comprehensive coverage.
+## Last Session (Session 107)
+**Summary**: Implemented CODEX Phase 5. Created ui_button_coverage_test.dart with 6 comprehensive tests covering all tappable UI elements across major screens.
 
 **Files Modified**:
-- `integration_test/patrol/e2e_tests/entry_management_test.dart` - Complete rewrite with 3 focused tests
+- `integration_test/patrol/e2e_tests/ui_button_coverage_test.dart` - NEW: 6 comprehensive button coverage tests
 
 **Key Deliverables**:
-- Test 1: Edit existing entry flow (opens wizard in edit mode with pre-populated data)
-- Test 2: Cancel entry creation with discard dialog confirmation
-- Test 3: Report screen button coverage (menu, export PDF, sections, dialogs)
-- Removed 8 redundant/brittle tests that were covered by entry_lifecycle_test.dart
-- All tests use helper-driven steps with explicit logging
+- Test 5.1: Settings screen - theme options, toggles, dialogs (inspector name, initials, clear cache, personnel types, sign out)
+- Test 5.2: Project setup tabs - locations, contractors, pay items, details tabs with all dialogs
+- Test 5.3: Quantities screen - sort menu, search field, import dialog, quantity card actions
+- Test 5.4: Dashboard - stat cards navigation, switch project, new entry button
+- Test 5.5: Home/Calendar - calendar navigation, format toggles, FAB, jump to latest
+- Test 5.6: Projects list - add project FAB, filter toggle, search, archive toggle
 
 ## Active Plan
-**Status**: CODEX PHASES 1-4 COMPLETE
+**Status**: CODEX PHASES 1-5 COMPLETE
 
 **Completed**:
 - [x] Add personnel types to TestSeedData (Phase 1.1)
@@ -31,25 +32,24 @@
 - [x] Rebuild entry_lifecycle_test.dart (Phase 3.1)
 - [x] Expand Entry Wizard button coverage (Phase 3.2)
 - [x] Consolidate entry_management_test.dart (Phase 4.1)
+- [x] Per-screen button coverage tests (Phase 5.1)
 
-**Next Tasks (Phase 5-6)**:
-- [ ] Per-screen button coverage tests (Phase 5.1)
-- [ ] Final verification (Phase 6.1)
+**Next Tasks (Phase 6)**:
+- [ ] Final verification (Phase 6.1) - Run all tests to verify stability
 
 ## Key Decisions
-- **Test consolidation**: Reduced 11 tests to 3 focused tests
-- **Coverage strategy**: entry_lifecycle_test covers creation, entry_management_test covers edit/cancel/report
-- **Report coverage**: Exhaustive button coverage for report screen dialogs and sections
+- **Test organization**: Created dedicated ui_button_coverage_test.dart for systematic UI coverage
+- **Coverage strategy**: Each test focuses on one screen/area and exercises all buttons/dialogs
+- **Non-destructive**: All tests cancel dialogs rather than making actual changes (no sign out, no delete, no archive)
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| CODEX Phase 5 | NEXT | `.claude/plans/CODEX.md` |
-| CODEX Phase 6 | PENDING | `.claude/plans/CODEX.md` |
+| CODEX Phase 6 | NEXT | `.claude/plans/CODEX.md` |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 
 ## Open Questions
-- None - ready for Phase 5 implementation
+- None - ready for Phase 6 verification (test runs)
 
 ## Reference
 - CODEX Plan: `.claude/plans/CODEX.md`
