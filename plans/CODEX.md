@@ -1,121 +1,195 @@
-# Calendar View Redesign - CODEx Implementation Plan
+# Entry Wizard + Report Screen Bugfix Plan (Contractor-Scoped Roles, UX, Export)
 
 ## Objectives
-- Keep calendar header/top area unchanged.
-- Move entries list to a full-width middle section.
-- Move report preview to a full-width bottom section with full scroll and inline editing.
-- Preserve empty-day UX with visible sections and a Create Entry CTA.
-- Avoid breaking tests: update tests in same PR where UI changes remove or replace keys.
+- Make personnel types truly contractor-scoped (schema + data + UI + sync).
+- Fix entry wizard keyboard/focus behavior (no forced return to Activities, back closes keyboard first).
+- Fix report screen contractor add flow and ordering (prime first).
+- Enable inline edits for location and weather on report header.
+- Export remains: report PDF + photos.pdf in folder when photos exist.
+- Keep tests green by updating keys, helpers, and REQUIRED_UI_KEYS in the same PR.
 
-## Key Constraints
-- Do not break existing E2E tests between phases.
-- Preserve existing TestingKeys unless explicitly replaced and tests updated in same phase.
-- Maintain inline editing behavior and auto-save.
+## Constraints
+- Preserve existing data and migrate safely.
+- No test break between phases; update tests alongside UI changes.
+- Avoid duplicate keys in widget tree; add contractor-scoped keys where needed.
+- Avoid pumpAndSettle in tests; use condition-based waits.
 
 ---
 
-## Phase 0 - Investigation + Baseline Verification (No functional changes)
-### Subphase 0.1 - Inventory keys and test touchpoints
-1. Locate all uses of `TestingKeys.homeViewFullReportButton`.
-2. Locate layout entry points: `_buildSelectedDayContent`, `_buildEntryList`, `_buildReportPreview`.
-3. Identify any tests that assume split layout or report button navigation.
+## Phase 0 - Discovery + Testing Impact (no functional changes)
+### Subphase 0.1 - Inventory keys + tests
+1. List current keys used by entry wizard and report screens.
+2. Identify patrol tests that tap or wait for those keys.
+3. Note any duplicate key usage (e.g., add personnel button per contractor).
+4. For any key planned for removal, run `rg` to confirm zero references before deletion.
 
 ### Subphase 0.2 - Baseline verification
 1. Run `flutter analyze`.
-2. Run Patrol subset: `entry_management_test.dart` and `entry_lifecycle_test.dart`.
-3. Capture current failures and link to layout overflow if present.
+2. Run E2E: `entry_lifecycle_test.dart`, `entry_management_test.dart`, `photo_flow_test.dart`.
+3. Capture current failure points and logs for comparison.
 
-Deliverable: Baseline notes and file map for subsequent phases.
-
----
-
-## Phase 1 - Layout Restructure (Single PR: UI + Tests together)
-### Subphase 1.1 - Convert selected day content to vertical stack
-1. Update `_buildSelectedDayContent` in `lib/features/entries/presentation/screens/home_screen.dart`:
-   - Keep calendar/header area as-is.
-   - Replace Row split with Column layout:
-     - Date header row
-     - Entry list section (full width)
-     - Report section (full width, Expanded)
-2. Keep loading/empty state behavior consistent with new layout.
-
-### Subphase 1.2 - Entry list middle section (full-width)
-1. Replace `_buildEntryList` usage with a horizontal list (full width):
-   - `SizedBox(height: <compact height>)`
-   - `ListView.builder(scrollDirection: Axis.horizontal)`
-2. For tablets, optionally allow multi-column grid if already desired; otherwise defer.
-3. Ensure each card keeps `TestingKeys.entryCard(entryId)` and selection highlight.
-4. Add `TestingKeys.homeEntryListHorizontal` for scroll targeting.
-
-### Subphase 1.3 - Report preview bottom section (full-width, editable)
-1. Update `_buildReportPreview` to be full width with vertical scroll:
-   - Keep header section (location + project) without ?View Full Report? button.
-   - Preserve inline editing sections and auto-save behavior.
-   - Use `SingleChildScrollView` within a constrained `Expanded` to avoid overflow.
-2. Add new keys for report container and scroll view:
-   - `homeReportPreviewSection`
-   - `homeReportPreviewScrollView`
-3. Ensure all editable fields remain functional and are reachable by scroll.
-
-### Subphase 1.4 - Empty day UX (blank sections + CTA)
-1. If `entries.isEmpty`:
-   - Show date header + entry count (0 entries).
-   - Show entry list section as blank area (e.g., placeholder text or empty list).
-   - Show report section as blank (e.g., placeholder message).
-   - Keep ?Create Entry? button visible.
-2. Add key(s) to empty placeholders if needed for tests.
-
-### Subphase 1.5 - Testing keys + E2E updates (same PR)
-1. Keep `TestingKeys.homeViewFullReportButton` defined but remove it from UI.
-2. Update tests that tap the full report button to instead scroll and validate report content.
-3. Add helper methods for:
-   - selecting entry on calendar
-   - scrolling report preview
-4. Update tests in:
-   - `integration_test/patrol/e2e_tests/entry_management_test.dart`
-   - `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
-   - `integration_test/patrol/helpers/patrol_test_helpers.dart`
-
-Deliverable: New vertical layout + updated tests, all passing.
+Deliverable: Baseline notes + key/test map.
 
 ---
 
-## Phase 2 - Inline Editing Stability & Accessibility (Polish PR)
-### Subphase 2.1 - Focus + auto-save stability
-1. Validate that scrolling doesn?t drop focus unexpectedly.
-2. Ensure `_saveIfEditing()` triggers on section switches and app lifecycle changes.
-3. If needed, add a small debounce on text changes or explicit save on scroll end.
+## Phase 1 - Contractor-Scoped Personnel Types (Schema + Migration + UI)
+### Subphase 1.1 - Schema updates (local + remote)
+1. Add `contractor_id` column to `personnel_types` table (nullable initially).
+2. Add index on (`project_id`, `contractor_id`).
+3. Add Supabase migration for `contractor_id` on `personnel_types`.
 
-### Subphase 2.2 - Keyboard + small screen validation
-1. Test on small device dimensions to avoid RenderFlex overflow.
-2. Ensure scrollable report is still hit-testable with keyboard open.
-3. Adjust padding/margins if necessary.
+### Subphase 1.2 - Data migration (preserve existing data)
+1. For each project:
+   - Load all project-level personnel types (`contractor_id` null).
+   - Load all contractors in project.
+2. For each contractor + each existing type:
+   - Create new PersonnelType row with new id, `contractor_id` set, copy name/short_code/sort_order.
+3. Update `entry_personnel_counts` rows:
+   - Remap `type_id` using (old_type_id, contractor_id) mapping.
+4. Keep legacy project-level rows until migration validation is complete; then remove or hide them.
 
-Deliverable: Stable inline editing across device sizes.
+### Subphase 1.3 - Model + datasource changes
+1. Update `PersonnelType` model to include `contractorId` (nullable for legacy rows).
+2. Update local datasource queries to filter by contractorId.
+3. Update repository methods:
+   - `getByContractor(projectId, contractorId)`
+   - `createType` requires contractorId
+4. Update remote datasource mapping to include contractorId.
+
+### Subphase 1.4 - Provider + Entry Wizard UI
+1. Update provider to cache types by contractorId.
+2. Entry wizard: use contractor-specific types for counters.
+3. Add personnel type dialog must pass contractorId and only update that contractor's counts.
+4. Deleting a personnel type only removes it for the owning contractor.
+
+### Subphase 1.5 - Testing keys + implications
+1. Add contractor-scoped add button key to avoid duplicates:
+   - `TestingKeys.entryWizardAddPersonnelButton(contractorId)`
+2. Use this key in UI and update tests to use it.
+3. Update `integration_test/patrol/REQUIRED_UI_KEYS.md` to include the new key.
+4. Remove any old keys only after `rg` confirms no remaining references.
+
+Deliverable: Contractor-scoped types end-to-end with migration and test-safe keys.
 
 ---
 
-## Phase 3 - Test Coverage Expansion (Optional PR)
-### Subphase 3.1 - Empty day coverage
-1. Add E2E test for empty day to verify blank sections + Create Entry visible.
+## Phase 2 - Entry Wizard UX Fixes (Keyboard + Focus + Navigation)
+### Subphase 2.1 - Focus handling around photos
+1. Before opening photo source dialog, call `FocusScope.of(context).unfocus()`.
+2. After photo name dialog returns (save/cancel), keep focus cleared.
+3. Ensure scroll position stays where the user was (do not auto-jump to Activities).
 
-### Subphase 3.2 - Multi-entry horizontal scroll
-1. Add E2E test that scrolls entry list horizontally and selects a non-first entry.
-2. Verify report preview updates to that entry.
+### Subphase 2.2 - Back button behavior
+1. Add `PopScope` (or `WillPopScope`) to intercept back:
+   - If focus is active, unfocus and block pop.
+   - Only show exit dialog if no active focus.
+2. Ensure AppBar close button still shows exit dialog.
 
-Deliverable: Additional E2E coverage for new UX.
+### Subphase 2.3 - Test implications
+1. Update photo flow tests to assert wizard remains in place after adding photo.
+2. Add a small helper to dismiss keyboard when needed (condition-based).
+
+Deliverable: Keyboard no longer sticks open; back button closes keyboard first.
 
 ---
 
-## Notes and Guardrails
-- Avoid `pumpAndSettle()`; use condition-based waits and `scrollTo()` before tap.
-- Preserve `TestingKeys.entryCard(entryId)` and calendar day keys.
-- Keep the calendar header UI unchanged.
-- Run tests after each PR-sized change set.
+## Phase 3 - Report Screen Fixes (Contractors + Header Editing)
+### Subphase 3.1 - Contractor add flow
+1. When selecting a contractor in add dialog, insert placeholder counts in `_personnelCounts`.
+2. Ensure contractor row renders even with zero counts.
+3. Save flow must persist contractor entry even if counts are zero.
 
-## Verification Checklist
-1. `flutter analyze`
-2. `pwsh -File run_patrol_debug.ps1`
-3. Manual check on phone + tablet sizes
-4. Verify inline editing persists and auto-saves
+### Subphase 3.2 - Contractor ordering (prime first)
+1. Sort contractors before rendering:
+   - Prime first, then subs.
+   - Secondary sort by contractor name.
 
+### Subphase 3.3 - Inline header edits (location + weather)
+1. Make location tappable to open dropdown and persist selection.
+2. Make weather tappable to open a selector and persist selection.
+3. Update local header state after save.
+
+### Subphase 3.4 - Testing keys + implications
+1. Apply existing keys to UI where missing:
+   - `TestingKeys.reportContractorCard(contractorId)` on contractor rows.
+   - `TestingKeys.reportAddContractorButton` on add CTA.
+2. Add new keys for header edits:
+   - `TestingKeys.reportHeaderLocationButton`
+   - `TestingKeys.reportHeaderLocationDropdown`
+   - `TestingKeys.reportHeaderWeatherButton`
+   - `TestingKeys.reportHeaderWeatherDropdown`
+3. Add a key for add-contractor list item:
+   - `TestingKeys.reportAddContractorItem(contractorId)`
+4. Update REQUIRED_UI_KEYS and patrol tests to use these keys.
+
+Deliverable: Contractors add correctly, prime-first order, header is editable with testable keys.
+
+---
+
+## Phase 4 - Export Fix (Folder Output + Error Handling)
+### Subphase 4.1 - Export content validation
+1. Keep current behavior: folder contains report PDF + `photos.pdf` when photos exist.
+2. Verify folder export runs only when photos exist and write succeeds.
+
+### Subphase 4.2 - Robust error handling
+1. Wrap `saveEntryExport` call in report screen with try/catch.
+2. On failure, show snackbar with error and log details.
+3. If folder created but write failed, notify user explicitly.
+
+### Subphase 4.3 - Test implications
+1. Add an export unit test for `PdfService._writeExportFiles` using a temp directory.
+2. For E2E, add manual verification checklist (device file system).
+
+Deliverable: Export is stable and failures are visible; output stays report PDF + photos.pdf.
+
+---
+
+## Phase 5 - Tests + Verification
+### Subphase 5.1 - Update existing tests
+1. Update helpers to create contractor-specific personnel types:
+   - Use `entryWizardAddPersonnelButton(contractorId)` key.
+2. Update report screen tests to add contractor and verify row appears.
+3. Update tests to verify prime-first ordering.
+
+### Subphase 5.2 - Add targeted tests
+1. Entry wizard: add personnel type for Contractor A does not show for Contractor B.
+2. Report header: location and weather edits persist after navigation.
+3. Export: verify report PDF + `photos.pdf` exist in export folder (unit test or manual step).
+
+### Subphase 5.3 - Manual validation
+1. Create entry with multiple contractors and unique personnel types.
+2. Generate report, add contractor, ensure prime shown first.
+3. Edit header location/weather and confirm persistence.
+4. Export with photos and confirm report PDF + photos.pdf in folder.
+
+Deliverable: Test coverage for new behavior; manual QA checklist executed.
+
+---
+
+## Files Likely Touched
+- `lib/features/entries/presentation/screens/entry_wizard_screen.dart`
+- `lib/features/entries/presentation/screens/report_screen.dart`
+- `lib/features/contractors/data/models/personnel_type.dart`
+- `lib/features/contractors/data/datasources/local/personnel_type_local_datasource.dart`
+- `lib/features/contractors/data/datasources/remote/personnel_type_remote_datasource.dart`
+- `lib/features/contractors/data/repositories/personnel_type_repository.dart`
+- `lib/features/contractors/presentation/providers/personnel_type_provider.dart`
+- `lib/core/database/database_service.dart` (migration)
+- `lib/features/pdf/services/pdf_service.dart`
+- `lib/shared/testing_keys.dart`
+- `integration_test/patrol/REQUIRED_UI_KEYS.md`
+- `integration_test/patrol/helpers/patrol_test_helpers.dart`
+- `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
+- `integration_test/patrol/e2e_tests/entry_management_test.dart`
+- `integration_test/patrol/e2e_tests/photo_flow_test.dart`
+
+---
+
+## Acceptance Criteria
+- Personnel types are contractor-scoped and migration preserves existing counts.
+- Adding personnel type only affects the selected contractor.
+- Entry wizard photo flow does not keep keyboard open or force Activities focus.
+- Report screen can add contractors and shows prime first.
+- Location and weather can be edited inline on report header.
+- Export folder contains report PDF + photos.pdf (when photos exist).
+- All updated E2E tests pass and REQUIRED_UI_KEYS.md is current.
