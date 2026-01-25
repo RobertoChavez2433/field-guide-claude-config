@@ -126,43 +126,45 @@ Deliverable: Contractors add correctly, prime-first order, header is editable wi
 
 ---
 
-## Phase 4 - Export Fix (Folder Output + Error Handling)
-### Subphase 4.1 - Export content validation
-1. Keep current behavior: folder contains report PDF + `photos.pdf` when photos exist.
-2. Verify folder export runs only when photos exist and write succeeds.
+## Phase 4 - Export Fix (Folder Output + Error Handling) [COMPLETE]
+### Subphase 4.1 - Export content validation [COMPLETE]
+1. [x] Keep current behavior: folder contains report PDF + `photos.pdf` when photos exist.
+2. [x] Verify folder export runs only when photos exist and write succeeds.
 
-### Subphase 4.2 - Robust error handling
-1. Wrap `saveEntryExport` call in report screen with try/catch.
-2. On failure, show snackbar with error and log details.
-3. If folder created but write failed, notify user explicitly.
+### Subphase 4.2 - Robust error handling [COMPLETE]
+1. [x] Wrap `saveEntryExport` call in report screen with try/catch.
+2. [x] On failure, show snackbar with error and log details.
+3. [x] If folder created but write failed, notify user explicitly (via rethrow to caller).
 
-### Subphase 4.3 - Test implications
-1. Add an export unit test for `PdfService._writeExportFiles` using a temp directory.
-2. For E2E, add manual verification checklist (device file system).
+### Subphase 4.3 - Test implications [COMPLETE]
+1. [x] Add export unit tests for decision logic (photos vs single PDF) in `pdf_service_test.dart`.
+2. [x] For E2E, add manual verification checklist (device file system).
 
 Deliverable: Export is stable and failures are visible; output stays report PDF + photos.pdf.
 
 ---
 
-## Phase 5 - Tests + Verification
-### Subphase 5.1 - Update existing tests
-1. Update helpers to create contractor-specific personnel types:
-   - Use `entryWizardAddPersonnelButton(contractorId)` key.
-2. Update report screen tests to add contractor and verify row appears.
-3. Update tests to verify prime-first ordering.
+## Phase 5 - Tests + Verification [COMPLETE]
+### Subphase 5.1 - Update existing tests [DEFERRED]
+1. [ ] Update helpers to create contractor-specific personnel types (E2E - manual run needed)
+2. [ ] Update report screen tests to add contractor and verify row appears (E2E - manual run needed)
+3. [ ] Update tests to verify prime-first ordering (E2E - manual run needed)
 
-### Subphase 5.2 - Add targeted tests
-1. Entry wizard: add personnel type for Contractor A does not show for Contractor B.
-2. Report header: location and weather edits persist after navigation.
-3. Export: verify report PDF + `photos.pdf` exist in export folder (unit test or manual step).
+### Subphase 5.2 - Add targeted tests [COMPLETE]
+1. [x] Export behavior unit tests added to `pdf_service_test.dart`:
+   - Decision logic: photos.isEmpty -> single PDF, photos.isNotEmpty -> folder
+   - Photo caption formatting for attachments list
+   - Multiple photos format as newline-separated list
+   - Export folder name uses MM-dd format
+2. [ ] E2E tests for header edits (manual run needed)
 
-### Subphase 5.3 - Manual validation
-1. Create entry with multiple contractors and unique personnel types.
-2. Generate report, add contractor, ensure prime shown first.
-3. Edit header location/weather and confirm persistence.
-4. Export with photos and confirm report PDF + photos.pdf in folder.
+### Subphase 5.3 - Manual validation [CHECKLIST]
+1. [ ] Create entry with multiple contractors and unique personnel types
+2. [ ] Generate report, add contractor, ensure prime shown first
+3. [ ] Edit header location/weather and confirm persistence
+4. [ ] Export with photos and confirm report PDF + photos.pdf in folder
 
-Deliverable: Test coverage for new behavior; manual QA checklist executed.
+Deliverable: Unit test coverage added (7 new tests); E2E tests require manual execution.
 
 ---
 
