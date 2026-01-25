@@ -1,56 +1,52 @@
 # Session State
 
-**Last Updated**: 2026-01-25 | **Session**: 116
+**Last Updated**: 2026-01-25 | **Session**: 117
 
 ## Current Phase
-- **Phase**: E2E Test Stability - Focused Verification
-- **Status**: 5 active tests, 8 sidelined for later
+- **Phase**: Calendar View Redesign (Planning Complete)
+- **Status**: Implementation plan ready for 4-PR restructure
 
-## Last Session (Session 116)
-**Summary**: Reorganized E2E test infrastructure - sidelined 8 unstable tests to focus on getting 5 core tests to 100% stability.
+## Last Session (Session 117)
+**Summary**: Created comprehensive implementation plan for calendar screen layout restructure - transforming from horizontal split to vertical stacked layout (calendar top, horizontal entry list middle, scrollable editable report bottom).
 
 **Key Deliverables**:
-1. Created `integration_test/patrol/sidelined/` folder for deferred tests
-2. Moved `run_patrol_batched.ps1` to sidelined folder
-3. Updated `run_patrol_debug.ps1` to run only 5 active tests
-4. Built debug APK to desktop
+1. Created detailed 4-PR implementation plan with subphases
+2. Defined 14 new TestingKeys for E2E testability
+3. Documented E2E test scenarios for each PR phase
+4. Saved plan to `.claude/plans/Calendar View Redesign.md`
 
-**Files Modified**:
-- `run_patrol_debug.ps1` - Now single-batch with 5 active tests
-- `integration_test/patrol/sidelined/run_patrol_batched.ps1` - Moved here
+**Files Created**:
+- `.claude/plans/Calendar View Redesign.md` - Full implementation plan
 
 ## Active Plan
-**Status**: Verification phase - focus on 5 core tests
+**Status**: READY FOR IMPLEMENTATION
 
-**Active Tests** (5):
-- auth_flow_test.dart
-- app_smoke_test.dart
-- entry_lifecycle_test.dart
-- entry_management_test.dart
-- project_setup_flow_test.dart
+**Plan Location**: `.claude/plans/Calendar View Redesign.md`
 
-**Sidelined Tests** (8):
-- contractors_flow_test.dart
-- project_management_test.dart
-- quantities_flow_test.dart
-- settings_theme_test.dart
-- navigation_flow_test.dart
-- offline_sync_test.dart
-- photo_flow_test.dart
-- ui_button_coverage_test.dart
+**PR Phases**:
+1. PR 1: Widget Extraction (Foundation) - Extract ModernEntryCard & AnimatedDayCell
+2. PR 2: Entry List Horizontal Layout - Full-width horizontal scroll
+3. PR 3: Compact Calendar - Week view default with animation
+4. PR 4: Full-Width Editable Report Section - Scrollable, inline editing
 
 ## Key Decisions
-- **Focus strategy**: Get 5 core tests to 100% before expanding
-- **Sidelined location**: `integration_test/patrol/sidelined/`
-- **Runner script**: Use `run_patrol_debug.ps1` for active tests
+- **Entry list**: Horizontal scroll (cards side-by-side)
+- **Report section**: Full preview with ALL sections visible, scrollable, AND editable inline
+- **Calendar default**: Week view (compact)
+- **TestingKeys**: 14 new keys for E2E testability
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Verify 5 active tests pass | NEXT | `run_patrol_debug.ps1` |
+| Implement Calendar Redesign PR1 | NEXT | `.claude/plans/Calendar View Redesign.md` |
+| Verify 5 active E2E tests pass | ONGOING | `run_patrol_debug.ps1` |
 | Restore sidelined tests | LATER | `integration_test/patrol/sidelined/` |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 
+## Open Questions
+None - Plan confirmed with user
+
 ## Reference
 - Branch: `New-Entry_Lifecycle-Redesign`
+- Plan: `.claude/plans/Calendar View Redesign.md`
 - Runner: `pwsh -File run_patrol_debug.ps1`

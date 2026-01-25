@@ -24,6 +24,13 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-25 (Session 117): Calendar View Redesign Planning
+- Created comprehensive 4-PR implementation plan for calendar screen restructure
+- Target: Transform horizontal split layout to vertical stacked (calendar top, horizontal entry list middle, scrollable editable report bottom)
+- Defined 14 new TestingKeys for E2E testability
+- Documented E2E test scenarios per PR phase
+- Files: `.claude/plans/Calendar View Redesign.md`, `.claude/plans/_state.md`
+
 ### 2026-01-25 (Session 116): E2E Test Reorganization
 - Sidelined 8 unstable tests to focus on 5 core tests
 - Created `integration_test/patrol/sidelined/` folder
