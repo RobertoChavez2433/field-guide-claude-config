@@ -1,52 +1,61 @@
 # Session State
 
-**Last Updated**: 2026-01-25 | **Session**: 117
+**Last Updated**: 2026-01-25 | **Session**: 118
 
 ## Current Phase
-- **Phase**: Calendar View Redesign (Planning Complete)
-- **Status**: Implementation plan ready for 4-PR restructure
+- **Phase**: Calendar View Redesign (CODEX Phase 1 Complete)
+- **Status**: Layout restructure implemented, tests updated
 
-## Last Session (Session 117)
-**Summary**: Created comprehensive implementation plan for calendar screen layout restructure - transforming from horizontal split to vertical stacked layout (calendar top, horizontal entry list middle, scrollable editable report bottom).
+## Last Session (Session 118)
+**Summary**: Implemented CODEX Phase 0 (investigation) and Phase 1 (layout restructure). Transformed calendar screen from horizontal split layout to vertical stacked layout with horizontal entry list.
 
 **Key Deliverables**:
-1. Created detailed 4-PR implementation plan with subphases
-2. Defined 14 new TestingKeys for E2E testability
-3. Documented E2E test scenarios for each PR phase
-4. Saved plan to `.claude/plans/Calendar View Redesign.md`
+1. Phase 0: Full codebase investigation - identified all affected files, TestingKeys, and test dependencies
+2. Phase 1: Layout restructure complete:
+   - Converted Row split to Column layout
+   - Entry list now horizontal scroll (120px height, full width)
+   - Report preview now full-width scrollable (Expanded)
+   - Removed "View Full Report" button (double-tap entry card navigates to report)
+   - Added 3 new TestingKeys: `homeEntryListHorizontal`, `homeReportPreviewSection`, `homeReportPreviewScrollView`
+3. Updated `_openSeedEntryReport` test helper for new navigation pattern
 
-**Files Created**:
-- `.claude/plans/Calendar View Redesign.md` - Full implementation plan
+**Files Modified**:
+- `lib/features/entries/presentation/screens/home_screen.dart` - Layout restructure
+- `lib/shared/testing_keys.dart` - 3 new keys
+- `integration_test/patrol/e2e_tests/entry_management_test.dart` - Helper update
 
 ## Active Plan
-**Status**: READY FOR IMPLEMENTATION
+**Status**: CODEX Phase 1 COMPLETE
 
-**Plan Location**: `.claude/plans/Calendar View Redesign.md`
+**Plan Location**: `.claude/plans/CODEX.md`
 
-**PR Phases**:
-1. PR 1: Widget Extraction (Foundation) - Extract ModernEntryCard & AnimatedDayCell
-2. PR 2: Entry List Horizontal Layout - Full-width horizontal scroll
-3. PR 3: Compact Calendar - Week view default with animation
-4. PR 4: Full-Width Editable Report Section - Scrollable, inline editing
+**Completed Phases**:
+- ✅ Phase 0: Investigation + Baseline Verification
+- ✅ Phase 1: Layout Restructure (UI + Tests)
+
+**Remaining Phases**:
+- ⏳ Phase 2: Inline Editing Stability & Accessibility (Polish PR)
+- ⏳ Phase 3: Test Coverage Expansion (Optional PR)
 
 ## Key Decisions
-- **Entry list**: Horizontal scroll (cards side-by-side)
+- **Entry list**: Horizontal scroll (cards side-by-side, 200px each)
 - **Report section**: Full preview with ALL sections visible, scrollable, AND editable inline
-- **Calendar default**: Week view (compact)
-- **TestingKeys**: 14 new keys for E2E testability
+- **Navigation**: Double-tap entry card to open full report (replaced "View Full Report" button)
+- **TestingKeys**: 3 new keys added and wired
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Implement Calendar Redesign PR1 | NEXT | `.claude/plans/Calendar View Redesign.md` |
-| Verify 5 active E2E tests pass | ONGOING | `run_patrol_debug.ps1` |
+| CODEX Phase 2: Inline editing polish | NEXT | `.claude/plans/CODEX.md` |
+| CODEX Phase 3: Test coverage expansion | LATER | `.claude/plans/CODEX.md` |
+| Verify E2E tests pass with new layout | PENDING | `run_patrol_debug.ps1` |
 | Restore sidelined tests | LATER | `integration_test/patrol/sidelined/` |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 
 ## Open Questions
-None - Plan confirmed with user
+None
 
 ## Reference
 - Branch: `New-Entry_Lifecycle-Redesign`
-- Plan: `.claude/plans/Calendar View Redesign.md`
+- Plan: `.claude/plans/CODEX.md`
 - Runner: `pwsh -File run_patrol_debug.ps1`
