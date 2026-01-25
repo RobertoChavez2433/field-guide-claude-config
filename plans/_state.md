@@ -1,34 +1,27 @@
 # Session State
 
-**Last Updated**: 2026-01-25 | **Session**: 114
+**Last Updated**: 2026-01-25 | **Session**: 115
 
 ## Current Phase
 - **Phase**: CODEX Implementation - E2E Test Stability
-- **Status**: IN PROGRESS - PR 1-4 complete
+- **Status**: PR 1-5 COMPLETE - Ready for PR 6 (Verification)
 
-## Last Session (Session 114)
-**Summary**: Implemented CODEX.md PR 3 (Flow test fixes) and PR 4 (Additional flow audits).
+## Last Session (Session 115)
+**Summary**: Implemented CODEX.md PR 5 (Coverage tests) - Replaced all .exists patterns with tapIfHitTestable() in ui_button_coverage_test.dart.
 
 **Key Deliverables**:
-1. **PR 3.1**: quantities_flow_test.dart - Added ensureSeedProjectSelectedOrFail(), replaced .exists guards with tapIfHitTestable
-2. **PR 3.2**: entry_management_test.dart - Replaced .exists guards with tapIfHitTestable for coverage-style tests
-3. **PR 3.3**: project_setup_flow_test.dart - Replaced direct taps with safeTap/safeEnterText, use saveProject() helper
-4. **PR 3.4**: settings_theme_test.dart - Minor cleanup using safeTap patterns
-5. **PR 4.1**: contractors_flow_test.dart - Replaced if (!projectCard.exists) return with ensureSeedProjectSelectedOrFail()
-6. **PR 4.2**: navigation_flow_test.dart - Replaced .exists guards with tapIfHitTestable for optional UI
-7. **PR 4.3**: offline_sync_test.dart - Replaced if (!projectCard.exists) return with ensureSeedProjectSelectedOrFail()
+1. **PR 5.1**: Settings screen test - Updated all button taps to use tapIfHitTestable
+2. **PR 5.2**: Project setup test - Replaced seed project guard with ensureSeedProjectSelectedOrFail
+3. **PR 5.3**: Quantities screen test - Updated sort, search, import, and card action buttons
+4. **PR 5.4**: Dashboard test - Updated stat cards, new entry button, view all quantities
+5. **PR 5.5**: Calendar test - Updated navigation, format toggles, FAB, jump to latest
+6. **PR 5.6**: Projects list test - Updated FAB, filter toggle, search, archive toggle
 
 **Files Modified**:
-- `integration_test/patrol/e2e_tests/quantities_flow_test.dart`
-- `integration_test/patrol/e2e_tests/entry_management_test.dart`
-- `integration_test/patrol/e2e_tests/project_setup_flow_test.dart`
-- `integration_test/patrol/e2e_tests/settings_theme_test.dart`
-- `integration_test/patrol/e2e_tests/contractors_flow_test.dart`
-- `integration_test/patrol/e2e_tests/navigation_flow_test.dart`
-- `integration_test/patrol/e2e_tests/offline_sync_test.dart`
+- `integration_test/patrol/e2e_tests/ui_button_coverage_test.dart`
 
 ## Active Plan
-**Status**: PR 1-4 COMPLETE - Ready for PR 5 (Coverage tests) and PR 6 (Verification)
+**Status**: PR 1-5 COMPLETE - Ready for PR 6 (Verification run)
 
 **Plan Location**: `.claude/plans/CODEX.md`
 
@@ -43,7 +36,7 @@
    - [x] 2.2 Batch-aware comment added
 3. [x] PR 3: Flow test fixes (quantities, entry_management, project_setup, settings_theme)
 4. [x] PR 4: Additional flow audits (contractors, navigation, offline_sync)
-5. [ ] PR 5: Coverage tests (ui_button_coverage)
+5. [x] PR 5: Coverage tests (ui_button_coverage)
 6. [ ] PR 6: Verification run
 
 ## Key Decisions
@@ -56,11 +49,10 @@
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| PR 5: Coverage tests | NEXT | `.claude/plans/CODEX.md` |
-| PR 6: Verification run | AFTER PR 5 | After E2E stability fixes |
+| PR 6: Verification run | NEXT | `.claude/plans/CODEX.md` |
 | Pagination | CRITICAL BLOCKER | All `getAll()` methods |
 
 ## Reference
 - CODEX Plan: `.claude/plans/CODEX.md`
 - Branch: `New-Entry_Lifecycle-Redesign`
-- Latest commit: `df5c756` - feat(e2e): Implement CODEX PR3 & PR4
+- Latest commit: (pending) - feat(e2e): Implement CODEX PR5
