@@ -24,6 +24,14 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-25 (Session 123): Contractor Data Flow + Calendar Layout Fixes
+- Fixed critical bug: dynamic personnel counts not saving/loading in entry wizard
+- Added `saveAllCountsForEntry()` and `getCountsByEntryId()` calls for proper persistence
+- Refactored home screen to unified scroll view (removed nested Column+Expanded+Card)
+- Fixed explicit submit handler missing personnel/equipment save (found in code review)
+- Built release APK (68.2MB)
+- Files: entry_wizard_screen.dart, home_screen.dart, personnel_type.dart, test_seed_data.dart
+
 ### 2026-01-25 (Session 117): Calendar View Redesign Planning
 - Created comprehensive 4-PR implementation plan for calendar screen restructure
 - Target: Transform horizontal split layout to vertical stacked (calendar top, horizontal entry list middle, scrollable editable report bottom)
