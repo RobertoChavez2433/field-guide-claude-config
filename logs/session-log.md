@@ -24,6 +24,15 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-26 (Session 127): Contractor-Scoped Personnel Types
+- Implemented contractor-scoped personnel types (each contractor has independent types)
+- Added `createDefaultTypesForContractor()` to PersonnelTypeProvider
+- Added inline add/delete to ContractorEditorWidget with callbacks
+- Updated home_screen, report_screen, entry_wizard_screen to filter types by contractor
+- Removed Personnel Types navigation from settings (managed inline now)
+- Updated seed_data_service for per-contractor types
+- Files: personnel_type_provider.dart, contractor_editor_widget.dart, home_screen.dart, report_screen.dart, entry_wizard_screen.dart, settings_screen.dart, seed_data_service.dart, testing_keys.dart
+
 ### 2026-01-25 (Session 123): Contractor Data Flow + Calendar Layout Fixes
 - Fixed critical bug: dynamic personnel counts not saving/loading in entry wizard
 - Added `saveAllCountsForEntry()` and `getCountsByEntryId()` calls for proper persistence

@@ -1,49 +1,47 @@
 # Session State
 
-**Last Updated**: 2026-01-25 | **Session**: 126
+**Last Updated**: 2026-01-26 | **Session**: 127
 
 ## Current Phase
-- **Phase**: CODEX Plan - Complete
-- **Status**: All 5 PRs implemented
+- **Phase**: Contractor-Scoped Personnel Types - Complete
+- **Status**: Feature implemented and pushed
 
-## Last Session (Session 126)
-**Summary**: Implemented CODEX PR 5 (Export Fix - Editable Filename + Android Save).
+## Last Session (Session 127)
+**Summary**: Implemented contractor-scoped personnel types feature. Personnel types are now independent per contractor instead of project-wide.
 
 **Key Deliverables**:
-1. **PR 5 - Export Fix**:
-   - Added `showFilenameDialog` method with editable filename prompt
-   - Android: uses directory picker + filename prompt, then writes bytes directly (fixes "Bytes are required" error)
-   - Desktop/iOS: uses save dialog with user's customized filename
-   - Folder export also prompts for folder name
-   - Added TestingKeys: `exportFilenameDialog`, `exportFilenameField`, `exportFilenameCancelButton`, `exportFilenameSaveButton`
+1. **PersonnelTypeProvider**: Added `createDefaultTypesForContractor()` method
+2. **ContractorEditorWidget**: Added inline add/delete callbacks for personnel types
+3. **home_screen.dart**: Filter types by contractor, create defaults on add
+4. **report_screen.dart**: Same pattern, inline add/delete UI
+5. **entry_wizard_screen.dart**: Create defaults per contractor, filter types
+6. **settings_screen.dart**: Removed Personnel Types navigation (managed inline now)
+7. **seed_data_service.dart**: Create types per contractor instead of project-wide
 
 **Files Modified**:
-- `lib/features/pdf/services/pdf_service.dart` - Added filename dialog, fixed Android export
-- `lib/features/entries/presentation/screens/report_screen.dart` - Pass context to export calls
-- `lib/shared/testing_keys.dart` - Added export dialog keys
-
-## CODEX Plan Complete
-**All PRs Implemented**:
-- [x] PR 1 - Calendar Auto-Collapse
-- [x] PR 2 - Contractor Editing in Calendar Report
-- [x] PR 3 - Contractor Persistence (entry_contractors table)
-- [x] PR 4 - Report Header Inline Edits
-- [x] PR 5 - Export Fix (Editable Filename + Android Save)
+- `lib/features/contractors/presentation/providers/personnel_type_provider.dart` - createDefaultTypesForContractor()
+- `lib/features/entries/presentation/widgets/contractor_editor_widget.dart` - Add/delete callbacks
+- `lib/features/entries/presentation/screens/home_screen.dart` - Filter types, create defaults
+- `lib/features/entries/presentation/screens/report_screen.dart` - Inline add/delete
+- `lib/features/entries/presentation/screens/entry_wizard_screen.dart` - Contractor-scoped types
+- `lib/features/settings/presentation/screens/settings_screen.dart` - Removed nav item
+- `lib/core/database/seed_data_service.dart` - Types per contractor
+- `lib/shared/testing_keys.dart` - Added contractorAddPersonnelTypeButton
 
 ## Key Decisions
-- Export filename dialog validates for invalid path characters
-- Android uses `FilePicker.getDirectoryPath()` + manual file write (avoids platform bug)
-- Folder name defaults to MM-dd format but is editable
-- Context parameter optional for backward compatibility
+- 3 default types (Foreman, Laborer, Operator) auto-created per contractor
+- Types managed inline in ContractorEditorWidget (no separate settings screen)
+- Long-press on counter to delete type
+- "Add Type" button appears in edit mode
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| E2E Tests for Export | OPTIONAL | Manual verification recommended |
+| Verify feature with user testing | IN PROGRESS | App running on emulator |
 
 ## Open Questions
 None
 
 ## Reference
 - Branch: `main`
-- CODEX Plan: `.claude/plans/CODEX.md`
+- Commit: `79e5912` (App), `179d4b1` (Config)
