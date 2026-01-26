@@ -1,81 +1,63 @@
 # Session State
 
-**Last Updated**: 2026-01-25 | **Session**: 123
+**Last Updated**: 2026-01-25 | **Session**: 124
 
 ## Current Phase
-- **Phase**: Contractor Data Flow + Calendar Layout Fixes
-- **Status**: Complete - critical bugs fixed, APK built
+- **Phase**: CODEX PR 1 & 2 - Calendar Auto-Collapse + Contractor Editing
+- **Status**: Complete - both PRs implemented and committed
 
-## Last Session (Session 123)
-**Summary**: Fixed contractor data flow bugs where dynamic personnel counts weren't being saved/loaded, refactored home screen to unified scroll layout, and fixed critical bug in explicit submit handler.
+## Last Session (Session 124)
+**Summary**: Implemented CODEX PR 1 (Calendar Auto-Collapse) and PR 2 (Contractor Editing in Calendar Report).
 
 **Key Deliverables**:
-1. **Contractor Data Flow Fixes (CRITICAL)**:
-   - Added `saveAllCountsForEntry()` call in `_savePersonnelAndEquipment()` to persist dynamic counts
-   - Added `getCountsByEntryId()` call in `_loadExistingEntry()` to load dynamic counts when editing
-   - Added merge logic to populate contractor UI state from loaded dynamic counts
-   - Fixed explicit `_generateReport()` submit handler - was missing personnel/equipment save calls
+1. **PR 1 - Calendar Auto-Collapse**:
+   - Updated `CalendarFormatProvider` with `_userFormat` and `_isCollapsed` state
+   - Added `collapseToWeek()` and `expandToUserFormat()` helpers
+   - Set calendar height to 45% (was 30%)
+   - Added scroll listener to `_reportScrollController` with hysteresis thresholds
+   - Calendar collapses to week view when scrolling down, expands when at top
 
-2. **Calendar Layout - Unified Scroll View**:
-   - Replaced nested Column+Expanded+Card structure with single `SingleChildScrollView`
-   - Created new `_buildReportContent()` method for direct report sections (no Card wrapper)
-   - Simplified `_buildReportPreview()` to minimal preview for constrained spaces
-   - Entry strip height reduced from 72px to 56px
-   - Added 80px bottom padding for FAB clearance
-
-3. **Code Review Completed**:
-   - Identified and fixed critical bug: explicit submit wasn't saving personnel/equipment
-   - Reviewed last 2 commits and current changes
-   - Minor improvements noted for future (DRY opportunities, file extraction)
+2. **PR 2 - Contractor Editing in Calendar Report**:
+   - Created shared `ContractorEditorWidget` in `lib/features/entries/presentation/widgets/`
+   - Replaced read-only personnel summary with full contractor editing section
+   - Supports personnel counts and equipment selection editing
+   - Added all necessary state management (`_saveIfEditingContractor`, `_startEditingContractor`, etc.)
+   - Added new TestingKeys for contractor editor components
+   - Removed dead code (`_kMinPreviewHeight`, `_buildReportPreview`)
 
 **Files Modified**:
-- `lib/features/entries/presentation/screens/entry_wizard_screen.dart` - save/load dynamic counts, fix explicit submit
-- `lib/features/entries/presentation/screens/home_screen.dart` - unified scroll layout
-- `lib/features/contractors/data/models/personnel_type.dart` - minor fixes
-- `integration_test/patrol/fixtures/test_seed_data.dart` - contractorId in personnel types
-- `test/data/models/personnel_type_test.dart` - additional tests
+- `lib/features/entries/presentation/providers/calendar_format_provider.dart` - auto-collapse state
+- `lib/features/entries/presentation/screens/home_screen.dart` - scroll listener, contractor editing
+- `lib/features/entries/presentation/widgets/contractor_editor_widget.dart` - NEW shared widget
+- `lib/features/entries/presentation/widgets/widgets.dart` - export new widget
+- `lib/shared/testing_keys.dart` - new contractor editor keys
 
 ## Active Plan
 **Status**: COMPLETED
 
-**Data Flow After Fix**:
-```
-Entry Wizard → User selects contractors + sets counts
-  ↓
-_savePersonnelAndEquipment()
-  ↓
-saveForEntry() → entry_personnel (legacy F/O/L)
-saveAllCountsForEntry() → entry_personnel_counts (dynamic) ← FIXED
-  ↓
-Report Screen / Edit Mode
-  ↓
-getByEntryId() → legacy counts
-getCountsByEntryId() → dynamic counts ← FIXED
-  ↓
-All contractors appear correctly
-```
+**CODEX Plan Progress**:
+- [x] PR 1 - Calendar Auto-Collapse
+- [x] PR 2 - Contractor Editing in Calendar Report
+- [ ] PR 3 - Contractor Persistence (entry_contractors table)
+- [ ] PR 4 - Report Header Inline Edits
+- [ ] PR 5 - Export Fix (Editable Filename + Android Save)
 
 ## Key Decisions
-- Dynamic counts merge with legacy (overrides if both exist)
-- Home screen uses unified scroll instead of nested layout
-- Explicit submit now matches auto-save behavior for personnel/equipment
-
-## Code Review Findings (From Session 123)
-1. ✅ FIXED: `_generateReport()` missing personnel/equipment save
-2. Consider: Extract personnel section from wizard (~2800 lines)
-3. Consider: DRY opportunity for entry creation logic
-4. Minor: Dead code `_buildReportPreview` could be removed if unused
+- Calendar uses 50px collapse threshold and 20px expand threshold for hysteresis
+- User's manual format selection preserved in `_userFormat` when programmatically collapsed
+- Contractor editor widget is shared between home_screen and report_screen
+- Removed unused `_buildReportPreview` method (was dead code)
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Extract personnel section widget | LOW | `entry_wizard_screen.dart` |
-| Add missing database index | MEDIUM | `idx_personnel_types_by_contractor` |
-| Run E2E tests to verify changes | LATER | Manual run required |
+| PR 3 - Contractor Persistence | NEXT | `.claude/plans/CODEX.md` |
+| PR 4 - Report Header Inline Edits | LATER | `.claude/plans/CODEX.md` |
+| PR 5 - Export Fix | LATER | `.claude/plans/CODEX.md` |
 
 ## Open Questions
 None
 
 ## Reference
 - Branch: `main`
-- APK: `build/app/outputs/flutter-apk/app-release.apk` (68.2MB)
+- CODEX Plan: `.claude/plans/CODEX.md`

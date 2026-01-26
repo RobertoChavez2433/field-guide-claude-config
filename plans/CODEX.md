@@ -1,197 +1,123 @@
-# Entry Wizard + Report Screen Bugfix Plan (Contractor-Scoped Roles, UX, Export)
+# Calendar Auto-Collapse + Contractor Editing + Export Fix Plan
 
 ## Objectives
-- Make personnel types truly contractor-scoped (schema + data + UI + sync).
-- Fix entry wizard keyboard/focus behavior (no forced return to Activities, back closes keyboard first).
-- Fix report screen contractor add flow and ordering (prime first).
-- Enable inline edits for location and weather on report header.
-- Export remains: report PDF + photos.pdf in folder when photos exist.
-- Keep tests green by updating keys, helpers, and REQUIRED_UI_KEYS in the same PR.
+- Calendar: restore 45 percent height and auto-collapse to week on scroll, expand at top.
+- Contractor editing (personnel + equipment) available in calendar report and report screen.
+- Persist contractor selection via `entry_contractors` table (Option A, minimal).
+- Export: save dialog with editable filename prefilled with selected date; no Android "Bytes are required" errors.
+- Keep tests green: add/update keys and patrol tests in the same PRs.
 
 ## Constraints
-- Preserve existing data and migrate safely.
-- No test break between phases; update tests alongside UI changes.
-- Avoid duplicate keys in widget tree; add contractor-scoped keys where needed.
-- Avoid pumpAndSettle in tests; use condition-based waits.
+- No breaking test changes between PRs.
+- Add new keys and update patrol tests in same PR.
+- Do not remove old keys until `rg` shows no references.
+- Export stays report PDF + photos.pdf when photos exist.
+- Existing E2E tests must continue to pass; adjust waits/keys only within the PR that changes UI.
 
 ---
 
-## Phase 0 - Discovery + Testing Impact (no functional changes)
-### Subphase 0.1 - Inventory keys + tests
-1. List current keys used by entry wizard and report screens.
-2. Identify patrol tests that tap or wait for those keys.
-3. Note any duplicate key usage (e.g., add personnel button per contractor).
-4. For any key planned for removal, run `rg` to confirm zero references before deletion.
+## PR 1 - Calendar Auto-Collapse
+### Scope
+- Provider state and scroll behavior only.
 
-### Subphase 0.2 - Baseline verification
-1. Run `flutter analyze`.
-2. Run E2E: `entry_lifecycle_test.dart`, `entry_management_test.dart`, `photo_flow_test.dart`.
-3. Capture current failure points and logs for comparison.
+### Steps
+1. Add `_userFormat` and `_isCollapsed` to `CalendarFormatProvider`.
+2. Update `setFormat` to set `_userFormat` and clear `_isCollapsed`.
+3. Add `collapseToWeek` and `expandToUserFormat` helpers.
+4. In `home_screen.dart`, set calendar height to 0.45.
+5. Add scroll listener to `_reportScrollController` with `mounted` guard.
+6. Add small hysteresis to avoid flicker at top (optional but preferred).
 
-Deliverable: Baseline notes + key/test map.
-
----
-
-## Phase 1 - Contractor-Scoped Personnel Types (Schema + Migration + UI)
-### Subphase 1.1 - Schema updates (local + remote)
-1. Add `contractor_id` column to `personnel_types` table (nullable initially).
-2. Add index on (`project_id`, `contractor_id`).
-3. Add Supabase migration for `contractor_id` on `personnel_types`.
-
-### Subphase 1.2 - Data migration (preserve existing data)
-1. For each project:
-   - Load all project-level personnel types (`contractor_id` null).
-   - Load all contractors in project.
-2. For each contractor + each existing type:
-   - Create new PersonnelType row with new id, `contractor_id` set, copy name/short_code/sort_order.
-3. Update `entry_personnel_counts` rows:
-   - Remap `type_id` using (old_type_id, contractor_id) mapping.
-4. Keep legacy project-level rows until migration validation is complete; then remove or hide them.
-
-### Subphase 1.3 - Model + datasource changes
-1. Update `PersonnelType` model to include `contractorId` (nullable for legacy rows).
-2. Update local datasource queries to filter by contractorId.
-3. Update repository methods:
-   - `getByContractor(projectId, contractorId)`
-   - `createType` requires contractorId
-4. Update remote datasource mapping to include contractorId.
-
-### Subphase 1.4 - Provider + Entry Wizard UI
-1. Update provider to cache types by contractorId.
-2. Entry wizard: use contractor-specific types for counters.
-3. Add personnel type dialog must pass contractorId and only update that contractor's counts.
-4. Deleting a personnel type only removes it for the owning contractor.
-
-### Subphase 1.5 - Testing keys + implications
-1. Add contractor-scoped add button key to avoid duplicates:
-   - `TestingKeys.entryWizardAddPersonnelButton(contractorId)`
-2. Use this key in UI and update tests to use it.
-3. Update `integration_test/patrol/REQUIRED_UI_KEYS.md` to include the new key.
-4. Remove any old keys only after `rg` confirms no remaining references.
-
-Deliverable: Contractor-scoped types end-to-end with migration and test-safe keys.
+### Tests
+- Unit test: `CalendarFormatProvider` preserves `_userFormat` and toggles `_isCollapsed`.
+- Widget test: scroll report preview triggers collapse/expand without changing manual week selection.
 
 ---
 
-## Phase 2 - Entry Wizard UX Fixes (Keyboard + Focus + Navigation)
-### Subphase 2.1 - Focus handling around photos
-1. Before opening photo source dialog, call `FocusScope.of(context).unfocus()`.
-2. After photo name dialog returns (save/cancel), keep focus cleared.
-3. Ensure scroll position stays where the user was (do not auto-jump to Activities).
+## PR 2 - Contractor Editing in Calendar Report
+### Scope
+- Calendar report view uses same contractor editor as report screen (personnel + equipment).
 
-### Subphase 2.2 - Back button behavior
-1. Add `PopScope` (or `WillPopScope`) to intercept back:
-   - If focus is active, unfocus and block pop.
-   - Only show exit dialog if no active focus.
-2. Ensure AppBar close button still shows exit dialog.
+### Steps
+1. Extract contractor editor widget from `report_screen.dart` into a shared widget.
+2. Replace read-only personnel summary in `home_screen.dart` with the shared contractor editor.
+3. Ensure edits write via `EntryPersonnelLocalDatasource` and `EntryEquipmentLocalDatasource`.
+4. Confirm equipment selection is available in the calendar report view.
 
-### Subphase 2.3 - Test implications
-1. Update photo flow tests to assert wizard remains in place after adding photo.
-2. Add a small helper to dismiss keyboard when needed (condition-based).
-
-Deliverable: Keyboard no longer sticks open; back button closes keyboard first.
+### Keys and tests
+1. Add contractor-specific keys for edit buttons and rows in calendar report view.
+2. Update patrol tests to use new keys.
+3. Add widget test: calendar report contractor editor renders both personnel and equipment controls.
 
 ---
 
-## Phase 3 - Report Screen Fixes (Contractors + Header Editing)
-### Subphase 3.1 - Contractor add flow
-1. When selecting a contractor in add dialog, insert placeholder counts in `_personnelCounts`.
-2. Ensure contractor row renders even with zero counts.
-3. Save flow must persist contractor entry even if counts are zero.
+## PR 3 - Contractor Persistence (Option A)
+### Scope
+- Persist contractor selection even when counts are zero.
 
-### Subphase 3.2 - Contractor ordering (prime first)
-1. Sort contractors before rendering:
-   - Prime first, then subs.
-   - Secondary sort by contractor name.
+### Steps
+1. Add `entry_contractors` table (`entry_id`, `contractor_id`, `created_at`).
+2. Add local datasource for insert/delete/get by entry.
+3. When a contractor is added, insert into `entry_contractors`.
+4. On load, seed `_personnelCounts` and contractor list from `entry_contractors`.
+5. Keep existing counts behavior; no zero-count rows required.
 
-### Subphase 3.3 - Inline header edits (location + weather)
-1. Make location tappable to open dropdown and persist selection.
-2. Make weather tappable to open a selector and persist selection.
-3. Update local header state after save.
-
-### Subphase 3.4 - Testing keys + implications
-1. Apply existing keys to UI where missing:
-   - `TestingKeys.reportContractorCard(contractorId)` on contractor rows.
-   - `TestingKeys.reportAddContractorButton` on add CTA.
-2. Add new keys for header edits:
-   - `TestingKeys.reportHeaderLocationButton`
-   - `TestingKeys.reportHeaderLocationDropdown`
-   - `TestingKeys.reportHeaderWeatherButton`
-   - `TestingKeys.reportHeaderWeatherDropdown`
-3. Add a key for add-contractor list item:
-   - `TestingKeys.reportAddContractorItem(contractorId)`
-4. Update REQUIRED_UI_KEYS and patrol tests to use these keys.
-
-Deliverable: Contractors add correctly, prime-first order, header is editable with testable keys.
+### Tests
+1. Add unit tests for `EntryContractorsLocalDatasource` insert/get/remove.
+2. Add unit test: combining `entry_contractors` with `entry_personnel_counts` yields stable contractor list.
+3. Update E2E: add contractor with zero counts, reopen entry, contractor still visible.
 
 ---
 
-## Phase 4 - Export Fix (Folder Output + Error Handling) [COMPLETE]
-### Subphase 4.1 - Export content validation [COMPLETE]
-1. [x] Keep current behavior: folder contains report PDF + `photos.pdf` when photos exist.
-2. [x] Verify folder export runs only when photos exist and write succeeds.
+## PR 4 - Report Header Inline Edits
+### Scope
+- Location and weather editable in report header.
 
-### Subphase 4.2 - Robust error handling [COMPLETE]
-1. [x] Wrap `saveEntryExport` call in report screen with try/catch.
-2. [x] On failure, show snackbar with error and log details.
-3. [x] If folder created but write failed, notify user explicitly (via rethrow to caller).
+### Steps
+1. Ensure header buttons open dropdowns and persist changes.
+2. Update local UI state after save.
 
-### Subphase 4.3 - Test implications [COMPLETE]
-1. [x] Add export unit tests for decision logic (photos vs single PDF) in `pdf_service_test.dart`.
-2. [x] For E2E, add manual verification checklist (device file system).
-
-Deliverable: Export is stable and failures are visible; output stays report PDF + photos.pdf.
+### Keys and tests
+1. Add keys for header edit buttons and dropdowns.
+2. Update REQUIRED_UI_KEYS and patrol tests.
+3. Add widget test: location and weather update persists after leaving and returning to report.
 
 ---
 
-## Phase 5 - Tests + Verification [COMPLETE]
-### Subphase 5.1 - Update existing tests [DEFERRED]
-1. [ ] Update helpers to create contractor-specific personnel types (E2E - manual run needed)
-2. [ ] Update report screen tests to add contractor and verify row appears (E2E - manual run needed)
-3. [ ] Update tests to verify prime-first ordering (E2E - manual run needed)
+## PR 5 - Export Fix (Editable Filename + Android Save)
+### Scope
+- Fix Android "Bytes are required" and add editable filename prompt.
 
-### Subphase 5.2 - Add targeted tests [COMPLETE]
-1. [x] Export behavior unit tests added to `pdf_service_test.dart`:
-   - Decision logic: photos.isEmpty -> single PDF, photos.isNotEmpty -> folder
-   - Photo caption formatting for attachments list
-   - Multiple photos format as newline-separated list
-   - Export folder name uses MM-dd format
-2. [ ] E2E tests for header edits (manual run needed)
+### Steps
+1. Add filename prompt dialog with prefilled date-based name.
+2. Android: use directory picker + filename prompt, then write bytes directly.
+3. Desktop/iOS: keep save dialog but prefill suggested filename and allow edit.
+4. Ensure folder export still writes report PDF + photos.pdf.
 
-### Subphase 5.3 - Manual validation [CHECKLIST]
-1. [ ] Create entry with multiple contractors and unique personnel types
-2. [ ] Generate report, add contractor, ensure prime shown first
-3. [ ] Edit header location/weather and confirm persistence
-4. [ ] Export with photos and confirm report PDF + photos.pdf in folder
-
-Deliverable: Unit test coverage added (7 new tests); E2E tests require manual execution.
+### Tests
+- Unit test: filename dialog default prefilled with date format.
+- Unit test: save flow chooses folder export when photos exist, single PDF otherwise.
+- Manual device verification for export with and without photos.
 
 ---
 
 ## Files Likely Touched
-- `lib/features/entries/presentation/screens/entry_wizard_screen.dart`
+- `lib/features/entries/presentation/providers/calendar_format_provider.dart`
+- `lib/features/entries/presentation/screens/home_screen.dart`
 - `lib/features/entries/presentation/screens/report_screen.dart`
-- `lib/features/contractors/data/models/personnel_type.dart`
-- `lib/features/contractors/data/datasources/local/personnel_type_local_datasource.dart`
-- `lib/features/contractors/data/datasources/remote/personnel_type_remote_datasource.dart`
-- `lib/features/contractors/data/repositories/personnel_type_repository.dart`
-- `lib/features/contractors/presentation/providers/personnel_type_provider.dart`
+- `lib/features/entries/presentation/widgets/` (new shared contractor editor)
+- `lib/features/contractors/data/datasources/local/entry_contractors_local_datasource.dart` (new)
 - `lib/core/database/database_service.dart` (migration)
 - `lib/features/pdf/services/pdf_service.dart`
 - `lib/shared/testing_keys.dart`
 - `integration_test/patrol/REQUIRED_UI_KEYS.md`
-- `integration_test/patrol/helpers/patrol_test_helpers.dart`
-- `integration_test/patrol/e2e_tests/entry_lifecycle_test.dart`
-- `integration_test/patrol/e2e_tests/entry_management_test.dart`
-- `integration_test/patrol/e2e_tests/photo_flow_test.dart`
 
 ---
 
 ## Acceptance Criteria
-- Personnel types are contractor-scoped and migration preserves existing counts.
-- Adding personnel type only affects the selected contractor.
-- Entry wizard photo flow does not keep keyboard open or force Activities focus.
-- Report screen can add contractors and shows prime first.
-- Location and weather can be edited inline on report header.
-- Export folder contains report PDF + photos.pdf (when photos exist).
-- All updated E2E tests pass and REQUIRED_UI_KEYS.md is current.
+- Calendar height is 45 percent and collapses/expands on scroll without flicker.
+- Contractor editing (personnel + equipment) works in calendar report and report screen.
+- Contractor selection persists across sessions even with zero counts.
+- Header location and weather editable inline.
+- Export uses editable filename prompt and succeeds on Android.
+- Tests updated in same PRs as keys and UI changes.
