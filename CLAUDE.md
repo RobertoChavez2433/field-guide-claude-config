@@ -54,6 +54,9 @@ lib/
 - **NEVER** include "Co-Authored-By" in commits
 - User is sole author
 
+## Build Commands
+**CRITICAL**: Git Bash silently fails on Flutter. Always use `pwsh -Command "flutter clean && flutter build apk --release"`
+
 ## Data Flow
 ```
 Screen -> Provider -> Repository -> SQLite (local) -> Supabase (sync)
