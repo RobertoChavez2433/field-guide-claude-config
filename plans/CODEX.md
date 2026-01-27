@@ -367,3 +367,76 @@ Anything outside the above scope requires explicit approval.
 - `TestingKeys.dashboardToolboxCard`
 - `TestingKeys.settingsAutoLoadProjectToggle`
 - (Later phases) Keys for toolbox screens and form controls (define when UI exists).
+
+---
+
+## Appendix C: Per-PR Checklist Template (with Context)
+Use this at the top of each PR section to ensure completeness and test safety.
+
+### Checklist
+- **PR scope summary**: (1–3 sentences, concrete)
+- **Files touched**: (list all files)
+- **Keys added/changed**: (list keys; confirm updates to REQUIRED_UI_KEYS)
+- **DB changes**: (tables, migrations, user_version updates)
+- **Sync changes**: (table registration, adapters impacted)
+- **Test updates**: (unit/widget/golden/patrol updates + files)
+- **Manual verification**: (flows or devices to manually verify)
+- **Risk notes**: (why this PR could break tests or behavior)
+
+### Reasoning/Context
+- Forces every PR to declare scope and risk explicitly, preventing silent UI key or schema changes from slipping in without tests.
+- Ensures each PR documents the exact blast radius (files + tests), which reduces later debugging time.
+- Captures manual verification expectations up front (important for UI and export flows).
+
+---
+
+## Appendix D: Risk Log (with Reasoning)
+Track risks by phase with mitigation and test strategy. Update this as PRs progress.
+
+### Risk 1: Dashboard Locations → Toolbox replacement breaks Patrol flows
+- **Why it matters**: Patrol tests explicitly tap `TestingKeys.dashboardLocationsCard` in multiple files.
+- **Impact**: Immediate E2E failures; blocked CI.
+- **Mitigation**: Add `dashboardToolboxCard`, update tests in same PR, update REQUIRED_UI_KEYS.
+- **Validation**: Run Patrol subset in Phase 4.
+
+### Risk 2: Auto-load project causes tests expecting empty dashboard to fail
+- **Why it matters**: Auto-load changes the default state at launch.
+- **Impact**: Widget tests and Patrol flows may fail if they assert “No Project Selected”.
+- **Mitigation**: Add toggle; tests that need empty state should disable auto-load.
+- **Validation**: Add a Patrol toggle test and widget tests for both paths.
+
+### Risk 3: Natural sort changes expected order in existing tests
+- **Why it matters**: Tests already assume numeric ordering in helpers, but UI uses string compare.
+- **Impact**: Behavior changes are correct but tests might still assert old order.
+- **Mitigation**: Update `test/helpers/test_sorting.dart` and add explicit natural sort tests.
+- **Validation**: Run unit tests and any quantities flows that assert order.
+
+### Risk 4: Contractor dialog scroll wrapper changes layout/keys
+- **Why it matters**: Changing dialog layout can affect hit-testing or overlays.
+- **Impact**: Patrol tests that tap dropdown may fail.
+- **Mitigation**: Keep existing keys; ensure dropdown still opens and closes reliably.
+- **Validation**: Run contractor-related Patrol tests.
+
+### Risk 5: New tables break database tests or migrations
+- **Why it matters**: `database_service_test.dart` asserts tables and version.
+- **Impact**: Unit test failures and runtime migrations if user_version not updated.
+- **Mitigation**: Update tests and migrations in same PR; bump version.
+- **Validation**: Run `test/core/database/database_service_test.dart` and `flutter test`.
+
+### Risk 6: Sync registration gaps lead to silent data loss
+- **Why it matters**: Toolbox data must sync; missing registration silently drops records.
+- **Impact**: Data consistency and future sync failures.
+- **Mitigation**: Explicitly add new tables in sync orchestration and test registration.
+- **Validation**: Add a lightweight sync registration test or a manual sync sanity check.
+
+### Risk 7: PDF export integration breaks existing PDF tests
+- **Why it matters**: PDF logic already exists; new forms might interfere.
+- **Impact**: Regression in PDF tests or export flows.
+- **Mitigation**: Keep PDF service changes isolated; add targeted integration test.
+- **Validation**: Run PDF tests and manual export check.
+
+### Risk 8: Patrol key drift across phases
+- **Why it matters**: Patrol relies on stable keys in REQUIRED_UI_KEYS.
+- **Impact**: Test flakiness or failures across PRs.
+- **Mitigation**: Enforce key updates in the same PR and remove old keys only after `rg` shows no references.
+- **Validation**: Run Patrol subset after each PR with key changes.

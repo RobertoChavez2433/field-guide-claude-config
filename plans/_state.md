@@ -1,65 +1,57 @@
 # Session State
 
-**Last Updated**: 2026-01-26 | **Session**: 129
+**Last Updated**: 2026-01-26 | **Session**: 130
 
 ## Current Phase
-- **Phase**: Toolbox Feature Planning - Complete
-- **Status**: Detailed multi-PR plan finalized and saved
+- **Phase**: Phase 0 Complete - Baseline & Sorting Tests
+- **Status**: Ready for Phase 1 (Auto-Load Project)
 
-## Last Session (Session 129)
+## Last Session (Session 130)
+**Summary**: Completed Phase 0 of the toolbox implementation plan.
+
+**Phase 0 Completed**:
+- **Subphase 0.1**: Baseline test run captured
+  - Analyzer: 71 issues (3 errors pre-existing: `dailyEntryId` getter, `partlyCloudy` enum)
+  - Unit tests: 565 passing, 125 failing (pre-existing mock/fixture issues)
+  - Database version: 12
+- **Subphase 0.2**: Natural sort utility and tests created
+  - `lib/shared/utils/natural_sort.dart` - Full implementation
+  - `test/shared/natural_sort_test.dart` - 20 tests covering all edge cases
+  - Updated `lib/shared/utils/utils.dart` barrel export
+
+**Files Created/Modified**:
+- `lib/shared/utils/natural_sort.dart` (new)
+- `test/shared/natural_sort_test.dart` (new)
+- `lib/shared/utils/utils.dart` (updated)
+
+## Previous Session (Session 129)
 **Summary**: Saved comprehensive toolbox implementation plan to `.claude/plans/toolbox-implementation-plan.md`. Plan covers 11 phases across multiple PRs with detailed risk analysis and test requirements.
 
-## Previous Session (Session 128)
-**Summary**: Planning session for 4 new features. Created detailed implementation plan with user-clarified requirements.
-
-**Features Planned**:
-1. **Auto-load last selected project** - Remember and load last project on app launch
-2. **Pay items numeric sorting** - Fix lexicographic to numeric sorting
-3. **Contractor dialog dropdown fix** - Fix Type dropdown clipping
-4. **Toolbox feature** - Replace Locations card with Toolbox (Forms, Calculator, Gallery, To-Do's)
-
-**Key Clarifications**:
-- Forms: MDOT 1174R (Concrete) and 0582B (Density) templates
-- Hybrid input UI: Quick-entry text box → smart parsing → structured fields
-- Auto-fill common fields from project/entry data
-- Add Test button for multi-row data (multiple trucks/tests)
-- Calculator integration for cubic yard calculations
-- PDF template filling for export
-- Full Supabase sync from start
-- Locations card removed from dashboard (feature stays in project edit)
-
-**Files Created**:
-- `.claude/plans/toolbox-implementation-plan.md` - Full implementation plan
-
 ## Active Plan
-**Status**: READY FOR IMPLEMENTATION
+**Status**: PHASE 0 COMPLETE - READY FOR PHASE 1
 **File**: `.claude/plans/toolbox-implementation-plan.md`
 
-**8 PRs Planned**:
-1. PR 1: Quick Fixes (sorting, dropdown)
-2. PR 2: Auto-Load Project Setting
-3. PR 3: Toolbox Foundation (schema, routing, dashboard)
-4. PR 4: Forms Data Layer
-5. PR 5: Forms UI + Smart Parsing
-6. PR 6: Forms PDF Export
-7. PR 7: Calculator
-8. PR 8: Gallery & To-Do's
+**Progress**:
+- [x] Phase 0: Planning Baseline + Definitions (COMPLETE)
+- [ ] Phase 1: Auto-Load Last Project (PR 1)
+- [ ] Phase 2: Pay Items Natural Sorting (PR 2)
+- [ ] Phase 3: Contractor Dialog Dropdown Fix (PR 3)
+- [ ] Phase 4-11: Toolbox Features (PRs 4-11)
 
 ## Key Decisions
-- Hybrid input approach for forms (best of both worlds)
-- Smart parsing with form-specific keywords
-- Common fields auto-fill on ALL open forms
-- Built-in templates only (no custom form builder for MVP)
-- One form instance per daily entry
+- Natural sort: Case-sensitive ASCII order (uppercase before lowercase)
+- Decimal handling: Dot treated as text segment
+- Negative handling: Dash treated as text character
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Implement PR 1: Quick Fixes | READY | Plan file |
-| Implement PR 2-8: Toolbox | READY | Plan file |
+| Phase 1: Auto-Load Project | NEXT | Plan Phase 1 |
+| Phase 2: Pay Items Sorting | READY | Plan Phase 2 |
+| Phase 3: Dropdown Fix | READY | Plan Phase 3 |
 
 ## Open Questions
-None - all requirements clarified during planning
+None
 
 ## Reference
 - Branch: `main`
