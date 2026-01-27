@@ -1,46 +1,51 @@
 # Session State
 
-**Last Updated**: 2026-01-26 | **Session**: 139
+**Last Updated**: 2026-01-26 | **Session**: 140
 
 ## Current Phase
-- **Phase**: Phase 10 Complete - Gallery
-- **Status**: Ready for Phase 11 (To-Do's)
+- **Phase**: Phase 11 Complete - To-Do's
+- **Status**: Toolbox Implementation Plan COMPLETE
 
-## Last Session (Session 139)
-**Summary**: Completed Phase 10 of the toolbox implementation plan - Gallery.
+## Last Session (Session 140)
+**Summary**: Completed Phase 11 of the toolbox implementation plan - To-Do's.
 
-**Phase 10 Completed**:
-- **Subphase 10.1**: Gallery screen - Grid view of project photos with filtering
+**Phase 11 Completed**:
+- **Subphase 11.1**: TodoItem model, datasource, provider, and screen
 
 **Files Created**:
-- `lib/features/toolbox/presentation/providers/gallery_provider.dart` - State management for gallery with filtering
-- `lib/features/toolbox/presentation/screens/gallery_screen.dart` - Gallery UI with grid view, filters, and photo viewer
+- `lib/features/toolbox/data/models/todo_item.dart` - Model with priority levels and due dates
+- `lib/features/toolbox/data/datasources/local/todo_item_local_datasource.dart` - SQLite CRUD
+- `lib/features/toolbox/presentation/providers/todo_provider.dart` - State management with filtering/sorting
+- `lib/features/toolbox/presentation/screens/todos_screen.dart` - Full UI with add/edit/complete/delete
 
 **Files Modified**:
+- `lib/features/toolbox/data/models/models.dart` - Barrel export
+- `lib/features/toolbox/data/datasources/local/local_datasources.dart` - Barrel export
 - `lib/features/toolbox/presentation/providers/providers.dart` - Barrel export
 - `lib/features/toolbox/presentation/screens/screens.dart` - Barrel export
-- `lib/features/toolbox/presentation/screens/toolbox_home_screen.dart` - Navigate to gallery
-- `lib/core/router/app_router.dart` - Gallery route
-- `lib/main.dart` - GalleryProvider registration
-- `lib/shared/testing_keys.dart` - Gallery TestingKeys
+- `lib/features/toolbox/presentation/screens/toolbox_home_screen.dart` - Navigate to todos
+- `lib/core/router/app_router.dart` - Todos route
+- `lib/main.dart` - TodoProvider registration
+- `lib/shared/testing_keys.dart` - Todo TestingKeys
 
 **Features Implemented**:
-- Grid view of all project photos using PhotoThumbnail widget
-- Filter by date range (today, this week, this month, custom)
-- Filter by entry
-- Active filters bar with quick clear
-- Photo count display
-- Full-screen photo viewer with swipe navigation
-- Photo info display (caption, date, notes)
-- Pull-to-refresh support
-- Empty state handling (no photos, no matches)
-- Error state with retry
+- TodoItem model with priority (low/normal/high) and optional due dates
+- Due date color coding (overdue=red, due today=orange)
+- High priority flag indicator
+- Filter by status (all/active/completed)
+- Sort options (default/due date/priority/newest)
+- Add/edit todos via dialog
+- Toggle completion with checkbox
+- Delete individual todos
+- Clear all completed todos
+- Empty state and error handling
+- Pull-to-refresh
 
-## Previous Session (Session 138)
-**Summary**: Completed Phase 9 - Calculator
+## Previous Session (Session 139)
+**Summary**: Completed Phase 10 - Gallery
 
 ## Active Plan
-**Status**: PHASE 10 COMPLETE - READY FOR PHASE 11
+**Status**: COMPLETE
 **File**: `.claude/plans/toolbox-implementation-plan.md`
 
 **Progress**:
@@ -55,20 +60,19 @@
 - [x] Phase 8: PDF Export (PR 8) (COMPLETE)
 - [x] Phase 9: Calculator (PR 9) (COMPLETE)
 - [x] Phase 10: Gallery (PR 10) (COMPLETE)
-- [ ] Phase 11: To-Do's
+- [x] Phase 11: To-Do's (PR 11) (COMPLETE)
 
 ## Key Decisions
-- Gallery reuses existing PhotoProvider for photo loading
-- Separate GalleryProvider manages filter state
-- PhotoThumbnail widget with caption overlay style
-- Full-screen viewer with PageView for swipe navigation
-- Filters: date range + entry selection
+- TodoItem uses priority enum (low=0, normal=1, high=2)
+- Due date stored as ISO8601 string, nullable
+- Filtering and sorting done in provider (client-side)
+- Reuses project context from ProjectProvider
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Phase 11: To-Do's | NEXT | Plan Phase 11 |
-| Sync registration | DEFERRED | Future phase |
+| Sync registration for toolbox tables | DEFERRED | Future enhancement |
+| Unit tests for todo CRUD | ENHANCEMENT | Future session |
 
 ## Open Questions
 None
