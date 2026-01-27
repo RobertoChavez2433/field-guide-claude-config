@@ -1,83 +1,65 @@
 # Session State
 
-**Last Updated**: 2026-01-26 | **Session**: 140
+**Last Updated**: 2026-01-27 | **Session**: 141
 
 ## Current Phase
-- **Phase**: Phase 11 Complete - To-Do's
-- **Status**: Toolbox Implementation Plan COMPLETE
+- **Phase**: Toolbox Remediation Required
+- **Status**: Audit Complete - Fixes Needed
 
-## Last Session (Session 140)
-**Summary**: Completed Phase 11 of the toolbox implementation plan - To-Do's.
-
-**Phase 11 Completed**:
-- **Subphase 11.1**: TodoItem model, datasource, provider, and screen
+## Last Session (Session 141)
+**Summary**: Comprehensive audit of toolbox implementation (Phases 0-11) against the implementation plan. Identified critical gaps and created remediation plan.
 
 **Files Created**:
-- `lib/features/toolbox/data/models/todo_item.dart` - Model with priority levels and due dates
-- `lib/features/toolbox/data/datasources/local/todo_item_local_datasource.dart` - SQLite CRUD
-- `lib/features/toolbox/presentation/providers/todo_provider.dart` - State management with filtering/sorting
-- `lib/features/toolbox/presentation/screens/todos_screen.dart` - Full UI with add/edit/complete/delete
+- `.claude/plans/toolbox-remediation-plan.md` - Full gap analysis and fix plan
 
-**Files Modified**:
-- `lib/features/toolbox/data/models/models.dart` - Barrel export
-- `lib/features/toolbox/data/datasources/local/local_datasources.dart` - Barrel export
-- `lib/features/toolbox/presentation/providers/providers.dart` - Barrel export
-- `lib/features/toolbox/presentation/screens/screens.dart` - Barrel export
-- `lib/features/toolbox/presentation/screens/toolbox_home_screen.dart` - Navigate to todos
-- `lib/core/router/app_router.dart` - Todos route
-- `lib/main.dart` - TodoProvider registration
-- `lib/shared/testing_keys.dart` - Todo TestingKeys
+**Key Findings**:
+1. **Sync not registered** - toolbox data is LOCAL ONLY (Phase 4.3 skipped)
+2. **PDF field names not mapped** - exports likely blank (Phase 8.1)
+3. **Auto-fill limited** - only project_number and date (Phase 6.2)
+4. **8 missing tests** - widget and unit tests required by plan
+5. **IDR attachments not integrated** (Phase 8.2)
 
-**Features Implemented**:
-- TodoItem model with priority (low/normal/high) and optional due dates
-- Due date color coding (overdue=red, due today=orange)
-- High priority flag indicator
-- Filter by status (all/active/completed)
-- Sort options (default/due date/priority/newest)
-- Add/edit todos via dialog
-- Toggle completion with checkbox
-- Delete individual todos
-- Clear all completed todos
-- Empty state and error handling
-- Pull-to-refresh
-
-## Previous Session (Session 139)
-**Summary**: Completed Phase 10 - Gallery
+## Previous Session (Session 140)
+**Summary**: Completed Phase 11 - To-Do's
 
 ## Active Plan
-**Status**: COMPLETE
-**File**: `.claude/plans/toolbox-implementation-plan.md`
+**Status**: REMEDIATION NEEDED
+**File**: `.claude/plans/toolbox-remediation-plan.md`
 
-**Progress**:
-- [x] Phase 0: Planning Baseline + Definitions (COMPLETE)
-- [x] Phase 1: Auto-Load Last Project (PR 1) (COMPLETE)
-- [x] Phase 2: Pay Items Natural Sorting (PR 2) (COMPLETE)
-- [x] Phase 3: Contractor Dialog Dropdown Fix (PR 3) - SKIPPED
-- [x] Phase 4: Toolbox Foundation (PR 4) (COMPLETE)
-- [x] Phase 5: Forms Data Layer (PR 5) (COMPLETE)
-- [x] Phase 6: Forms UI (PR 6) (COMPLETE)
-- [x] Phase 7: Smart Parsing Engine (PR 7) (COMPLETE)
-- [x] Phase 8: PDF Export (PR 8) (COMPLETE)
-- [x] Phase 9: Calculator (PR 9) (COMPLETE)
-- [x] Phase 10: Gallery (PR 10) (COMPLETE)
-- [x] Phase 11: To-Do's (PR 11) (COMPLETE)
+**Critical Fixes Required**:
+- [ ] A1: Fix PDF field mapping (investigate actual field names)
+- [ ] A2: Expand auto-fill for contractor, location, inspector
+- [ ] A3: Create remote datasources and register sync
+
+**Missing Tests**:
+- [ ] Widget tests: forms list, calculator, gallery, todos screens
+- [ ] Unit tests: datasource CRUD, todo items
+
+## Completed Phases (All 11)
+- [x] Phase 0-11 code implemented
+- [ ] Phase 4.3 sync registration SKIPPED
+- [ ] Phase 8 PDF field mapping INCOMPLETE
+- [ ] Phase 6.2 auto-fill INCOMPLETE
+- [ ] Tests required by plan INCOMPLETE
 
 ## Key Decisions
-- TodoItem uses priority enum (low=0, normal=1, high=2)
-- Due date stored as ISO8601 string, nullable
-- Filtering and sorting done in provider (client-side)
-- Reuses project context from ProjectProvider
+- Sync registration confirmed as critical (not optional)
+- PDF debug output needed to discover actual template field names
+- Tests required by plan must be implemented
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Sync registration for toolbox tables | DEFERRED | Future enhancement |
-| Unit tests for todo CRUD | ENHANCEMENT | Future session |
+| PDF field mapping | CRITICAL | Issue 2 in remediation plan |
+| Sync registration | CRITICAL | Issue 1 in remediation plan |
+| Auto-fill enhancement | CRITICAL | Issue 3 in remediation plan |
+| IDR attachments | MEDIUM | Issue 4 in remediation plan |
+| Missing tests (8) | SHOULD HAVE | Listed in remediation plan |
 
 ## Open Questions
 None
 
 ## Reference
 - Branch: `main`
-- Plan: `.claude/plans/toolbox-implementation-plan.md`
-- Code Review: `.claude/plans/toolbox-phases-5-8-code-review.md`
+- Implementation Plan: `.claude/plans/toolbox-implementation-plan.md`
+- Remediation Plan: `.claude/plans/toolbox-remediation-plan.md`

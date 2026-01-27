@@ -24,6 +24,13 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-27 (Session 141): Toolbox Implementation Audit
+- Comprehensive audit of Phases 0-11 against implementation plan
+- Found 3 critical issues: sync not registered, PDF field mapping wrong, auto-fill limited
+- Found 2 medium issues: IDR attachments missing, table row PDF filling broken
+- Found 8 missing tests required by plan
+- Created `.claude/plans/toolbox-remediation-plan.md` with full gap analysis
+
 ### 2026-01-26 (Session 128): Toolbox Feature Planning
 - Created comprehensive plan for 4 features: auto-load project, pay items sorting, contractor dropdown fix, Toolbox
 - Toolbox: Forms (MDOT 1174R, 0582B), Calculator, Gallery, To-Do's
