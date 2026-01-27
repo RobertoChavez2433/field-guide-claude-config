@@ -24,6 +24,15 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-26 (Session 128): Toolbox Feature Planning
+- Created comprehensive plan for 4 features: auto-load project, pay items sorting, contractor dropdown fix, Toolbox
+- Toolbox: Forms (MDOT 1174R, 0582B), Calculator, Gallery, To-Do's
+- Clarified Forms workflow: hybrid input UI, smart parsing, auto-fill, multi-row data
+- PDF template filling for form export with IDR integration
+- Full Supabase sync schema designed
+- 8 PRs planned for implementation
+- Files: `.claude/plans/toasty-skipping-lamport.md`, `.claude/plans/_state.md`
+
 ### 2026-01-26 (Session 127): Contractor-Scoped Personnel Types
 - Implemented contractor-scoped personnel types (each contractor has independent types)
 - Added `createDefaultTypesForContractor()` to PersonnelTypeProvider
