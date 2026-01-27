@@ -1,70 +1,57 @@
 # Session State
 
-**Last Updated**: 2026-01-27 | **Session**: 142
+**Last Updated**: 2026-01-27 | **Session**: 143
 
 ## Current Phase
-- **Phase**: Toolbox Remediation Phase A Complete
-- **Status**: Critical Fixes Implemented
+- **Phase**: Toolbox Implementation PR 2 Complete
+- **Status**: Contractor Dialog Fix Implemented
 
-## Last Session (Session 142)
-**Summary**: Implemented Phase A of toolbox remediation - all 3 critical fixes.
+## Last Session (Session 143)
+**Summary**: Code reviewed Phase A, then implemented PR 2 (Contractor Dialog Dropdown Fix).
+
+**Review Findings**:
+- Phase A (PRs 3, 4, 5) well-executed and complete
+- Gap noted: Subphase 5.3 (queue operations) not implemented - deferred to Phase 5
 
 **Changes Made**:
-1. **A1: PDF Field Mapping** - Enhanced `form_pdf_service.dart` with flexible field name matching (snake_case, camelCase, PascalCase, MDOT-specific patterns)
-2. **A2: Auto-Fill Enhancement** - Expanded `_autoFillFromContext()` to include contractor (from prime), location (from entry), and inspector (from preferences)
-3. **A3: Sync Registration** - Created 4 remote datasources and registered in SyncService
-
-**Files Created**:
-- `lib/features/toolbox/data/datasources/remote/inspector_form_remote_datasource.dart`
-- `lib/features/toolbox/data/datasources/remote/form_response_remote_datasource.dart`
-- `lib/features/toolbox/data/datasources/remote/todo_item_remote_datasource.dart`
-- `lib/features/toolbox/data/datasources/remote/calculation_history_remote_datasource.dart`
-- `lib/features/toolbox/data/datasources/remote/remote_datasources.dart`
+- PR 2: Contractor dialog dropdown fix
+  - Wrapped content in `SingleChildScrollView`
+  - Added `isExpanded: true` to dropdown
+  - Added `menuMaxHeight: 300` to dropdown
 
 **Files Modified**:
-- `lib/features/toolbox/data/services/form_pdf_service.dart` - Enhanced field matching
-- `lib/features/toolbox/presentation/screens/form_fill_screen.dart` - Expanded auto-fill
-- `lib/features/toolbox/data/datasources/datasources.dart` - Added remote exports
-- `lib/services/sync_service.dart` - Registered toolbox datasources
+- `lib/features/projects/presentation/screens/project_setup_screen.dart` - Dialog UI fixes
 
-## Previous Session (Session 141)
-**Summary**: Comprehensive audit of toolbox implementation. Created remediation plan.
+## Previous Session (Session 142)
+**Summary**: Implemented Phase A of toolbox remediation - all 3 critical fixes.
 
 ## Active Plan
-**Status**: Phase A COMPLETE
-**File**: `.claude/plans/toolbox-remediation-plan.md`
+**Status**: PR 2 COMPLETE
+**File**: `.claude/plans/toolbox-implementation-plan.md`
 
 **Completed**:
-- [x] A1: Fix PDF field mapping (flexible name matching)
-- [x] A2: Expand auto-fill for contractor, location, inspector
-- [x] A3: Create remote datasources and register sync
+- [x] PR 1: Dashboard Order + Auto-Load (done in earlier session)
+- [x] PR 2: Contractor Dialog Dropdown Fix
+- [x] PR 3: PDF Field Mapping + Table Rows (Phase A)
+- [x] PR 4: Form Auto-Fill Expansion (Phase A)
+- [x] PR 5.1-5.2: Sync Registration (Phase A)
 
-**Remaining (Phase B & C)**:
-- [ ] B1: Widget tests - forms list, calculator, gallery, todos screens
-- [ ] B2: Unit tests - datasource CRUD, todo items
-- [ ] C1: IDR attachments integration
-- [ ] C2: Table row PDF filling improvements
-
-## Completed Phases (All 11 + Phase A Remediation)
-- [x] Phase 0-11 code implemented
-- [x] Phase 4.3 sync registration COMPLETE
-- [x] Phase 8 PDF field mapping ENHANCED
-- [x] Phase 6.2 auto-fill EXPANDED
-- [ ] Tests required by plan INCOMPLETE
+**Remaining**:
+- [ ] PR 5.3: Queue operations for toolbox CRUD
+- [ ] PR 6: IDR Attachment Integration
+- [ ] PR 7: Natural Sort Spec Alignment
+- [ ] PR 8: Missing Tests Bundle (B1, B2)
 
 ## Key Decisions
-- PDF field matching uses multiple name variation strategies
-- Auto-fill gets inspector name from SharedPreferences
-- Sync uses same pattern as other features (BaseRemoteDatasource)
+- Subphase 5.3 (queue operations) deferred to when we reach Phase 5.3
+- PR 2 uses same pattern as `_showBidItemDialog()` for reference
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| PDF field mapping | COMPLETE | Enhanced with flexible matching |
-| Sync registration | COMPLETE | 4 remote datasources created |
-| Auto-fill enhancement | COMPLETE | Contractor, location, inspector |
-| IDR attachments | MEDIUM | Issue 4 in remediation plan |
-| Missing tests (8) | SHOULD HAVE | Phase B in remediation plan |
+| Queue operations (5.3) | PENDING | Toolbox CRUD doesn't queue to sync |
+| IDR attachments | PENDING | PR 6 |
+| Missing tests (8) | PENDING | PR 8 |
 
 ## Open Questions
 None

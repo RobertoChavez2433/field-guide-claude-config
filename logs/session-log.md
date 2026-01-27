@@ -24,6 +24,19 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-27 (Session 143): PR 2 - Contractor Dialog Fix
+- Code reviewed Phase A (PRs 3-5) - all well-implemented, gap noted for Subphase 5.3
+- Implemented PR 2: Contractor Dialog Dropdown Fix
+- Added SingleChildScrollView, isExpanded, menuMaxHeight to contractor dialog
+- Files: project_setup_screen.dart
+
+### 2026-01-27 (Session 142): Phase A Remediation
+- Implemented all 3 critical fixes from toolbox audit
+- A1: Enhanced PDF field matching with flexible name variations
+- A2: Expanded auto-fill for contractor, location, inspector
+- A3: Created 4 remote datasources and registered in SyncService
+- Files: form_pdf_service.dart, form_fill_screen.dart, sync_service.dart, 5 new datasource files
+
 ### 2026-01-27 (Session 141): Toolbox Implementation Audit
 - Comprehensive audit of Phases 0-11 against implementation plan
 - Found 3 critical issues: sync not registered, PDF field mapping wrong, auto-fill limited
