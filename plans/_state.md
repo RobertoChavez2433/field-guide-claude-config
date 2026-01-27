@@ -1,48 +1,51 @@
 # Session State
 
-**Last Updated**: 2026-01-26 | **Session**: 137
+**Last Updated**: 2026-01-26 | **Session**: 138
 
 ## Current Phase
-- **Phase**: Phase 8 Complete - PDF Export
-- **Status**: Ready for Phase 9 (Calculator)
+- **Phase**: Phase 9 Complete - Calculator
+- **Status**: Ready for Phase 10 (Gallery)
 
-## Last Session (Session 137)
-**Summary**: Completed Phase 8 of the toolbox implementation plan - PDF Export.
+## Last Session (Session 138)
+**Summary**: Completed Phase 9 of the toolbox implementation plan - Calculator.
 
-**Phase 8 Completed**:
-- **Subphase 8.1**: PDF mapping - Created FormPdfService with template filling
-- **Subphase 8.2**: Export storage - Integrated export into FormFillScreen with preview/save/share options
+**Phase 9 Completed**:
+- **Subphase 9.1**: Domain logic - HMA and Concrete calculators with history storage
+- **Subphase 9.2**: UI integration - Calculator screen with tabs, input fields, results display, history
 
 **Files Created**:
-- `lib/features/toolbox/data/services/form_pdf_service.dart` - PDF export service
-- `test/features/toolbox/services/form_pdf_service_test.dart` - Unit tests
-- `.claude/plans/toolbox-phases-5-8-code-review.md` - Code review for phases 5-8
+- `lib/features/toolbox/data/models/calculation_history.dart` - CalculationHistory model with CalculationType enum
+- `lib/features/toolbox/data/datasources/local/calculation_history_local_datasource.dart` - Local datasource
+- `lib/features/toolbox/data/services/calculator_service.dart` - HMA and Concrete calculation formulas
+- `lib/features/toolbox/presentation/providers/calculator_provider.dart` - State management for calculator
+- `lib/features/toolbox/presentation/screens/calculator_screen.dart` - Calculator UI with tabs
+- `test/features/toolbox/services/calculator_service_test.dart` - 17 unit tests
 
 **Files Modified**:
+- `lib/features/toolbox/data/models/models.dart` - Barrel export
+- `lib/features/toolbox/data/datasources/local/local_datasources.dart` - Barrel export
 - `lib/features/toolbox/data/services/services.dart` - Barrel export
-- `lib/features/toolbox/presentation/screens/form_fill_screen.dart` - Export button and dialog
-- `lib/shared/testing_keys.dart` - Export TestingKeys (formExportButton, formExportDialog, etc.)
+- `lib/features/toolbox/presentation/providers/providers.dart` - Barrel export
+- `lib/features/toolbox/presentation/screens/screens.dart` - Barrel export
+- `lib/features/toolbox/presentation/screens/toolbox_home_screen.dart` - Navigate to calculator
+- `lib/core/router/app_router.dart` - Calculator route
+- `lib/main.dart` - CalculatorProvider registration
+- `lib/shared/testing_keys.dart` - Calculator TestingKeys
 
 **Features Implemented**:
-- PDF template loading from assets
-- Field mapping from response data to PDF fields
-- Table rows formatted as summary in notes field
-- Platform-specific save handling (Android directory picker, Desktop save dialog)
-- Preview PDF (system viewer)
-- Share PDF (system share)
-- Save PDF (file picker)
-- Response status updated to "exported" after export
+- HMA tonnage calculation: (Area × Thickness × Density) ÷ 2000 = Tons
+- Concrete yards calculation: (Length × Width × Thickness) ÷ 27 = Cubic Yards
+- Tab-based UI for switching between HMA and Concrete
+- Input validation with error messages
+- Result display with copy/save/clear options
+- Calculation history storage and display
+- Default HMA density of 145 pcf
 
-**Code Review Findings**:
-- Overall assessment: Good - Production Ready
-- No critical issues
-- Suggestions: Service injection for testability, file decomposition for form_fill_screen.dart
-
-## Previous Session (Session 136)
-**Summary**: Completed Phase 7 - Smart Parsing Engine
+## Previous Session (Session 137)
+**Summary**: Completed Phase 8 - PDF Export
 
 ## Active Plan
-**Status**: PHASE 8 COMPLETE - READY FOR PHASE 9
+**Status**: PHASE 9 COMPLETE - READY FOR PHASE 10
 **File**: `.claude/plans/toolbox-implementation-plan.md`
 
 **Progress**:
@@ -55,21 +58,24 @@
 - [x] Phase 6: Forms UI (PR 6) (COMPLETE)
 - [x] Phase 7: Smart Parsing Engine (PR 7) (COMPLETE)
 - [x] Phase 8: PDF Export (PR 8) (COMPLETE)
-- [ ] Phase 9-11: Remaining Toolbox Features
+- [x] Phase 9: Calculator (PR 9) (COMPLETE)
+- [ ] Phase 10-11: Remaining Toolbox Features
 
 ## Key Decisions
-- PDF service uses existing Syncfusion PDF patterns from PdfService
-- Export dialog offers preview/save/share options
-- Table rows summarized in notes field when no dedicated results field exists
-- Response status tracks export state
+- Calculator uses standard construction formulas (HMA and Concrete)
+- Default HMA density of 145 pcf (common for asphalt)
+- Tab-based UI for easy switching between calculator types
+- History stored locally, linked to project when available
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Phase 9: Calculator | NEXT | Plan Phase 9 |
-| Phase 10: Gallery | PLANNED | Plan Phase 10 |
+| Phase 10: Gallery | NEXT | Plan Phase 10 |
 | Phase 11: To-Do's | PLANNED | Plan Phase 11 |
 | Sync registration | DEFERRED | Future phase |
+
+## Open Questions
+None
 
 ## Open Questions
 None
