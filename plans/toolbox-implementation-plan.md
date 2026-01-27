@@ -1,669 +1,507 @@
-# Multi-Feature Implementation Plan
+# Multi-Feature Implementation Plan (Detailed, Multi-PR)
 
-## Overview
+**Last Updated**: 2026-01-26 (Review & Amendments Applied)
 
-Four features to implement:
-1. **Auto-load last selected project** - Remember and load last project on app launch
-2. **Pay items numeric sorting** - Fix "1, 10, 2" to be "1, 2, 10"
-3. **Contractor dialog dropdown fix** - Fix Type dropdown clipping
-4. **Toolbox** - Replace Locations card (RIGHT side) with Toolbox containing Forms, Calculator, Gallery, To-Do's
+## Scope Summary (Do Not Drift)
+This plan covers four features only:
+1. Auto-load last selected project (with a settings toggle).
+2. Pay items natural numeric sorting.
+3. Contractor dialog dropdown clipping fix.
+4. Toolbox (replace dashboard Locations stat card with Toolbox entry point, plus Forms/Calculator/Gallery/To-Do's feature set).
 
----
-
-## Feature 1: Auto-Load Last Selected Project
-
-### Problem
-Dashboard shows no project when re-entering app. User wants last project auto-loaded.
-
-### Solution
-Create `ProjectSettingsProvider` following `ThemeProvider` pattern.
-
-### Files
-
-| File | Changes |
-|------|---------|
-| `lib/features/projects/presentation/providers/project_settings_provider.dart` | **CREATE** |
-| `lib/features/projects/presentation/providers/project_provider.dart` | Save selected project ID |
-| `lib/main.dart` | Register provider |
-| `lib/features/dashboard/presentation/screens/dashboard_screen.dart` | Auto-load on init |
-| `lib/features/settings/presentation/screens/settings_screen.dart` | Add toggle |
-
-### Implementation
-
-```dart
-// project_settings_provider.dart
-class ProjectSettingsProvider extends ChangeNotifier {
-  static const String _lastProjectKey = 'last_selected_project_id';
-  static const String _autoLoadKey = 'auto_load_last_project';
-
-  String? _lastProjectId;
-  bool _autoLoadEnabled = true;
-
-  Future<void> setLastProject(String? projectId) async {
-    _lastProjectId = projectId;
-    final prefs = await SharedPreferences.getInstance();
-    if (projectId != null) {
-      await prefs.setString(_lastProjectKey, projectId);
-    } else {
-      await prefs.remove(_lastProjectKey);
-    }
-  }
-}
-```
+Anything outside the above scope requires explicit approval.
 
 ---
 
-## Feature 2: Pay Items Numeric Sorting
-
-### Problem
-`lib/features/quantities/presentation/providers/bid_item_provider.dart:29-31`:
-```dart
-items.sort((a, b) => a.itemNumber.compareTo(b.itemNumber)); // String comparison
-```
-Results in: "1, 10, 2, 20" instead of "1, 2, 10, 20"
-
-### Solution
-Natural sort comparison.
-
-### Files
-
-| File | Changes |
-|------|---------|
-| `lib/shared/utils/natural_sort.dart` | **CREATE** |
-| `lib/features/quantities/presentation/providers/bid_item_provider.dart` | Use natural sort |
-
-### Implementation
-
-```dart
-// natural_sort.dart
-int naturalCompare(String a, String b) {
-  final regExp = RegExp(r'(\d+)|(\D+)');
-  final partsA = regExp.allMatches(a).map((m) => m.group(0)!).toList();
-  final partsB = regExp.allMatches(b).map((m) => m.group(0)!).toList();
-
-  for (int i = 0; i < partsA.length && i < partsB.length; i++) {
-    final numA = int.tryParse(partsA[i]);
-    final numB = int.tryParse(partsB[i]);
-    int result;
-    if (numA != null && numB != null) {
-      result = numA.compareTo(numB);
-    } else {
-      result = partsA[i].compareTo(partsB[i]);
-    }
-    if (result != 0) return result;
-  }
-  return partsA.length.compareTo(partsB.length);
-}
-```
+## Baseline State (Verified 2026-01-26)
+- **Database version**: 12
+- **Current tables**: 14 (projects, locations, contractors, equipment, bid_items, daily_entries, personnel_types, entry_personnel, entry_personnel_counts, entry_equipment, entry_contractors, entry_quantities, photos, sync_queue)
+- **Analyzer status**: 0 errors
+- **Test suite**: 363 passing
 
 ---
 
-## Feature 3: Contractor Dialog Dropdown Fix
-
-### Problem
-Type dropdown clips in Add Contractor dialog (screenshot provided).
-
-### Root Cause
-`lib/features/projects/presentation/screens/project_setup_screen.dart:604-676`:
-- `AlertDialog` with `Column(mainAxisSize: MainAxisSize.min)` clips dropdown overlay
-
-### Solution
-Wrap in `SingleChildScrollView`.
-
-### Files
-
-| File | Changes |
-|------|---------|
-| `lib/features/projects/presentation/screens/project_setup_screen.dart` | Fix `_showAddContractorDialog()` |
-
-### Implementation
-
-```dart
-AlertDialog(
-  content: SingleChildScrollView(  // ADD THIS
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        TextField(...),
-        DropdownButtonFormField<ContractorType>(
-          isExpanded: true,
-          menuMaxHeight: 300,  // ADD THIS
-          ...
-        ),
-      ],
-    ),
-  ),
-)
-```
+## Ground Rules (Non-Negotiable)
+- No test breakages between PRs.
+- Any UI key changes must ship with test updates in the same PR.
+- Update `integration_test/patrol/REQUIRED_UI_KEYS.md` in the same PR as any key change.
+- Schema changes require `DatabaseService` migration + `user_version` bump + `test/core/database/database_service_test.dart` updates in the same PR.
+- Do not remove old keys until `rg` confirms no references remain.
+- Locations feature stays available in Project Setup; only the dashboard card is replaced.
 
 ---
 
-## Feature 4: Toolbox
-
-### Overview
-Replace Locations card on dashboard (RIGHT side) with Toolbox card leading to:
-- **Forms** - Inspector forms linked to Test Results, exportable with IDR
-- **Calculator** - HMA yield, Concrete calcs, measurement calculator
-- **Gallery** - All project photos
-- **To-Do's** - Inspector notes/tasks
-
-### User Priority
-> "Start with 1 or 2 forms and get the data pathing right first"
-
----
-
-### Phase 1: Foundation
-
-#### Database Schema
-**File**: `lib/core/database/database_service.dart`
-
-```sql
--- Inspector Forms
-CREATE TABLE inspector_forms (
-  id TEXT PRIMARY KEY,
-  project_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  description TEXT,
-  form_fields TEXT NOT NULL,  -- JSON
-  is_active INTEGER DEFAULT 1,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL,
-  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-);
-
--- Form Responses (links to daily_entries for Test Results)
-CREATE TABLE form_responses (
-  id TEXT PRIMARY KEY,
-  form_id TEXT NOT NULL,
-  entry_id TEXT,  -- Links to daily_entries.id
-  project_id TEXT NOT NULL,
-  response_data TEXT NOT NULL,  -- JSON
-  submitted_at TEXT,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL,
-  FOREIGN KEY (form_id) REFERENCES inspector_forms(id) ON DELETE CASCADE,
-  FOREIGN KEY (entry_id) REFERENCES daily_entries(id) ON DELETE SET NULL
-);
-
--- Todo Items
-CREATE TABLE todo_items (
-  id TEXT PRIMARY KEY,
-  project_id TEXT NOT NULL,
-  entry_id TEXT,
-  title TEXT NOT NULL,
-  description TEXT,
-  is_completed INTEGER DEFAULT 0,
-  due_date TEXT,
-  priority INTEGER DEFAULT 0,
-  created_at TEXT NOT NULL,
-  updated_at TEXT NOT NULL,
-  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-);
-
--- Calculation History
-CREATE TABLE calculation_history (
-  id TEXT PRIMARY KEY,
-  project_id TEXT NOT NULL,
-  entry_id TEXT,
-  calculator_type TEXT NOT NULL,
-  input_values TEXT NOT NULL,
-  result_values TEXT NOT NULL,
-  notes TEXT,
-  created_at TEXT NOT NULL,
-  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-);
-```
-
-#### Feature Structure
-```
-lib/features/toolbox/
-├── data/
-│   ├── models/
-│   │   ├── inspector_form.dart
-│   │   ├── form_response.dart
-│   │   ├── todo_item.dart
-│   │   └── calculation_history.dart
-│   ├── datasources/local/
-│   │   ├── form_local_datasource.dart
-│   │   ├── todo_local_datasource.dart
-│   │   └── calculation_history_local_datasource.dart
-│   └── repositories/
-│       ├── form_repository.dart
-│       ├── todo_repository.dart
-│       └── calculation_history_repository.dart
-├── domain/calculators/
-│   ├── hma_calculator.dart
-│   └── concrete_calculator.dart
-├── presentation/
-│   ├── providers/
-│   │   ├── form_provider.dart
-│   │   ├── todo_provider.dart
-│   │   └── calculator_provider.dart
-│   ├── screens/
-│   │   ├── toolbox_home_screen.dart
-│   │   ├── forms_screen.dart
-│   │   ├── form_detail_screen.dart
-│   │   ├── calculator_screen.dart
-│   │   ├── gallery_screen.dart
-│   │   └── todos_screen.dart
-│   └── widgets/
-└── toolbox.dart (barrel)
-```
-
-#### Routing
-**File**: `lib/core/router/app_router.dart`
-
-```dart
-GoRoute(
-  path: '/toolbox',
-  name: 'toolbox',
-  builder: (context, state) => const ToolboxHomeScreen(),
-  routes: [
-    GoRoute(path: 'forms', name: 'toolbox-forms', ...),
-    GoRoute(path: 'forms/:formId', name: 'toolbox-form-detail', ...),
-    GoRoute(path: 'calculator', name: 'toolbox-calculator', ...),
-    GoRoute(path: 'gallery', name: 'toolbox-gallery', ...),
-    GoRoute(path: 'todos', name: 'toolbox-todos', ...),
-  ],
-),
-```
-
-#### Dashboard Modification
-**File**: `lib/features/dashboard/presentation/screens/project_dashboard_screen.dart`
-
-Replace Locations card (RIGHT side, index 1 in grid) with Toolbox:
-```dart
-_buildStatCard(
-  key: TestingKeys.dashboardToolboxCard,
-  icon: Icons.build_circle_outlined,
-  label: 'Toolbox',
-  value: '',
-  onTap: () => context.pushNamed('toolbox'),
-),
-```
-
-**Note**: Locations feature remains accessible in Project Edit screen (contractor editing). Only the dashboard card is removed.
-
-#### Supabase Schema (Full Sync)
-**File**: `supabase/migrations/toolbox_schema.sql`
-
-```sql
--- Inspector Forms
-CREATE TABLE inspector_forms (
-  id TEXT PRIMARY KEY,
-  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  name TEXT NOT NULL,
-  template_path TEXT,
-  form_fields JSONB NOT NULL,
-  parsing_keywords JSONB,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ NOT NULL,
-  updated_at TIMESTAMPTZ NOT NULL
-);
-
--- Form Responses
-CREATE TABLE form_responses (
-  id TEXT PRIMARY KEY,
-  form_id TEXT NOT NULL REFERENCES inspector_forms(id) ON DELETE CASCADE,
-  entry_id TEXT REFERENCES daily_entries(id) ON DELETE SET NULL,
-  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  response_data JSONB NOT NULL,
-  table_rows JSONB,
-  is_open BOOLEAN DEFAULT true,
-  submitted_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL,
-  updated_at TIMESTAMPTZ NOT NULL
-);
-
--- Todo Items
-CREATE TABLE todo_items (
-  id TEXT PRIMARY KEY,
-  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  entry_id TEXT REFERENCES daily_entries(id) ON DELETE SET NULL,
-  title TEXT NOT NULL,
-  description TEXT,
-  is_completed BOOLEAN DEFAULT false,
-  due_date TIMESTAMPTZ,
-  priority INTEGER DEFAULT 0,
-  created_at TIMESTAMPTZ NOT NULL,
-  updated_at TIMESTAMPTZ NOT NULL
-);
-
--- Calculation History
-CREATE TABLE calculation_history (
-  id TEXT PRIMARY KEY,
-  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-  entry_id TEXT REFERENCES daily_entries(id) ON DELETE SET NULL,
-  calculator_type TEXT NOT NULL,
-  input_values JSONB NOT NULL,
-  result_values JSONB NOT NULL,
-  notes TEXT,
-  created_at TIMESTAMPTZ NOT NULL
-);
-
--- Indexes
-CREATE INDEX idx_form_responses_project ON form_responses(project_id);
-CREATE INDEX idx_form_responses_entry ON form_responses(entry_id);
-CREATE INDEX idx_todo_items_project ON todo_items(project_id);
-CREATE INDEX idx_calc_history_project ON calculation_history(project_id);
-
--- RLS Policies (user-scoped via project ownership)
-ALTER TABLE inspector_forms ENABLE ROW LEVEL SECURITY;
-ALTER TABLE form_responses ENABLE ROW LEVEL SECURITY;
-ALTER TABLE todo_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE calculation_history ENABLE ROW LEVEL SECURITY;
-```
-
-Register tables in sync orchestrator: `lib/features/sync/application/sync_orchestrator.dart`
+## Confirmed Code Touchpoints (Verified)
+- Dashboard Locations card:
+  - Rendered in `lib/features/dashboard/presentation/screens/project_dashboard_screen.dart:245-261`
+  - Key: `TestingKeys.dashboardLocationsCard` in `lib/shared/testing_keys.dart:62`
+  - Tests referencing it:
+    - `integration_test/patrol/e2e_tests/navigation_flow_test.dart`
+    - `integration_test/patrol/e2e_tests/ui_button_coverage_test.dart` (2 references)
+    - `integration_test/patrol/helpers/patrol_test_helpers.dart`
+- Contractor dialog dropdown:
+  - `_showAddContractorDialog()` in `lib/features/projects/presentation/screens/project_setup_screen.dart:604`
+  - Key at line 624: `TestingKeys.contractorTypeDropdown`
+  - Tests reference dropdown key:
+    - `integration_test/patrol/e2e_tests/project_setup_flow_test.dart:98`
+    - `integration_test/patrol/e2e_tests/contractors_flow_test.dart:125`
+    - `integration_test/patrol/e2e_tests/ui_button_coverage_test.dart:312`
+- Pay item sorting:
+  - Production: `lib/features/quantities/presentation/providers/bid_item_provider.dart:30` (currently lexicographic)
+  - Tests: `test/helpers/test_sorting.dart:22-30` (currently numeric)
+- DB schema tests:
+  - `test/core/database/database_service_test.dart` asserts `user_version` and expected tables.
 
 ---
 
-### Phase 2: Forms (MDOT 1174R & 0582B)
+## Key Decisions (Finalized)
 
-#### PDF Templates
-- **1174R** - Inspector's Report of Concrete Placed (Roadway)
-- **0582B** - Moisture and Density Determination (Nuclear Method)
+### 1. Auto-load Invalid Project: **Clear Selection**
+When auto-load is enabled but stored project ID is invalid/deleted, stay on empty dashboard state. Safer - no unexpected behavior.
 
-Templates at: `Pre-devolopment and brainstorming/Form Templates for export/`
+### 2. Natural Sort: **Case-Sensitive (ASCII Order)**
+Alphanumeric items use ASCII order: uppercase letters sort before lowercase.
+- Example: "1A" < "1B" < "1a" < "1b"
+- Decimals: Split on dot (treat "10.5" as segments `10` then `.5` as string)
+- Negatives: Treat `-` as text character
 
-#### Data Models
-```dart
-// inspector_form.dart
-class InspectorForm {
-  final String id;
-  final String projectId;
-  final String name;
-  final String templatePath;  // PDF template file path
-  final List<FormFieldDefinition> fields;
-  final List<String> parsingKeywords;  // Keywords for smart parsing
-  final bool isActive;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-}
+### 3. Form Template Storage: **assets/templates/forms/**
+Copy MDOT templates from `Pre-development and brainstorming/Form Templates for export/` to `assets/templates/forms/`. Follows existing `idr_template.pdf` pattern.
 
-class FormFieldDefinition {
-  final String id;
-  final String label;
-  final String pdfFieldName;  // Maps to PDF form field
-  final FormFieldType type;
-  final bool required;
-  final bool autoFill;  // True for project/entry data
-  final String? autoFillSource;  // e.g., "project.controlSectionId"
-  final List<String> keywords;  // For smart parsing
-  final int sortOrder;
-  final bool isTableRow;  // True for multi-row fields (tests)
-}
-
-// form_response.dart
-class FormResponse {
-  final String id;
-  final String formId;
-  final String? entryId;  // Links to DailyEntry
-  final String projectId;
-  final Map<String, dynamic> responseData;
-  final List<Map<String, dynamic>> tableRows;  // Multi-row data (tests)
-  final bool isOpen;  // True = actively being filled
-  final DateTime? submittedAt;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-}
-```
-
-#### Hybrid Input UI (Test Results Section)
-
-**Workflow:**
-1. User opens Test Results section for an entry
-2. User selects forms for the day (1174R and/or 0582B)
-3. System creates "open" FormResponse instances linked to entry
-4. **Hybrid Input**: Quick-entry text box + structured fields below
-5. User types: `10:30 slump 4 air 5.5 temp 68/72 2cyl`
-6. Parser extracts → shows in structured fields for confirmation
-7. "Add Test" button saves row, clears for next test
-8. On export: Fill PDF templates, save to export folder
-
-#### Auto-Fill Fields (from project/entry data)
-| PDF Field | Source |
-|-----------|--------|
-| Date | Entry date |
-| Control Section ID | Project.controlSectionId |
-| Job Number | Project.jobNumber |
-| Route | Project.route |
-| Contractor | Entry contractor |
-| Weather | Entry weather data |
-| Inspector | Settings.inspectorName |
-
-#### Smart Parsing Keywords
-
-**1174R Concrete:**
-| Field | Keywords |
-|-------|----------|
-| Time | time, @, am, pm |
-| Slump | slump, s: |
-| Air Content | air, ac, % |
-| Concrete Temp | concrete, conc, ct |
-| Atmosphere Temp | atmosphere, atm, at |
-| Cylinders | cyl, cylinder, beam |
-
-**0582B Density:**
-| Field | Keywords |
-|-------|----------|
-| Station | sta, station, + |
-| Offset | offset, left, right, lt, rt, ft |
-| Dry Density | dry, dd |
-| Wet Density | wet, wd |
-| Moisture | moisture, moist, m% |
-| Max Density | max, md |
-
-**Common fields fill BOTH forms:**
-- Location, Date, Station → auto-fill on all open forms
-
-#### Multi-Row Test Data (Add Test button)
-- Each "Add Test" creates a new row in `tableRows`
-- 1174R: Temperatures/Air/Slump table (multiple trucks)
-- 0582B: In-place density table (multiple test locations)
-- Auto-calculate: Percent Compaction = (Dry / Max) × 100
-
-#### Calculator Integration (Item Measurements)
-For 1174R Item table (Length × Width × Depth):
-- Calculator auto-calculates Measured Sq/Cu Yards
-- Shows Over/Under % based on Plan yards
-
-#### PDF Export
-- Use pdf-agent pattern to fill actual MDOT PDF templates
-- Each form exports as separate PDF file
-- Filenames saved to IDR attachments (like photos)
+Available templates:
+- `1174R Concrete.pdf` - Inspector's Report of Concrete Placed
+- `Moisture & Density Determiniation - Nuclear Method MDOT 0582B.pdf` - Density testing
 
 ---
 
-### Phase 3: Calculator
+## Phase 0: Planning Baseline + Definitions (PR 0)
+### Subphase 0.1: Baseline test run and capture
+1. Run baseline:
+   - `flutter analyze`
+   - `flutter test`
+2. Run Patrol subset that touches dashboard and project setup:
+   - `integration_test/patrol/e2e_tests/navigation_flow_test.dart`
+   - `integration_test/patrol/e2e_tests/ui_button_coverage_test.dart`
+   - `integration_test/patrol/e2e_tests/project_setup_flow_test.dart`
+   - `integration_test/patrol/e2e_tests/contractors_flow_test.dart`
+3. Record failures (if any) and note pre-existing test instability.
+4. **Record current database version**: 12
 
-#### Domain Logic
-```dart
-// hma_calculator.dart
-class HmaCalculator {
-  /// Tonnage = (Area_SF x Thickness_in x Density_PCF) / (12 x 2000)
-  static double calculateTonnage({
-    required double areaSf,
-    required double thicknessInches,
-    double densityPcf = 145.0,
-  }) => (areaSf * thicknessInches * densityPcf) / 24000;
-}
-
-// concrete_calculator.dart
-class ConcreteCalculator {
-  /// CY = (L x W x Thickness_in) / (12 x 27)
-  static double calculateSlabVolume({
-    required double lengthFt,
-    required double widthFt,
-    required double thicknessIn,
-    double wasteFactor = 1.05,
-  }) => (lengthFt * widthFt * thicknessIn) / 324 * wasteFactor;
-}
-```
-
-#### Quantities Integration
-Add "Calculate" button in quantities screen that opens calculator and returns result.
+### Subphase 0.2: Sorting rule definition (documented expectations)
+1. Define exact sort behavior (convert to tests):
+   - Natural numeric sort where digit sequences compare as integers.
+   - **Text segments compare case-sensitively (ASCII order)** - uppercase before lowercase.
+   - Decimal handling: treat "10.5" as segments `10` then `.5` (string).
+   - Negative handling: treat `-` as text character (not numeric negative).
+2. Convert expected behavior into unit tests before implementation.
 
 ---
 
-### Phase 4: Gallery
+## Phase 1: Auto-Load Last Project (PR 1)
+### Subphase 1.1: Settings persistence provider
+1. Create `lib/features/projects/presentation/providers/project_settings_provider.dart`.
+2. Use `SharedPreferences` keys:
+   - `last_selected_project_id`
+   - `auto_load_last_project` (default true)
+3. Expose:
+   - `bool autoLoadEnabled`
+   - `String? lastProjectId`
+   - `Future<void> setAutoLoadEnabled(bool)`
+   - `Future<void> setLastProjectId(String?)`
+4. Ensure:
+   - All writes await completion.
+   - `notifyListeners()` called after mutation.
 
-Reuse existing `PhotoProvider` from `lib/features/photos/`. Gallery screen shows grid of all project photos with filtering.
+### Subphase 1.2: Project selection persistence
+1. In `ProjectProvider`, hook project selection flow to persist last project ID.
+2. Ensure selection does not trigger save if `autoLoadEnabled == false`.
+3. When project is deleted or archived, clear stored ID if it matches the removed project.
 
----
+### Subphase 1.3: App start auto-load workflow
+1. In `main.dart`, register `ProjectSettingsProvider`.
+2. Ensure order:
+   - Load projects first (`ProjectProvider.loadProjects()`).
+   - Then, if `autoLoadEnabled`, apply `selectProject(lastProjectId)`.
+3. Guard against empty project list (should remain empty state).
+4. **If stored ID is missing or invalid: Clear selection and stay empty.**
 
-### Phase 5: To-Do's
+### Subphase 1.4: Dashboard auto-load data fetch
+1. Ensure `_loadProjectData()` in `ProjectDashboardScreen` is called once after selection is set.
+2. Avoid double loads:
+   - If selection changes, handle one fetch per selection change.
+3. Confirm no exceptions if selection is null.
 
-Simple todo list with add/edit/delete, completion checkboxes, optional entry linking.
+### Subphase 1.5: Settings UI toggle
+1. Add a toggle to `lib/features/settings/presentation/screens/settings_screen.dart`.
+2. Add test key `TestingKeys.settingsAutoLoadProjectToggle`.
+3. Toggle must persist across restarts.
 
----
-
-## Files Summary
-
-### New Files
-| File | Purpose |
-|------|---------|
-| `lib/features/projects/presentation/providers/project_settings_provider.dart` | Last project persistence |
-| `lib/shared/utils/natural_sort.dart` | Numeric string sorting |
-| `lib/features/toolbox/` (feature) | Toolbox feature |
-
-### Modified Files
-| File | Changes |
-|------|---------|
-| `lib/main.dart` | Register new providers |
-| `lib/core/router/app_router.dart` | Add toolbox routes |
-| `lib/core/database/database_service.dart` | Add tables, bump version |
-| `lib/features/dashboard/presentation/screens/project_dashboard_screen.dart` | Replace Locations with Toolbox (RIGHT) |
-| `lib/features/projects/presentation/providers/project_provider.dart` | Persist selection |
-| `lib/features/projects/presentation/screens/project_setup_screen.dart` | Fix dropdown |
-| `lib/features/quantities/presentation/providers/bid_item_provider.dart` | Numeric sort |
-| `lib/features/settings/presentation/screens/settings_screen.dart` | Auto-load toggle |
-| `lib/shared/testing_keys.dart` | Toolbox keys |
-
----
-
-## Implementation Order
-
-### PR 1: Quick Fixes
-- Pay items numeric sorting
-- Contractor dialog dropdown fix
-
-### PR 2: Auto-Load Project Setting
-- ProjectSettingsProvider
-- Dashboard auto-load
-- Settings toggle
-
-### PR 3: Toolbox Foundation
-- SQLite schema (4 tables) + Supabase migration
-- Feature folder structure
-- Routing
-- Dashboard card (RIGHT side, replaces Locations)
-- ToolboxHomeScreen with 4 cards
-- Sync orchestrator registration
-
-### PR 4: Forms Data Layer
-- InspectorForm, FormResponse models
-- Datasources, repositories, providers
-- MDOT form templates (1174R, 0582B) as built-in data
-
-### PR 5: Forms UI + Smart Parsing
-- FormsScreen (select forms for day)
-- Hybrid input UI (text box + structured fields)
-- Smart parsing engine with keywords
-- Add Test button for multi-row data
-- Auto-fill from project/entry data
-
-### PR 6: Forms PDF Export
-- PDF template filling (pdf-agent pattern)
-- Export to folder as separate PDF files
-- Add filenames to IDR attachments section
-
-### PR 7: Calculator
-- HMA, Concrete calculators
-- CalculatorScreen
-- Item measurements integration (auto-calc cubic yards)
-- Quantities screen integration
-
-### PR 8: Gallery & To-Do's
-- GalleryScreen (reuse PhotoProvider)
-- TodoItem model, provider
-- TodosScreen
+### Tests (PR 1)
+- Unit:
+  - `ProjectSettingsProvider` defaults (auto-load = true).
+  - `setLastProjectId` persistence and clearing.
+  - Invalid project ID clears selection.
+- Widget:
+  - Simulate startup where `autoLoadEnabled=true` and a valid project exists -> dashboard shows project title.
+  - Simulate startup where `autoLoadEnabled=false` -> empty dashboard state.
+  - Simulate startup with invalid stored ID -> empty dashboard state.
+- Patrol:
+  - Add/extend a flow to toggle auto-load off/on.
+  - Ensure empty state flow remains possible when toggle off.
 
 ---
 
-## Verification
+## Phase 2: Pay Items Natural Sorting (PR 2)
+### Subphase 2.1: Add natural sort utility
+1. Create `lib/shared/utils/natural_sort.dart`.
+2. Implement `naturalCompare(String a, String b)`.
+3. Use:
+   - RegExp split on digit vs non-digit segments.
+   - Compare numeric segments as ints.
+   - **Compare text segments case-sensitively (ASCII order)** - uppercase before lowercase.
 
-### Feature 1: Auto-Load Project
-1. Select project, close app
-2. Reopen → last project auto-loaded
-3. Settings → disable toggle → reopen → no project selected
+### Subphase 2.2: Apply to provider and tests
+1. Update `BidItemProvider.sortItems()` to use natural sort.
+2. Update `test/helpers/test_sorting.dart` `sortBidItems()` to use the same logic.
 
-### Feature 2: Pay Items Sorting
-1. Create items: "1", "2", "10", "20"
-2. List shows: 1, 2, 10, 20 (not 1, 10, 2, 20)
+### Subphase 2.3: Define and validate edge cases
+1. Add unit tests to `test/shared/natural_sort_test.dart`:
+   - `["1","2","10"]` -> `1,2,10`
+   - `["1A","1B","1a","1b"]` -> `1A,1B,1a,1b` (uppercase first)
+   - `["10.5","2.1","10.25"]` -> `10.25,10.5,2.1` (decimal as string segments)
+   - `["-1","0","1"]` -> `-1,0,1` (dash as text)
 
-### Feature 3: Contractor Dialog
-1. Add Contractor → dropdown expands properly, no clipping
-
-### Feature 4: Toolbox
-1. Dashboard → Toolbox card on RIGHT side (Locations card gone)
-2. Tap → 4 cards (Forms, Calculator, Gallery, To-Do's)
-
-### Feature 4a: Forms
-1. Open entry → Test Results → Select "1174R Concrete"
-2. Auto-fill shows: Date, Control Section, Route, Contractor, Weather
-3. Type: `10:30 slump 4 air 5.5 temp 68/72 2cyl`
-4. Parser shows structured fields: Time=10:30, Slump=4", Air=5.5%, etc.
-5. Click "Add Test" → row added, input clears
-6. Repeat for more truck arrivals
-7. Export → PDF filled with data, saved to export folder
-8. IDR attachments section shows form filename
-
-### Feature 4b: Calculator
-1. Open Calculator → HMA/Concrete options
-2. Enter dimensions → auto-calculate cubic yards
-3. From Item measurements → Calculator → result returns to form
-
-### Feature 4c: Gallery
-1. Open Gallery → shows all project photos in grid
-2. Filter by date/entry works
-
-### Feature 4d: To-Do's
-1. Add todo → appears in list
-2. Mark complete → moves to completed section
-3. Link to entry (optional) works
+### Tests (PR 2)
+- Unit: `natural_sort.dart` with edge cases.
+- Regression: `flutter test` to confirm no ordering mismatches.
 
 ---
 
-## Testing Impact
+## Phase 3: Contractor Dialog Dropdown Fix (PR 3)
+### Subphase 3.1: UI fix in Project Setup
+1. Wrap dialog content in `SingleChildScrollView`.
+2. Add `isExpanded: true` and `menuMaxHeight: 300` to dropdown.
+3. Ensure field focus and keyboard behavior remain intact.
 
-### Existing Tests Affected
-| Test Area | Impact |
-|-----------|--------|
-| Dashboard tests | Update for Toolbox card (was Locations) |
-| Pay items tests | Verify no tests assume lexicographic order |
-| Contractor dialog | Should pass; add assertion for dropdown |
+### Subphase 3.2: Visual regression
+1. Re-run relevant Patrol tests.
+2. If any golden snapshots change (unlikely but possible), update them in the same PR.
 
-### New Tests Needed
-| Area | Type | Coverage |
-|------|------|----------|
-| `natural_sort.dart` | Unit | Edge cases: "1a", "a1", "10.5" |
-| `HmaCalculator` | Unit | Known-value formula verification |
-| `ConcreteCalculator` | Unit | Known-value formula verification |
-| Smart parsing | Unit | Each keyword pattern, edge cases |
-| Form data layer | Unit | CRUD, JSON serialization |
-| ToolboxHomeScreen | Widget | Card navigation, project scoping |
-| Hybrid input UI | Widget | Text parsing → structured fields |
-| PDF export | Integration | Fill template, verify fields |
+### Tests (PR 3)
+- Patrol:
+  - `project_setup_flow_test.dart`
+  - `contractors_flow_test.dart`
+  - `ui_button_coverage_test.dart`
+- Ensure dropdown is tappable and menu opens without clipping.
 
-### Run Commands
-```bash
-# All tests
-flutter test
+---
 
-# Specific feature
-flutter test test/features/toolbox/
+## Phase 4: Toolbox Foundation (PR 4)
+### Subphase 4.1: SQLite schema (local)
+1. Add tables to `lib/core/database/database_service.dart`:
+   - `inspector_forms`
+   - `form_responses`
+   - `todo_items`
+   - `calculation_history`
+2. Add indexes for project/entry queries where appropriate.
+3. **Bump `user_version` from 12 to 13**.
+4. Update `test/core/database/database_service_test.dart`:
+   - New table presence (18 tables total).
+   - Column checks for each new table.
+   - Updated user_version expectation (13).
 
-# Check analyzer
-flutter analyze
-```
+### Subphase 4.2: Supabase schema
+1. Add SQL migration: **`supabase/migrations/YYYYMMDDHHMMSS_toolbox_tables.sql`**
+2. Use JSONB for structured fields.
+3. Add indexes matching SQLite.
+4. Enable RLS and add policies consistent with existing table patterns.
+
+### Subphase 4.3: Sync registration
+1. **Create `*RemoteDatasource` classes for each new table.**
+2. **Register in `lib/services/sync_service.dart` `_initDatasources()` method (lines 77-133).**
+3. Queue operations via `_syncService.queueOperation(tableName, recordId, operation)`.
+4. Add a lightweight test that new tables are in sync table list.
+
+### Subphase 4.4: Router + dashboard card
+1. Add toolbox routes in `lib/core/router/app_router.dart`.
+2. Replace dashboard Locations card with Toolbox card.
+3. Remove LocationProvider usage from the quick stats row if no longer needed.
+4. Add `TestingKeys.dashboardToolboxCard`.
+
+### Subphase 4.5: Toolbox home UI
+1. Create `ToolboxHomeScreen` with four cards:
+   - Forms
+   - Calculator
+   - Gallery
+   - To-Do's
+2. Ensure navigation routes resolve (even if screens are placeholders).
+
+### Subphase 4.6: Copy form templates to assets
+1. Copy from `Pre-development and brainstorming/Form Templates for export/`:
+   - `1174R Concrete.pdf` -> `assets/templates/forms/mdot_1174r_concrete.pdf`
+   - `Moisture & Density...MDOT 0582B.pdf` -> `assets/templates/forms/mdot_0582b_density.pdf`
+2. Update `pubspec.yaml` assets section.
+
+### Tests (PR 4)
+- Widget:
+  - `ToolboxHomeScreen` renders and navigates to child routes.
+- Patrol updates:
+  - Replace Locations card taps with Toolbox card taps.
+  - Update `integration_test/patrol/REQUIRED_UI_KEYS.md`.
+  - Update `navigation_flow_test.dart` and `ui_button_coverage_test.dart`.
+  - **Update `patrol_test_helpers.dart`**
+
+---
+
+## Phase 5: Forms Data Layer (PR 5)
+### Subphase 5.1: Data models
+1. Create models:
+   - `InspectorForm`
+   - `FormResponse`
+2. Add JSON (de)serialization.
+3. Include fields for template path, field definitions, parsing keywords, and `tableRows`.
+
+### Subphase 5.2: Datasources + repositories
+1. Add local datasources for forms and responses.
+2. Add repository interfaces and concrete implementations.
+3. Add providers to manage form lists and active responses.
+
+### Subphase 5.3: Seed initial forms
+1. Add MDOT form templates as built-in data loaded from `assets/templates/forms/`.
+2. Ensure they load on first run or via seed migration.
+
+### Tests (PR 5)
+- Unit: model serialization.
+- Unit: datasource CRUD (create/update/delete).
+- Widget: forms list screen can display seeded forms.
+
+---
+
+## Phase 6: Forms UI + Hybrid Input (PR 6)
+### Subphase 6.1: Forms selection UI
+1. Add Forms screen to select forms per entry.
+2. Create "open" FormResponse records when forms are selected.
+
+### Subphase 6.2: Hybrid input UI
+1. Add quick-entry text field + structured fields.
+2. "Add Test" appends to `tableRows`.
+3. Auto-fill fields from project/entry data.
+
+### Tests (PR 6)
+- Widget: hybrid input populates structured fields and creates table rows.
+- Unit: UI logic for add-row and clearing input.
+
+---
+
+## Phase 7: Smart Parsing Engine (PR 7)
+### Subphase 7.1: Parsing rules
+1. Build keyword matching for 1174R + 0582B.
+2. Support synonyms and common shorthand.
+3. Map parsed tokens to fields and table rows.
+
+### Subphase 7.2: Parser integration
+1. Plug parsing into hybrid input UI.
+2. Show parsed values for confirmation before saving.
+
+### Tests (PR 7)
+- Unit: parsing keywords and edge cases.
+- Unit: calculated fields (e.g., compaction).
+
+---
+
+## Phase 8: PDF Export (PR 8)
+### Subphase 8.1: PDF mapping
+1. Map form fields to PDF template field names.
+2. Use existing pdf service patterns from `lib/features/pdf/services/pdf_service.dart`.
+
+### Subphase 8.2: Export storage
+1. Export each form as a separate PDF file.
+2. Add filenames to IDR attachments (same pattern as photos).
+
+### Tests (PR 8)
+- Integration: fill and export PDF with known values.
+- Regression: existing PDF export tests continue to pass.
+
+---
+
+## Phase 9: Calculator (PR 9)
+### Subphase 9.1: Domain logic
+1. Implement HMA and Concrete calculators.
+2. Store calculation history in new table.
+
+### Subphase 9.2: UI integration
+1. Add Calculator screen.
+2. Add integration in quantities screen (calculate -> fill result).
+
+### Tests (PR 9)
+- Unit: calculator formula validation.
+- Widget: calculator UI flow and result return.
+
+---
+
+## Phase 10: Gallery (PR 10)
+### Subphase 10.1: Gallery screen
+1. Reuse `PhotoProvider.loadPhotosForProject()` to aggregate all project photos.
+2. Add filtering by date/entry in UI layer.
+
+### Tests (PR 10)
+- Widget: gallery grid loads photos.
+- Patrol: navigation to gallery from toolbox.
+
+---
+
+## Phase 11: To-Do's (PR 11)
+### Subphase 11.1: Data + UI
+1. Implement `TodoItem` model, datasource, repository, provider.
+2. Add Todos screen with add/edit/complete.
+
+### Tests (PR 11)
+- Unit: CRUD on todo items.
+- Widget: completion toggles and sorting.
+
+---
+
+## Appendix A: Patrol Test Delta Map (Concrete Updates)
+### Dashboard Locations Card -> Toolbox Card
+- `integration_test/patrol/e2e_tests/navigation_flow_test.dart`
+  - Replace tap target `TestingKeys.dashboardLocationsCard` with `TestingKeys.dashboardToolboxCard`.
+  - Update test name and assertion to verify Toolbox home.
+- `integration_test/patrol/e2e_tests/ui_button_coverage_test.dart`
+  - Replace all uses of `TestingKeys.dashboardLocationsCard` with `TestingKeys.dashboardToolboxCard`.
+  - Update log strings.
+  - Add check for Toolbox screen visibility, then navigate back.
+- **`integration_test/patrol/helpers/patrol_test_helpers.dart`**
+  - Update `dashboardLocationsCard` -> `dashboardToolboxCard` reference.
+- `integration_test/patrol/REQUIRED_UI_KEYS.md`
+  - Add `dashboardToolboxCard`.
+  - Remove `dashboardLocationsCard` only after `rg` shows no references.
+
+### Contractor Dialog Fix
+- `integration_test/patrol/e2e_tests/project_setup_flow_test.dart`
+  - Ensure dropdown still opens; avoid timing assumptions.
+- `integration_test/patrol/e2e_tests/contractors_flow_test.dart`
+  - Ensure Prime selection still works with scrollable dialog.
+- `integration_test/patrol/e2e_tests/ui_button_coverage_test.dart`
+  - Verify dropdown tap still works after scrollable content.
+
+### Auto-Load Project Toggle
+- `integration_test/patrol/REQUIRED_UI_KEYS.md`
+  - Add `settingsAutoLoadProjectToggle`.
+- `integration_test/patrol/e2e_tests/settings_theme_test.dart` or a new test
+  - Add a small flow to toggle auto-load off/on and verify persistence.
+
+### Pay Item Sorting
+- `integration_test/patrol/e2e_tests/quantities_flow_test.dart`
+  - If order is asserted, update expected order to natural sort.
+
+### Toolbox Navigation
+- `integration_test/patrol/e2e_tests/ui_button_coverage_test.dart`
+  - Add taps for Forms/Calculator/Gallery/To-Do's cards once screens exist.
+- `integration_test/patrol/e2e_tests/navigation_flow_test.dart`
+  - Add "dashboard -> toolbox -> forms" nav test (when implemented).
+
+---
+
+## Appendix B: Key Additions (Complete List)
+
+### PR 1 Keys
+- `TestingKeys.settingsAutoLoadProjectToggle`
+
+### PR 4 Keys
+- `TestingKeys.dashboardToolboxCard`
+- `TestingKeys.toolboxHomeScreen`
+- `TestingKeys.toolboxFormsCard`
+- `TestingKeys.toolboxCalculatorCard`
+- `TestingKeys.toolboxGalleryCard`
+- `TestingKeys.toolboxTodosCard`
+
+### Later PR Keys (define when UI exists)
+- Form-related keys (PR 5-8)
+- Calculator keys (PR 9)
+- Gallery keys (PR 10)
+- Todo keys (PR 11)
+
+---
+
+## Appendix C: Per-PR Checklist Template (with Context)
+Use this at the top of each PR section to ensure completeness and test safety.
+
+### Checklist
+- **PR scope summary**: (1-3 sentences, concrete)
+- **Files touched**: (list all files)
+- **Keys added/changed**: (list keys; confirm updates to REQUIRED_UI_KEYS)
+- **DB changes**: (tables, migrations, user_version updates)
+- **Sync changes**: (table registration in SyncService._initDatasources())
+- **Test updates**: (unit/widget/golden/patrol updates + files)
+- **Manual verification**: (flows or devices to manually verify)
+- **Risk notes**: (why this PR could break tests or behavior)
+
+### Reasoning/Context
+- Forces every PR to declare scope and risk explicitly, preventing silent UI key or schema changes from slipping in without tests.
+- Ensures each PR documents the exact blast radius (files + tests), which reduces later debugging time.
+- Captures manual verification expectations up front (important for UI and export flows).
+
+---
+
+## Appendix D: Risk Log (with Reasoning)
+Track risks by phase with mitigation and test strategy. Update this as PRs progress.
+
+### Risk 1: Dashboard Locations -> Toolbox replacement breaks Patrol flows
+- **Why it matters**: Patrol tests explicitly tap `TestingKeys.dashboardLocationsCard` in multiple files.
+- **Impact**: Immediate E2E failures; blocked CI.
+- **Mitigation**: Add `dashboardToolboxCard`, update tests in same PR, update REQUIRED_UI_KEYS.
+- **Validation**: Run Patrol subset in Phase 4.
+
+### Risk 2: Auto-load project causes tests expecting empty dashboard to fail
+- **Why it matters**: Auto-load changes the default state at launch.
+- **Impact**: Widget tests and Patrol flows may fail if they assert "No Project Selected".
+- **Mitigation**: Add toggle; tests that need empty state should disable auto-load.
+- **Validation**: Add a Patrol toggle test and widget tests for both paths.
+
+### Risk 3: Natural sort changes expected order in existing tests
+- **Why it matters**: Tests already assume numeric ordering in helpers, but UI uses string compare.
+- **Impact**: Behavior changes are correct but tests might still assert old order.
+- **Mitigation**: Update `test/helpers/test_sorting.dart` and add explicit natural sort tests.
+- **Validation**: Run unit tests and any quantities flows that assert order.
+
+### Risk 4: Contractor dialog scroll wrapper changes layout/keys
+- **Why it matters**: Changing dialog layout can affect hit-testing or overlays.
+- **Impact**: Patrol tests that tap dropdown may fail.
+- **Mitigation**: Keep existing keys; ensure dropdown still opens and closes reliably.
+- **Validation**: Run contractor-related Patrol tests.
+
+### Risk 5: New tables break database tests or migrations
+- **Why it matters**: `database_service_test.dart` asserts tables and version.
+- **Impact**: Unit test failures and runtime migrations if user_version not updated.
+- **Mitigation**: Update tests and migrations in same PR; bump version from 12 to 13.
+- **Validation**: Run `test/core/database/database_service_test.dart` and `flutter test`.
+
+### Risk 6: Sync registration gaps lead to silent data loss
+- **Why it matters**: Toolbox data must sync; missing registration silently drops records.
+- **Impact**: Data consistency and future sync failures.
+- **Mitigation**: Create RemoteDatasources and register in `SyncService._initDatasources()`.
+- **Validation**: Add a lightweight sync registration test or a manual sync sanity check.
+
+### Risk 7: PDF export integration breaks existing PDF tests
+- **Why it matters**: PDF logic already exists; new forms might interfere.
+- **Impact**: Regression in PDF tests or export flows.
+- **Mitigation**: Keep PDF service changes isolated; add targeted integration test.
+- **Validation**: Run PDF tests and manual export check.
+
+### Risk 8: Patrol key drift across phases
+- **Why it matters**: Patrol relies on stable keys in REQUIRED_UI_KEYS.
+- **Impact**: Test flakiness or failures across PRs.
+- **Mitigation**: Enforce key updates in the same PR and remove old keys only after `rg` shows no references.
+- **Validation**: Run Patrol subset after each PR with key changes.
+
+### Risk 9: patrol_test_helpers.dart not updated
+- **Why it matters**: Helper file contains `dashboardLocationsCard` reference used by multiple tests.
+- **Impact**: All tests using this helper will fail.
+- **Mitigation**: Update helper in PR 4 alongside other test updates.
+- **Validation**: Run full Patrol suite after PR 4.
+
+### Risk 10: Form templates not in assets
+- **Why it matters**: Templates must be bundled with app for PDF filling.
+- **Impact**: Runtime asset load failure when filling forms.
+- **Mitigation**: Copy templates to `assets/templates/forms/` in PR 4, update pubspec.yaml.
+- **Validation**: Verify assets load in debug build before PR merge.
