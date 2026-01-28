@@ -1,50 +1,50 @@
 # Session State
 
-**Last Updated**: 2026-01-28 | **Session**: 161
+**Last Updated**: 2026-01-28 | **Session**: 162
 
 ## Current Phase
 - **Phase**: Comprehensive Plan Execution
-- **Status**: ✅ Phase 6 COMPLETE
+- **Status**: ✅ Phase 7 COMPLETE
 
-## Last Session (Session 161)
-**Summary**: Completed Phase 6 - Calculation Engine + 0582B Density Automation
+## Last Session (Session 162)
+**Summary**: Completed Phase 7 - Live Preview + Form Entry UX Cleanup
 
 **Key Activities**:
-- Created FormCalculationService: Generic formula evaluation with whitelist operators, divide-by-zero protection
-- Created DensityCalculatorService: MDOT 0582B density calculations (dry_density, moisture_pcf, percent_compaction)
-- Updated DynamicFormField with calculated field support (formula display, manual override toggle)
-- Integrated auto-recalculation in form_fill_screen when dependencies change
-- Updated 0582B JSON with 25 fields including 3 calculated fields with formulas
-- Standardized density field naming across parsing and seed services
-- All 486 toolbox tests passing
+- Task 1: Tab-based layout with FormFieldsTab + FormPreviewTab (responsive split-view at 840px)
+- Task 2: Preview byte caching with FormStateHasher (LRU cache, 5 entries, 5min TTL)
+- Task 3: Test history header with copy-previous-values functionality
+- Task 4: Non-text field support (checkbox/radio/dropdown) in PDF and UI
+- Code review: Pass with Recommendations (minor items for Phase 14)
+- All 506 toolbox tests passing
 
-**Phase 6 Final Results**:
-- ✅ 6.1 Safe calculation service - COMPLETE (FormCalculationService + DensityCalculatorService)
-- ✅ 6.2 Registry-driven calculations - COMPLETE (DynamicFormField + form_fill_screen integration)
-- ✅ 6.3 0582B field definitions + tests - COMPLETE (25 fields, 15 new tests)
-- ✅ 6.4 Density field naming alignment - COMPLETE (standardized naming + backward compat)
+**Phase 7 Final Results**:
+- ✅ 7.1 Split form fill screen into tabs - COMPLETE (FormFieldsTab, FormPreviewTab, split-view)
+- ✅ 7.2 Preview byte caching + error states - COMPLETE (FormStateHasher, LRU cache, error UI)
+- ✅ 7.3 Form header with test history - COMPLETE (FormTestHistoryCard, copy previous values)
+- ✅ 7.4 Non-text field fill support - COMPLETE (checkbox/radio/dropdown in PDF + UI)
 
 **Files Created**:
-- `lib/features/toolbox/data/services/form_calculation_service.dart` - Formula evaluation
-- `lib/features/toolbox/data/services/density_calculator_service.dart` - Density calculations
-- `test/features/toolbox/services/form_calculation_service_test.dart` - 55 tests
-- `test/features/toolbox/services/density_calculator_service_test.dart` - 45 tests
-- `test/features/toolbox/services/form_seed_service_test.dart` - 15 tests
+- `lib/features/toolbox/presentation/widgets/form_fields_tab.dart` - Extracted fields tab
+- `lib/features/toolbox/presentation/widgets/form_preview_tab.dart` - PDF preview tab
+- `lib/features/toolbox/presentation/widgets/form_test_history_card.dart` - Test history UI
+- `lib/features/toolbox/data/services/form_state_hasher.dart` - Cache key generator
+- `test/features/toolbox/services/form_state_hasher_test.dart` - 9 unit tests
 
 **Files Modified**:
-- `lib/features/toolbox/presentation/widgets/dynamic_form_field.dart` - Calculated field UI
-- `lib/features/toolbox/presentation/screens/form_fill_screen.dart` - Recalculation logic
-- `lib/features/toolbox/data/services/services.dart` - New exports
-- `lib/main.dart` - FormCalculationService provider
-- `assets/data/forms/mdot_0582b_density.json` - 25 fields with formulas
-- `lib/features/toolbox/data/services/form_seed_service.dart` - Updated definitions
-- `lib/features/toolbox/data/services/form_parsing_service.dart` - Standardized names
+- `lib/features/toolbox/presentation/screens/form_fill_screen.dart` - Tab layout + test history
+- `lib/features/toolbox/data/services/form_pdf_service.dart` - Preview cache + non-text fields
+- `lib/features/toolbox/presentation/widgets/dynamic_form_field.dart` - Checkbox/radio/dropdown UI
+- `lib/features/toolbox/data/models/form_field_entry.dart` - Options field for non-text
+- `lib/features/toolbox/data/repositories/form_response_repository.dart` - getRecentResponses
+- `lib/features/toolbox/data/datasources/local/form_response_local_datasource.dart` - Query method
+- `lib/shared/testing_keys.dart` - Added preview/history keys
+- `pubspec.yaml` - syncfusion_flutter_pdfviewer package
 
-## Previous Session (Session 160)
-**Summary**: Completed Phase 5 - Fixed all 3 critical carry-forward issues
+## Previous Session (Session 161)
+**Summary**: Completed Phase 6 - Calculation Engine + 0582B Density Automation
 
 ## Active Plan
-**Status**: ✅ PHASE 6 COMPLETE - Ready for Phase 7
+**Status**: ✅ PHASE 7 COMPLETE - Ready for Phase 8
 **File**: `.claude/plans/COMPREHENSIVE_PLAN.md`
 
 **Completed**:
@@ -54,26 +54,26 @@
 - [x] Phase 3: Toolbox Refactor Set B (Resilience + Utilities)
 - [x] Phase 4: Form Registry + Template Metadata Foundation
 - [x] Phase 5: Smart Auto-Fill + Carry-Forward Defaults
-- [x] Phase 6: Calculation Engine + 0582B Density Automation ✅ COMPLETE
+- [x] Phase 6: Calculation Engine + 0582B Density Automation
+- [x] Phase 7: Live Preview + Form Entry UX Cleanup ✅ COMPLETE
 
 **Next Tasks**:
-- [ ] Phase 7: Live Preview + Form Entry UX Cleanup
 - [ ] Phase 8: PDF Field Discovery + Mapping UI
+- [ ] Phase 9: Integration, QA, and Backward Compatibility
 
 ## Key Decisions
-- FormCalculationService: Whitelist parser with +, -, *, /, parentheses only
-- DensityCalculatorService: MDOT-specific with 95-105% spec checking
-- CalculationResult: {value, isValid, error, formula} for provenance
-- DynamicFormField: Calculator icon + formula display + manual override toggle
-- Dependent field tracking via `depends_on` array in field definitions
-- Standardized naming: wet_density, moisture_percent, max_density, percent_compaction
+- Tab layout: Mobile (TabBarView) vs Tablet (split-view at 840px breakpoint)
+- Preview cache: LRU with 5 entries max, 5-minute TTL, FIFO eviction
+- Cache key: `{formId}_{responseId}_{stateHash}` using FormStateHasher
+- Copy previous: Skips project-specific fields (project_number, contractor, etc.)
+- Non-text fields: Graceful fallback if PDF field type doesn't match
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Phase 7: Live Preview + UX | NEXT | Tab-based form fill |
-| Phase 8: Field Discovery | PLANNED | PDF import + mapping UI |
+| Phase 8: Field Discovery | NEXT | PDF import + mapping UI |
 | Phase 9: Integration QA | PLANNED | Backward compat + tests |
+| Phase 10: Dialog Extraction | PLANNED | Entry + Report dialogs |
 
 ## Open Questions
 None
