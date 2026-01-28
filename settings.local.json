@@ -83,5 +83,6 @@
       "Bash(python:*)",
       "Bash(tasklist:*)"
     ]
-  }
+  },
+  "spinnerTipsEnabled": true
 }
