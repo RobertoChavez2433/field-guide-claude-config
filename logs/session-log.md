@@ -24,6 +24,16 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-28 (Session 151): Phase 1 Safety Net - Test Coverage
+- Fixed test_bundle.dart to include all 15 E2E tests (was only 2)
+- Created toolbox_flow_test.dart (7 E2E tests)
+- Created entry_wizard_screen_test.dart (49 tests)
+- Created report_screen_test.dart (54 tests)
+- Created project_setup_screen_test.dart (68 tests)
+- Created quantities_screen_test.dart (56 tests)
+- **227 new tests total**
+- Commit: `191a205`
+
 ### 2026-01-28 (Session 150): Form Streamlining Plan
 - Planning session - no code changes
 - Researched PDF library alternatives (Syncfusion Community License confirmed FREE for individual devs)
