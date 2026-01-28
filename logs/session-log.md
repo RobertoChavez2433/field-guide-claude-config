@@ -24,11 +24,13 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
-### 2026-01-27 (Session 143): PR 2 - Contractor Dialog Fix
+### 2026-01-27 (Session 143): PR 2 + PR 3 Implementation
 - Code reviewed Phase A (PRs 3-5) - all well-implemented, gap noted for Subphase 5.3
-- Implemented PR 2: Contractor Dialog Dropdown Fix
-- Added SingleChildScrollView, isExpanded, menuMaxHeight to contractor dialog
-- Files: project_setup_screen.dart
+- Implemented PR 2: Contractor Dialog Dropdown Fix (SingleChildScrollView, isExpanded, menuMaxHeight)
+- Implemented PR 3: PDF Table Row Mapping + Tests
+  - Row-by-row field filling with fallback to summary text
+  - 26 unit tests for field variations, row variations, table formatting, MDOT patterns
+- Files: project_setup_screen.dart, form_pdf_service.dart, form_pdf_service_test.dart
 
 ### 2026-01-27 (Session 142): Phase A Remediation
 - Implemented all 3 critical fixes from toolbox audit
