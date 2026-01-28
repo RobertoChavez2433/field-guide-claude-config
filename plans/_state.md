@@ -1,33 +1,34 @@
 # Session State
 
-**Last Updated**: 2026-01-27 | **Session**: 145
+**Last Updated**: 2026-01-27 | **Session**: 146
 
 ## Current Phase
-- **Phase**: Toolbox Implementation PR 5 Complete
-- **Status**: Sync Queue Operations Added
+- **Phase**: Toolbox Implementation PR 6 Complete
+- **Status**: IDR Attachment Integration Done
 
-## Last Session (Session 145)
-**Summary**: Completed PR 5.3 - added sync queue operations to all toolbox providers.
+## Last Session (Session 146)
+**Summary**: Completed PR 6 - IDR attachment integration for toolbox form PDFs.
 
 **Changes Made**:
-- PR 5.3: Queue Operations for Toolbox CRUD
-  - Added `SyncService` injection to `TodoProvider`, `CalculatorProvider`, `InspectorFormProvider`
-  - All CRUD operations now queue to sync: insert, update, delete
-  - Wired providers in `main.dart` to receive `syncService`
-  - Added 5 unit tests for toolbox sync queue operations
+- PR 6: IDR Attachment Integration
+  - Added `FormAttachment` class to hold form response + template pairs
+  - Extended `IdrPdfData` with `formAttachments` list
+  - Updated `_formatAttachments` to include form names with status labels
+  - Updated `_writeExportFiles` to generate and include form PDFs in folder export
+  - Trigger folder export when form attachments exist (even without photos)
+  - Updated `report_screen.dart` to fetch entry-linked form responses
+  - Added 8 unit tests for form attachment functionality
 
 **Files Modified**:
-- `lib/features/toolbox/presentation/providers/todo_provider.dart` - Added sync queueing
-- `lib/features/toolbox/presentation/providers/calculator_provider.dart` - Added sync queueing
-- `lib/features/toolbox/presentation/providers/inspector_form_provider.dart` - Added sync queueing
-- `lib/main.dart` - Wired syncService to toolbox providers
-- `test/services/sync_service_test.dart` - Added 5 toolbox sync queue tests
+- `lib/features/pdf/services/pdf_service.dart` - Added FormAttachment, updated IdrPdfData, export logic
+- `lib/features/entries/presentation/screens/report_screen.dart` - Fetch form responses for entry
+- `test/services/pdf_service_test.dart` - Added 8 form attachment tests
 
-## Previous Session (Session 144)
-**Summary**: Completed PR 4 with 19 unit tests for form auto-fill behavior.
+## Previous Session (Session 145)
+**Summary**: Completed PR 5.3 - added sync queue operations to all toolbox providers.
 
 ## Active Plan
-**Status**: PR 5 COMPLETE
+**Status**: PR 6 COMPLETE
 **File**: `.claude/plans/toolbox-implementation-plan.md`
 
 **Completed**:
@@ -37,21 +38,21 @@
 - [x] PR 4: Form Auto-Fill Expansion + Tests (19 unit tests)
 - [x] PR 5.1-5.2: Sync Registration (Phase A)
 - [x] PR 5.3: Queue operations for toolbox CRUD
+- [x] PR 6: IDR Attachment Integration (8 unit tests)
 
 **Remaining**:
-- [ ] PR 6: IDR Attachment Integration
 - [ ] PR 7: Natural Sort Spec Alignment
 - [ ] PR 8: Missing Tests Bundle (B1, B2) - partially addressed by PR 3 & PR 4
 
 ## Key Decisions
-- Sync queue pattern: providers receive optional `SyncService`, queue operations on successful CRUD
-- Matches project pattern where SyncService is passed via constructor (like SyncProvider)
-- Generic `_processSyncQueueItem` handles all tables including toolbox
+- Form attachments follow same pattern as photos for IDR export
+- `FormAttachment` class pairs response with form template for PDF generation
+- Entry-linked forms via `entryId` are automatically included in IDR exports
+- Folder export triggered when forms OR photos exist (not just photos)
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| IDR attachments | PENDING | PR 6 |
 | Natural sort alignment | PENDING | PR 7 |
 | Remaining tests | PENDING | PR 8 (some covered by PR 3) |
 
