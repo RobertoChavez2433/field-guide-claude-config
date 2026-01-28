@@ -1,34 +1,29 @@
 # Session State
 
-**Last Updated**: 2026-01-27 | **Session**: 146
+**Last Updated**: 2026-01-27 | **Session**: 147
 
 ## Current Phase
-- **Phase**: Toolbox Implementation PR 6 Complete
-- **Status**: IDR Attachment Integration Done
+- **Phase**: Toolbox Implementation PR 7 Complete
+- **Status**: All Core PRs Done (PR 1-7)
 
-## Last Session (Session 146)
-**Summary**: Completed PR 6 - IDR attachment integration for toolbox form PDFs.
+## Last Session (Session 147)
+**Summary**: Completed PR 7 - Natural sort spec alignment.
 
 **Changes Made**:
-- PR 6: IDR Attachment Integration
-  - Added `FormAttachment` class to hold form response + template pairs
-  - Extended `IdrPdfData` with `formAttachments` list
-  - Updated `_formatAttachments` to include form names with status labels
-  - Updated `_writeExportFiles` to generate and include form PDFs in folder export
-  - Trigger folder export when form attachments exist (even without photos)
-  - Updated `report_screen.dart` to fetch entry-linked form responses
-  - Added 8 unit tests for form attachment functionality
+- PR 7: Natural Sort Spec Alignment
+  - Fixed documentation to match actual behavior
+  - Decimals documented as `["10", ".", "5"]` (3 segments, not 2)
+  - This ensures pay item suffixes are compared numerically
+  - Converted library-level doc comments to regular comments (lint fix)
 
 **Files Modified**:
-- `lib/features/pdf/services/pdf_service.dart` - Added FormAttachment, updated IdrPdfData, export logic
-- `lib/features/entries/presentation/screens/report_screen.dart` - Fetch form responses for entry
-- `test/services/pdf_service_test.dart` - Added 8 form attachment tests
+- `lib/shared/utils/natural_sort.dart` - Aligned documentation with implementation
 
-## Previous Session (Session 145)
-**Summary**: Completed PR 5.3 - added sync queue operations to all toolbox providers.
+## Previous Session (Session 146)
+**Summary**: Completed PR 6 - IDR attachment integration for toolbox form PDFs.
 
 ## Active Plan
-**Status**: PR 6 COMPLETE
+**Status**: PR 7 COMPLETE
 **File**: `.claude/plans/toolbox-implementation-plan.md`
 
 **Completed**:
@@ -39,21 +34,19 @@
 - [x] PR 5.1-5.2: Sync Registration (Phase A)
 - [x] PR 5.3: Queue operations for toolbox CRUD
 - [x] PR 6: IDR Attachment Integration (8 unit tests)
+- [x] PR 7: Natural Sort Spec Alignment
 
 **Remaining**:
-- [ ] PR 7: Natural Sort Spec Alignment
 - [ ] PR 8: Missing Tests Bundle (B1, B2) - partially addressed by PR 3 & PR 4
 
 ## Key Decisions
-- Form attachments follow same pattern as photos for IDR export
-- `FormAttachment` class pairs response with form template for PDF generation
-- Entry-linked forms via `entryId` are automatically included in IDR exports
-- Folder export triggered when forms OR photos exist (not just photos)
+- Natural sort correctly uses 3-segment parsing for decimals: ["10", ".", "5"]
+- This ensures pay items sort numerically by suffix (201.01, 201.2, 201.10)
+- Documentation was out of sync with implementation; implementation was correct
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Natural sort alignment | PENDING | PR 7 |
 | Remaining tests | PENDING | PR 8 (some covered by PR 3) |
 
 ## Open Questions

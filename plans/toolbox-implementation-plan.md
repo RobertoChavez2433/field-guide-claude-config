@@ -178,14 +178,14 @@ Anything outside this scope requires explicit approval.
 
 ---
 
-## PR 7: Natural Sort Spec Alignment
+## PR 7: Natural Sort Spec Alignment ✅ COMPLETE
 
-### Subphase 7.1: Align decimal handling with plan
-1. Plan rule: treat decimals as `["10", ".5"]` (dot+digits as text).
-2. Update either:
-   - `lib/shared/utils/natural_sort.dart`, or
-   - `test/shared/natural_sort_test.dart:57`
-3. Ensure production and tests match the spec.
+### Subphase 7.1: Align decimal handling ✅
+1. Verified implementation correctly uses 3-segment parsing: `["10", ".", "5"]`
+2. Updated documentation to match actual behavior (was incorrectly documented as 2-segment)
+3. This ensures pay item suffixes are compared numerically (201.01, 201.2, 201.10)
+4. Fixed lint warning by converting library-level doc comments to regular comments
+5. File: `lib/shared/utils/natural_sort.dart`
 
 ---
 
