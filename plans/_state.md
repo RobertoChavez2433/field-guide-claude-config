@@ -1,64 +1,76 @@
 # Session State
 
-**Last Updated**: 2026-01-28 | **Session**: 151
+**Last Updated**: 2026-01-28 | **Session**: 152
 
 ## Current Phase
-- **Phase**: Form Streamlining Planning
-- **Status**: Plan Complete - Safety Net Tests Implemented
+- **Phase**: Comprehensive Plan Execution
+- **Status**: Phase 2 Complete - Toolbox Refactor Set A
 
-## Last Session (Session 151)
-**Summary**: Implemented Phase 1 Safety Net - expanded test coverage before large refactors.
+## Last Session (Session 152)
+**Summary**: Implemented Phase 2 from COMPREHENSIVE_PLAN.md - Toolbox Refactor Set A (Structure + DI + Provider Safety)
 
 **Key Activities**:
-- Fixed test_bundle.dart to include all 15 E2E tests (was only 2 registered)
-- Created toolbox_flow_test.dart with 7 E2E tests
-- Created widget tests for 4 mega screens (227 total new tests)
+- **2.1** Extracted Form Fill widgets from mega screen (1180→732 lines, 38% reduction)
+- **2.2** Injected FormParsingService and FormPdfService via Provider in main.dart
+- **2.3** Fixed mutable list updates in InspectorFormProvider (6 mutations → immutable)
+- **2.4** Renamed misnamed datasource tests to model tests
 
 **Files Created**:
-- `integration_test/patrol/e2e_tests/toolbox_flow_test.dart` - Toolbox E2E (7 tests)
-- `test/features/entries/presentation/screens/entry_wizard_screen_test.dart` (49 tests)
-- `test/features/entries/presentation/screens/report_screen_test.dart` (54 tests)
-- `test/features/projects/presentation/screens/project_setup_screen_test.dart` (68 tests)
-- `test/features/quantities/presentation/screens/quantities_screen_test.dart` (56 tests)
+- `lib/features/toolbox/presentation/widgets/form_status_card.dart` (61 lines)
+- `lib/features/toolbox/presentation/widgets/dynamic_form_field.dart` (104 lines)
+- `lib/features/toolbox/presentation/widgets/quick_entry_section.dart` (71 lines)
+- `lib/features/toolbox/presentation/widgets/parsing_preview.dart` (160 lines)
+- `lib/features/toolbox/presentation/widgets/table_rows_section.dart` (125 lines)
+- `test/features/toolbox/data/models/inspector_form_test.dart` (moved/renamed)
+- `test/features/toolbox/data/models/todo_item_test.dart` (moved/renamed)
 
 **Files Modified**:
-- `integration_test/test_bundle.dart` - Added all 15 E2E test imports
+- `lib/features/toolbox/presentation/screens/form_fill_screen.dart` - Refactored to use extracted widgets
+- `lib/features/toolbox/presentation/widgets/widgets.dart` - Updated barrel export
+- `lib/features/toolbox/presentation/providers/inspector_form_provider.dart` - Fixed mutable list updates
+- `lib/main.dart` - Added service providers for DI
+- `integration_test/patrol/e2e_tests/toolbox_flow_test.dart` - Fixed test syntax
 
-**Commit**: `191a205` - feat(tests): PR 10 - Phase 1 safety net - E2E and widget test coverage
+**Files Deleted**:
+- `test/features/toolbox/data/datasources/inspector_form_local_datasource_test.dart`
+- `test/features/toolbox/data/datasources/todo_item_local_datasource_test.dart`
 
-## Previous Session (Session 150)
-**Summary**: Created comprehensive plan to streamline PDF form filling with auto-fill, live preview, and density calculations.
+**Test Results**: 261 toolbox tests passing, analyzer clean (0 errors)
+
+## Previous Session (Session 151)
+**Summary**: Implemented Phase 1 Safety Net - expanded test coverage before large refactors.
 
 ## Active Plan
-**Status**: READY FOR IMPLEMENTATION
-**File**: `.claude/plans/form-streamlining-plan.md`
+**Status**: PHASE 2 COMPLETE
+**File**: `.claude/plans/COMPREHENSIVE_PLAN.md`
 
 **Completed**:
-- [x] PR 10: Phase 1 Safety Net (test coverage)
+- [x] Phase 1: Safety Net + Baseline Verification (PR 10)
+- [x] Phase 2: Toolbox Refactor Set A (Structure + DI + Provider Safety)
 
-**Next Tasks**:
-- [ ] PR 10: Form Field Registry (DB v14, semantic mappings)
-- [ ] PR 11: Smart Auto-Fill Engine (5→20+ fields)
-- [ ] PR 11.5: Density Calculator (dry density, moisture %, compaction %)
-- [ ] PR 12: PDF Preview UI (tabbed view)
-- [ ] PR 13: Scalable Form Import (field discovery)
-- [ ] PR 14: Integration & Polish
+**Next Tasks** (Phase 3):
+- [ ] Add template load error handling
+- [ ] Add FieldFormatter utility
+- [ ] Extract parsing regex constants
+- [ ] Add orElse to firstWhere in tests
+- [ ] Externalize form definitions to JSON assets
 
 ## Key Decisions
-- Test pattern: Logic-focused unit tests (matching existing toolbox pattern)
-- Test bundle: All 15 E2E tests now registered (was only 2)
+- Widget extraction: 5 widgets extracted from form_fill_screen.dart
+- DI pattern: Services provided via Provider, not instantiated in widgets
+- Immutable state: Provider uses list comprehension for immutable updates
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Form Streamlining Plan | READY | `.claude/plans/form-streamlining-plan.md` |
-| Extract sync queue pattern | BACKLOG | DRY improvement |
-| Rename test files | BACKLOG | Minor - datasource → model |
+| Phase 3: Toolbox Refactor Set B | NEXT | `.claude/plans/COMPREHENSIVE_PLAN.md` |
+| Phase 4: Form Registry Foundation | PLANNED | DB v14, semantic mappings |
+| Phase 5: Smart Auto-Fill | PLANNED | 5→20+ fields |
 
 ## Open Questions
-None - Ready to proceed with Form Field Registry (PR 10)
+None - Ready to proceed with Phase 3
 
 ## Reference
 - Branch: `main`
-- Last Commit: `191a205`
-- Implementation Plan: `.claude/plans/form-streamlining-plan.md`
+- Last Commit: `191a205` (pre-Phase 2)
+- Implementation Plan: `.claude/plans/COMPREHENSIVE_PLAN.md`
