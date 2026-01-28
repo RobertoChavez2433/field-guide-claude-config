@@ -249,3 +249,103 @@ FormSeedService(this._repository, {FieldRegistryService? registryService})
 | 9 | 11 | Test updates for auto-fill engine |
 | 14 | 1, 2, 3, 4, 5, 6, 7, 14, 16 | DRY/KISS Utilities + shared patterns |
 | 7 | 17 | UX confidence indicators |
+
+---
+
+## Phase 6 Code Review - 2026-01-28 (Session 161)
+
+**Commits Reviewed**: `16edc36`
+**Scope**: Calculation Engine + 0582B Density Automation
+**Overall**: ✅ **PASS** - All 9 files pass code review
+
+### Phase 6 Requirements Verification
+
+| Step | Requirement | Status | Notes |
+|------|-------------|--------|-------|
+| 6.1 | Safe calculation service | ✅ Complete | `FormCalculationService` + `DensityCalculatorService` |
+| 6.2 | Registry-driven calculations | ✅ Complete | `DynamicFormField` + `form_fill_screen` recalculation |
+| 6.3 | 0582B field definitions + tests | ✅ Complete | 25 fields in JSON, 115 new tests |
+| 6.4 | Align density field naming | ✅ Complete | Standardized + backward compat via synonyms |
+
+### File Assessment Summary
+
+| File | Verdict | Notes |
+|------|---------|-------|
+| `form_calculation_service.dart` | ✅ PASS | Excellent whitelist security, recursive descent parser |
+| `density_calculator_service.dart` | ✅ PASS | Clean domain abstraction, proper DI |
+| `dynamic_form_field.dart` | ✅ PASS | Good calculated field UI with toggle |
+| `form_fill_screen.dart` | ✅ PASS | Proper mounted checks, good state management |
+| `services.dart` | ✅ PASS | Proper barrel exports with hide workaround |
+| `main.dart` | ✅ PASS | Service properly registered |
+| `mdot_0582b_density.json` | ✅ PASS | Well-structured 25 fields with formulas |
+| `form_seed_service.dart` | ✅ PASS | Good fallback strategy |
+| `form_parsing_service.dart` | ✅ PASS | Excellent regex documentation |
+
+### Redundancies Identified
+
+#### 18. Duplicate CalculationResult Classes (LOW PRIORITY)
+**Files**: `form_calculation_service.dart:19`, `calculator_service.dart:65`
+**Issue**: Two different classes with same name, requiring `hide` in barrel export
+**Recommendation**: Rename to `FormCalculationResult` vs `CalculationResult`
+**Target Phase**: 14
+
+---
+
+#### 19. Auto-Fill Context Building Duplication (LOW PRIORITY)
+**File**: `lib/features/toolbox/presentation/screens/form_fill_screen.dart:164-264`
+**Issue**: `_autoFillFromContext()` and `_autoFillAll()` share ~80% identical code
+**Recommendation**: Extract common method with `forceOverwrite` parameter
+**Target Phase**: 14
+
+---
+
+#### 20. Magic Numbers for Compaction Spec Ranges (LOW PRIORITY)
+**File**: `lib/features/toolbox/data/services/density_calculator_service.dart:251-260`
+**Issue**: Hardcoded 95, 98, 102, 105 spec values
+**Recommendation**: Extract to named constants (e.g., `kMinCompaction = 95`)
+**Target Phase**: 14
+
+---
+
+### Test Coverage Assessment
+
+| Service | Test File | Coverage |
+|---------|-----------|----------|
+| `form_calculation_service.dart` | ✅ 55 tests | Excellent - arithmetic, precedence, security |
+| `density_calculator_service.dart` | ✅ 45 tests | Excellent - all calculations, real-world |
+| `form_seed_service.dart` | ✅ 15 tests | Good - JSON validation, field definitions |
+| `dynamic_form_field.dart` | Gap | Widget tests needed (future) |
+| `form_fill_screen.dart` | Gap | Integration tests needed (future) |
+
+### Security Assessment
+
+| Check | Status |
+|-------|--------|
+| Whitelist-only characters in formulas | ✅ PASS |
+| No code injection vectors | ✅ PASS |
+| Input validation at boundaries | ✅ PASS |
+
+### Positive Observations
+
+1. **Excellent Security**: Whitelist pattern rejects injection attempts (tests at lines 261-275)
+2. **Domain Knowledge**: `DensityCalculatorService` has proper MDOT spec awareness (95-105%)
+3. **Proper DI**: Services inject dependencies, testable architecture
+4. **Good Documentation**: Regex patterns well-documented with examples
+5. **Backward Compatibility**: Parsing service supports both `target_density` and `max_density`
+
+### Updated Summary by Target Phase
+
+| Phase | Items | Description |
+|-------|-------|-------------|
+| 6 | 12, 13, 15 | State consolidation, async safety |
+| 9 | 11 | Test updates for auto-fill engine |
+| 14 | 1-7, 14, 16, 18-20 | DRY/KISS Utilities + redundancy fixes |
+| 7 | 17 | UX confidence indicators |
+
+### Review History Update
+
+| Date | Session | Reviewer | Scope |
+|------|---------|----------|-------|
+| 2026-01-28 | 161 | code-review-agent | Phase 6 (Calculations) |
+| 2026-01-28 | 159 | code-review-agent | Phase 5 (Auto-Fill) |
+| 2026-01-28 | 156 | code-review-agent | Phases 3 & 4 |
