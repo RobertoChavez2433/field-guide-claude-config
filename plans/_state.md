@@ -1,42 +1,43 @@
 # Session State
 
-**Last Updated**: 2026-01-28 | **Session**: 157
+**Last Updated**: 2026-01-28 | **Session**: 158
 
 ## Current Phase
 - **Phase**: Comprehensive Plan Execution
-- **Status**: Phase 5 Complete
+- **Status**: Phase 5 FULLY Complete (Integration Done)
 
-## Last Session (Session 157)
-**Summary**: Implemented Phase 5 - Smart Auto-Fill + Carry-Forward Defaults
+## Last Session (Session 158)
+**Summary**: Completed Phase 5 Integration - Auto-Fill Screen Integration
 
 **Key Activities**:
-- Implemented all Phase 5 tasks using parallel agents
-- 19 files changed, 2234 insertions
-- Created comprehensive test suite (13 tests) for form_field_cache
+- Integrated AutoFillEngine into form_fill_screen.dart
+- Added auto-fill menu with 3 options (fill empty, re-fill all, clear auto-filled)
+- Added AutoFillIndicator to DynamicFormField widget
+- Added user edit tracking to prevent unwanted overwrites
+- Exported PreferencesService via shared barrel
+- Pushed both repos (app + claude config)
 
-**Phase 5 Components**:
-- ✅ 5.1: AutoFill engine with provenance (AutoFillResult, AutoFillEngine)
-- ✅ 5.2: Inspector profile + preferences service (PreferencesService, settings screen expansion)
-- ✅ 5.3: Carry-forward cache (DB v15, FormFieldCacheLocalDatasource, getCarryForwardCache)
-- ✅ 5.4: UI auto-fill indicators (AutoFillIndicator, FormFillProvider)
-- ✅ 5.5: Auto-fill context hydration (AutoFillContextBuilder)
+**Phase 5 Integration**:
+- ✅ form_fill_screen.dart: Uses AutoFillEngine + AutoFillContextBuilder
+- ✅ Auto-fill menu: PopupMenuButton with 3 actions
+- ✅ AutoFillIndicator: Shows source (Inspector, Project, Contractor, etc.)
+- ✅ User edit tracking: _userEditedFields prevents overwrites
+- ✅ DynamicFormField: autoFillResult + onClearAutoFill params
 
-**Files Created**:
-- `lib/features/toolbox/data/models/auto_fill_result.dart`
-- `lib/features/toolbox/data/models/form_field_cache.dart`
-- `lib/features/toolbox/data/services/auto_fill_engine.dart`
-- `lib/features/toolbox/data/services/auto_fill_context_builder.dart`
-- `lib/features/toolbox/data/datasources/local/form_field_cache_local_datasource.dart`
-- `lib/features/toolbox/presentation/providers/form_fill_provider.dart`
-- `lib/features/toolbox/presentation/widgets/auto_fill_indicator.dart`
-- `lib/shared/services/preferences_service.dart`
-- `test/features/toolbox/data/datasources/form_field_cache_local_datasource_test.dart`
+**Files Modified**:
+- `lib/features/toolbox/presentation/screens/form_fill_screen.dart` (+254 lines)
+- `lib/features/toolbox/presentation/widgets/dynamic_form_field.dart` (+27 lines)
+- `lib/main.dart` (+16 lines)
+- `lib/shared/shared.dart` (+1 line)
 
-## Previous Session (Session 156)
-**Summary**: Code review of Phases 3 & 4, scope verification
+**Commits**:
+- `543d1ba` - feat(toolbox): Phase 5 Complete - Auto-Fill Screen Integration
+
+## Previous Session (Session 157)
+**Summary**: Implemented Phase 5 infrastructure (AutoFillEngine, FormFillProvider, etc.)
 
 ## Active Plan
-**Status**: PHASE 5 COMPLETE
+**Status**: PHASE 5 FULLY COMPLETE
 **File**: `.claude/plans/COMPREHENSIVE_PLAN.md`
 
 **Completed**:
@@ -45,7 +46,7 @@
 - [x] Code Review Fixes (immutable state, tests, datasources)
 - [x] Phase 3: Toolbox Refactor Set B (Resilience + Utilities)
 - [x] Phase 4: Form Registry + Template Metadata Foundation
-- [x] Phase 5: Smart Auto-Fill + Carry-Forward Defaults
+- [x] Phase 5: Smart Auto-Fill + Carry-Forward Defaults (FULLY INTEGRATED)
 
 **Next Tasks** (Phase 6):
 - [ ] Enhanced PDF Export
@@ -57,6 +58,7 @@
 - FormFieldCache: Project-scoped semantic_name -> last_value with UNIQUE constraint
 - AutoFillContextBuilder: Reads from providers, graceful degradation for missing data
 - FormFillProvider: Tracks userEditedFields to prevent unwanted overwrites
+- Auto-fill menu: PopupMenuButton with 3 options for bulk operations
 
 ## Future Work
 | Item | Status | Reference |
@@ -70,5 +72,5 @@ None - Ready to proceed with Phase 6
 
 ## Reference
 - Branch: `main`
-- Last Commit: `1c0e81f` - feat(toolbox): Phase 5 - Smart Auto-Fill + Carry-Forward Defaults
+- Last Commit: `543d1ba` - feat(toolbox): Phase 5 Complete - Auto-Fill Screen Integration
 - Implementation Plan: `.claude/plans/COMPREHENSIVE_PLAN.md`
