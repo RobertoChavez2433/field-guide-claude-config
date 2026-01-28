@@ -1,52 +1,47 @@
 # Session State
 
-**Last Updated**: 2026-01-28 | **Session**: 152
+**Last Updated**: 2026-01-28 | **Session**: 153
 
 ## Current Phase
 - **Phase**: Comprehensive Plan Execution
-- **Status**: Phase 2 Complete - Toolbox Refactor Set A
+- **Status**: Phase 2 Complete + Code Review Fixes
 
-## Last Session (Session 152)
-**Summary**: Implemented Phase 2 from COMPREHENSIVE_PLAN.md - Toolbox Refactor Set A (Structure + DI + Provider Safety)
+## Last Session (Session 153)
+**Summary**: Code review of Phase 1 & 2 PRs, fixed 3 issues identified by review.
 
 **Key Activities**:
-- **2.1** Extracted Form Fill widgets from mega screen (1180→732 lines, 38% reduction)
-- **2.2** Injected FormParsingService and FormPdfService via Provider in main.dart
-- **2.3** Fixed mutable list updates in InspectorFormProvider (6 mutations → immutable)
-- **2.4** Renamed misnamed datasource tests to model tests
+- Code review of commits 141ed00 (Phase 2) and 191a205 (Phase 1)
+- Verified all Phase 1 & 2 items implemented
+- Fixed TodoProvider mutable state (5 mutations → immutable)
+- Rewrote trivial tests in forms_list_screen_test.dart
+- Created missing datasource tests (57 new tests)
 
 **Files Created**:
-- `lib/features/toolbox/presentation/widgets/form_status_card.dart` (61 lines)
-- `lib/features/toolbox/presentation/widgets/dynamic_form_field.dart` (104 lines)
-- `lib/features/toolbox/presentation/widgets/quick_entry_section.dart` (71 lines)
-- `lib/features/toolbox/presentation/widgets/parsing_preview.dart` (160 lines)
-- `lib/features/toolbox/presentation/widgets/table_rows_section.dart` (125 lines)
-- `test/features/toolbox/data/models/inspector_form_test.dart` (moved/renamed)
-- `test/features/toolbox/data/models/todo_item_test.dart` (moved/renamed)
+- `test/features/toolbox/data/datasources/inspector_form_local_datasource_test.dart` (374 lines)
+- `test/features/toolbox/data/datasources/todo_item_local_datasource_test.dart` (655 lines)
 
 **Files Modified**:
-- `lib/features/toolbox/presentation/screens/form_fill_screen.dart` - Refactored to use extracted widgets
-- `lib/features/toolbox/presentation/widgets/widgets.dart` - Updated barrel export
-- `lib/features/toolbox/presentation/providers/inspector_form_provider.dart` - Fixed mutable list updates
-- `lib/main.dart` - Added service providers for DI
-- `integration_test/patrol/e2e_tests/toolbox_flow_test.dart` - Fixed test syntax
+- `lib/features/toolbox/presentation/providers/todo_provider.dart` - All list mutations now immutable
+- `test/features/toolbox/presentation/screens/forms_list_screen_test.dart` - Behavioral tests replace trivial assertions
 
-**Files Deleted**:
-- `test/features/toolbox/data/datasources/inspector_form_local_datasource_test.dart`
-- `test/features/toolbox/data/datasources/todo_item_local_datasource_test.dart`
+**Code Review Findings**:
+- Phase 2 PR: High quality, proper DI, mounted checks, safe collection access
+- Phase 1 PR: Good test coverage, proper helper patterns, no pumpAndSettle
+- Both PRs approved - production ready
 
-**Test Results**: 261 toolbox tests passing, analyzer clean (0 errors)
+**Test Results**: 320 toolbox tests passing
 
-## Previous Session (Session 151)
-**Summary**: Implemented Phase 1 Safety Net - expanded test coverage before large refactors.
+## Previous Session (Session 152)
+**Summary**: Implemented Phase 2 - Toolbox Refactor Set A (widget extraction, DI, provider safety)
 
 ## Active Plan
-**Status**: PHASE 2 COMPLETE
+**Status**: PHASE 2 COMPLETE + REVIEW FIXES
 **File**: `.claude/plans/COMPREHENSIVE_PLAN.md`
 
 **Completed**:
 - [x] Phase 1: Safety Net + Baseline Verification (PR 10)
 - [x] Phase 2: Toolbox Refactor Set A (Structure + DI + Provider Safety)
+- [x] Code Review Fixes (immutable state, tests, datasources)
 
 **Next Tasks** (Phase 3):
 - [ ] Add template load error handling
@@ -56,9 +51,9 @@
 - [ ] Externalize form definitions to JSON assets
 
 ## Key Decisions
-- Widget extraction: 5 widgets extracted from form_fill_screen.dart
-- DI pattern: Services provided via Provider, not instantiated in widgets
-- Immutable state: Provider uses list comprehension for immutable updates
+- TodoProvider: All 5 list mutations converted to immutable patterns
+- Tests: Behavioral tests over constant-testing assertions
+- Datasources: Mock-based unit tests for full CRUD coverage
 
 ## Future Work
 | Item | Status | Reference |
@@ -72,5 +67,5 @@ None - Ready to proceed with Phase 3
 
 ## Reference
 - Branch: `main`
-- Last Commit: `191a205` (pre-Phase 2)
+- Last Commit: `3e57333` (code review fixes)
 - Implementation Plan: `.claude/plans/COMPREHENSIVE_PLAN.md`
