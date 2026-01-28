@@ -135,7 +135,7 @@ FormSeedService(this._repository, {FieldRegistryService? registryService})
 
 **Commits Reviewed**: `543d1ba`, `1c0e81f`
 **Scope**: Smart Auto-Fill + Carry-Forward Defaults
-**Overall**: ~85% complete - read infrastructure solid, write path for carry-forward missing
+**Overall**: ✅ **100% Complete** (Session 160 - fixed remaining items)
 
 ### Phase 5 Requirements Verification
 
@@ -143,36 +143,27 @@ FormSeedService(this._repository, {FieldRegistryService? registryService})
 |------|-------------|--------|-------|
 | 5.1 | AutoFill engine with provenance | ✅ Complete | `AutoFillEngine`, `AutoFillResult` with source/confidence |
 | 5.2 | Inspector profile expansion | ✅ Complete | Phone, cert, agency in settings + PreferencesService |
-| 5.3 | Carry-forward cache | ⚠️ Partial | Read infrastructure complete, write path missing, no per-form toggle |
+| 5.3 | Carry-forward cache | ✅ Complete | Read + write paths, per-form toggle in auto-fill menu |
 | 5.4 | UI auto-fill indicators | ✅ Complete | `AutoFillIndicator` widget, bulk apply/clear actions |
-| 5.5 | Context hydration | ⚠️ Partial | Builder exists but doesn't integrate carry-forward cache |
+| 5.5 | Context hydration | ✅ Complete | Builder reads cache from FieldRegistryService via context |
 
-### Priority: Critical (Must Fix for Phase 5 Completion)
+### ~~Priority: Critical (Must Fix for Phase 5 Completion)~~ RESOLVED
 
-#### 8. Carry-Forward Cache Never Populated
-**File**: `lib/features/toolbox/data/services/auto_fill_context_builder.dart:153`
-**Issue**: `carryForwardCache` is always initialized as empty `<String, String>{}` and never populated. `FieldRegistryService.getCarryForwardCache()` exists but is never called.
-**Fix**: Inject `FieldRegistryService` and call `getCarryForwardCache(projectId)` to populate context.
-**Impact**: Step 5.3 carry-forward feature does not function
-**Target Phase**: 5 (Completion)
+#### ~~8. Carry-Forward Cache Never Populated~~ ✅ FIXED (Session 160)
+**File**: `lib/features/toolbox/data/services/auto_fill_context_builder.dart`
+**Resolution**: Added `includeCarryForward` parameter, reads `FieldRegistryService.getCarryForwardCache(projectId)` from Provider context.
 
 ---
 
-#### 9. No Write Path for Carry-Forward Cache
-**Files**: `lib/features/toolbox/presentation/screens/form_fill_screen.dart`, `lib/features/toolbox/presentation/providers/form_fill_provider.dart`
-**Issue**: When user saves a form, field values are never written to `form_field_cache`. Datasource has `upsert()` and `upsertBatch()` methods but they are never called.
-**Fix**: Add cache update logic in `FormFillProvider.saveResponse()` or `FormFillScreen._saveForm()`.
-**Impact**: Step 5.3 incomplete - cache will always be empty
-**Target Phase**: 5 (Completion)
+#### ~~9. No Write Path for Carry-Forward Cache~~ ✅ FIXED (Session 160)
+**Files**: `lib/features/toolbox/presentation/screens/form_fill_screen.dart`, `lib/features/toolbox/data/services/field_registry_service.dart`
+**Resolution**: Added `updateCarryForwardCache()` method to FieldRegistryService, called from `FormFillScreen._saveForm()` on successful save.
 
 ---
 
-#### 10. Missing "Use Last Value" Toggle Per Form
+#### ~~10. Missing "Use Last Value" Toggle Per Form~~ ✅ FIXED (Session 160)
 **File**: `lib/features/toolbox/presentation/screens/form_fill_screen.dart`
-**Issue**: Settings has global `useLastValues` toggle, but Step 5.3 specifies "add 'Use last value' toggle per form."
-**Fix**: Add per-form toggle in form fill UI that allows override per form session.
-**Impact**: Step 5.3 not fully implemented
-**Target Phase**: 5 (Completion)
+**Resolution**: Added `_useCarryForward` state (defaults from global setting), toggle in auto-fill menu, controls both read and write paths.
 
 ---
 
@@ -253,7 +244,7 @@ FormSeedService(this._repository, {FieldRegistryService? registryService})
 
 | Phase | Items | Description |
 |-------|-------|-------------|
-| 5 (Completion) | 8, 9, 10 | Critical carry-forward completion |
+| ~~5 (Completion)~~ | ~~8, 9, 10~~ | ~~Critical carry-forward completion~~ ✅ DONE |
 | 6 | 12, 13, 15 | State consolidation, async safety |
 | 9 | 11 | Test updates for auto-fill engine |
 | 14 | 1, 2, 3, 4, 5, 6, 7, 14, 16 | DRY/KISS Utilities + shared patterns |
