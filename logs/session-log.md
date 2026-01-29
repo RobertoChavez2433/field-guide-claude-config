@@ -24,6 +24,13 @@ Historical record of completed work. NOT loaded into agent context.
 
 ## Session History
 
+### 2026-01-29 (Session 187): Codebase Cleanup Planning
+- Comprehensive audit: dead code, redundant files, stale configs
+- Found: `page_transitions.dart` (170 lines unused), duplicate weather service, 10 deprecated barrels
+- Created 4-PR cleanup plan with barrel migration strategy
+- Plan: `.claude/plans/All Plans Done - Cleanup.md`
+- Scope: ~133 files to modify, 15 files to delete
+
 ### 2026-01-28 (Session 171): Phase 5/8 Gap Analysis & Planning
 - Planning session - no code changes
 - Explored 6 original toolbox gaps (template rendering, DI, hash, validation, provenance, hydration)

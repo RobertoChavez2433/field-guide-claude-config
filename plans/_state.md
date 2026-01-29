@@ -1,59 +1,57 @@
 # Session State
 
-**Last Updated**: 2026-01-29 | **Session**: 186
+**Last Updated**: 2026-01-29 | **Session**: 187
 
 ## Current Phase
-- **Phase**: Code Review Cleanup
-- **Status**: COMPLETE (All items resolved)
+- **Phase**: Codebase Cleanup
+- **Status**: PLANNED (4 PRs ready for execution)
 
-## Last Session (Session 186)
-**Summary**: Final Code Review Fixes - Completed remaining 3 deferred items
+## Last Session (Session 187)
+**Summary**: Comprehensive Codebase Cleanup Planning
 
 **Key Activities**:
-- Fixed #12: Removed unused FormFillProvider (dead code)
-- Fixed #13: Refactored AutoFillContextBuilder to use constructor DI (removes async context warnings)
-- Fixed #21: Grouped FormFieldsTab 28+ parameters into 6 config objects
+- Thorough codebase audit for dead code, redundant files, stale configs
+- Identified 170+ lines unused code, duplicate weather service, 10 deprecated barrels
+- Created 4-PR cleanup plan with barrel migration strategy
+- Plan saved to `.claude/plans/All Plans Done - Cleanup.md`
 
-**Files Modified**:
-- `lib/features/toolbox/presentation/providers/form_fill_provider.dart` - DELETED (unused)
-- `lib/features/toolbox/presentation/providers/providers.dart` - Removed export
-- `lib/features/toolbox/data/services/auto_fill_context_builder.dart` - Constructor DI refactor
-- `lib/features/toolbox/presentation/screens/form_fill_screen.dart` - Updated to use new patterns
-- `lib/features/toolbox/presentation/widgets/form_fields_config.dart` (NEW) - Config classes
-- `lib/features/toolbox/presentation/widgets/form_fields_tab.dart` - Uses config objects
-- `lib/features/toolbox/presentation/widgets/widgets.dart` - Added export
-- `lib/main.dart` - Updated AutoFillContextBuilder instantiation
+**Findings**:
+- Dead code: `page_transitions.dart` (170 lines), `seed_data_service.dart.backup`, duplicate weather service
+- Deprecated barrels: 10 files with 64+ importers (models.dart has 64 alone)
+- Stale docs: 15 plan/doc files to archive
 
-**Metrics**:
-- All lib/ code clean (no errors, 60 info warnings - expected deprecations)
-- Code review backlog fully complete
+**Files Created**:
+- `.claude/plans/All Plans Done - Cleanup.md` - Comprehensive 4-PR cleanup plan
 
-## Previous Session (Session 185)
-**Summary**: Code Review Backlog Cleanup - Fixed 5 items from backlog
+## Active Plan
+**Status**: READY FOR EXECUTION
+**File**: `.claude/plans/All Plans Done - Cleanup.md`
+
+**PRs Planned**:
+- [ ] PR 1: Safe deletions + archive (6 deleted, 6 modified) - LOW risk
+- [ ] PR 2: Photo barrel migration (35 files, 3 barrels) - MEDIUM risk
+- [ ] PR 3: Provider/repository barrel migration (28 files, 5 barrels) - MEDIUM risk
+- [ ] PR 4: Models barrel migration (64 files, 1 barrel) - MEDIUM-HIGH risk
+
+**Total Scope**: ~133 files modified, 15 files deleted
+
+## Previous Session (Session 186)
+**Summary**: Final Code Review Fixes - Completed remaining 3 deferred items
 
 ## Completed Plans
-
 ### Code Review Cleanup - FULLY COMPLETE (Session 186)
-**File**: `.claude/plans/CODE_REVIEW_REMAINING.md`
-
-All 32 original items + 3 deferred items now resolved:
-- [x] #12: Removed unused FormFillProvider
-- [x] #13: AutoFillContextBuilder constructor DI
-- [x] #21: FormFieldsTab config objects
-
 ### Phase 16 Release Hardening - COMPLETE
 ### Phase 15 Large File Decomposition - COMPLETE
 ### Phase 14 DRY/KISS Implementation Plan (A-F) - COMPLETE
-### Phase 14 Comprehensive Plan (14.1-14.5) - COMPLETE
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| None | - | All code review items complete |
+| Codebase Cleanup | READY | `.claude/plans/All Plans Done - Cleanup.md` |
 
 ## Open Questions
 None
 
 ## Reference
 - Branch: `main`
-- Original backlog: `.claude/plans/CODE_REVIEW_BACKLOG.md`
+- Cleanup plan: `.claude/plans/All Plans Done - Cleanup.md`
