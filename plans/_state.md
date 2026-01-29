@@ -1,12 +1,44 @@
 # Session State
 
-**Last Updated**: 2026-01-29 | **Session**: 199
+**Last Updated**: 2026-01-29 | **Session**: 201
 
 ## Current Phase
-- **Phase**: Form Completion Debug
+- **Phase**: Form Completion Debug v2
 - **Status**: COMPLETE
 
-## Last Session (Session 199)
+## Last Session (Session 201)
+**Summary**: Implemented Form Completion Debug v2 fixes
+
+**Key Activities**:
+- Added isInitializing flag to ProjectProvider (starts true, set false after loadProjects completes)
+- Updated home_screen.dart and project_dashboard_screen.dart to show loading during initialization
+- Added verbose debug logging throughout autofill pipeline:
+  - [FormSeed], [FieldRegistry], [FormFill], [AutoFill], [AutoFillContext] prefixes
+- Incremented seed version to v5 to force registry repopulation
+- Changed _ensureRegistryPopulated() to always repopulate (fixes stale isAutoFillable=false)
+- Updated auto_fill_context_builder_test.dart to match current API
+- Built Windows release successfully
+
+**Commits**: `fb158a3`
+
+**Next Session**:
+- Test Windows app with project restore and autofill
+- Verify debug logs show proper autofill pipeline flow
+
+## Session 200
+**Summary**: Planning session - investigated persistent blank screen and autofill issues
+
+**Key Activities**:
+- Built and tested Windows desktop app
+- User reported: blank screen on project restore + autofill still broken
+- Launched explore agents to investigate root causes
+- Identified: Race condition in ProjectProvider init (returns before loadProjects completes)
+- Identified: Field registry empty, triggering legacy fallback with isAutoFillable=false
+- Created implementation plan with verbose debug logging
+
+**Commits**: None (planning session)
+
+## Session 199
 **Summary**: Implemented Form Completion Debug fixes (3 issues)
 
 **Key Activities**:
@@ -15,8 +47,6 @@
 - Issue 3: Added autoFillSource config to form JSON + debug logging
 
 **Commits**: `4f4256e`
-
-**Next Session**: None pending - all planned work complete
 
 ## Session 198
 **Summary**: Fixed Windows desktop issues + planned Form Completion Debug fixes
@@ -53,8 +83,12 @@
 ## Session 193
 **Summary**: Implemented PR 1 - Removed Test Results section
 
+## Active Plan
+None - awaiting user verification
+
 ## Completed Plans
-### Form Completion Debug - COMPLETE (Session 199)
+### Form Completion Debug v2 - COMPLETE (Session 201)
+### Form Completion Debug - Partial (Session 199) - Issues persist
 ### Windows Desktop Testing Fixes - COMPLETE (Session 198)
 ### Code Review Fixes - COMPLETE (Session 197)
 ### Entry Wizard Enhancements - FULLY COMPLETE (Session 195)
@@ -65,7 +99,7 @@
 ### Phase 14 DRY/KISS Implementation Plan (A-F) - COMPLETE
 
 ## Future Work
-None pending
+None - awaiting user verification of Form Completion Debug v2 fixes
 
 ## Open Questions
 None
