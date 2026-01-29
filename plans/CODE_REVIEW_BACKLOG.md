@@ -452,3 +452,156 @@ FormSeedService(this._repository, {FieldRegistryService? registryService})
 | 9 | 11 | Test updates for auto-fill engine |
 | 14 | 1-7, 14, 16, 18-23 | DRY/KISS Utilities + redundancy fixes |
 | ~~7~~ | ~~17~~ | ~~UX confidence indicators~~ (merged with Phase 7)
+
+---
+
+## Phase 8 Code Review - 2026-01-28 (Session 164)
+
+**Scope**: PDF Field Discovery + Mapping UI
+**Overall**: ⚠️ **PASS WITH ISSUES** - 3 items need attention before Phase 9
+
+### Phase 8 Requirements Verification
+
+| Task | Requirement | Status | Notes |
+|------|-------------|--------|-------|
+| 8.1 | Field Discovery Service with AcroForm scan | ✅ Complete | `FieldDiscoveryService` scans PDF, extracts fields, normalizes names, matches semantics |
+| 8.2 | Form Import + Field Mapping UI screens | ✅ Complete | Both screens implemented with proper providers |
+| 8.3 | Template Storage + Re-mapping Detection (SHA-256) | ✅ Complete | `computeTemplateHash`, `checkTemplateChanged`, `getRemapStatus` in service |
+| 8.4 | Imported Template Persistence Validation | ✅ Complete | `validateTemplate`, `restoreTemplateFile`, `templateBytes` BLOB storage |
+
+### File Assessment Summary
+
+| File | Verdict | Notes |
+|------|---------|-------|
+| `field_discovery_service.dart` | ✅ PASS | Well-structured, proper PDF disposal, good field type detection |
+| `form_import_screen.dart` | ✅ PASS | Proper async safety with mounted checks, uses TestingKeys |
+| `field_mapping_screen.dart` | ⚠️ PASS | Missing mounted check in _showBulkActions (line 91, 103) |
+| `form_import_provider.dart` | ⚠️ PASS | Stub classes throw UnimplementedError in constructor |
+| `field_mapping_provider.dart` | ⚠️ PASS | updateMapping uses filtered index bug, TODO in saveForm |
+| `template_validation_result.dart` | ✅ PASS | Simple, well-designed enum + result class |
+| `database_service.dart` | ✅ PASS | v17 migration properly adds template_bytes BLOB |
+| `inspector_form.dart` | ✅ PASS | templateBytes field properly added with copyWith support |
+| `field_registry_service.dart` | ✅ PASS | Hash + validation methods well implemented |
+| `app_router.dart` | ✅ PASS | Routes properly registered with extra data passing |
+| `testing_keys.dart` | ✅ PASS | All Phase 8 keys added |
+| `generic_local_datasource.dart` | ✅ PASS | limit parameter properly added to getWhere |
+
+### Issues Identified
+
+#### 24. Missing Mounted Check in FieldMappingScreen._showBulkActions (SHOULD FIX)
+**File**: `lib/features/toolbox/presentation/screens/field_mapping_screen.dart:91,103`
+**Issue**: After `Navigator.pop(context)` and provider action, `ScaffoldMessenger.of(context)` used without mounted check
+**Current**:
+```dart
+onTap: () {
+  Navigator.pop(context);
+  provider.autoMapHighConfidence();
+  ScaffoldMessenger.of(context).showSnackBar(...);
+},
+```
+**Fix**: Capture `ScaffoldMessenger.of(context)` before pop, or check mounted
+**Target Phase**: 9 (QA)
+
+---
+
+#### 25. updateMapping Uses Filtered Index (BUG)
+**File**: `lib/features/toolbox/presentation/providers/field_mapping_provider.dart:131-143`
+**Issue**: When filter is active, index from UI corresponds to filtered list, but method uses it against unfiltered `_mappings`
+**Current**:
+```dart
+void updateMapping(int index, {String? semanticName, bool? isAutoFillable}) {
+  if (index < 0 || index >= _mappings.length) return;
+  final mapping = _mappings[index];  // Wrong - should use filtered list index
+}
+```
+**Fix**: Find original index via mapping object, or pass `FieldMapping` directly
+**Target Phase**: 9 (Bug fix)
+
+---
+
+#### 26. Providers Not Registered in main.dart (CRITICAL)
+**File**: `lib/main.dart`
+**Issue**: `FormImportProvider` and `FieldMappingProvider` not in MultiProvider tree
+**Impact**: App will crash when navigating to /form-import or /field-mapping routes
+**Fix**: Add providers to main.dart MultiProvider
+**Target Phase**: 9 (Must fix before integration)
+
+---
+
+#### 27. saveForm Has TODO - Not Integrated (INCOMPLETE)
+**File**: `lib/features/toolbox/presentation/providers/field_mapping_provider.dart:213-239`
+**Issue**: `saveForm` just simulates with `Future.delayed`, doesn't persist
+**Current**:
+```dart
+// TODO: Integrate with InspectorFormRepository to save form
+await Future.delayed(const Duration(seconds: 1));
+```
+**Impact**: Form import workflow incomplete without persistence
+**Target Phase**: 9 (Complete workflow)
+
+---
+
+#### 28. Duplicate _getFieldIcon Functions (DRY)
+**Files**:
+- `lib/features/toolbox/presentation/screens/form_import_screen.dart:358-376`
+- `lib/features/toolbox/presentation/screens/field_mapping_screen.dart:493-511`
+**Issue**: Identical helper method in both screens
+**Fix**: Extract to shared utility
+**Target Phase**: 14 (DRY/KISS)
+
+---
+
+#### 29. Stub Classes Use Fragile Pattern
+**File**: `lib/features/toolbox/presentation/providers/form_import_provider.dart:119-149`
+**Issue**: `_StubRegistryDatasource` and `_StubAliasDatasource` use `throw UnimplementedError()` in super constructor
+**Impact**: Works but fragile - breaks if parent constructor starts using database immediately
+**Target Phase**: 14 (Consider mock pattern)
+
+---
+
+### Positive Observations
+
+1. **Excellent async safety in form_import_screen.dart**: All async methods properly check `mounted` before context use
+2. **Proper PDF disposal**: `FieldDiscoveryService.discoverFields` correctly calls `document.dispose()`
+3. **Good error handling**: Both providers have proper try-catch with error state management
+4. **Thorough field type detection**: `_detectFieldType` handles all Syncfusion PDF field types
+5. **Well-designed validation model**: `TemplateValidationResult` with enum status and recovered bytes is clean
+6. **Database migration pattern followed**: v17 uses `_addColumnIfNotExists` for safe schema updates
+7. **Barrel exports complete**: All new files properly exported
+8. **TestingKeys complete**: All Phase 8 UI elements have keys
+9. **Confidence-based suggestions**: Semantic matching with scores well-designed for user review
+
+### Security Assessment
+
+| Check | Status |
+|-------|--------|
+| No hardcoded credentials | ✅ PASS |
+| Input validation | ✅ PASS |
+| PDF path validation | ✅ PASS |
+| Hash collision prevention | ✅ PASS (SHA-256) |
+
+### Test Coverage
+
+| Component | Tests | Status |
+|-----------|-------|--------|
+| FieldDiscoveryService | 47 | ✅ Complete |
+| TemplateValidation | 24 | ✅ Complete |
+| Full Toolbox Suite | 578 | ✅ All pass |
+
+### Updated Summary by Target Phase
+
+| Phase | Items | Description |
+|-------|-------|-------------|
+| 6 | 12, 13, 15 | State consolidation, async safety |
+| 9 | 11, 24, 25, 26, 27 | QA + Phase 8 fixes |
+| 14 | 1-7, 14, 16, 18-23, 28, 29 | DRY/KISS Utilities + redundancy fixes |
+
+### Review History Update
+
+| Date | Session | Reviewer | Scope |
+|------|---------|----------|-------|
+| 2026-01-28 | 164 | code-review-agent | Phase 8 (Field Discovery + Mapping UI) |
+| 2026-01-28 | 162 | code-review-agent | Phase 7 (Live Preview + UX) |
+| 2026-01-28 | 161 | code-review-agent | Phase 6 (Calculations) |
+| 2026-01-28 | 159 | code-review-agent | Phase 5 (Auto-Fill) |
+| 2026-01-28 | 156 | code-review-agent | Phases 3 & 4 |

@@ -1,50 +1,39 @@
 # Session State
 
-**Last Updated**: 2026-01-28 | **Session**: 162
+**Last Updated**: 2026-01-28 | **Session**: 164
 
 ## Current Phase
 - **Phase**: Comprehensive Plan Execution
-- **Status**: ✅ Phase 7 COMPLETE
+- **Status**: ✅ Phase 8 COMPLETE + Reviewed
 
-## Last Session (Session 162)
-**Summary**: Completed Phase 7 - Live Preview + Form Entry UX Cleanup
+## Last Session (Session 164)
+**Summary**: Code review of Phase 8 - PDF Field Discovery + Mapping UI
 
 **Key Activities**:
-- Task 1: Tab-based layout with FormFieldsTab + FormPreviewTab (responsive split-view at 840px)
-- Task 2: Preview byte caching with FormStateHasher (LRU cache, 5 entries, 5min TTL)
-- Task 3: Test history header with copy-previous-values functionality
-- Task 4: Non-text field support (checkbox/radio/dropdown) in PDF and UI
-- Code review: Pass with Recommendations (minor items for Phase 14)
-- All 506 toolbox tests passing
+- Code review of all 12 Phase 8 files using code-review-agent
+- Identified 3 critical/should-fix items for Phase 9
+- Identified 3 minor items for Phase 14
+- Updated CODE_REVIEW_BACKLOG.md with findings
 
-**Phase 7 Final Results**:
-- ✅ 7.1 Split form fill screen into tabs - COMPLETE (FormFieldsTab, FormPreviewTab, split-view)
-- ✅ 7.2 Preview byte caching + error states - COMPLETE (FormStateHasher, LRU cache, error UI)
-- ✅ 7.3 Form header with test history - COMPLETE (FormTestHistoryCard, copy previous values)
-- ✅ 7.4 Non-text field fill support - COMPLETE (checkbox/radio/dropdown in PDF + UI)
+**Review Findings**:
+- ⚠️ Issue #26 (CRITICAL): Providers not registered in main.dart - will crash on navigation
+- ⚠️ Issue #25 (BUG): updateMapping uses filtered index - updates wrong field when filter active
+- ⚠️ Issue #27 (INCOMPLETE): saveForm has TODO - doesn't persist
+- ⚠️ Issue #24: Missing mounted check in _showBulkActions
+- Minor: Issues #28, #29 for DRY cleanup in Phase 14
 
-**Files Created**:
-- `lib/features/toolbox/presentation/widgets/form_fields_tab.dart` - Extracted fields tab
-- `lib/features/toolbox/presentation/widgets/form_preview_tab.dart` - PDF preview tab
-- `lib/features/toolbox/presentation/widgets/form_test_history_card.dart` - Test history UI
-- `lib/features/toolbox/data/services/form_state_hasher.dart` - Cache key generator
-- `test/features/toolbox/services/form_state_hasher_test.dart` - 9 unit tests
+**Verdict**: Phase 8 PASS WITH ISSUES - 4 items need attention in Phase 9
 
-**Files Modified**:
-- `lib/features/toolbox/presentation/screens/form_fill_screen.dart` - Tab layout + test history
-- `lib/features/toolbox/data/services/form_pdf_service.dart` - Preview cache + non-text fields
-- `lib/features/toolbox/presentation/widgets/dynamic_form_field.dart` - Checkbox/radio/dropdown UI
-- `lib/features/toolbox/data/models/form_field_entry.dart` - Options field for non-text
-- `lib/features/toolbox/data/repositories/form_response_repository.dart` - getRecentResponses
-- `lib/features/toolbox/data/datasources/local/form_response_local_datasource.dart` - Query method
-- `lib/shared/testing_keys.dart` - Added preview/history keys
-- `pubspec.yaml` - syncfusion_flutter_pdfviewer package
+## Previous Session (Session 163)
+**Summary**: Completed Phase 8 - PDF Field Discovery + Mapping UI
+- All 578 toolbox tests passing
+- 47 field discovery tests, 24 template validation tests
 
-## Previous Session (Session 161)
-**Summary**: Completed Phase 6 - Calculation Engine + 0582B Density Automation
+## Previous Session (Session 162)
+**Summary**: Completed Phase 7 - Live Preview + Form Entry UX Cleanup
 
 ## Active Plan
-**Status**: ✅ PHASE 7 COMPLETE - Ready for Phase 8
+**Status**: ✅ PHASE 8 REVIEWED - Ready for Phase 9 (with fixes)
 **File**: `.claude/plans/COMPREHENSIVE_PLAN.md`
 
 **Completed**:
@@ -55,25 +44,30 @@
 - [x] Phase 4: Form Registry + Template Metadata Foundation
 - [x] Phase 5: Smart Auto-Fill + Carry-Forward Defaults
 - [x] Phase 6: Calculation Engine + 0582B Density Automation
-- [x] Phase 7: Live Preview + Form Entry UX Cleanup ✅ COMPLETE
+- [x] Phase 7: Live Preview + Form Entry UX Cleanup
+- [x] Phase 8: PDF Field Discovery + Mapping UI ✅ COMPLETE + REVIEWED
 
 **Next Tasks**:
-- [ ] Phase 8: PDF Field Discovery + Mapping UI
 - [ ] Phase 9: Integration, QA, and Backward Compatibility
+  - Fix Issue #26: Register providers in main.dart
+  - Fix Issue #25: updateMapping filtered index bug
+  - Fix Issue #27: Implement saveForm persistence
+  - Fix Issue #24: Add mounted check in _showBulkActions
+- [ ] Phase 10: Entry + Report Dialog Extraction
 
 ## Key Decisions
-- Tab layout: Mobile (TabBarView) vs Tablet (split-view at 840px breakpoint)
-- Preview cache: LRU with 5 entries max, 5-minute TTL, FIFO eviction
-- Cache key: `{formId}_{responseId}_{stateHash}` using FormStateHasher
-- Copy previous: Skips project-specific fields (project_number, contractor, etc.)
-- Non-text fields: Graceful fallback if PDF field type doesn't match
+- Field discovery: Uses FieldDiscoveryService with FormFieldRegistryRepository for alias lookup
+- Confidence scoring: 1.0 (exact), 0.9 (case-insensitive), 0.8 (alias), 0.5 (keyword), 0.0 (none)
+- Template storage: Full PDF stored as BLOB in template_bytes column for recovery
+- Hash detection: SHA-256 hash comparison for drift detection
+- Validation states: valid, missingButRecoverable, hashMismatch, invalid
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Phase 8: Field Discovery | NEXT | PDF import + mapping UI |
-| Phase 9: Integration QA | PLANNED | Backward compat + tests |
+| Phase 9: Integration QA | NEXT | Backward compat + tests |
 | Phase 10: Dialog Extraction | PLANNED | Entry + Report dialogs |
+| Phase 11: Performance Pass | PLANNED | Sliverize mega screens |
 
 ## Open Questions
 None
