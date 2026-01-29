@@ -13,6 +13,40 @@ Critical patterns to avoid. Archive: `defects-archive.md`
 
 ## Active Patterns
 
+### Provider Returned Before Async Initialization
+**Pattern**: Returning Provider from `create:` callback before async initialization completes
+**Prevention**:
+- Add `isInitializing` flag that starts true
+- Set flag to false only after all async init completes
+- Screens should show loading state while `isInitializing == true`
+**Example**:
+```dart
+// BAD: Provider returned before loadProjects completes
+create: (_) {
+  final provider = MyProvider();
+  provider.loadData().then((_) { ... });  // Async!
+  return provider;  // Returns immediately with empty state
+}
+
+// GOOD: Track initialization state
+bool _isInitializing = true;
+provider.loadData().then((_) {
+  // ... setup ...
+  _isInitializing = false;
+  notifyListeners();
+});
+```
+**Ref**: main.dart:365-378, home_screen.dart:648-654
+
+### Missing Auto-Fill Source Configuration
+**Pattern**: Form field JSON definitions missing `autoFillSource` property
+**Prevention**:
+- Always include `autoFillSource` for fields that should auto-fill
+- Valid sources: `project`, `entry`, `inspectorProfile`, `contractor`, `location`, `weather`, `calculated`, `carryForward`
+- Increment seed version when updating JSON to trigger re-seeding
+**Impact**: Auto-fill engine skips all fields where `isAutoFillable=false` or `autoFillSource=null`
+**Ref**: assets/data/forms/*.json, auto_fill_engine.dart:106
+
 ### Inadequate E2E Test Debugging
 **Pattern**: Declaring test success based on partial output without analyzing full logs for timeouts/hanging
 **Prevention**:

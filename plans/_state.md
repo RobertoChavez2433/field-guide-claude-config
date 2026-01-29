@@ -17,7 +17,7 @@
   2. FormFillScreen UI clutter (need filter toggle)
   3. Auto-fill not working (JSON missing autoFillSource config)
 
-**Plan Location**: `.claude/plans/Code Review - Entry Wizard Enhancements.md` (appended)
+**Plan Location**: `.claude/plans/Form Completion Debug.md`
 **Commits**: `8d32417`
 
 **Next Session**: Implement Form Completion Debug plan (3 issues)
