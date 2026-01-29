@@ -1,59 +1,62 @@
 # Session State
 
-**Last Updated**: 2026-01-28 | **Session**: 172
+**Last Updated**: 2026-01-28 | **Session**: 173
 
 ## Current Phase
 - **Phase**: Phase 9 Missing Implementations
-- **Status**: Phase A COMPLETE - Template Loading for Imported Forms
+- **Status**: Phases A-C COMPLETE
 
-## Last Session (Session 172)
-**Summary**: Implemented Phase A - Template Loading for Imported Forms
+## Last Session (Session 173)
+**Summary**: Implemented Phase B & C - Template Hash + Re-mapping Detection & Auto-fill Provenance Metadata
 
 **Key Activities**:
-- Added `_loadTemplateBytes` method to FormPdfService that branches on TemplateSource
-- Updated `generateFormPdf` to use the new loader (asset, file, or remote templates)
-- Updated `generateDebugPdf` to use the same template loading logic
-- Added 11 new tests for template source handling and TemplateLoadException
-- All 593 toolbox tests pass, 1449 total tests pass
+- Phase B1: Added SHA-256 hash computation to FieldMappingProvider.saveForm()
+- Phase B2: Added remap warning UI in FormFillScreen when template changed or no mappings
+- Phase C1: Added response_metadata column to form_responses (DB version 18)
+- Phase C2: Persisted auto-fill provenance in FormFillScreen (save/load metadata round-trip)
+- Added 23 tests for FormResponse model and metadata functionality
+- All 616+ toolbox tests pass
 
 **Files Changed**:
-- `lib/features/toolbox/data/services/form_pdf_service.dart` - Template loader implementation
-- `test/features/toolbox/services/form_pdf_service_test.dart` - New tests
+- `lib/features/toolbox/presentation/providers/field_mapping_provider.dart` - Hash computation
+- `lib/features/toolbox/presentation/screens/form_fill_screen.dart` - Remap warning UI + metadata persistence
+- `lib/core/database/database_service.dart` - DB version 18 migration
+- `lib/features/toolbox/data/models/form_response.dart` - FieldMetadata class + accessors
+- `test/features/toolbox/data/models/form_response_test.dart` - New test file
 
 **Implementation Details**:
-- Asset templates: Load via rootBundle.load()
-- File templates: Prefer templateBytes if stored, fall back to file system
-- Remote templates: Require templateBytes (must be cached)
-- Clear TemplateLoadException messages for each failure mode
+- Template hash computed using SHA-256 from crypto package
+- RemapStatus enum: upToDate, templateChanged, noMapping
+- FieldMetadata stores: source, confidence (0-1), is_user_edited
+- Metadata survives save/load cycle via responseMetadata JSON column
 
-## Previous Session (Session 171)
-**Summary**: Planning session - identified Phase 5/8 gaps, created `.claude/plans/Phase 9 Missing Implementations.md`
+## Previous Session (Session 172)
+**Summary**: Implemented Phase A - Template Loading for Imported Forms
 
 ## Active Plan
-**Status**: Phase A COMPLETE - Proceeding to Phase B-E
+**Status**: Phases A-C COMPLETE - Proceeding to Phase D-E
 **File**: `.claude/plans/Phase 9 Missing Implementations.md`
 
 **Completed**:
 - [x] Phase 1-13: All prior phases complete
 - [x] Phase A: Template Loading for Imported Forms
+- [x] Phase B: Template Hash + Re-mapping Detection
+- [x] Phase C: Persist Auto-fill Provenance Metadata
 
 **Next Tasks** (From Phase 9 Missing Implementations):
-- [ ] Phase B: Template Hash + Re-mapping Detection
-- [ ] Phase C: Persist Auto-fill Provenance Metadata
 - [ ] Phase D: Auto-fill Context Hydration
 - [ ] Phase E: Preview Service Injection + Cache Effectiveness
 
 ## Key Decisions
-- Phase A implemented template loader branching on TemplateSource
-- templateBytes preferred for file/remote templates (reliable persistence)
-- File system fallback only for file templates when bytes unavailable
+- Template hash stored at save time in FieldMappingProvider
+- Remap warning banner shows in FormFillScreen with "Configure" button
+- FieldMetadata model handles provenance serialization
+- Confidence double (0-1) maps to AutoFillConfidence enum (high/medium/low)
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Phase B: Hash + Remap | NEXT | `.claude/plans/Phase 9 Missing Implementations.md` |
-| Phase C: Auto-fill Provenance | PLANNED | `.claude/plans/Phase 9 Missing Implementations.md` |
-| Phase D: Context Hydration | PLANNED | `.claude/plans/Phase 9 Missing Implementations.md` |
+| Phase D: Context Hydration | NEXT | `.claude/plans/Phase 9 Missing Implementations.md` |
 | Phase E: DI + Cache | PLANNED | `.claude/plans/Phase 9 Missing Implementations.md` |
 
 ## Open Questions
