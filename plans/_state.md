@@ -1,64 +1,58 @@
 # Session State
 
-**Last Updated**: 2026-01-29 | **Session**: 183
+**Last Updated**: 2026-01-29 | **Session**: 184
 
 ## Current Phase
-- **Phase**: Phase 15 (Large File Decomposition) COMPLETE
+- **Phase**: Phase 16 (Release Hardening) COMPLETE
 - **Status**: COMPLETE
 
-## Last Session (Session 183)
-**Summary**: Completed Phase 15 - Large File Decomposition (Non-entry Screens)
+## Last Session (Session 184)
+**Summary**: Completed Phase 16 - Release Hardening + Infra Readiness
 
 **Key Activities**:
-- 15.1: Extracted project_setup_screen (1268→785) and dashboard (1138→622) widgets
-- 15.2: Extracted quantities_screen (923→419) and settings_screen (915→402) widgets
-- 15.3: Split seed_data_service to JSON assets, app_theme to colors/design_constants
-- 15.4: Split testing_keys.dart (1445 lines) into 12 feature-specific modules
-- 15.5: Extracted database_service schema (996→589) into 9 domain modules
+- 16.1: Verified Supabase migrations (v3 personnel_types, v4 RLS policies, toolbox tables, registry tables)
+- 16.2: Created ConfigValidator service for startup validation in lib/core/config/
+- 16.3: Triaged TODOs - converted future work markers to FUTURE: comments, completed DI refactor for PhotoLocalDatasource
 
-**Files Created** (55 new files):
-- `assets/data/seed/` - 5 JSON seed data files
-- `lib/core/database/schema/` - 9 schema modules
-- `lib/core/database/seed_data_loader.dart`
-- `lib/core/theme/colors.dart`, `design_constants.dart`, `theme.dart`
-- `lib/features/dashboard/presentation/widgets/` - 5 widget files
-- `lib/features/projects/presentation/widgets/` - 8 widget files
-- `lib/features/quantities/presentation/widgets/` - 4 widget files
-- `lib/features/settings/presentation/widgets/` - 8 widget files
-- `lib/shared/testing_keys/` - 12 modular key files
+**Files Modified**:
+- `lib/core/config/config_validator.dart` (NEW) - Startup config validation
+- `lib/main.dart` - Added ConfigValidator.logValidation() call
+- `lib/features/photos/data/datasources/local/photo_local_datasource.dart` - Made DatabaseService required
+- `lib/features/photos/data/repositories/photo_repository.dart` - Made PhotoLocalDatasource required
+- `lib/features/photos/presentation/providers/photo_provider.dart` - Made PhotoRepository required
+- `lib/services/photo_service.dart` - Made PhotoRepository required
+- `lib/features/sync/application/sync_orchestrator.dart` - Converted TODOs to FUTURE: comments
 
 **Metrics**:
-- 73 files changed, +5958/-4324 lines
-- ~40% average reduction in mega screen files
-- 671 toolbox tests + 101 database/settings/quantities tests passing
+- All lib/ code clean (no errors)
+- 671 toolbox tests passing
+- 27 photo tests passing
 
-## Previous Session (Session 182)
-**Summary**: Completed Phase 14 Comprehensive Plan (Shared UI Patterns)
+## Previous Session (Session 183)
+**Summary**: Completed Phase 15 - Large File Decomposition (Non-entry Screens)
 
 ## Completed Plans
 
-### Phase 15 Large File Decomposition - COMPLETE
+### Phase 16 Release Hardening - COMPLETE
 **File**: `.claude/plans/Need to finish Phase 14.md`
 
-- [x] 15.1: Project setup + dashboard extraction
-- [x] 15.2: Quantities + settings extraction
-- [x] 15.3: Seed data and theme splitting
-- [x] 15.4: Testing keys split
-- [x] 15.5: Database service schema split
+- [x] 16.1: Supabase migrations + RLS verification
+- [x] 16.2: Config validation at app init
+- [x] 16.3: TODO triage in sync_orchestrator and photo_local_datasource
 
+### Phase 15 Large File Decomposition - COMPLETE
 ### Phase 14 DRY/KISS Implementation Plan (A-F) - COMPLETE
 ### Phase 14 Comprehensive Plan (14.1-14.5) - COMPLETE
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Phase 16: Release Hardening | PENDING | Comprehensive Plan |
+| Comprehensive Plan Complete | DONE | All 16 Phases Complete |
 
 ## Open Questions
 None
 
 ## Reference
 - Branch: `main`
-- Commit: `ad62360`
 - Comprehensive Plan: `.claude/plans/Need to finish Phase 14.md`
 - Backlog: `.claude/plans/CODE_REVIEW_BACKLOG.md`
