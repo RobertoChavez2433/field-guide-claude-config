@@ -1,26 +1,27 @@
 # Session State
 
-**Last Updated**: 2026-01-29 | **Session**: 189
+**Last Updated**: 2026-01-29 | **Session**: 190
 
 ## Current Phase
 - **Phase**: Codebase Cleanup
-- **Status**: PR 2 COMPLETE, 2 PRs remaining
+- **Status**: PR 3 COMPLETE, 1 PR remaining
 
-## Last Session (Session 189)
-**Summary**: Executed PR 2 - Photo Barrel Deletion
+## Last Session (Session 190)
+**Summary**: Executed PR 3 - Provider/Repository Barrel Deletion
 
 **Key Activities**:
-- Verified all imports already migrated to feature paths
-- Deleted 3 deprecated photo barrel files
+- Verified all imports already migrated to feature paths (no migration needed)
+- Deleted 4 deprecated barrel files
 
 **Files Deleted**:
-- `lib/data/models/photo.dart` (barrel re-export)
-- `lib/data/repositories/photo_repository.dart` (barrel re-export)
-- `lib/presentation/providers/photo_provider.dart` (barrel re-export)
+- `lib/presentation/providers/providers.dart` (barrel re-export)
+- `lib/presentation/providers/sync_provider.dart` (barrel re-export)
+- `lib/presentation/providers/calendar_format_provider.dart` (barrel re-export)
+- `lib/data/repositories/repositories.dart` (barrel re-export)
 
-**Commit**: `refactor: Delete deprecated photo barrel exports`
+**Commit**: `refactor: Delete deprecated provider and repository barrel exports`
 
-**Tests**: 49 photo-specific tests passing
+**Tests**: Analyzer 0 errors, calendar_format_provider tests passing
 
 ## Active Plan
 **Status**: IN PROGRESS
@@ -29,10 +30,13 @@
 **PRs Planned**:
 - [x] PR 1: Safe deletions + archive - COMPLETE
 - [x] PR 2: Photo barrel migration (3 barrels deleted) - COMPLETE
-- [ ] PR 3: Provider/repository barrel migration (28 files, 5 barrels) - MEDIUM risk
+- [x] PR 3: Provider/repository barrel migration (4 barrels deleted) - COMPLETE
 - [ ] PR 4: Models barrel migration (64 files, 1 barrel) - MEDIUM-HIGH risk
 
-**Remaining Scope**: ~92 files modified, 6 files deleted
+**Remaining Scope**: ~64 files to migrate, 1 barrel to delete
+
+## Session 189
+**Summary**: Executed PR 2 - Photo Barrel Deletion
 
 ## Session 188
 **Summary**: Executed PR 1 - Safe Deletions + Archive
