@@ -3,37 +3,37 @@
 **Last Updated**: 2026-01-29 | **Session**: 190
 
 ## Current Phase
-- **Phase**: Codebase Cleanup
-- **Status**: PR 3 COMPLETE, 1 PR remaining
+- **Phase**: Codebase Cleanup COMPLETE
+- **Status**: All 4 PRs COMPLETE
 
 ## Last Session (Session 190)
-**Summary**: Executed PR 3 - Provider/Repository Barrel Deletion
+**Summary**: Completed Codebase Cleanup Plan - PRs 3 & 4
 
 **Key Activities**:
-- Verified all imports already migrated to feature paths (no migration needed)
-- Deleted 4 deprecated barrel files
+- PR 3: Deleted 4 provider/repository barrel files (all imports pre-migrated)
+- PR 4: Migrated 1 file, deleted models.dart barrel
+- Verified all plan items against code
+- All deprecated barrel directories now empty
 
-**Files Deleted**:
-- `lib/presentation/providers/providers.dart` (barrel re-export)
-- `lib/presentation/providers/sync_provider.dart` (barrel re-export)
-- `lib/presentation/providers/calendar_format_provider.dart` (barrel re-export)
-- `lib/data/repositories/repositories.dart` (barrel re-export)
+**Commits**:
+- `refactor: Delete deprecated provider and repository barrel exports`
+- `refactor: Delete deprecated models barrel export`
 
-**Commit**: `refactor: Delete deprecated provider and repository barrel exports`
+**Verification**:
+- Analyzer: 0 errors (pre-existing info/warnings only)
+- All 13 barrel files deleted across 4 PRs
+- `lib/data/models/`, `lib/data/repositories/`, `lib/presentation/providers/` - all empty
 
-**Tests**: Analyzer 0 errors, calendar_format_provider tests passing
-
-## Active Plan
-**Status**: IN PROGRESS
+## Completed Plan
 **File**: `.claude/plans/All Plans Done - Cleanup.md`
 
-**PRs Planned**:
-- [x] PR 1: Safe deletions + archive - COMPLETE
-- [x] PR 2: Photo barrel migration (3 barrels deleted) - COMPLETE
-- [x] PR 3: Provider/repository barrel migration (4 barrels deleted) - COMPLETE
-- [ ] PR 4: Models barrel migration (64 files, 1 barrel) - MEDIUM-HIGH risk
+**PRs Completed**:
+- [x] PR 1: Safe deletions + archive (5 files + 1 barrel + 1 key)
+- [x] PR 2: Photo barrel migration (3 barrels deleted)
+- [x] PR 3: Provider/repository barrel migration (4 barrels deleted)
+- [x] PR 4: Models barrel migration (1 file migrated, 1 barrel deleted)
 
-**Remaining Scope**: ~64 files to migrate, 1 barrel to delete
+**Total**: 13 barrel files deleted, 1 file migrated, feature-first architecture complete
 
 ## Session 189
 **Summary**: Executed PR 2 - Photo Barrel Deletion
