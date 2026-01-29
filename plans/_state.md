@@ -1,46 +1,46 @@
 # Session State
 
-**Last Updated**: 2026-01-29 | **Session**: 191
+**Last Updated**: 2026-01-29 | **Session**: 192
 
 ## Current Phase
-- **Phase**: Bug Fix - FormFillScreen Provider Issue
-- **Status**: Plan Ready (not implemented)
+- **Phase**: Entry Wizard Enhancements - Planning Complete
+- **Status**: 4 PRs Ready to Implement
 
-## Last Session (Session 191)
-**Summary**: Diagnosed infinite loading spinner on 0582B form
+## Last Session (Session 192)
+**Summary**: Comprehensive planning for Entry Wizard enhancements
 
 **Key Activities**:
-- Ran app on Windows desktop
-- User reported infinite loading spinner when filling 0582B form
-- Diagnosed: FormFillScreen tries to read repositories directly via Provider
-- Root cause: ProjectRepository, ContractorRepository, LocationRepository, DailyEntryRepository not registered in MultiProvider
-- Solution: Use existing AutoFillContextBuilder from Provider tree instead
+- Created 4-PR implementation plan for Entry Wizard enhancements
+- PR 0: FormFillScreen Provider fix (0582B loading spinner)
+- PR 1: Remove Test Results section
+- PR 2: "Calculate New Quantity +" button (Materials section) + Enhanced Calculator
+- PR 3: "Start New Form" button (Attachments section) + Forms in grid with photos
 
-**Plan Created**:
-- `.claude/plans/New Fixes and Implementations.md`
+**Plan File**: `.claude/plans/New Fixes and Implementations.md`
 
-**No code changes made** - planning session only
+**Key Design Decisions**:
+- "Calculate New Quantity +" goes in Materials Used section only
+- "Start New Form" goes in Attachments section (renamed from "Photos")
+- Forms display alongside photos in unified grid with FormThumbnail widget
+- Forms linked to entry via entryId field
 
 ## Active Plan
 **File**: `.claude/plans/New Fixes and Implementations.md`
 **Status**: READY TO IMPLEMENT
 
-**Fix Required**:
-- File: `lib/features/toolbox/presentation/screens/form_fill_screen.dart`
-- Change: Use `context.read<AutoFillContextBuilder>()` instead of manually creating it
-- Remove: 4 unused repository imports
+**PRs**:
+| PR | Feature | Section |
+|----|---------|---------|
+| 0 | FormFillScreen Provider fix | Toolbox |
+| 1 | Remove Test Results section | Report Screen |
+| 2 | Calculate New Quantity button | Materials Used |
+| 3 | Start New Form button + Attachments | Attachments |
+
+## Session 191
+**Summary**: Diagnosed FormFillScreen provider issue
 
 ## Session 190
 **Summary**: Completed Codebase Cleanup Plan - PRs 3 & 4
-
-## Session 189
-**Summary**: Executed PR 2 - Photo Barrel Deletion
-
-## Session 188
-**Summary**: Executed PR 1 - Safe Deletions + Archive
-
-## Session 187
-**Summary**: Comprehensive Codebase Cleanup Planning - Created 4-PR plan
 
 ## Completed Plans
 ### Codebase Cleanup - FULLY COMPLETE (Session 190)
@@ -52,7 +52,7 @@
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| FormFillScreen Fix | READY | `.claude/plans/New Fixes and Implementations.md` |
+| Entry Wizard Enhancements | READY | `.claude/plans/New Fixes and Implementations.md` |
 
 ## Open Questions
 None
