@@ -559,7 +559,7 @@ await Future.delayed(const Duration(seconds: 1));
 
 ---
 
-#### 30. Category Feature Not Fully Implemented (GAP)
+#### 30. Category Feature Not Fully Implemented (GAP) - DEFERRED
 **Files**:
 - `lib/features/toolbox/presentation/providers/field_mapping_provider.dart:168-179`
 - `lib/features/toolbox/presentation/screens/field_mapping_screen.dart`
@@ -570,8 +570,11 @@ await Future.delayed(const Duration(seconds: 1));
 - NO category filter in FilterType enum
 - NO bulk apply category option in UI bulk actions
 - Method is dead code - never called
-**Fix**: Either expose category feature in UI or document as deferred
-**Target Phase**: 9 (Decide: implement or defer)
+**Decision (Phase 9)**: DEFERRED to Phase 14
+- Category feature is not critical for MVP field mapping workflow
+- Core functionality (search, filter by confidence, auto-map, manual mapping) is complete
+- Category support can be added in Phase 14 (DRY/KISS Utilities) when needed
+**Target Phase**: 14 (DRY/KISS - optional enhancement)
 
 ---
 
@@ -625,8 +628,18 @@ await Future.delayed(const Duration(seconds: 1));
 | Phase | Items | Description |
 |-------|-------|-------------|
 | 6 | 12, 13, 15 | State consolidation, async safety |
-| 9 | 11, 24, 25, 26, 27, 30 | QA + Phase 8 fixes + category decision |
-| 14 | 1-7, 14, 16, 18-23, 28, 29 | DRY/KISS Utilities + redundancy fixes |
+| 9 | 11 | Test updates for auto-fill engine |
+| 14 | 1-7, 14, 16, 18-23, 28, 29, 30 | DRY/KISS Utilities + redundancy fixes + category feature |
+
+### Phase 9 Fixes Completed (Session 165)
+
+| Issue | Status | Fix |
+|-------|--------|-----|
+| #24 | ✅ FIXED | Added mounted check via captured ScaffoldMessenger in _showBulkActions |
+| #25 | ✅ FIXED | Added updateMappingByObject method that finds mapping by field name |
+| #26 | ✅ FIXED | Registered FormImportProvider and FieldMappingProvider in main.dart |
+| #27 | ✅ FIXED | Implemented saveForm persistence with InspectorFormRepository integration |
+| #30 | ✅ DEFERRED | Category feature deferred to Phase 14 (not critical for MVP) |
 
 ### Review History Update
 
