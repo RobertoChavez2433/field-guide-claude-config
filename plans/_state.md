@@ -1,40 +1,40 @@
 # Session State
 
-**Last Updated**: 2026-01-28 | **Session**: 173
+**Last Updated**: 2026-01-28 | **Session**: 174
 
 ## Current Phase
 - **Phase**: Phase 9 Missing Implementations
-- **Status**: Phases A-C COMPLETE
+- **Status**: ALL PHASES COMPLETE (A-E)
 
-## Last Session (Session 173)
-**Summary**: Implemented Phase B & C - Template Hash + Re-mapping Detection & Auto-fill Provenance Metadata
+## Last Session (Session 174)
+**Summary**: Implemented Phase D & E - Context Hydration + Preview DI, plus code review of last 5 commits
 
 **Key Activities**:
-- Phase B1: Added SHA-256 hash computation to FieldMappingProvider.saveForm()
-- Phase B2: Added remap warning UI in FormFillScreen when template changed or no mappings
-- Phase C1: Added response_metadata column to form_responses (DB version 18)
-- Phase C2: Persisted auto-fill provenance in FormFillScreen (save/load metadata round-trip)
-- Added 23 tests for FormResponse model and metadata functionality
-- All 616+ toolbox tests pass
+- Phase D: Modified AutoFillContextBuilder to use repository queries instead of provider state
+- Phase D: Added 9 tests (7 unit + 2 integration) for context hydration
+- Phase E: Modified FormPreviewTab to use injected FormPdfService via Provider
+- Phase E: Added 5 cache effectiveness tests with debug logging
+- Code review verified 100% plan compliance for all 5 commits (Phases A-E, 12-13)
+- All 630 toolbox tests pass
 
 **Files Changed**:
-- `lib/features/toolbox/presentation/providers/field_mapping_provider.dart` - Hash computation
-- `lib/features/toolbox/presentation/screens/form_fill_screen.dart` - Remap warning UI + metadata persistence
-- `lib/core/database/database_service.dart` - DB version 18 migration
-- `lib/features/toolbox/data/models/form_response.dart` - FieldMetadata class + accessors
-- `test/features/toolbox/data/models/form_response_test.dart` - New test file
+- `lib/features/toolbox/data/services/auto_fill_context_builder.dart` - Repository-based queries
+- `lib/features/toolbox/presentation/widgets/form_preview_tab.dart` - DI for FormPdfService
+- `test/features/toolbox/services/auto_fill_context_builder_test.dart` - New test file (7 tests)
+- `test/features/toolbox/integration/auto_fill_without_provider_state_test.dart` - New test file (2 tests)
+- `test/features/toolbox/services/form_pdf_service_cache_test.dart` - New test file (5 tests)
+- `.claude/plans/CODE_REVIEW_BACKLOG.md` - Added Session 174 review
 
 **Implementation Details**:
-- Template hash computed using SHA-256 from crypto package
-- RemapStatus enum: upToDate, templateChanged, noMapping
-- FieldMetadata stores: source, confidence (0-1), is_user_edited
-- Metadata survives save/load cycle via responseMetadata JSON column
+- Phase D: AutoFillContextBuilder now reads from ProjectRepository, ContractorRepository, LocationRepository, DailyEntryRepository directly
+- Phase E: FormPreviewTab uses `Provider.of<FormPdfService>(context, listen: false)` for shared singleton
+- Cache logs confirm shared instance: `[FormPDF Cache] HIT for key ...`
 
-## Previous Session (Session 172)
-**Summary**: Implemented Phase A - Template Loading for Imported Forms
+## Previous Session (Session 173)
+**Summary**: Implemented Phase B & C - Template Hash + Re-mapping Detection & Auto-fill Provenance Metadata
 
 ## Active Plan
-**Status**: Phases A-C COMPLETE - Proceeding to Phase D-E
+**Status**: ALL PHASES COMPLETE
 **File**: `.claude/plans/Phase 9 Missing Implementations.md`
 
 **Completed**:
@@ -42,22 +42,21 @@
 - [x] Phase A: Template Loading for Imported Forms
 - [x] Phase B: Template Hash + Re-mapping Detection
 - [x] Phase C: Persist Auto-fill Provenance Metadata
+- [x] Phase D: Auto-fill Context Hydration
+- [x] Phase E: Preview Service Injection + Cache Effectiveness
+- [x] Code Review: Session 174 - 100% plan compliance verified
 
-**Next Tasks** (From Phase 9 Missing Implementations):
-- [ ] Phase D: Auto-fill Context Hydration
-- [ ] Phase E: Preview Service Injection + Cache Effectiveness
+**Next Tasks**:
+- Phase 14: DRY/KISS Utilities (from code review backlog)
 
 ## Key Decisions
-- Template hash stored at save time in FieldMappingProvider
-- Remap warning banner shows in FormFillScreen with "Configure" button
-- FieldMetadata model handles provenance serialization
-- Confidence double (0-1) maps to AutoFillConfidence enum (high/medium/low)
+- Phase D: Repository queries ensure auto-fill works without prior screen visits
+- Phase E: Singleton FormPdfService ensures preview cache is shared across all tabs
 
 ## Future Work
 | Item | Status | Reference |
 |------|--------|-----------|
-| Phase D: Context Hydration | NEXT | `.claude/plans/Phase 9 Missing Implementations.md` |
-| Phase E: DI + Cache | PLANNED | `.claude/plans/Phase 9 Missing Implementations.md` |
+| Phase 14: DRY/KISS | NEXT | `.claude/plans/CODE_REVIEW_BACKLOG.md` |
 
 ## Open Questions
 None
