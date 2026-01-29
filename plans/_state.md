@@ -19,10 +19,13 @@
 - ⚠️ Issue #26 (CRITICAL): Providers not registered in main.dart - will crash on navigation
 - ⚠️ Issue #25 (BUG): updateMapping uses filtered index - updates wrong field when filter active
 - ⚠️ Issue #27 (INCOMPLETE): saveForm has TODO - doesn't persist
+- ⚠️ Issue #30 (GAP): Category feature stubbed but not in UI (plan 8.2 requirement)
 - ⚠️ Issue #24: Missing mounted check in _showBulkActions
 - Minor: Issues #28, #29 for DRY cleanup in Phase 14
 
-**Verdict**: Phase 8 PASS WITH ISSUES - 4 items need attention in Phase 9
+**Plan Verification**: Phase 8 is 95% complete - category feature (applyCategory method) exists but not exposed in UI
+
+**Verdict**: Phase 8 PASS WITH ISSUES - 5 items need attention in Phase 9
 
 ## Previous Session (Session 163)
 **Summary**: Completed Phase 8 - PDF Field Discovery + Mapping UI
@@ -52,6 +55,7 @@
   - Fix Issue #26: Register providers in main.dart
   - Fix Issue #25: updateMapping filtered index bug
   - Fix Issue #27: Implement saveForm persistence
+  - Fix Issue #30: Decide on category feature (implement or defer)
   - Fix Issue #24: Add mounted check in _showBulkActions
 - [ ] Phase 10: Entry + Report Dialog Extraction
 

@@ -559,6 +559,22 @@ await Future.delayed(const Duration(seconds: 1));
 
 ---
 
+#### 30. Category Feature Not Fully Implemented (GAP)
+**Files**:
+- `lib/features/toolbox/presentation/providers/field_mapping_provider.dart:168-179`
+- `lib/features/toolbox/presentation/screens/field_mapping_screen.dart`
+**Plan Requirement**: Phase 8.2 specified "mapping UI with searchable semantics, **category**, autofill toggle/source, confidence chips, and bulk apply tools"
+**Status**:
+- `applyCategory()` method exists in provider (line 168)
+- `FieldMapping` class has NO `category` property
+- NO category filter in FilterType enum
+- NO bulk apply category option in UI bulk actions
+- Method is dead code - never called
+**Fix**: Either expose category feature in UI or document as deferred
+**Target Phase**: 9 (Decide: implement or defer)
+
+---
+
 ### Positive Observations
 
 1. **Excellent async safety in form_import_screen.dart**: All async methods properly check `mounted` before context use
@@ -588,12 +604,28 @@ await Future.delayed(const Duration(seconds: 1));
 | TemplateValidation | 24 | ✅ Complete |
 | Full Toolbox Suite | 578 | ✅ All pass |
 
+### Phase 8 Plan Verification
+
+| Requirement | Plan Spec | Status |
+|-------------|-----------|--------|
+| 8.1 Field discovery (AcroForm scan) | Read field names/types, normalize, match aliases | ✅ Complete |
+| 8.2 Searchable semantics | Search bar in mapping UI | ✅ Complete |
+| 8.2 Category | Category filter/bulk apply | ⚠️ **GAP** - method exists but not in UI |
+| 8.2 Autofill toggle/source | Per-field toggle | ✅ Complete |
+| 8.2 Confidence chips | Visual confidence indicators | ✅ Complete |
+| 8.2 Bulk apply tools | High-confidence auto-map, clear all | ✅ Complete (partial - no category) |
+| 8.3 Template storage | PDF bytes, path, hash | ✅ Complete |
+| 8.3 Re-mapping detection | Hash comparison, RemapStatus enum | ✅ Complete |
+| 8.4 Persistence validation | Validate file exists, rehydrate from bytes | ✅ Complete |
+
+**Verdict**: Phase 8 is **95% complete** - category feature is stubbed but not exposed
+
 ### Updated Summary by Target Phase
 
 | Phase | Items | Description |
 |-------|-------|-------------|
 | 6 | 12, 13, 15 | State consolidation, async safety |
-| 9 | 11, 24, 25, 26, 27 | QA + Phase 8 fixes |
+| 9 | 11, 24, 25, 26, 27, 30 | QA + Phase 8 fixes + category decision |
 | 14 | 1-7, 14, 16, 18-23, 28, 29 | DRY/KISS Utilities + redundancy fixes |
 
 ### Review History Update
