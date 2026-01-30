@@ -1,12 +1,38 @@
 # Session State
 
-**Last Updated**: 2026-01-29 | **Session**: 206
+**Last Updated**: 2026-01-29 | **Session**: 207
 
 ## Current Phase
-- **Phase**: Form Completion Debug v3
-- **Status**: ALL PHASES COMPLETE
+- **Phase**: Form Preview & 0582B Layout Fixes
+- **Status**: ALL ISSUES COMPLETE
 
-## Last Session (Session 206)
+## Last Session (Session 207)
+**Summary**: Implemented 3 issues for form preview and 0582B layout fixes
+
+**Key Activities**:
+- **Issue 1 (High)**: Fixed live preview not updating for table rows
+  - Updated FormStateHasher to include tableRows in hash calculation
+  - Updated FormPdfService to pass parsedTableRows to hasher
+  - Updated FormPreviewTab.didUpdateWidget to check tableRows changes
+- **Issue 2 (Medium)**: Removed Test Number from top table
+  - Removed test_number from top table columns in JSON (line 173)
+  - Removed test_number from top entryLayout.rightColumn
+  - Test Number now only appears in bottom table (Proctor Verification)
+- **Issue 3 (Low)**: Implemented composite column for Dist from C/L
+  - Added subColumns support to TableColumnConfig model
+  - Updated DensityGroupedEntrySection to render composite columns with shared label
+  - Updated FormPdfService._buildGroupColumnMap to handle composite columns
+  - Updated JSON to use composite column with Left/Right sub-columns
+  - Updated parsingKeywords to use dot notation (dist_from_cl.left, dist_from_cl.right)
+- Incremented seed version to v8
+
+**Commits**: Pending
+
+**Next Session**:
+- All issues complete
+- Ready for testing and commit
+
+## Session 206
 **Summary**: Implemented Phase 4 - Live preview fix
 
 **Key Activities**:
@@ -15,10 +41,6 @@
 - FormPreviewTab.didUpdateWidget detects responseData changes and triggers preview refresh
 
 **Commits**: `366e8fe`
-
-**Next Session**:
-- Form Completion Debug v3 plan fully complete
-- Ready for new tasks
 
 ## Session 205
 **Summary**: Implemented Phase 3 - 0582B form restructure with grouped test entry
