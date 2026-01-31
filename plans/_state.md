@@ -1,37 +1,37 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 209
+**Last Updated**: 2026-01-31 | **Session**: 210
 
 ## Current Phase
 - **Phase**: Smart Pay Item PDF Import Parser v2
-- **Status**: Phase 2 & 3 Complete
+- **Status**: Phase 4 Complete
 
-## Last Session (Session 209)
-**Summary**: Implemented Phase 2 (Column-Aware Parser) and Phase 3 (Integration with Fallback)
+## Last Session (Session 210)
+**Summary**: Implemented Phase 4 (Batch Import & Duplicates)
 
 **Key Activities**:
-- Created `ColumnLayoutParser` class (`lib/features/pdf/services/parsers/column_layout_parser.dart`)
-  - Extracts text lines with positional data using `extractTextLines()` API
-  - Detects header row by keywords (Item, Description, Unit, Qty, Price)
-  - Maps column boundaries based on header word positions
-  - Groups lines by Y-position to handle wrapped descriptions
-  - Calculates confidence scores based on parsing success criteria
-  - Handles duplicate item numbers with suffix (a, b, c)
-- Created barrel export (`lib/features/pdf/services/parsers/parsers.dart`)
-- Updated `PdfImportService.importBidSchedule()` to use column parser with regex fallback
-  - Tries column parser first
-  - Falls back to regex if column parser fails or finds no items
-  - Collects warnings from parsed items
-- Fixed PDF import screens to pass bytes directly (project_setup_screen, quantities_screen)
-  - Added `withData: true` to FilePicker
-  - Pass `pdfBytes` to import methods for better cross-platform support
-- Cleared providers when creating new project to prevent stale data
+- Added `DuplicateStrategy` enum to `bid_item_provider.dart`
+  - `skip`: Skip items that already exist (default)
+  - `replace`: Replace existing items with imported ones
+  - `error`: Throw error if duplicates found
+- Added `ImportBatchResult` class for import results
+  - `importedCount`, `duplicateCount`, `replacedCount`, `errors`
+  - `isSuccess` and `totalProcessed` getters
+- Added `importBatch()` method to `BidItemProvider`
+  - Uses `repository.insertAll()` for efficient batch insertion
+  - Handles duplicates according to strategy
+  - Updates replaced items individually (no batch update)
+  - Sorts items and notifies listeners after import
+- Updated `pdf_import_preview_screen.dart` `_importSelected()` method
+  - Changed from loop-based import to batch import
+  - Uses `DuplicateStrategy.skip` by default
+  - Shows duplicate count in success message
 
 **Commits**: Pending
 
 **Next Session**:
-- Phase 4: Batch import & duplicates
 - Phase 5: Fix quantities reload
+- Phase 6: Preview UI enhancements
 
 ## Session 208
 **Summary**: Implemented Phase 1 of Pay Items PDF Import Parser plan - Data Structures
@@ -208,7 +208,7 @@
 - Phase 1: Data Structures - COMPLETE (Session 208)
 - Phase 2: Column-Aware Parser - COMPLETE (Session 209)
 - Phase 3: Integrate parser with fallback - COMPLETE (Session 209)
-- Phase 4: Batch import & duplicates - PENDING
+- Phase 4: Batch import & duplicates - COMPLETE (Session 210)
 - Phase 5: Fix quantities reload - PENDING
 - Phase 6: Preview UI enhancements - PENDING
 - Phase 7: Addendum & duplicate handling - PENDING
