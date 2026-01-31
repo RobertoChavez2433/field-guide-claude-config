@@ -1,12 +1,35 @@
 # Session State
 
-**Last Updated**: 2026-01-29 | **Session**: 207
+**Last Updated**: 2026-01-31 | **Session**: 208
 
 ## Current Phase
-- **Phase**: Form Preview & 0582B Layout Fixes
-- **Status**: ALL ISSUES COMPLETE
+- **Phase**: Smart Pay Item PDF Import Parser v2
+- **Status**: Phase 1 Complete
 
-## Last Session (Session 207)
+## Last Session (Session 208)
+**Summary**: Implemented Phase 1 of Pay Items PDF Import Parser plan - Data Structures
+
+**Key Activities**:
+- Created `ParsedBidItem` model (`lib/features/pdf/data/models/parsed_bid_item.dart`)
+  - All BidItem fields plus `confidence` (0.0-1.0) and `warnings` list
+  - `needsReview` getter for items needing manual review
+  - `toBidItem(projectId)` conversion method
+  - `fromBidItem()` factory for backwards compatibility
+- Updated `PdfImportResult` in `pdf_import_service.dart`
+  - Added `ParserType` enum (columnLayout, regexFallback)
+  - Added `parsedItems` field with confidence scores
+  - Added `parserUsed` field
+  - Added `lowConfidenceCount` and `hasItemsNeedingReview` getters
+  - Kept `bidItems` for backwards compatibility
+- Created barrel export (`lib/features/pdf/data/models/models.dart`)
+
+**Commits**: Pending
+
+**Next Session**:
+- Phase 2: Column-Aware Parser (ColumnLayoutParser class)
+- Phase 3: Integrate parser with fallback
+
+## Session 207
 **Summary**: Implemented 3 issues for form preview and 0582B layout fixes
 
 **Key Activities**:
@@ -26,11 +49,7 @@
   - Updated parsingKeywords to use dot notation (dist_from_cl.left, dist_from_cl.right)
 - Incremented seed version to v8
 
-**Commits**: Pending
-
-**Next Session**:
-- All issues complete
-- Ready for testing and commit
+**Commits**: `d3b9fe6`
 
 ## Session 206
 **Summary**: Implemented Phase 4 - Live preview fix
@@ -162,7 +181,15 @@
 **Summary**: Implemented PR 1 - Removed Test Results section
 
 ## Active Plan
-None - Form Completion Debug v3 fully complete
+### Smart Pay Item PDF Import Parser v2 - IN PROGRESS
+- Phase 1: Data Structures - COMPLETE (Session 208)
+- Phase 2: Column-Aware Parser - PENDING
+- Phase 3: Integrate parser with fallback - PENDING
+- Phase 4: Batch import & duplicates - PENDING
+- Phase 5: Fix quantities reload - PENDING
+- Phase 6: Preview UI enhancements - PENDING
+- Phase 7: Addendum & duplicate handling - PENDING
+- Phase 8: Measurement specs enrichment - PENDING
 
 ## Completed Plans
 ### Form Completion Debug v3 - FULLY COMPLETE (Session 206)
