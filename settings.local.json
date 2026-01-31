@@ -81,7 +81,9 @@
       "mcp__notion__API-patch-page",
       "mcp__notion__API-delete-a-block",
       "Bash(python:*)",
-      "Bash(tasklist:*)"
+      "Bash(tasklist:*)",
+      "Bash(adb pair:*)",
+      "Bash(adb connect:*)"
     ]
   },
   "spinnerTipsEnabled": true
