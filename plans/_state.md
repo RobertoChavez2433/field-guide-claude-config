@@ -1,12 +1,28 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 210
+**Last Updated**: 2026-01-31 | **Session**: 211
 
 ## Current Phase
 - **Phase**: Smart Pay Item PDF Import Parser v2
-- **Status**: Phase 4 Complete
+- **Status**: Phase 5 Complete
 
-## Last Session (Session 210)
+## Last Session (Session 211)
+**Summary**: Implemented Phase 5 (Fix Quantities Reload)
+
+**Key Activities**:
+- Updated `quantities_screen.dart` `_importFromPdf()` method
+  - Changed `context.pushNamed()` to `await context.pushNamed<bool>()`
+  - Added reload logic after navigation returns
+  - If `imported == true && mounted`, calls `loadBidItems()` to refresh the list
+  - Fixes issue where imported items didn't appear until manual refresh
+
+**Commits**: Pending
+
+**Next Session**:
+- Phase 6: Preview UI enhancements
+- Phase 7: Addendum & duplicate handling
+
+## Session 210
 **Summary**: Implemented Phase 4 (Batch Import & Duplicates)
 
 **Key Activities**:
@@ -27,11 +43,7 @@
   - Uses `DuplicateStrategy.skip` by default
   - Shows duplicate count in success message
 
-**Commits**: Pending
-
-**Next Session**:
-- Phase 5: Fix quantities reload
-- Phase 6: Preview UI enhancements
+**Commits**: `86eecb5`
 
 ## Session 208
 **Summary**: Implemented Phase 1 of Pay Items PDF Import Parser plan - Data Structures
@@ -209,7 +221,7 @@
 - Phase 2: Column-Aware Parser - COMPLETE (Session 209)
 - Phase 3: Integrate parser with fallback - COMPLETE (Session 209)
 - Phase 4: Batch import & duplicates - COMPLETE (Session 210)
-- Phase 5: Fix quantities reload - PENDING
+- Phase 5: Fix quantities reload - COMPLETE (Session 211)
 - Phase 6: Preview UI enhancements - PENDING
 - Phase 7: Addendum & duplicate handling - PENDING
 - Phase 8: Measurement specs enrichment - PENDING
