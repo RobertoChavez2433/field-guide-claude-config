@@ -1,12 +1,33 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 219
+**Last Updated**: 2026-01-31 | **Session**: 220
 
 ## Current Phase
 - **Phase**: Clumped Text PDF Parser
-- **Status**: Phase 5 COMPLETE
+- **Status**: Phase 6 COMPLETE - Parser fully integrated
 
-## Last Session (Session 219)
+## Last Session (Session 220)
+**Summary**: Implemented Phase 6 of Clumped Text PDF Parser (Parser Chain Integration)
+
+**Key Activities**:
+- Added `ParserType.clumpedText` to ParserType enum
+- Added `ClumpedTextParser` instance to `PdfImportService`
+- Integrated ClumpedTextParser into fallback chain:
+  1. ColumnLayoutParser (first try - uses text line positions)
+  2. ClumpedTextParser (second try - token-based state machine)
+  3. Regex fallback (last resort - line-based pattern matching)
+- All 214 PDF parser tests passing
+
+**Files Modified**:
+- `lib/features/pdf/services/pdf_import_service.dart`
+
+**Commits**: TBD
+
+**Next Session**:
+- Phase 7 & 8 are optional polish (confidence/warnings already handled in ClumpedTextParser)
+- Ready for real-world testing with problematic PDFs
+
+## Session 219
 **Summary**: Implemented Phase 5 of Clumped Text PDF Parser (ClumpedTextParser)
 
 **Key Activities**:
@@ -34,10 +55,7 @@
 
 **Test Results**: 214 PDF parser tests passing
 
-**Commits**: TBD
-
-**Next Session**:
-- Implement Phase 6: Parser Chain Integration (add ClumpedTextParser to fallback chain)
+**Commits**: `701e26c`
 
 ## Session 218
 **Summary**: Implemented Phase 4 of Clumped Text PDF Parser (Row State Machine)
