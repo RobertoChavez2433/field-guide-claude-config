@@ -1,12 +1,46 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 212
+**Last Updated**: 2026-01-31 | **Session**: 213
 
 ## Current Phase
 - **Phase**: Smart Pay Item PDF Import Parser v2
-- **Status**: Phase 6 Complete
+- **Status**: COMPLETE (All 8 Phases Done)
 
-## Last Session (Session 212)
+## Last Session (Session 213)
+**Summary**: Implemented Phase 7 & 8 (Addendum handling + Measurement specs enrichment)
+
+**Key Activities**:
+- **Phase 7: Addendum & Duplicate Handling**
+  - Added `_addendumPattern` regex to `ColumnLayoutParser`
+  - Detects "ADDENDUM #X" boundaries in PDFs
+  - Prefixes item numbers with addendum identifier (e.g., "A1-203.03")
+  - Adds warning "From addendum AX" to items from addendum sections
+  - (Duplicate suffixing was already implemented in Phase 2)
+
+- **Phase 8: Measurement Specs Enrichment**
+  - Created `ParsedMeasurementSpec` model with itemNumber, measurementPaymentText, confidence, warnings
+  - Created `MeasurementSpecResult` class for M&P import results
+  - Created `EnrichResult` class for tracking enrichment results
+  - Added `enrichWithMeasurementSpecs()` to `BidItemProvider`
+    - Matches specs to existing items by item number
+    - Updates `measurementPayment` field on matched items
+    - Returns count of updated items and unmatched specs
+  - Updated `importMeasurementSpecs()` in `PdfImportService`
+    - Now returns `MeasurementSpecResult` instead of `PdfImportResult`
+    - Parses specs with confidence scoring and warnings
+  - Created `MeasurementSpecPreviewScreen` for enrichment flow
+    - Shows matched/unmatched status for each spec
+    - "Update Existing Items" button instead of "Import Items"
+    - Different UI highlighting for matched vs unmatched specs
+  - Added new route `measurement-spec-preview` to app router
+  - Updated `quantities_screen.dart` to route measurement specs to new screen
+
+**Commits**: TBD
+
+**Next Session**:
+- Plan complete - ready for new features
+
+## Session 212
 **Summary**: Implemented Phase 6 (Preview UI Enhancements)
 
 **Key Activities**:
@@ -28,10 +62,6 @@
 - Updated `_importSelected()` to convert `ParsedBidItem` to `BidItem` for import
 
 **Commits**: `d420832`
-
-**Next Session**:
-- Phase 7: Addendum & duplicate handling
-- Phase 8: Measurement specs enrichment
 
 ## Session 210
 **Summary**: Implemented Phase 4 (Batch Import & Duplicates)
@@ -227,17 +257,18 @@
 **Summary**: Implemented PR 1 - Removed Test Results section
 
 ## Active Plan
-### Smart Pay Item PDF Import Parser v2 - IN PROGRESS
+None - Ready for new tasks
+
+## Completed Plans
+### Smart Pay Item PDF Import Parser v2 - FULLY COMPLETE (Session 213)
 - Phase 1: Data Structures - COMPLETE (Session 208)
 - Phase 2: Column-Aware Parser - COMPLETE (Session 209)
 - Phase 3: Integrate parser with fallback - COMPLETE (Session 209)
 - Phase 4: Batch import & duplicates - COMPLETE (Session 210)
 - Phase 5: Fix quantities reload - COMPLETE (Session 211)
 - Phase 6: Preview UI enhancements - COMPLETE (Session 212)
-- Phase 7: Addendum & duplicate handling - PENDING
-- Phase 8: Measurement specs enrichment - PENDING
-
-## Completed Plans
+- Phase 7: Addendum & duplicate handling - COMPLETE (Session 213)
+- Phase 8: Measurement specs enrichment - COMPLETE (Session 213)
 ### Form Completion Debug v3 - FULLY COMPLETE (Session 206)
 - Phase 1: Change toggle default - COMPLETE (Session 203)
 - Phase 2: Report screen button - COMPLETE (Session 204)
