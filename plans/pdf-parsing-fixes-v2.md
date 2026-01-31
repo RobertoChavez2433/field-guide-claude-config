@@ -85,7 +85,9 @@ Tests: 221 PDF parser tests passing
 
 ---
 
-## Phase 1a (PR 2): ColumnLayoutParser Clustering Fix - HIGHEST PRIORITY
+## Phase 1a (PR 2): ColumnLayoutParser Clustering Fix - COMPLETE
+
+**Status**: ✅ Implemented in Session 222
 
 Goal: Fix the root cause of column parser failures - clustering algorithm collapses to single column.
 
@@ -122,9 +124,20 @@ Tests
 Success
 - Column parser successfully clusters 60% more PDFs before falling back
 
+Files Modified
+- `lib/features/pdf/services/parsers/column_layout_parser.dart`
+
+Files Created
+- `test/features/pdf/parsers/column_layout_parser_test.dart`
+- `test/fixtures/pdf/header_on_page_2.txt`
+
+Tests: 235 PDF parser tests passing (14 new tests added)
+
 ---
 
-## Phase 1b (PR 3): Header Detection Across Pages
+## Phase 1b (PR 3): Header Detection Across Pages - COMPLETE
+
+**Status**: ✅ Implemented in Session 222
 
 Goal: Find headers even when cover sheets or TOCs push them beyond line 50.
 
@@ -161,6 +174,8 @@ Tests
 Success
 - Handles 90% of cover-sheet scenarios
 - Column parser no longer produces junk items from boilerplate sections
+
+**Implementation Note**: Phase 1a and 1b were combined into a single PR since they both modify `column_layout_parser.dart` and are tightly coupled.
 
 ---
 
@@ -369,8 +384,8 @@ Based on expert review, consider for later phases:
 | Phase | Focus | Est. Lines | Risk | Impact |
 |-------|-------|------------|------|--------|
 | **0** | ✅ Diagnostics + Fixtures | ~500 | Low | Observability |
-| **1a** | Clustering algorithm fix | ~150 | Medium | **60% fallback reduction** |
-| **1b** | Multi-page header search | ~100 | Low | Cover sheet handling |
+| **1a** | ✅ Clustering algorithm fix | ~150 | Medium | **60% fallback reduction** |
+| **1b** | ✅ Multi-page header search | ~100 | Low | Cover sheet handling |
 | **2** | Structural keywords + currency | ~100 | Low | False positive reduction |
 | **3** | Description cap + boilerplate | ~120 | Low | **40% boilerplate reduction** |
 | **4** | Quality gates + scanned detection | ~150 | Medium | Bad preview prevention |

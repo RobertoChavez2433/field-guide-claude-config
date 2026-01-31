@@ -1,12 +1,47 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 221
+**Last Updated**: 2026-01-31 | **Session**: 222
 
 ## Current Phase
 - **Phase**: PDF Parsing Fixes v2
-- **Status**: Phase 0 COMPLETE - Observability + Fixtures
+- **Status**: Phase 1a/1b COMPLETE - Clustering + Header Detection
 
-## Last Session (Session 221)
+## Last Session (Session 222)
+**Summary**: Implemented Phase 1a and 1b of PDF Parsing Fixes v2
+
+**Key Activities**:
+- **Phase 1a - Adaptive Clustering:**
+  - Added `_calculateGapThreshold()` - 3% of page width, clamped 18-50pt
+  - Added `_clusterWithMultiplePasses()` - tries adaptive first, then fallbacks [18, 25, 35, 50]
+  - Added `_clusterWordsWithThreshold()` - generic clustering with configurable threshold
+  - Require minimum 3 clusters for successful column detection
+- **Phase 1b - Multi-Page Header Detection:**
+  - Updated `_findHeaderLine()` to search first 3 pages (not first 50 lines)
+  - Updated `_isHeaderLine()` to require ≥4 keywords OR (item + description + qty/price)
+  - Only parse rows after header line (ignore pre-header content)
+  - Return empty list if no header found (forces fallback to ClumpedTextParser)
+  - Added quality gate: require ≥70% valid items or return empty to trigger fallback
+- 235 PDF parser tests passing, 0 analyzer errors
+
+**Files Modified**:
+- `lib/features/pdf/services/parsers/column_layout_parser.dart`
+
+**Files Created**:
+- `test/features/pdf/parsers/column_layout_parser_test.dart`
+- `test/fixtures/pdf/header_on_page_2.txt`
+
+**Commits**: `e30debe`
+
+**Expected Impact**:
+- 60% reduction in column parser fallbacks
+- 90% of cover-sheet PDFs now handled correctly
+- No more junk items from boilerplate sections
+
+**Next Session**:
+- Phase 2: Structural Keywords + Currency Fix
+- Phase 3: Description Cap + Boilerplate Detection
+
+## Session 221
 **Summary**: Implemented Phase 0 of PDF Parsing Fixes v2 - Observability + Fixtures
 
 **Key Activities**:
@@ -41,9 +76,7 @@
 - `test/fixtures/pdf/boilerplate_heavy.txt`
 - `test/features/pdf/parsers/fixture_parser_test.dart`
 
-**Next Session**:
-- Phase 1a: ColumnLayoutParser Clustering Fix (highest priority)
-- Phase 1b: Multi-page Header Detection
+**Commits**: `ab2c8e0`
 
 ## Session 220
 **Summary**: Implemented Phase 6 + Code Review Fixes
