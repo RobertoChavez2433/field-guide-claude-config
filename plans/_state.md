@@ -1,12 +1,45 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 218
+**Last Updated**: 2026-01-31 | **Session**: 219
 
 ## Current Phase
 - **Phase**: Clumped Text PDF Parser
-- **Status**: Phase 4 COMPLETE - Phase 5 next
+- **Status**: Phase 5 COMPLETE
 
-## Last Session (Session 218)
+## Last Session (Session 219)
+**Summary**: Implemented Phase 5 of Clumped Text PDF Parser (ClumpedTextParser)
+
+**Key Activities**:
+- Created `clumped_text_parser.dart` with:
+  - `ClumpedTextParser` class - end-to-end parser for clumped PDF text
+  - Pipeline: extractRawText → TextNormalizer → TokenClassifier → RowStateMachine → ParsedBidItem
+  - `parse(PdfDocument)` - full PDF parsing with document handling
+  - `parseText(String)` - text-only parsing for testing
+  - Confidence calculation based on field completeness and warnings
+  - Duplicate handling: suffix with a, b, c and move to bottom
+  - Validation: minimum items and average confidence thresholds
+- Fixed text normalizer to insert space between digit and $ (e.g., "1$500" → "1 $500")
+- Fixed row state machine addendum regex to only match digits, not letters from "ADDENDUM"
+- Created comprehensive test suite (33 tests)
+- Updated barrel export `parsers.dart`
+
+**Files Created**:
+- `lib/features/pdf/services/parsers/clumped_text_parser.dart`
+- `test/features/pdf/parsers/clumped_text_parser_test.dart`
+
+**Files Modified**:
+- `lib/features/pdf/services/parsers/parsers.dart`
+- `lib/features/pdf/services/parsers/text_normalizer.dart` (added digit→$ transition)
+- `lib/features/pdf/services/parsers/row_state_machine.dart` (fixed addendum regex)
+
+**Test Results**: 214 PDF parser tests passing
+
+**Commits**: TBD
+
+**Next Session**:
+- Implement Phase 6: Parser Chain Integration (add ClumpedTextParser to fallback chain)
+
+## Session 218
 **Summary**: Implemented Phase 4 of Clumped Text PDF Parser (Row State Machine)
 
 **Key Activities**:
@@ -40,7 +73,7 @@
 **Files Modified**:
 - `lib/features/pdf/services/parsers/parsers.dart`
 
-**Commits**: TBD
+**Commits**: `8b991b9`
 
 **Next Session**:
 - Implement Phase 5: ClumpedTextParser (end-to-end parser using normalization + classifier + state machine)
