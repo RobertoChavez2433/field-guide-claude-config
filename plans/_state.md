@@ -1,26 +1,37 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 211
+**Last Updated**: 2026-01-31 | **Session**: 212
 
 ## Current Phase
 - **Phase**: Smart Pay Item PDF Import Parser v2
-- **Status**: Phase 5 Complete
+- **Status**: Phase 6 Complete
 
-## Last Session (Session 211)
-**Summary**: Implemented Phase 5 (Fix Quantities Reload)
+## Last Session (Session 212)
+**Summary**: Implemented Phase 6 (Preview UI Enhancements)
 
 **Key Activities**:
-- Updated `quantities_screen.dart` `_importFromPdf()` method
-  - Changed `context.pushNamed()` to `await context.pushNamed<bool>()`
-  - Added reload logic after navigation returns
-  - If `imported == true && mounted`, calls `loadBidItems()` to refresh the list
-  - Fixes issue where imported items didn't appear until manual refresh
+- Updated `pdf_import_preview_screen.dart` to use `ParsedBidItem` instead of `BidItem`
+  - Changed `_editableItems` from `List<BidItem>` to `List<ParsedBidItem>`
+  - Added import for `package:construction_inspector/features/pdf/data/models/models.dart`
+- Added warning banner for import-level warnings
+  - Displays warnings from `importResult.warnings` with yellow background
+  - Shows warning icon and bullet-pointed list
+- Added confidence indicator to item cards
+  - Shows `LinearProgressIndicator` with percentage for items with confidence < 100%
+  - Color-coded: green (≥80%), yellow (50-79%), red (<50%)
+- Added low-confidence highlight
+  - Cards with `needsReview == true` have yellow tinted background
+- Added item-level warnings display
+  - Shows individual warnings per item with info icon
+- Updated `_editItem()` to convert between `ParsedBidItem` and `BidItem`
+  - Edited items get confidence boosted to 1.0 and warnings cleared
+- Updated `_importSelected()` to convert `ParsedBidItem` to `BidItem` for import
 
-**Commits**: `5b3c1e9`
+**Commits**: `d420832`
 
 **Next Session**:
-- Phase 6: Preview UI enhancements
 - Phase 7: Addendum & duplicate handling
+- Phase 8: Measurement specs enrichment
 
 ## Session 210
 **Summary**: Implemented Phase 4 (Batch Import & Duplicates)
@@ -222,7 +233,7 @@
 - Phase 3: Integrate parser with fallback - COMPLETE (Session 209)
 - Phase 4: Batch import & duplicates - COMPLETE (Session 210)
 - Phase 5: Fix quantities reload - COMPLETE (Session 211)
-- Phase 6: Preview UI enhancements - PENDING
+- Phase 6: Preview UI enhancements - COMPLETE (Session 212)
 - Phase 7: Addendum & duplicate handling - PENDING
 - Phase 8: Measurement specs enrichment - PENDING
 
