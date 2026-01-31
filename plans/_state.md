@@ -1,12 +1,39 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 215
+**Last Updated**: 2026-01-31 | **Session**: 216
 
 ## Current Phase
 - **Phase**: Clumped Text PDF Parser
-- **Status**: Phase 1 COMPLETE - Phase 2 next
+- **Status**: Phase 2 COMPLETE - Phase 3 next
 
-## Last Session (Session 215)
+## Last Session (Session 216)
+**Summary**: Implemented Phase 2 of Clumped Text PDF Parser (Text Normalizer)
+
+**Key Activities**:
+- Created `text_normalizer.dart` with:
+  - `TextNormalizer.normalize()` - repairs clumped text by inserting spaces at transitions
+  - Decimal protection (12.50 stays intact)
+  - Token preservation for common terms (HDPE12, TypeB, etc.)
+  - Transition space insertion (digit→letter, letter→digit, camelCase, period→letter, currency)
+  - Whitespace normalization
+  - `isClumped()` - detects if text needs normalization
+  - `getClumpingStats()` - diagnostic statistics
+- Created comprehensive test suite (39 tests)
+- Updated barrel export `parsers.dart`
+
+**Files Created**:
+- `lib/features/pdf/services/parsers/text_normalizer.dart`
+- `test/features/pdf/parsers/text_normalizer_test.dart`
+
+**Files Modified**:
+- `lib/features/pdf/services/parsers/parsers.dart`
+
+**Commits**: TBD
+
+**Next Session**:
+- Implement Phase 3: Token Classification
+
+## Session 215
 **Summary**: Implemented Phase 1 of Clumped Text PDF Parser (Shared Extraction + Diagnostics)
 
 **Key Activities**:
@@ -28,10 +55,7 @@
 - `lib/features/pdf/services/pdf_import_service.dart`
 - `lib/features/pdf/services/parsers/parsers.dart`
 
-**Commits**: TBD
-
-**Next Session**:
-- Implement Phase 2: Text Normalizer (clumped stream repair)
+**Commits**: `9ad11ca`
 
 ## Session 214
 **Summary**: Testing + Created comprehensive Clumped Text PDF Parser plan
