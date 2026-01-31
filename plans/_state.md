@@ -16,7 +16,7 @@
   - If `imported == true && mounted`, calls `loadBidItems()` to refresh the list
   - Fixes issue where imported items didn't appear until manual refresh
 
-**Commits**: Pending
+**Commits**: `5b3c1e9`
 
 **Next Session**:
 - Phase 6: Preview UI enhancements
