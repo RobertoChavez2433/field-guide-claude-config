@@ -1,12 +1,51 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 217
+**Last Updated**: 2026-01-31 | **Session**: 218
 
 ## Current Phase
 - **Phase**: Clumped Text PDF Parser
-- **Status**: Phase 3 COMPLETE - Phase 4 next
+- **Status**: Phase 4 COMPLETE - Phase 5 next
 
-## Last Session (Session 217)
+## Last Session (Session 218)
+**Summary**: Implemented Phase 4 of Clumped Text PDF Parser (Row State Machine)
+
+**Key Activities**:
+- Created `parsed_row_data.dart` with:
+  - `ParsedRowData` model for intermediate row data
+  - Fields: itemNumber, descriptionTokens, unit, quantity, unitPrice, bidAmount, warnings, addendumPrefix
+  - `isValid` getter - checks minimum required fields (itemNumber, description, unit)
+  - `isEmpty` and `isPartial` getters for validation
+  - `confidence` calculation based on field completeness and warnings
+  - `effectiveItemNumber` getter that applies addendum prefix
+  - Helper methods: `copyWith`, `withWarning`, `withDescriptionToken`
+- Created `row_state_machine.dart` with:
+  - `RowParseState` enum: seekItem, readDesc, seekUnit, seekQty, seekPrice, complete
+  - `RowStateMachine` class that converts classified tokens into parsed rows
+  - State machine sequence: SEEK_ITEM → READ_DESC → SEEK_UNIT → SEEK_QTY → SEEK_PRICE → COMPLETE
+  - Safeguards:
+    - Plain integers in description context treated as spec numbers (not new items)
+    - If no unit found, adds "Missing unit" warning
+    - If quantity missing, defaults to 1 for LS items, 0 otherwise
+    - `flush()` emits last row at end-of-stream with warning if incomplete
+  - Header skipping until first item number
+  - Addendum prefix tracking and application
+- Created comprehensive test suite (58 tests)
+- Updated barrel export `parsers.dart`
+
+**Files Created**:
+- `lib/features/pdf/services/parsers/parsed_row_data.dart`
+- `lib/features/pdf/services/parsers/row_state_machine.dart`
+- `test/features/pdf/parsers/row_state_machine_test.dart`
+
+**Files Modified**:
+- `lib/features/pdf/services/parsers/parsers.dart`
+
+**Commits**: TBD
+
+**Next Session**:
+- Implement Phase 5: ClumpedTextParser (end-to-end parser using normalization + classifier + state machine)
+
+## Session 217
 **Summary**: Implemented Phase 3 of Clumped Text PDF Parser (Token Classification)
 
 **Key Activities**:
@@ -33,10 +72,7 @@
 **Files Modified**:
 - `lib/features/pdf/services/parsers/parsers.dart`
 
-**Commits**: TBD
-
-**Next Session**:
-- Implement Phase 4: Row State Machine
+**Commits**: `8ca8047`
 
 ## Session 216
 **Summary**: Implemented Phase 2 of Clumped Text PDF Parser (Text Normalizer)
