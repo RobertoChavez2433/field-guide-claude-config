@@ -83,7 +83,10 @@
       "Bash(python:*)",
       "Bash(tasklist:*)",
       "Bash(adb pair:*)",
-      "Bash(adb connect:*)"
+      "Bash(adb connect:*)",
+      "Bash(adb install:*)",
+      "Bash(adb shell am start:*)",
+      "Bash(adb logcat:*)"
     ]
   },
   "spinnerTipsEnabled": true
