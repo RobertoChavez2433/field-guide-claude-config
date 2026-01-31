@@ -1,12 +1,50 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 220
+**Last Updated**: 2026-01-31 | **Session**: 221
 
 ## Current Phase
-- **Phase**: Clumped Text PDF Parser
-- **Status**: COMPLETE - All phases done, code reviewed and cleaned
+- **Phase**: PDF Parsing Fixes v2
+- **Status**: Phase 0 COMPLETE - Observability + Fixtures
 
-## Last Session (Session 220)
+## Last Session (Session 221)
+**Summary**: Implemented Phase 0 of PDF Parsing Fixes v2 - Observability + Fixtures
+
+**Key Activities**:
+- Created `DiagnosticsMetadata` class for capturing parser stats:
+  - Item count, confidence distribution, warnings count
+  - Min/max/average confidence scores
+  - Page count, raw text length, clumped text detection
+  - Serialization to/from JSON
+- Created `DiagnosticsExporter` for debug artifact export:
+  - Exports raw text, metadata JSON, per-page samples
+  - Only exports when `kPdfParserDiagnostics` enabled
+- Updated `PdfImportResult` to include diagnostics field
+- Updated `importBidSchedule` to collect and export diagnostics:
+  - Added `exportDiagnostics` parameter for explicit export
+  - Extracts per-page samples for analysis
+  - Builds diagnostics for all parser paths
+- Created test fixture system:
+  - `test/fixtures/pdf/` directory with sample files
+  - `well_formatted_schedule.txt` - column parser target
+  - `clumped_text_schedule.txt` - clumped parser target
+  - `boilerplate_heavy.txt` - problem case with legal text
+- Created `fixture_parser_test.dart` with golden tests
+- 221 PDF parser tests passing, 0 analyzer errors
+
+**Files Modified**:
+- `lib/features/pdf/services/parsers/parser_diagnostics.dart`
+- `lib/features/pdf/services/pdf_import_service.dart`
+
+**Files Created**:
+- `test/fixtures/pdf/well_formatted_schedule.txt`
+- `test/fixtures/pdf/clumped_text_schedule.txt`
+- `test/fixtures/pdf/boilerplate_heavy.txt`
+- `test/features/pdf/parsers/fixture_parser_test.dart`
+
+**Next Session**:
+- Phase 1: ColumnLayoutParser Recovery + Header Detection
+
+## Session 220
 **Summary**: Implemented Phase 6 + Code Review Fixes
 
 **Key Activities**:
@@ -32,10 +70,6 @@
 - `test/features/pdf/parsers/row_state_machine_test.dart`
 
 **Commits**: `57807d6`, `5658a13`
-
-**Next Session**:
-- Ready for real-world testing with problematic PDFs
-- No pending work on parser
 
 ## Session 219
 **Summary**: Implemented Phase 5 of Clumped Text PDF Parser (ClumpedTextParser)
