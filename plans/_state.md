@@ -42,7 +42,8 @@
 - `test/features/pdf/parsers/fixture_parser_test.dart`
 
 **Next Session**:
-- Phase 1: ColumnLayoutParser Recovery + Header Detection
+- Phase 1a: ColumnLayoutParser Clustering Fix (highest priority)
+- Phase 1b: Multi-page Header Detection
 
 ## Session 220
 **Summary**: Implemented Phase 6 + Code Review Fixes
