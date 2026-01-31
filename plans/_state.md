@@ -1,12 +1,44 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 216
+**Last Updated**: 2026-01-31 | **Session**: 217
 
 ## Current Phase
 - **Phase**: Clumped Text PDF Parser
-- **Status**: Phase 2 COMPLETE - Phase 3 next
+- **Status**: Phase 3 COMPLETE - Phase 4 next
 
-## Last Session (Session 216)
+## Last Session (Session 217)
+**Summary**: Implemented Phase 3 of Clumped Text PDF Parser (Token Classification)
+
+**Key Activities**:
+- Created `token_classifier.dart` with:
+  - `TokenType` enum: itemNumber, unit, quantity, currency, header, addendum, text, unknown
+  - `ClassifiedToken` model with text, type, and confidence
+  - `TokenClassifier` class with:
+    - `classify()` - classifies single token with context awareness
+    - `classifyAll()` - classifies token list with full context
+    - `tokenize()` - splits normalized text into tokens
+  - Public `knownUnits` set for reuse by confidence logic
+  - Disambiguation rules:
+    - Item numbers must match pattern and be followed by text/unit
+    - Quantities follow units
+    - Currency always has $ prefix
+  - Static helpers: `isValidItemNumberFormat()`, `isKnownUnit()`, `parseCurrency()`, `parseQuantity()`
+- Created comprehensive test suite (84 tests)
+- Updated barrel export `parsers.dart`
+
+**Files Created**:
+- `lib/features/pdf/services/parsers/token_classifier.dart`
+- `test/features/pdf/parsers/token_classifier_test.dart`
+
+**Files Modified**:
+- `lib/features/pdf/services/parsers/parsers.dart`
+
+**Commits**: TBD
+
+**Next Session**:
+- Implement Phase 4: Row State Machine
+
+## Session 216
 **Summary**: Implemented Phase 2 of Clumped Text PDF Parser (Text Normalizer)
 
 **Key Activities**:
@@ -28,10 +60,7 @@
 **Files Modified**:
 - `lib/features/pdf/services/parsers/parsers.dart`
 
-**Commits**: TBD
-
-**Next Session**:
-- Implement Phase 3: Token Classification
+**Commits**: `590c8dd`
 
 ## Session 215
 **Summary**: Implemented Phase 1 of Clumped Text PDF Parser (Shared Extraction + Diagnostics)
