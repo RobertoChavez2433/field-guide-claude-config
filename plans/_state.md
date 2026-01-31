@@ -1,12 +1,39 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 214
+**Last Updated**: 2026-01-31 | **Session**: 215
 
 ## Current Phase
 - **Phase**: Clumped Text PDF Parser
-- **Status**: PLANNING COMPLETE - Ready for Implementation
+- **Status**: Phase 1 COMPLETE - Phase 2 next
 
-## Last Session (Session 214)
+## Last Session (Session 215)
+**Summary**: Implemented Phase 1 of Clumped Text PDF Parser (Shared Extraction + Diagnostics)
+
+**Key Activities**:
+- Created `parser_diagnostics.dart` with:
+  - `kPdfParserDiagnostics` const flag (off by default)
+  - `ParserDiagnostics` class with logging methods
+  - Text preview, token sample, header detection, clumped text indicators
+- Added `extractRawText()` static method to `PdfImportService`
+  - Shared extraction helper for all parsers
+  - Uses extractText() with fallback to extractTextLines()
+  - Integrates with diagnostics logging
+- Removed redundant `_extractAllText` and `_extractAllTextWithFallback` methods
+- Updated barrel export `parsers.dart`
+
+**Files Created**:
+- `lib/features/pdf/services/parsers/parser_diagnostics.dart`
+
+**Files Modified**:
+- `lib/features/pdf/services/pdf_import_service.dart`
+- `lib/features/pdf/services/parsers/parsers.dart`
+
+**Commits**: TBD
+
+**Next Session**:
+- Implement Phase 2: Text Normalizer (clumped stream repair)
+
+## Session 214
 **Summary**: Testing + Created comprehensive Clumped Text PDF Parser plan
 
 **Key Activities**:
@@ -19,15 +46,7 @@
   - Addresses concatenated text issue when Syncfusion doesn't preserve column spacing
   - Includes normalization layer, token classifier, state machine, confidence scoring
 
-**Files Modified**:
-- `project_setup_screen.dart` - Fixed measurement specs import (API signature change)
-- `column_layout_parser.dart` - User's clustering fallback experiments
-- `pdf_import_service.dart` - Minor changes
-
-**Commits**: TBD
-
-**Next Session**:
-- Implement Clumped Text PDF Parser (Phases 1-8)
+**Commits**: `bf08638`
 
 ## Session 213
 **Summary**: Implemented Phase 7 & 8 (Addendum handling + Measurement specs enrichment)
