@@ -1,12 +1,30 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 230
+**Last Updated**: 2026-01-31 | **Session**: 231
 
 ## Current Phase
 - **Phase**: Dependency Modernization
-- **Status**: IN PROGRESS - Stages 0-3 complete
+- **Status**: IN PROGRESS - Stages 0-4 complete
 
-## Last Session (Session 230)
+## Last Session (Session 231)
+**Summary**: Implemented Stage 4 (Location, Permissions, Device Info)
+
+**Key Activities**:
+- **Stage 4 - Location, Permissions, Device Info:**
+  - Updated geolocator: ^13.0.2 → ^14.0.2
+  - Updated geocoding: ^3.0.0 → ^4.0.0
+  - Updated permission_handler: ^11.3.1 → ^12.0.1
+  - device_info_plus deferred to Stage 6 (Syncfusion v28 requires ^11.0.0)
+  - Code already uses LocationSettings API (weather_service.dart, photo_service.dart)
+  - geocoding package not used in codebase - safe to update
+  - 0 analyzer errors in lib/ (67 pre-existing info/warnings)
+
+**Files Modified**:
+- `pubspec.yaml` - 3 dependency updates
+
+**Commits**: `3fe1058`
+
+## Session 230
 **Summary**: Implemented Stage 3 (Networking & Connectivity)
 
 **Key Activities**:
@@ -80,9 +98,9 @@
 1. [x] Low-Risk Core Updates - COMPLETE (Session 228)
 2. [x] State & Storage Utilities - COMPLETE (Session 229)
 3. [x] Networking & Connectivity - COMPLETE (Session 230)
-4. [ ] Location, Permissions, Device Info (geolocator, geocoding, permission_handler, device_info_plus)
+4. [x] Location, Permissions, Device Info - COMPLETE (Session 231) - device_info_plus deferred to Stage 6
 5. [ ] Files, Media, Pickers (file_picker, image_picker, path_provider)
-6. [ ] PDF Stack (syncfusion_flutter_pdf, syncfusion_flutter_pdfviewer)
+6. [ ] PDF Stack (syncfusion_flutter_pdf, syncfusion_flutter_pdfviewer, device_info_plus)
 7. [ ] Navigation & Deep Links (go_router, app_links) - HIGH RISK
 8. [ ] Supabase (supabase_flutter)
 9. [ ] UI + Date/Calendar (table_calendar, intl)
