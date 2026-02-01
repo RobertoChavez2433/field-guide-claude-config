@@ -1,12 +1,50 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 233
+**Last Updated**: 2026-01-31 | **Session**: 234
 
 ## Current Phase
 - **Phase**: Dependency Modernization
-- **Status**: IN PROGRESS - Stages 0-7 complete
+- **Status**: COMPLETE - All 10 stages finished
 
-## Last Session (Session 233)
+## Last Session (Session 234)
+**Summary**: Implemented Stages 8-10 (Supabase, Calendar/Intl, Patrol v4)
+
+**Key Activities**:
+- **Stage 8 - Supabase:**
+  - Updated supabase_flutter: ^2.8.3 → ^2.12.0
+  - No breaking changes in auth/session APIs
+  - 0 analyzer errors
+
+- **Stage 9 - UI + Calendar:**
+  - Updated table_calendar: ^3.1.3 → ^3.2.0
+  - Updated intl: ^0.19.0 → ^0.20.2
+  - No breaking changes
+  - 0 analyzer errors
+
+- **Stage 10 - Test Tooling (Patrol v4):**
+  - Updated patrol: ^3.20.0 → ^4.1.0
+  - Migrated $.native API to new $.platform API:
+    - $.native → $.platform.mobile (cross-platform methods)
+    - $.native.pressBack → $.platform.android.pressBack (Android-only)
+  - Updated 7 test files + 2 README files
+  - 0 analyzer errors (44 pre-existing warnings/info)
+
+**Files Modified**:
+- `pubspec.yaml` - 4 dependency updates
+- `pubspec.lock` - Updated lockfile
+- `integration_test/patrol/helpers/patrol_test_helpers.dart`
+- `integration_test/patrol/e2e_tests/offline_sync_test.dart`
+- `integration_test/patrol/e2e_tests/navigation_flow_test.dart`
+- `integration_test/patrol/isolated/camera_permission_test.dart`
+- `integration_test/patrol/isolated/location_permission_test.dart`
+- `integration_test/patrol/isolated/navigation_edge_test.dart`
+- `integration_test/patrol/isolated/app_lifecycle_test.dart`
+- `integration_test/patrol/README.md`
+- `integration_test/patrol/isolated/README.md`
+
+**Commits**: `c6bf403`, `cf0d6a0`
+
+## Session 233
 **Summary**: Implemented Stages 6-7 (PDF Stack, Navigation) + Code Review
 
 **Key Activities**:
@@ -140,8 +178,11 @@
 **Commits**: `bab9ae1` (Stage 0), `ef2d00b` (Stage 1)
 
 ## Active Plan
+None - Dependency Modernization COMPLETE
+
+## Completed Plans
+### Dependency Modernization Plan v2 - FULLY COMPLETE (Session 234)
 **File**: `.claude/plans/dependency-modernization-plan-v2.md`
-**Status**: IN PROGRESS
 
 **Stages**:
 0. [x] Toolchain & Platform Baseline - COMPLETE (Session 228)
@@ -152,9 +193,9 @@
 5. [x] Files, Media, Pickers - COMPLETE (Session 232)
 6. [x] PDF Stack - COMPLETE (Session 233) - Syncfusion v32 text extraction improvements
 7. [x] Navigation & Deep Links - COMPLETE (Session 233) - app_links constrained to ^6.4.1 by supabase_flutter
-8. [ ] Supabase (supabase_flutter)
-9. [ ] UI + Date/Calendar (table_calendar, intl)
-10. [ ] Test Tooling (patrol v3→v4)
+8. [x] Supabase - COMPLETE (Session 234) - supabase_flutter ^2.12.0
+9. [x] UI + Calendar - COMPLETE (Session 234) - table_calendar ^3.2.0, intl ^0.20.2
+10. [x] Test Tooling - COMPLETE (Session 234) - patrol ^4.1.0, $.native → $.platform API migration
 
 ## Session 227
 **Summary**: Dependency Modernization Research & Planning
