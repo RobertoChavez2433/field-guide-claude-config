@@ -1,12 +1,54 @@
 # Session State
 
-**Last Updated**: 2026-02-01 | **Session**: 237
+**Last Updated**: 2026-02-01 | **Session**: 238
 
 ## Current Phase
 - **Phase**: Analyzer Cleanup
-- **Status**: Phases 1, 2, 9 COMPLETE - Continuing Phases 3-8, 10-11
+- **Status**: Phases 1, 2, 3, 9 COMPLETE - Continuing Phases 4-8, 10-11
 
-## Last Session (Session 237)
+## Last Session (Session 238)
+**Summary**: Implemented Phase 3 (Deprecated Flutter APIs)
+
+**Key Activities**:
+- **Phase 3 - Deprecated Flutter APIs:**
+  - Fixed 8 deprecated API warnings across 4 files
+  - `WillPopScope` → `PopScope` in project_setup_screen.dart
+  - `withOpacity` → `withValues(alpha:)` in dynamic_form_field.dart, form_preview_tab.dart
+  - `Radio.groupValue/onChanged` → Extracted to `_RadioFieldGroup` widget in dynamic_form_field.dart
+  - `DropdownButtonFormField.value` → `initialValue` with ValueKey in dynamic_form_field.dart, gallery_screen.dart
+  - Analyzer issues: 118 → 110 (8 fixed)
+
+**Files Modified**:
+- `lib/features/projects/presentation/screens/project_setup_screen.dart`
+- `lib/features/toolbox/presentation/screens/gallery_screen.dart`
+- `lib/features/toolbox/presentation/widgets/dynamic_form_field.dart`
+- `lib/features/toolbox/presentation/widgets/form_preview_tab.dart`
+
+**Commits**: TBD
+
+**Next Session**:
+- Phase 4 (MEDIUM): Async context safety
+- Phase 5 (MEDIUM): Unused vars & missing @override
+- Phase 6 (LOW): Test code cleanup
+
+## Active Plan
+**File**: `.claude/plans/analyzer-cleanup-plan-v2.md`
+
+| Phase | Issues | Priority | Status |
+|-------|--------|----------|--------|
+| Phase 1 | 7 | CRITICAL | COMPLETE |
+| Phase 2 | 29 | HIGH | COMPLETE |
+| Phase 3 | 8 | HIGH | COMPLETE |
+| Phase 4 | 15 | MEDIUM | PENDING |
+| Phase 5 | 33 | MEDIUM | PENDING |
+| Phase 6 | 64 | LOW | PENDING |
+| Phase 7 | - | HIGH | PENDING (Patrol config/docs) |
+| Phase 8 | - | MEDIUM | PENDING (Legacy artifacts) |
+| Phase 9 | - | MEDIUM | COMPLETE (Root logs cleanup) |
+| Phase 10 | - | LOW | PENDING (Script consolidation) |
+| Phase 11 | - | LOW | PENDING (Node tooling decision) |
+
+## Session 237
 **Summary**: Implemented Phase 2 (unused/duplicate imports) + Phase 9 (root logs cleanup) + Code Review
 
 **Key Activities**:
@@ -42,30 +84,7 @@
 - `test/features/toolbox/services/auto_fill_context_builder_test.dart`
 - `test/helpers/mocks/mock_services.dart`
 
-**Commits**: TBD
-
-**Next Session**:
-- Phase 3 (HIGH): Deprecated Flutter APIs
-- Phase 4 (MEDIUM): Async context safety
-- Phase 5 (MEDIUM): Unused vars & missing @override
-- Phase 6 (LOW): Test code cleanup
-
-## Active Plan
-**File**: `.claude/plans/analyzer-cleanup-plan-v2.md`
-
-| Phase | Issues | Priority | Status |
-|-------|--------|----------|--------|
-| Phase 1 | 7 | CRITICAL | COMPLETE |
-| Phase 2 | 29 | HIGH | COMPLETE |
-| Phase 3 | 10 | HIGH | PENDING |
-| Phase 4 | 15 | MEDIUM | PENDING |
-| Phase 5 | 33 | MEDIUM | PENDING |
-| Phase 6 | 64 | LOW | PENDING |
-| Phase 7 | - | HIGH | PENDING (Patrol config/docs) |
-| Phase 8 | - | MEDIUM | PENDING (Legacy artifacts) |
-| Phase 9 | - | MEDIUM | COMPLETE (Root logs cleanup) |
-| Phase 10 | - | LOW | PENDING (Script consolidation) |
-| Phase 11 | - | LOW | PENDING (Node tooling decision) |
+**Commits**: `e03e8a7`
 
 ## Session 236
 **Summary**: Implemented Phase 1 (CRITICAL) - Fixed test_bundle.dart for Patrol v4

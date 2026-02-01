@@ -92,7 +92,10 @@
       "Bash(timeout:*)",
       "WebFetch(domain:pub.dev)",
       "Bash(git restore:*)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "WebFetch(domain:docs.patrol.dev)",
+      "WebFetch(domain:velog.io)",
+      "WebFetch(domain:dart.dev)"
     ]
   },
   "spinnerTipsEnabled": true
