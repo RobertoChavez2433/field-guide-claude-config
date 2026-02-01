@@ -1,12 +1,73 @@
 # Session State
 
-**Last Updated**: 2026-02-01 | **Session**: 236
+**Last Updated**: 2026-02-01 | **Session**: 237
 
 ## Current Phase
 - **Phase**: Analyzer Cleanup
-- **Status**: Phase 1 COMPLETE - Continuing Phases 2-11
+- **Status**: Phases 1, 2, 9 COMPLETE - Continuing Phases 3-8, 10-11
 
-## Last Session (Session 236)
+## Last Session (Session 237)
+**Summary**: Implemented Phase 2 (unused/duplicate imports) + Phase 9 (root logs cleanup) + Code Review
+
+**Key Activities**:
+- **Phase 2 - Unused/Duplicate Imports:**
+  - Removed 29 unused/duplicate imports across 24 files
+  - Integration tests: 16 files cleaned
+  - Library files: 7 files cleaned
+  - Test files: 2 files cleaned
+  - Analyzer issues: 147 → 118 (29 fixed)
+
+- **Phase 9 - Root Logs Cleanup:**
+  - Deleted 13 flutter_*.log files
+  - Deleted 4 e2e_*.log files
+  - Deleted 5 *.txt output files (analyze_output, test_result, etc.)
+  - Deleted orphan `nul` file
+  - Workspace now clean
+
+- **Code Review (Phases 1-2):**
+  - Phase 1 VERIFIED: test_bundle.dart correctly uses Patrol v4 API
+  - Identified 3 unused fields in sync_service.dart
+  - Identified 1 unused field in form_preview_tab.dart
+  - Deprecated APIs flagged: WillPopScope, withOpacity, Radio groupValue/onChanged
+  - Missing @override annotations in 7 repositories
+
+**Files Modified**:
+- `integration_test/patrol/e2e_tests/*.dart` (6 files)
+- `integration_test/patrol/helpers/patrol_test_helpers.dart`
+- `integration_test/patrol/isolated/*.dart` (6 files)
+- `lib/features/pdf/presentation/screens/measurement_spec_preview_screen.dart`
+- `lib/features/quantities/presentation/screens/quantities_screen.dart`
+- `lib/features/settings/presentation/screens/settings_screen.dart`
+- `lib/features/settings/presentation/widgets/*.dart` (5 files)
+- `test/features/toolbox/services/auto_fill_context_builder_test.dart`
+- `test/helpers/mocks/mock_services.dart`
+
+**Commits**: TBD
+
+**Next Session**:
+- Phase 3 (HIGH): Deprecated Flutter APIs
+- Phase 4 (MEDIUM): Async context safety
+- Phase 5 (MEDIUM): Unused vars & missing @override
+- Phase 6 (LOW): Test code cleanup
+
+## Active Plan
+**File**: `.claude/plans/analyzer-cleanup-plan-v2.md`
+
+| Phase | Issues | Priority | Status |
+|-------|--------|----------|--------|
+| Phase 1 | 7 | CRITICAL | COMPLETE |
+| Phase 2 | 29 | HIGH | COMPLETE |
+| Phase 3 | 10 | HIGH | PENDING |
+| Phase 4 | 15 | MEDIUM | PENDING |
+| Phase 5 | 33 | MEDIUM | PENDING |
+| Phase 6 | 64 | LOW | PENDING |
+| Phase 7 | - | HIGH | PENDING (Patrol config/docs) |
+| Phase 8 | - | MEDIUM | PENDING (Legacy artifacts) |
+| Phase 9 | - | MEDIUM | COMPLETE (Root logs cleanup) |
+| Phase 10 | - | LOW | PENDING (Script consolidation) |
+| Phase 11 | - | LOW | PENDING (Node tooling decision) |
+
+## Session 236
 **Summary**: Implemented Phase 1 (CRITICAL) - Fixed test_bundle.dart for Patrol v4
 
 **Key Activities**:
@@ -25,27 +86,6 @@
 - `integration_test/test_bundle.dart` - Regenerated for Patrol v4
 
 **Commits**: `4efc7ff`
-
-**Next Session**:
-- Continue with Phase 2 (HIGH): Remove unused/duplicate imports
-- Phases 3-11 per analyzer-cleanup-plan-v2.md
-
-## Active Plan
-**File**: `.claude/plans/analyzer-cleanup-plan-v2.md`
-
-| Phase | Issues | Priority | Status |
-|-------|--------|----------|--------|
-| Phase 1 | 7 | CRITICAL | COMPLETE |
-| Phase 2 | 30 | HIGH | PENDING |
-| Phase 3 | 10 | HIGH | PENDING |
-| Phase 4 | 15 | MEDIUM | PENDING |
-| Phase 5 | 33 | MEDIUM | PENDING |
-| Phase 6 | 64 | LOW | PENDING |
-| Phase 7 | - | HIGH | PENDING (Patrol config/docs) |
-| Phase 8 | - | MEDIUM | PENDING (Legacy artifacts) |
-| Phase 9 | - | MEDIUM | PENDING (Root logs cleanup) |
-| Phase 10 | - | LOW | PENDING (Script consolidation) |
-| Phase 11 | - | LOW | PENDING (Node tooling decision) |
 
 ## Session 235
 **Summary**: Created comprehensive plan to fix 157 analyzer issues
