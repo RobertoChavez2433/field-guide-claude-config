@@ -1,39 +1,61 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 226
+**Last Updated**: 2026-01-31 | **Session**: 227
 
 ## Current Phase
-- **Phase**: PDF Parsing Fixes v2
-- **Status**: COMPLETE - OCR research done, deferred for future
+- **Phase**: Dependency Modernization
+- **Status**: PLANNED - Ready for implementation
 
-## Last Session (Session 226)
-**Summary**: OCR Research and Implementation Planning (Deferred)
+## Last Session (Session 227)
+**Summary**: Dependency Modernization Research & Planning
 
 **Key Activities**:
-- **OCR Research:**
-  - Researched on-device OCR options: mobile_ocr (PaddleOCR ~96%), flusseract (Tesseract ~87%)
-  - Researched cloud OCR: Azure Document Intelligence, AWS Textract, Google Cloud Vision, Docling
-  - Researched PDF-to-image packages: pdfx (cross-platform), pdf_image_renderer
-  - Explored codebase PDF parsing infrastructure via agents
-  - **Key Discovery**: Current PDFs are NOT scanned - they're digital with clumped text formatting
-  - Existing parsers (ClumpedTextParser, ColumnLayoutParser) handle current issues correctly
-- **Plan Created:**
-  - Comprehensive OCR implementation plan saved to `.claude/plans/abstract-twirling-hummingbird.md`
-  - Dual-engine strategy: mobile_ocr (mobile) + flusseract (desktop)
-  - 7 phases, ~12 hours estimated
-  - Marked as DEFERRED until actual scanned PDFs are encountered
+- **PDF Parsing Research:**
+  - Researched Python PDF libraries (pypdf, pdfplumber, PyMuPDF, Docling)
+  - Key finding: Python libraries can't run directly in Flutter/Dart
+  - Explored backend service approach for future Docling integration
+  - Discovered Syncfusion clumped text is caused by PDFs using positioning instead of spaces
+  - Identified solution: Syncfusion v32 has text extraction fixes
+
+- **Dependency Modernization Planning:**
+  - Explored entire codebase usage of major packages via agents
+  - Researched breaking changes for all major version upgrades
+  - Created comprehensive 8-stage upgrade plan with specific code changes
+
+- **Exploration Completed:**
+  - go_router usage (18 files) - case-sensitive paths in v15+
+  - geolocator usage (2 files) - LocationSettings API change in v14
+  - connectivity_plus usage (1 file) - already compatible with v7 API
+  - file_picker usage (5 files) - macOS entitlement required in v10
+  - Syncfusion usage (11 files) - text extraction improvements
+  - patrol usage - $.native deprecated in v4
 
 **Files Created**:
-- `.claude/plans/abstract-twirling-hummingbird.md` - OCR implementation plan for future use
+- `.claude/plans/dependency-modernization-plan.md` - Complete upgrade plan
 
-**Commits**: None (research-only session)
+**Commits**: None (planning-only session)
 
 **Decisions Made**:
-- OCR fallback deferred - current PDFs are digital, not scanned
-- Current text parsers are sufficient for clumped text issues
-- Plan ready for implementation when scanned PDFs become an issue
+- Upgrade all 12 dependencies in 8 stages by risk level
+- Syncfusion upgrade first (fixes PDF clumped text issue)
+- go_router last (highest risk, 3 major versions)
+- Docling backend deferred for future when needed
 
-## Session 225
+## Active Plan
+**File**: `.claude/plans/dependency-modernization-plan.md`
+**Status**: READY FOR IMPLEMENTATION
+
+**Stages**:
+1. [ ] Low-risk patches (provider, sqflite, image_picker, supabase)
+2. [ ] Syncfusion v28→v32 (PDF text extraction fix)
+3. [ ] Geolocator v13→v14 (LocationSettings API)
+4. [ ] Connectivity Plus v6→v7 (already compatible)
+5. [ ] File Picker v8→v10 (macOS entitlement)
+6. [ ] Permission Handler v11→v12
+7. [ ] go_router v14→v17 (HIGH RISK)
+8. [ ] Patrol v3→v4 ($.native → $.platform.mobile)
+
+## Session 226
 **Summary**: Implemented Phase 4 (Quality Gates + Thresholds)
 
 **Key Activities**:
