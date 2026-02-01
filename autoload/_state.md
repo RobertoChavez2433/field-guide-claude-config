@@ -1,15 +1,19 @@
 # Session State
 
-**Last Updated**: 2026-02-01 | **Session**: 248
+**Last Updated**: 2026-02-01 | **Session**: 249
 
 ## Current Phase
-- **Phase**: Analyzer Cleanup v3 - PLANNED
-- **Status**: Plan created at `.claude/plans/analyzer-cleanup-v3.md`
+- **Phase**: Analyzer Cleanup v3 - IN PROGRESS
+- **Status**: Phases 1-2 complete. 6 issues remaining (phases 3-4).
 
 ## Recent Sessions
 
+### Session 249 (2026-02-01)
+**Work**: Analyzer Cleanup v3 Phases 1-2. Fixed async safety in entry_wizard_screen.dart, added 22 null comparison ignore comments, fixed 2 unnecessary nullable declarations.
+**Commits**: `d3a5f8e`
+
 ### Session 248 (2026-02-01)
-**Work**: Analyzed 30 analyzer issues (1 production, 29 test). Created Analyzer Cleanup v3 plan with 4 phases: async context fix, null comparison ignores, function declarations, super parameters.
+**Work**: Analyzed 30 analyzer issues (1 production, 29 test). Created Analyzer Cleanup v3 plan with 4 phases.
 **Commits**: None (planning only)
 
 ### Session 247 (2026-02-01)
@@ -17,7 +21,7 @@
 **Commits**: Pending
 
 ### Session 246 (2026-02-01)
-**Work**: Context Management Phases 1-5 - Created autoload/, rules/pdf/, rules/sync/, rules/database/, rules/testing/, backlogged-plans/. Moved _state.md, _defects.md, _tech-stack.md to autoload/. Moved archives to logs/. Converted 5 docs to rules with paths: frontmatter. Created pdf-generation.md and schema-patterns.md rules.
+**Work**: Context Management Phases 1-5 - Created autoload/, rules/pdf/, rules/sync/, rules/database/, rules/testing/, backlogged-plans/. Moved _state.md, _defects.md, _tech-stack.md to autoload/.
 **Commits**: Pending
 
 ### Session 245 (2026-02-01)
@@ -43,10 +47,6 @@
 ### Session 240 (2026-01-31)
 **Work**: Phases 5-6 - 20 @override additions, unused vars, await_only_futures, debugPrint conversions
 **Commits**: `10542da`
-
-### Session 239 (2026-01-31)
-**Work**: Phase 4 - Fixed 17 use_build_context_synchronously warnings across 4 files
-**Commits**: `dcc5e08`
 
 ## Completed Plans (Recent)
 
@@ -77,4 +77,4 @@ None
 - **Archive**: `.claude/logs/state-archive.md` (Sessions 193-238)
 - **Defects**: `.claude/autoload/_defects.md`
 - **Branch**: `main`
-- **Analyzer**: 30 issues (1 prod info, 29 test warnings/info)
+- **Analyzer**: 6 issues (5 function declarations, 1 super parameter)
