@@ -10,7 +10,7 @@ Complete session with proper handoff and auto-archiving.
 ## Actions
 
 ### 1. Gather Summary
-Ask user for:
+Write Summary:
 - Main focus of session
 - Completed tasks
 - Decisions made

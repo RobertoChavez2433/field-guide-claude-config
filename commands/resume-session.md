@@ -12,11 +12,12 @@ Load HOT context only and prepare for work.
 ### 1. Read HOT Memory Only
 1. `.claude/plans/_state.md` - Current state (max 10 sessions)
 2. `.claude/memory/defects.md` - Active patterns (max 15 defects)
+3. `.claude/memory/tech-stack.md` - Current tech stack
+4. `.claude/docs/architectural_patterns.md` - Architectural patterns
 
 **DO NOT READ** (lazy load only when needed):
 - `.claude/memory/state-archive.md`
 - `.claude/memory/defects-archive.md`
-- `.claude/memory/tech-stack.md`
 - `.claude/logs/session-log.md`
 
 ### 2. Check Git
@@ -46,11 +47,8 @@ Do NOT start implementation until user confirms.
 
 ## On-Demand References
 Read these only when relevant to the task:
-- Tech details: @.claude/memory/tech-stack.md
-- Architecture: @.claude/docs/architectural_patterns.md
 - Session history: @.claude/memory/state-archive.md
 - Defect history: @.claude/memory/defects-archive.md
-- AASHTOWare plan: @.claude/implementation/AASHTOWARE_Implementation_Plan.md
 
 ## Agent Reference
 | Domain | Agent |
