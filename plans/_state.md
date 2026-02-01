@@ -1,12 +1,48 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 222
+**Last Updated**: 2026-01-31 | **Session**: 223
 
 ## Current Phase
 - **Phase**: PDF Parsing Fixes v2
-- **Status**: Phase 1a/1b COMPLETE - Clustering + Header Detection
+- **Status**: Phase 2 COMPLETE + Code Review Fixes
 
-## Last Session (Session 222)
+## Last Session (Session 223)
+**Summary**: Implemented Phase 2 (Structural Keywords + Currency Fix) with code review fixes for Phases 0-2
+
+**Key Activities**:
+- **Phase 2 - Structural Keywords + Currency Fix:**
+  - Added structural keyword detection in TokenClassifier (SECTION, ARTICLE, CHAPTER, etc.)
+  - Stop "Section 5" / "Article 3" from becoming pay items via `_isStructuralContext()`
+  - Fixed currency pattern to allow 1-4 decimals ($12.5, $12.50, $12.500, $12.5000)
+  - Normalized spaced currency ($ 500.00 -> $500.00) in tokenizer
+  - Added test fixtures: boilerplate_section_5.txt, currency_variations.txt
+  - Added 48 new tests for structural context and currency variations
+- **Code Review Fixes (Phases 0-2):**
+  - DRY: ColumnLayoutParser now uses TokenClassifier.knownUnits (removed duplicate _knownUnits set)
+  - Extracted magic numbers to named constants (_qualityGateThreshold, _maxSampleLines)
+  - Added clarifying comments for duplicate suffix calculation (96 + count = 'a')
+  - Fixed test skip pattern to use proper framework integration (skip: parameter)
+  - Added negative tests for currency with 5+ decimals (should be rejected)
+- 266 PDF parser tests passing, 0 analyzer errors
+
+**Files Modified**:
+- `lib/features/pdf/services/parsers/token_classifier.dart`
+- `lib/features/pdf/services/parsers/column_layout_parser.dart`
+- `lib/features/pdf/services/parsers/clumped_text_parser.dart`
+- `test/features/pdf/parsers/token_classifier_test.dart`
+- `test/features/pdf/parsers/column_layout_parser_test.dart`
+
+**Files Created**:
+- `test/fixtures/pdf/boilerplate_section_5.txt`
+- `test/fixtures/pdf/currency_variations.txt`
+
+**Commits**: `1b5c24f`
+
+**Next Session**:
+- Phase 3: Description Cap + Boilerplate Detection
+- Phase 4: Quality Gates + Thresholds
+
+## Session 222
 **Summary**: Implemented Phase 1a and 1b of PDF Parsing Fixes v2
 
 **Key Activities**:
@@ -31,15 +67,6 @@
 - `test/fixtures/pdf/header_on_page_2.txt`
 
 **Commits**: `e30debe`
-
-**Expected Impact**:
-- 60% reduction in column parser fallbacks
-- 90% of cover-sheet PDFs now handled correctly
-- No more junk items from boilerplate sections
-
-**Next Session**:
-- Phase 2: Structural Keywords + Currency Fix
-- Phase 3: Description Cap + Boilerplate Detection
 
 ## Session 221
 **Summary**: Implemented Phase 0 of PDF Parsing Fixes v2 - Observability + Fixtures
