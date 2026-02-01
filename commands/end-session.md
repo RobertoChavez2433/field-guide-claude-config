@@ -1,11 +1,11 @@
 ---
 name: end-session
-description: End session workflow - save state, update notes, analyze code, commit changes
+description: End session with auto-archiving
 ---
 
 # End Session
 
-Complete session with proper handoff.
+Complete session with proper handoff and auto-archiving.
 
 ## Actions
 
@@ -27,55 +27,43 @@ git diff --stat
 ### 3. Update State Files
 
 **Update `.claude/plans/_state.md`:**
+- Write compressed session summary (max 5 lines):
 ```markdown
-# Session State
-
-**Last Updated**: [TODAY] | **Session**: [N+1]
-
-## Current Phase
-- **Phase**: [Current phase]
-- **Status**: [Status]
-
-## Last Session (Session N)
-**Summary**: [Brief summary]
-**Files Modified**:
-- file.dart - change description
-
-## Active Plan
-**Status**: [READY | IN PROGRESS | COMPLETED]
-
-**Completed**:
-- [x] Task done
-
-**Next Tasks**:
-- [ ] Task to do
-
-## Key Decisions
-- [Decision made]
-
-## Future Work
-| Item | Status | Reference |
-|------|--------|-----------|
-
-## Open Questions
-[Questions or "None"]
+### Session N (YYYY-MM-DD)
+**Work**: Brief 1-line summary
+**Commits**: `abc1234`
 ```
+- If >10 sessions exist, run rotation (see below)
 
 **Update `.claude/memory/defects.md`** (if mistakes were made):
+- Add new defect with category and date:
 ```markdown
-### Title
+### [CATEGORY] YYYY-MM-DD: Title
 **Pattern**: What to avoid
 **Prevention**: How to avoid
 ```
+- If >15 defects exist, run rotation (see below)
 
-**Append to `.claude/logs/session-log.md`** (historical record):
+### 4. Session Rotation Logic
+
+**When _state.md has >10 sessions:**
+1. Take oldest session
+2. Append to `.claude/memory/state-archive.md` under appropriate month header
+3. Remove from _state.md
+
+**When defects.md has >15 defects:**
+1. Take oldest defect (from bottom of Active Patterns)
+2. Append to `.claude/memory/defects-archive.md` with archive date
+3. Remove from defects.md
+
+### 5. Append to Session Log
+Append brief entry to `.claude/logs/session-log.md`:
 ```markdown
 ### YYYY-MM-DD (Session N)
 - [Summary of main work]
-- [Key files modified]
 ```
 
-### 4. Commit Changes
+### 6. Commit Changes
 ```bash
 git add -A
 git commit -m "Session: [summary]"
@@ -83,10 +71,7 @@ git commit -m "Session: [summary]"
 
 **IMPORTANT**: Do NOT include "Co-Authored-By" in commit messages.
 
-### 5. Optional Push
-Ask user if they want to push to remote.
-
-### 6. Complete
+### 7. Complete
 Present:
 - Session summary
 - Commit hash

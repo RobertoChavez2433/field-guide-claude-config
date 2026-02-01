@@ -30,9 +30,9 @@ Quality assurance specialist ensuring code quality through test case design, com
 - **golden_toolkit**: Visual regression testing with snapshot comparisons
 
 ### Testing Pyramid Strategy
-- **Base (70%)**: Fast unit tests for business logic
+- **Base (60%)**: Fast unit tests for business logic
 - **Middle (20%)**: Widget tests for UI components
-- **Top (10%)**: Integration/E2E tests for critical user flows
+- **Top (20%)**: Integration/E2E tests for critical user flows
 - Prioritize "happy paths" for the most valuable features
 
 ### Debugging Tools
@@ -41,7 +41,8 @@ Quality assurance specialist ensuring code quality through test case design, com
 - Memory leak detection
 
 ### Patrol (E2E) Best Practices
-- **Use TestingKeys class**: All widget keys in `lib/shared/testing_keys.dart` - never hardcode `Key('...')`
+- **Use TestingKeys class**: All widget keys in `lib/shared/testing_keys/testing_keys.dart` (barrel export) - never hardcode `Key('...')`
+- **Keys organized by feature**: 12 files total (11 feature-specific + 1 barrel export) in `lib/shared/testing_keys/` directory
 - **Reference REQUIRED_UI_KEYS.md**: See `integration_test/patrol/REQUIRED_UI_KEYS.md` for key catalog
 - **Keep tests simple**: One feature per test, minimal conditional logic
 - **Handle native features**: System permissions (notifications, location, camera)
@@ -129,8 +130,19 @@ flutter build apk --release        # Android release
 ## Project Test Structure
 
 ```
-lib/shared/
-└── testing_keys.dart  # SINGLE SOURCE OF TRUTH for all widget keys
+lib/shared/testing_keys/
+├── testing_keys.dart       # Barrel export (import this)
+├── auth_keys.dart          # Login, registration, password reset
+├── common_keys.dart        # Confirmation dialogs, date pickers
+├── contractors_keys.dart   # Contractor list, editor, dialogs
+├── entries_keys.dart       # Entry wizard, report, calendar/home
+├── locations_keys.dart     # Location and equipment dialogs
+├── navigation_keys.dart    # Bottom nav, FABs
+├── photos_keys.dart        # Photo capture, gallery, photo dialogs
+├── projects_keys.dart      # Project setup, project list, dashboard
+├── quantities_keys.dart    # Quantities, bid items, PDF import
+├── settings_keys.dart      # Settings, inspector profile, personnel types
+└── toolbox_keys.dart       # Forms, calculator, gallery, todos
 
 test/
 ├── flutter_test_config.dart  # Auto-configures TolerantGoldenFileComparator
@@ -232,3 +244,6 @@ void dispose() {
 
 ## Defect Logging (REQUIRED)
 @.claude/rules/defect-logging.md
+
+## Historical Reference
+- Past test issues: @.claude/memory/defects-archive.md

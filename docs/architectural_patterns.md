@@ -11,13 +11,16 @@ The app follows a **Feature-First Clean Architecture** with clear separation:
 ```
 lib/
 ├── core/        # Cross-cutting (router, theme, config, database)
+│   └── database/
+│       └── schema/  # Schema files organized by domain
 ├── shared/      # Base classes, common utilities
-├── features/    # 12 feature modules (auth, entries, projects, etc.)
+├── features/    # 13 feature modules
 │   └── [feature]/
 │       ├── data/         # Models, repositories, datasources
 │       └── presentation/ # Screens, widgets, providers
-├── data/        # LEGACY: barrel re-exports
-├── presentation/# LEGACY: barrel re-exports
+│       # Note: No domain/ layer in most features (only sync uses full Clean Architecture)
+├── data/        # LEGACY: empty directories
+├── presentation/# LEGACY: empty directories
 └── services/    # Cross-cutting services
 ```
 

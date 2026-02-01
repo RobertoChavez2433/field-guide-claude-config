@@ -40,28 +40,68 @@ lib/
 
 ## Responsibilities
 
-1. Create entity models in `lib/data/models/`
-2. Implement repositories in `lib/data/repositories/`
-3. Create datasources in `lib/data/datasources/local/`
-4. Define providers in `lib/presentation/providers/`
-5. Update barrel exports (`models.dart`, `local_datasources.dart`, etc.)
+1. Create entity models in `lib/features/*/data/models/`
+2. Implement repositories in `lib/features/*/data/repositories/`
+3. Create datasources in `lib/features/*/data/datasources/`
+4. Define providers in `lib/features/*/presentation/providers/`
+5. Update barrel exports (feature `data.dart`, `presentation.dart`, legacy `models.dart`)
 
-## Database Schema (10 Tables)
+## Database Schema (20+ Tables)
 
+### Core Tables
 | Table | Key Fields | Foreign Keys |
 |-------|------------|--------------|
 | projects | id, name, projectNumber, client | - |
 | locations | id, name, projectId | projects.id |
+
+### Contractor Tables
+| Table | Key Fields | Foreign Keys |
+|-------|------------|--------------|
 | contractors | id, name, type, projectId | projects.id |
 | equipment | id, name, contractorId | contractors.id |
+
+### Quantity Tables
+| Table | Key Fields | Foreign Keys |
+|-------|------------|--------------|
 | bid_items | id, itemNumber, description, unit, bidQty, unitPrice | projects.id |
-| daily_entries | id, date, locationId, projectId, activities, weather | projects.id, locations.id |
-| entry_personnel | id, entryId, name, role | daily_entries.id |
-| entry_equipment | id, entryId, equipmentId, hoursUsed | daily_entries.id, equipment.id |
 | entry_quantities | id, entryId, bidItemId, quantity | daily_entries.id, bid_items.id |
+
+### Entry Tables
+| Table | Key Fields | Foreign Keys |
+|-------|------------|--------------|
+| daily_entries | id, date, locationId, projectId, activities, weather | projects.id, locations.id |
+| entry_contractors | id, entryId, contractorId | daily_entries.id, contractors.id |
+| entry_equipment | id, entryId, equipmentId, hoursUsed | daily_entries.id, equipment.id |
+
+### Personnel Tables
+| Table | Key Fields | Foreign Keys |
+|-------|------------|--------------|
+| personnel_types | id, name, projectId | projects.id |
+| entry_personnel_counts | id, entryId, personnelTypeId, count | daily_entries.id, personnel_types.id |
+| entry_personnel | id, entryId, name, role | daily_entries.id |
+
+### Photo Tables
+| Table | Key Fields | Foreign Keys |
+|-------|------------|--------------|
 | photos | id, entryId, filePath, caption, lat, lng | daily_entries.id |
 
-Reference: `lib/services/database_service.dart:50-215`
+### Sync Tables
+| Table | Key Fields | Foreign Keys |
+|-------|------------|--------------|
+| sync_queue | id, tableName, operation, recordId | - |
+
+### Toolbox Tables
+| Table | Key Fields | Foreign Keys |
+|-------|------------|--------------|
+| inspector_forms | id, projectId, name, templatePath | projects.id |
+| form_responses | id, formId, entryId, projectId, responseData | inspector_forms.id, daily_entries.id, projects.id |
+| todo_items | id, projectId, entryId, title, isCompleted | projects.id, daily_entries.id |
+| calculation_history | id, projectId, entryId, calcType | projects.id, daily_entries.id |
+| form_field_registry | id, formId, fieldName, semanticName | inspector_forms.id |
+| field_semantic_aliases | id, semanticName, alias, formId | inspector_forms.id |
+| form_field_cache | id, projectId, semanticName, lastValue | projects.id |
+
+Reference: `lib/core/database/database_service.dart`, `lib/core/database/schema/`
 
 ## Code Patterns
 @.claude/rules/coding-standards.md (Model, Datasource, Provider patterns)
@@ -82,19 +122,15 @@ Reference: `lib/services/database_service.dart:50-215`
 
 | Layer | Component | Status |
 |-------|-----------|--------|
-| Models | All 10 models | Complete |
-| Datasources | Project, Location, Contractor, Equipment, BidItem, DailyEntry | Complete |
-| Repositories | All core repositories | Complete |
-| Providers | Project, Location, Contractor, Equipment, BidItem, DailyEntry, Theme | Complete |
+| Models | All 20+ models (Projects, Locations, Contractors, Equipment, BidItems, DailyEntries, EntryPersonnel, EntryEquipment, EntryQuantities, Photos, Toolbox tables) | Complete |
+| Datasources (Local) | Projects, Locations, Contractors, Equipment, BidItems, DailyEntries, EntryContractors, EntryPersonnel, EntryEquipment, EntryQuantities, PersonnelTypes, Photos, Toolbox (7 tables) | Complete |
+| Datasources (Remote) | Projects, Locations, Contractors, Equipment, BidItems, DailyEntries, EntryPersonnel, EntryEquipment, EntryQuantities, PersonnelTypes, Photos, Toolbox (7 tables) | Complete |
+| Repositories | Projects, Locations, Contractors, Equipment, BidItems, Quantities, DailyEntries, Photos, Toolbox | Complete |
+| Providers | Projects, Locations, Contractors, Equipment, BidItems, Quantities, DailyEntries, Photos, Theme, Toolbox | Complete |
 
-## Remaining Work
+## Implementation Status
 
-| Component | Description |
-|-----------|-------------|
-| EntryPersonnel datasource | Track personnel per entry |
-| EntryEquipment datasource | Track equipment hours per entry |
-| EntryQuantity datasource | Track quantities used per entry |
-| Photo datasource | Store photo metadata |
+All core data layer components are complete. The app has full CRUD operations for all 20+ database tables with both local (SQLite) and remote (Supabase) datasources.
 
 ## Quality Checklist
 @.claude/rules/quality-checklist.md (Data Layer section)

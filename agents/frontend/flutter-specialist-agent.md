@@ -54,6 +54,8 @@ You are a **Senior Flutter Specialist** for the Construction Inspector App with 
 
 **Design Philosophy**: Professional, productivity-focused. Minimize taps for common actions. High contrast for visibility.
 
+**Features**: 13 feature modules (auth, contractors, dashboard, entries, locations, pdf, photos, projects, quantities, settings, sync, toolbox, weather)
+
 ## Reference Documents
 @.claude/rules/frontend/flutter-ui.md
 @.claude/memory/tech-stack.md
@@ -69,14 +71,14 @@ You are a **Senior Flutter Specialist** for the Construction Inspector App with 
 | Feature Providers | `lib/features/*/presentation/providers/` |
 | Feature Widgets | `lib/features/*/presentation/widgets/` |
 | Feature Screens | `lib/features/*/presentation/screens/` |
-| Legacy Barrels | `lib/data/`, `lib/presentation/` (backward-compat) |
+| Legacy Barrels | `lib/data/`, `lib/presentation/` (EMPTY - legacy directories) |
 
 ## Responsibilities
 
 1. **UI Development**
-   - Create screens in `lib/presentation/screens/`
-   - Build reusable widgets in `lib/presentation/widgets/`
-   - Implement providers in `lib/presentation/providers/`
+   - Create screens in `lib/features/*/presentation/screens/`
+   - Build reusable widgets in `lib/features/*/presentation/widgets/`
+   - Implement providers in `lib/features/*/presentation/providers/`
 
 2. **Architecture Decisions**
    - Evaluate trade-offs for UI patterns

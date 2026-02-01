@@ -1,6 +1,60 @@
 # Defects Archive
 
-Historical defects that have been fixed or are no longer active. Kept for reference.
+Historical defects moved from defects.md or already fixed. Reference only.
+
+---
+
+## Archived Active Patterns (2026-01)
+
+These were active patterns that didn't make the top 15 in defects.md.
+
+### [E2E] 2026-01-16: Inadequate E2E Test Debugging
+**Pattern**: Declaring test success based on partial output without analyzing full logs
+**Prevention**: Search logs for `TimeoutException`, `hanging`; check duration (>60s = likely hanging)
+
+### [E2E] 2026-01-15: Test Delays
+**Pattern**: Using hardcoded `Future.delayed()` in tests
+**Prevention**: Use condition-based waits: `await $.waitUntilVisible(finder);`
+
+### [E2E] 2026-01-14: Hardcoded Test Widget Keys
+**Pattern**: Using `Key('widget_name')` directly in widgets and tests
+**Prevention**: Always use `TestingKeys` class from `lib/shared/testing_keys/testing_keys.dart`
+
+### [E2E] 2026-01-13: Missing TestingKeys for Dialog Buttons
+**Pattern**: UI dialogs missing TestingKeys on action buttons
+**Prevention**: When creating dialogs with action buttons, always add TestingKeys
+
+### [E2E] 2026-01-12: E2E Tests Missing Supabase Credentials
+**Pattern**: Running patrol tests without SUPABASE_URL and SUPABASE_ANON_KEY
+**Prevention**: Always use `run_patrol.ps1` which loads from `.env.local`
+
+### [E2E] 2026-01-11: Gradle File Lock on Test Results
+**Pattern**: Gradle creates .lck files preventing subsequent test runs
+**Prevention**: Kill stale Java/Gradle processes; clean `build/app/outputs/androidTest-results`
+
+### [E2E] 2026-01-10: Raw app.main() in Patrol Tests
+**Pattern**: Using `app.main()` directly without the helper pattern
+**Prevention**: Use `PatrolTestConfig.createHelpers($, 'test_name')`, `h.launchAppAndWait()`
+
+### [E2E] 2026-01-09: Repeated Test Runs Corrupt App State
+**Pattern**: Running E2E tests repeatedly without resetting device/app state
+**Prevention**: Reset app state: `adb shell pm clear com.fvconstruction.construction_inspector`
+
+### [E2E] 2026-01-08: Keyboard Covers Text Field After Tap
+**Pattern**: Tapping text field opens keyboard, which covers the field
+**Prevention**: After tapping text field, call `scrollTo()` again before `enterText()`
+
+### [E2E] 2026-01-07: assertVisible Without Scroll
+**Pattern**: Calling `h.assertVisible(key, msg)` on elements below the fold
+**Prevention**: Always `$(key).scrollTo()` before `h.assertVisible()` for below-fold elements
+
+### [E2E] 2026-01-06: .exists Doesn't Mean Hit-Testable
+**Pattern**: Using `.exists` to check if widget is ready before `.tap()`
+**Prevention**: `.exists` is true for widgets below fold; use `safeTap(..., scroll: true)`
+
+### [DATA] 2026-01-05: Rethrow in Callbacks
+**Pattern**: Using `rethrow` in `.catchError()` or `onError` callbacks
+**Prevention**: Use `throw error` in callbacks, `rethrow` only in catch blocks
 
 ---
 
@@ -9,7 +63,6 @@ Historical defects that have been fixed or are no longer active. Kept for refere
 ### 2026-01-21: PatrolIntegrationTester.takeScreenshot() Doesn't Exist [FIXED]
 **Issue**: Patrol tests fail - `takeScreenshot` isn't defined for PatrolIntegrationTester
 **Fix**: Use graceful fallback pattern; screenshot is `$.native.takeScreenshot()` or skip
-**Ref**: @integration_test/patrol/helpers/patrol_test_helpers.dart:436
 
 ### 2026-01-21: Patrol openApp() Empty Package Name [FIXED]
 **Issue**: `openApp()` passed empty package name
@@ -26,7 +79,6 @@ Historical defects that have been fixed or are no longer active. Kept for refere
 ### 2026-01-20: ProjectProvider Unsafe firstWhere [FIXED]
 **Issue**: .first on empty list throws, unchecked firstWhere throws
 **Fix**: Use .where().firstOrNull pattern across all providers
-**Files**: project_provider, entry_quantity_provider, bid_item_provider, contractor_provider, personnel_type_provider, photo_provider, base_list_provider
 
 ### 2026-01-20: Hardcoded Supabase Credentials [FIXED]
 **Issue**: Supabase URL and anon key committed to git

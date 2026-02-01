@@ -1,238 +1,80 @@
 # Defects Log
 
-Critical patterns to avoid. Archive: `defects-archive.md`
+Active patterns to avoid. Max 15 defects - oldest auto-archives.
+Archive: @.claude/memory/defects-archive.md
 
-## Format
-```
-### Title
-**Pattern**: What to avoid
-**Prevention**: How to avoid
-```
+## Categories
+- **[ASYNC]** - Context safety, dispose issues
+- **[E2E]** - Patrol testing patterns
+- **[FLUTTER]** - Widget, Provider patterns
+- **[DATA]** - Repository, collection access
+- **[CONFIG]** - Supabase, credentials, environment
 
 ---
 
 ## Active Patterns
 
-### Provider Returned Before Async Initialization
-**Pattern**: Returning Provider from `create:` callback before async initialization completes
-**Prevention**:
-- Add `isInitializing` flag that starts true
-- Set flag to false only after all async init completes
-- Screens should show loading state while `isInitializing == true`
-**Example**:
-```dart
-// BAD: Provider returned before loadProjects completes
-create: (_) {
-  final provider = MyProvider();
-  provider.loadData().then((_) { ... });  // Async!
-  return provider;  // Returns immediately with empty state
-}
-
-// GOOD: Track initialization state
-bool _isInitializing = true;
-provider.loadData().then((_) {
-  // ... setup ...
-  _isInitializing = false;
-  notifyListeners();
-});
-```
-**Ref**: main.dart:365-378, home_screen.dart:648-654
-
-### Missing Auto-Fill Source Configuration
-**Pattern**: Form field JSON definitions missing `autoFillSource` property
-**Prevention**:
-- Always include `autoFillSource` for fields that should auto-fill
-- Valid sources: `project`, `entry`, `inspectorProfile`, `contractor`, `location`, `weather`, `calculated`, `carryForward`
-- Increment seed version when updating JSON to trigger re-seeding
-**Impact**: Auto-fill engine skips all fields where `isAutoFillable=false` or `autoFillSource=null`
-**Ref**: assets/data/forms/*.json, auto_fill_engine.dart:106
-
-### Inadequate E2E Test Debugging
-**Pattern**: Declaring test success based on partial output without analyzing full logs for timeouts/hanging
-**Prevention**:
-- Always search full logs for `TimeoutException`, `hanging`, `stuck` patterns
-- Check test duration against expected times (>60s for simple tests = likely hanging)
-- Don't trust "passed" count until confirmed tests completed in reasonable time
-- Analyze logcat and test-results.log for widget not found / not hit-testable errors
-
-### Async Context Safety
+### [ASYNC] 2026-01-21: Async Context Safety
 **Pattern**: Using context after await without mounted check
 **Prevention**: Always `if (!mounted) return;` before setState/context after await
-**Example**:
-```dart
-await someAsyncOp();
-if (!mounted) return;  // REQUIRED
-context.read<Provider>();
-```
+**Ref**: @lib/features/entries/presentation/screens/entry_wizard_screen.dart
 
-### Async in dispose()
+### [ASYNC] 2026-01-20: Async in dispose()
 **Pattern**: Calling async methods in dispose() - context already deactivated
 **Prevention**: Use `WidgetsBindingObserver.didChangeAppLifecycleState` for lifecycle saves
 
-### Unsafe Collection Access
-**Pattern**: .first on empty list, firstWhere without orElse
-**Prevention**: Use `.where().firstOrNull` pattern
-```dart
-// BAD: throws on empty
-items.first
-items.firstWhere((e) => e.id == id)
+### [ASYNC] 2026-01-19: Provider Returned Before Async Init
+**Pattern**: Returning Provider from `create:` before async init completes
+**Prevention**: Add `isInitializing` flag, show loading state until false
+**Ref**: @lib/main.dart:365-378
 
-// GOOD: returns null safely
-items.where((e) => e.id == id).firstOrNull
-```
+### [E2E] 2026-01-25: Silent Skip with if(widget.exists)
+**Pattern**: Using `if (widget.exists) { ... }` silently skips when widget not visible
+**Prevention**: Use `waitForVisible()` instead - let it fail explicitly if widget should exist
 
-### Supabase Instance Access
-**Pattern**: Accessing Supabase.instance without checking configuration
-**Prevention**: Always check `SupabaseConfig.isConfigured` first
-```dart
-final user = SupabaseConfig.isConfigured
-    ? Supabase.instance.client.auth.currentUser
-    : null;
-```
+### [E2E] 2026-01-24: Test Helper Missing scrollTo()
+**Pattern**: Calling `$(finder).tap()` on widgets below the fold
+**Prevention**: Always `$(finder).scrollTo()` before `$(finder).tap()` for form fields
 
-### Test Delays
-**Pattern**: Using hardcoded Future.delayed() in tests
-**Prevention**: Use condition-based waits
-```dart
-// BAD
-await Future.delayed(Duration(seconds: 2));
+### [E2E] 2026-01-23: TestingKeys Defined But Not Wired
+**Pattern**: Adding key to TestingKeys class but not assigning to widget
+**Prevention**: After adding TestingKey, immediately wire: `key: TestingKeys.myKey`
 
-// GOOD
-await $.waitUntilVisible(finder);
-```
+### [E2E] 2026-01-22: Patrol CLI Version Mismatch
+**Pattern**: Upgrading patrol package without upgrading patrol_cli
+**Prevention**: patrol v4.x requires patrol_cli v4.x - run `dart pub global activate patrol_cli`
 
-### Rethrow in Callbacks
-**Pattern**: Using `rethrow` in .catchError() or onError callbacks
-**Prevention**: Use `throw error` in callbacks, `rethrow` only in catch blocks
+### [E2E] 2026-01-18: dismissKeyboard() Closes Dialogs
+**Pattern**: Using `h.dismissKeyboard()` (pressBack) inside dialogs
+**Prevention**: Use `scrollTo()` to make buttons visible instead of pressBack
 
-### Hardcoded Test Widget Keys
-**Pattern**: Using `Key('widget_name')` directly in both widgets and tests
-**Prevention**:
-- Always use `TestingKeys` class from `lib/shared/testing_keys.dart`
-- Never hardcode `Key('...')` in widgets or tests
-- Add new keys to TestingKeys when adding testable widgets
-**Impact**: 14+ tests excluded from test bundle, navigation helpers broken
-**Ref**: @.claude/plans/e2e-testing-remediation-plan.md
-
-### Missing TestingKeys for Dialog Buttons
-**Pattern**: UI dialogs (confirmation, sign out, delete) missing TestingKeys on action buttons
-**Prevention**:
-- When creating dialogs with action buttons, always add TestingKeys
-- Check if test helpers need to interact with the dialog (especially confirmation flows)
-- Common missing: confirm buttons, cancel buttons in AlertDialog actions
-**Impact**: E2E tests fail because helpers can't tap dialog buttons
-**Example**: Sign out dialog "Sign Out" button needed `TestingKeys.signOutConfirmButton`
-
-### TestingKeys Defined But Not Wired
-**Pattern**: Adding a key to TestingKeys class but not assigning it to the actual widget
-**Prevention**:
-- When adding a TestingKey, immediately wire it to the widget: `key: TestingKeys.myKey`
-- Search for the key in lib/ to verify it's used: `grep -r "TestingKeys.myKey" lib/`
-- Test helpers using undefined keys will timeout waiting for widgets that "don't exist"
-**Impact**: `waitForAppReady()` timeouts, tests can't find screens/buttons
-**Example**: `TestingKeys.loginScreen` was defined but never added to login_screen.dart Scaffold
-
-### E2E Tests Missing Supabase Credentials
-**Pattern**: Running patrol tests without passing SUPABASE_URL and SUPABASE_ANON_KEY
-**Prevention**:
-- Always use `run_patrol.ps1` which loads from `.env.local`
-- Or manually pass: `--dart-define="SUPABASE_URL=xxx" --dart-define="SUPABASE_ANON_KEY=yyy"`
-- Without credentials, `SupabaseConfig.isConfigured` returns false → auth bypassed entirely
-**Impact**: App goes straight to home screen, auth tests fail expecting login screen
-**Example**: Tests timeout because `forceLogoutIfNeeded()` returns early when Supabase not configured
-
-### dismissKeyboard() Closes Dialogs on Android
-**Pattern**: Using `h.dismissKeyboard()` (which calls `$.native.pressBack()`) inside dialogs
-**Prevention**:
-- Use `scrollTo()` to make buttons visible instead
-- Or tap outside text field to dismiss keyboard
-- Never use pressBack when inside a dialog - it closes the entire dialog
-**Impact**: Tests fail with "widget not found" because dialog was dismissed
-**Example**: contractors_flow_test save button not found after dismissKeyboard
-
-### Gradle File Lock on Test Results
-**Pattern**: Gradle creates .lck files in androidTest-results that prevent subsequent test runs
-**Prevention**:
-- Kill stale Java/Gradle processes before running tests
-- Clean test results: `rm -rf build/app/outputs/androidTest-results`
-- Use `pwsh -Command "Get-Process -Name java | Stop-Process -Force"` if needed
-**Impact**: Test execution fails with "Cannot access output property 'resultsDir'" error
-**Example**: `utp.0.log.lck` file prevents test runner from starting
-
-### Raw app.main() in Patrol Tests
-**Pattern**: Using `app.main()` directly without the helper pattern
-**Prevention**:
-- Always use `PatrolTestConfig.createHelpers($, 'test_name')`
-- Call `h.launchAppAndWait()` instead of `app.main()`
-- Call `h.signInIfNeeded()` after launch for authenticated screens
-- Use `h.waitForVisible()` instead of `$.waitUntilVisible()`
-**Impact**: Tests fail because no sign-in performed, stuck on login screen
-**Example**: navigation_flow_test couldn't find bottomNavigationBar because auth was required
-
-### Git Bash Silent Output on Windows
+### [E2E] 2026-01-17: Git Bash Silent Output
 **Pattern**: Running Flutter/Patrol commands through Git Bash loses stdout/stderr
-**Prevention**:
-- Always run E2E tests through PowerShell: `pwsh -File run_patrol_batched.ps1`
-- Or wrap commands: `pwsh -Command "flutter build apk --debug"`
-- Git Bash swallows output from Flutter's build system
-**Impact**: Commands appear to complete instantly with no output, debugging impossible
-**Example**: `flutter build apk --debug 2>&1` returns nothing in Git Bash but works in PowerShell
+**Prevention**: Always use PowerShell: `pwsh -File run_patrol_batched.ps1`
 
-### Repeated Test Runs Corrupt App State
-**Pattern**: Running E2E tests repeatedly without resetting device/app state between runs
-**Prevention**:
-- Reset app state before running tests: `adb shell pm clear com.fvconstruction.construction_inspector`
-- Use `run_patrol_batched.ps1` which resets between batches
-- Don't spam tests trying to debug - one run, analyze, fix, reset, retry
-**Impact**: Tests that would pass fail due to stale database/login state from prior runs
-**Example**: Auth tests fail because user already signed in from previous test run
+### [DATA] 2026-01-20: Unsafe Collection Access
+**Pattern**: `.first` on empty list, `firstWhere` without `orElse`
+**Prevention**: Use `.where((e) => e.id == id).firstOrNull` pattern
 
-### Test Helper Missing scrollTo() Before tap()
-**Pattern**: Calling `$(finder).tap()` on widgets that may be below the fold
-**Prevention**:
-- Always call `$(finder).scrollTo()` before `$(finder).tap()` for form fields
-- Widgets found but "not hit-testable" means they're off-screen
-- Apply to: `fillEntryField()`, `selectFromDropdown()`, `saveEntry()`
-**Impact**: TimeoutException - "Found 1 widget... did not find any visible (hit-testable) widgets"
-**Example**: entry_wizard_activities field exists but couldn't be tapped until scrolled into view
+### [DATA] 2026-01-16: Seed Version Not Incremented
+**Pattern**: Updating form JSON definitions without incrementing seed version
+**Prevention**: Always increment `seedVersion` in seed data when modifying form JSON
 
-### Keyboard Covers Text Field After Tap
-**Pattern**: Tapping a text field opens the keyboard, which then covers the field making it not hit-testable
-**Prevention**:
-- After tapping a text field, call `scrollTo()` again before `enterText()`
-- The keyboard opening can shift content, making previously visible fields unreachable
-- Updated `fillEntryField()` helper to scroll after tap
-**Impact**: TimeoutException - "Found 1 widget... did not find any visible (hit-testable) widgets"
-**Example**: entry_wizard_activities field tapped, keyboard opened, field no longer visible for text entry
+### [DATA] 2026-01-15: Missing Auto-Fill Source Config
+**Pattern**: Form field JSON missing `autoFillSource` property
+**Prevention**: Include `autoFillSource` for fields that should auto-fill; increment seed version
 
-### assertVisible Without Scroll for Below-Fold Elements
-**Pattern**: Calling `h.assertVisible(key, message)` on elements that are below the fold without scrolling first
-**Prevention**:
-- Always call `$(key).scrollTo()` before `h.assertVisible(key, ...)` for elements that may be below the fold
-- Settings screen sync section is particularly prone to this - many items above it
-- The assertVisible helper only checks visibility, it doesn't scroll
-**Impact**: Test failure - "Found 0 widgets with key [<'key_name'>]"
-**Example**: settingsSyncSection, settingsAutoSyncToggle fail because they're below the fold in settings
+### [CONFIG] 2026-01-19: Supabase Instance Access
+**Pattern**: Accessing Supabase.instance without checking configuration
+**Prevention**: Always check `SupabaseConfig.isConfigured` before accessing Supabase.instance
 
-### .exists Doesn't Mean Hit-Testable
-**Pattern**: Using `.exists` to check if widget is ready before `.tap()`
-**Prevention**:
-- `.exists` returns true for widgets that are in the widget tree but below the fold (not visible)
-- These widgets will fail tap() with "Found 1 widget but not hit-testable"
-- Always use `safeTap(..., scroll: true)` for widgets that may be below the fold
-- Or explicitly: `$(finder).scrollTo()` before `$(finder).tap()`
-**Impact**: Tests fail with "Found 1 widget but not hit-testable" errors
-**Example**: `if (!await addPhotoButton.exists) { await scroll... } await tap()` - widget exists but isn't visible
+### [CONFIG] 2026-01-14: flutter_secure_storage v10 Changes
+**Pattern**: Using deprecated `encryptedSharedPreferences` option
+**Prevention**: Remove option - v10 uses custom ciphers by default, auto-migrates data
 
-### Silent Skip with if(widget.exists)
-**Pattern**: Using `if (widget.exists) { ... }` which silently skips when widget not visible
-**Prevention**:
-- Never use `.exists` as a guard before test actions - it causes silent test failures
-- If widget should exist, use `waitForVisible()` and let it fail explicitly
-- Ensure proper test setup (e.g., project selected before calendar for entry FAB)
-- Tests that complete in 2s when they should take 30s are likely silently skipping
-**Impact**: False positive tests that complete instantly without testing anything
-**Example**: `if (addEntryFab.exists) { ... }` skips entire test when calendar has no project context
+### [FLUTTER] 2026-01-18: Deprecated Flutter APIs
+**Pattern**: Using deprecated APIs (WillPopScope, withOpacity)
+**Prevention**: `WillPopScope` -> `PopScope`; `withOpacity(0.5)` -> `withValues(alpha: 0.5)`
 
 ---
 

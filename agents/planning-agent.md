@@ -91,3 +91,6 @@ See CLAUDE.md Agents table for specialized agents. Assign each task to the appro
 - Over-engineering simple features
 - Forgetting offline-first requirement
 - **NOT exporting plan to implementation_plan.md** (breaks handoff!)
+
+## Historical Reference
+- Past implementations: @.claude/memory/state-archive.md

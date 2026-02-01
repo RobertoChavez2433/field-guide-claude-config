@@ -2,7 +2,7 @@
 
 ## Architecture
 - [ ] Follows feature-first organization
-- [ ] Clear separation: data/domain/presentation
+- [ ] Clear separation: data/presentation (sync feature uses Clean Architecture with domain/)
 - [ ] No circular dependencies
 - [ ] Appropriate use of dependency injection
 

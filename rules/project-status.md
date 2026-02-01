@@ -6,7 +6,7 @@
 - **Analyzer**: 0 errors, 10 info warnings (expected deprecations)
 
 ## Capabilities
-- 12 features: auth, projects, locations, contractors, quantities, entries, photos, pdf, sync, dashboard, settings, weather
+- 13 features: auth, contractors, dashboard, entries, locations, pdf, photos, projects, quantities, settings, sync, toolbox, weather
 - PDF export with template filling
 - Supabase auth & offline-first sync
 - 3 theme modes (Light/Dark/High Contrast)

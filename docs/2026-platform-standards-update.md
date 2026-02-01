@@ -26,13 +26,13 @@ targetSdk = flutter.targetSdkVersion    // Was 33
 
 **After:**
 ```kotlin
-compileSdk = 35  // Android 15 - Latest stable for 2026
+compileSdk = 36  // Android 16 - Latest stable for 2026
 minSdk = 24      // Android 7.0 - Drops devices older than 7 years
-targetSdk = 35   // Required for Play Store submissions
+targetSdk = 36   // Required for Play Store submissions
 ```
 
 **Rationale:**
-- Android 15 (API 35) provides better memory management
+- Android 16 (API 36) provides better memory management
 - API 24+ enforces stricter security and performance standards
 - Dropping API 21-23 eliminates legacy devices with poor memory handling
 
@@ -73,13 +73,13 @@ androidTestUtil("androidx.test:orchestrator:1.4.2")
 
 **After:**
 ```kotlin
-androidTestUtil("androidx.test:orchestrator:1.5.2")
+androidTestUtil("androidx.test:orchestrator:1.6.1")
 androidTestImplementation("androidx.test:runner:1.6.2")
 androidTestImplementation("androidx.test:rules:1.6.1")
 ```
 
 **Rationale:**
-- Orchestrator 1.5.2 has better memory management
+- Orchestrator 1.6.1 has better memory management
 - Additional test runner and rules improve Patrol compatibility
 
 #### 4. Gradle Memory Settings (`android/gradle.properties`)
@@ -140,8 +140,8 @@ Added comprehensive platform requirements table:
 ### Android
 | Component | Version | Notes |
 |-----------|---------|-------|
-| compileSdk | 35 (Android 15) | Latest stable for 2026 |
-| targetSdk | 35 | Required for Play Store |
+| compileSdk | 36 (Android 16) | Latest stable for 2026 |
+| targetSdk | 36 | Required for Play Store |
 | minSdk | 24 (Android 7.0) | Drops devices older than 7 years |
 | Gradle | 8.14 | Latest stable |
 | Android Gradle Plugin | 8.11.1 | Latest stable |
@@ -157,8 +157,8 @@ Added comprehensive platform requirements table:
 ### Test Configuration
 | Component | Version | Purpose |
 |-----------|---------|---------|
-| Test Orchestrator | 1.5.2 | Proper test isolation |
-| Patrol | 3.20.0 | Native automation |
+| Test Orchestrator | 1.6.1 | Proper test isolation |
+| Patrol | 4.1.0 | Native automation |
 | JVM Heap (Tests) | 12G | Prevents OOM in long test runs |
 | Max Tests Per Device | 5 | Memory exhaustion prevention |
 ```
@@ -191,12 +191,12 @@ flutter analyze
 4. **Animations**: Disabled in tests reduces flakiness
 
 ### Performance
-1. **Modern APIs**: Android 15 and iOS 15 have better runtime performance
+1. **Modern APIs**: Android 16 and iOS 15 have better runtime performance
 2. **Reduced Legacy Code**: Dropping old SDKs reduces compatibility layers
 3. **Garbage Collection**: G1GC provides smoother memory cleanup
 
 ### Compatibility
-1. **Play Store**: targetSdk 35 meets 2026 requirements
+1. **Play Store**: targetSdk 36 meets 2026 requirements
 2. **Device Coverage**: Focuses on devices from last 7 years (Android 7.0+)
 3. **Flutter Alignment**: Better compatibility with Flutter 3.38+
 
@@ -238,6 +238,7 @@ Or manually revert:
 - iOS MinimumOSVersion to 13.0
 - Gradle heap to 8G
 - Test Orchestrator to 1.4.2
+- Patrol to 3.20.0
 
 ## References
 

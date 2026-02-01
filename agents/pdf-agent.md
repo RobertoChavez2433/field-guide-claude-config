@@ -17,7 +17,9 @@ This Flutter app generates IDR (Inspector Daily Report) PDFs using template fill
 
 | File | Purpose |
 |------|---------|
-| `lib/services/pdf_service.dart` | PDF generation, field mapping, debug tools |
+| `lib/features/pdf/services/pdf_service.dart` | PDF generation, field mapping, debug tools |
+| `lib/features/pdf/services/parsers/` | OCR text parsers (row state machine, column layout, etc.) |
+| `lib/features/pdf/data/models/` | PDF data models (parsed_bid_item, parsed_measurement_spec) |
 | `assets/templates/idr_template.pdf` | Current IDR template |
 | `assets/templates/` | All PDF templates |
 | `Troubleshooting/IDR Test Exports/` | Test output directory |
@@ -31,7 +33,8 @@ This Flutter app generates IDR (Inspector Daily Report) PDFs using template fill
 
 1. **Generate Debug PDF**
    ```dart
-   // In pdf_service.dart - generates PDF with field names in positions
+   // In lib/features/pdf/services/pdf_service.dart
+   // Generates PDF with field names in positions
    final debugBytes = await _pdfService.generateDebugPdf();
    ```
 
@@ -116,7 +119,7 @@ _setField(form, 'hhhhhhhhhhhwerwer', signature); // Signature
 1. Check console for `[PDF] Field not found: "fieldName"` messages
 2. Generate debug PDF to see actual field positions
 3. Compare debug output to expected visual layout
-4. Update mapping constants in `pdf_service.dart`
+4. Update mapping constants in `lib/features/pdf/services/pdf_service.dart`
 
 ---
 
@@ -151,7 +154,7 @@ Located in `Pre-devolopment and brainstorming/Form Templates for export/`:
 flutter run -d windows
 
 # Check for analysis errors
-flutter analyze lib/services/pdf_service.dart
+flutter analyze lib/features/pdf/services/pdf_service.dart
 
 # View debug output in console
 # Look for [PDF] tags during PDF generation

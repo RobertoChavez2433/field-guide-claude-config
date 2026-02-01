@@ -1,6 +1,6 @@
 ---
 paths:
-  - "lib/presentation/**/*.dart"
+  - "lib/features/**/presentation/**/*.dart"
   - "lib/core/theme/**/*.dart"
   - "lib/core/router/**/*.dart"
 ---
@@ -12,7 +12,7 @@ paths:
 flutter run -d windows          # Run on Windows
 flutter run                     # Run on connected device
 flutter analyze                 # Check for issues
-flutter test test/presentation/ # Test UI
+flutter test                    # Test all
 ```
 
 ## Code Style

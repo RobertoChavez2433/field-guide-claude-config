@@ -7,15 +7,19 @@ Cross-platform mobile/desktop app for construction inspectors. Offline-first wit
 @.claude/memory/standards.md
 @.claude/memory/defects.md
 
+## Archives (On-Demand)
+@.claude/memory/state-archive.md
+@.claude/memory/defects-archive.md
+
 ## Project Structure
 ```
 lib/
 ├── core/        # Router, theme, config, database
 ├── shared/      # Base classes, utilities
-├── features/    # 12 features: auth, contractors, dashboard, entries, locations,
-│                # pdf, photos, projects, quantities, settings, sync, weather
-├── data/        # LEGACY: barrel re-exports
-├── presentation/# LEGACY: barrel re-exports
+├── features/    # 13 features: auth, contractors, dashboard, entries, locations,
+│                # pdf, photos, projects, quantities, settings, sync, toolbox, weather
+├── data/        # LEGACY: empty directories
+├── presentation/# LEGACY: empty directories
 └── services/    # Cross-cutting (photo, image, permission)
 ```
 
@@ -45,9 +49,11 @@ lib/
 | `planning-agent` | Requirements, implementation plans |
 
 ## Session
-- `/resume-session` - Load context
-- `/end-session` - Save state
-- State: `.claude/plans/_state.md`
+- `/resume-session` - Load HOT context only (~25KB)
+- `/end-session` - Save state with auto-archiving
+- State: `.claude/plans/_state.md` (max 10 sessions)
+- Defects: `.claude/memory/defects.md` (max 15 defects)
+- Archives: `.claude/memory/state-archive.md`, `.claude/memory/defects-archive.md`
 - Plan: `.claude/implementation/implementation_plan.md`
 
 ## Git Rules
@@ -86,7 +92,7 @@ Screen -> Provider -> Repository -> SQLite (local) -> Supabase (sync)
 | Test Orchestrator | 1.6.1 | Proper test isolation |
 | JVM Heap (Tests) | 12G | Prevents OOM in long test runs |
 | Max Tests Per Batch | 5 | Memory resets between batches |
-| Patrol | 3.20.0 | Native automation |
+| Patrol | 4.1.0 | Native automation |
 
 ### Key Files
 - `android/app/build.gradle.kts` - SDK versions, test options

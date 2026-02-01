@@ -6,14 +6,15 @@
 
 ### Feature-First Organization
 - Group by feature, not layer
-- Each feature contains its own data/domain/presentation
+- Most features use data/presentation structure
+- Only sync feature uses full Clean Architecture with data/domain/presentation
 - Shared code in core/ or shared/
 
 ### Provider State Management
-- Use `FutureProvider` for async data fetching
-- Use `ChangeNotifierProvider` for form state
+- Use `ChangeNotifierProvider` for state management
 - Keep `Consumer` widgets deep in tree
-- Check `mounted` before context operations
+- Check `mounted` before context operations after async calls
+- Load data in `initState` with `addPostFrameCallback`
 
 ### Offline-First Pattern
 - Local SQLite is source of truth
@@ -28,6 +29,6 @@
 - User-friendly error messages
 
 ### Testing Strategy
-- 70% unit tests (business logic)
+- 60% unit tests (business logic)
 - 20% widget tests (UI components)
-- 10% integration tests (user flows)
+- 20% integration tests (user flows)

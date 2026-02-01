@@ -95,7 +95,8 @@
       "Bash(git branch:*)",
       "WebFetch(domain:docs.patrol.dev)",
       "WebFetch(domain:velog.io)",
-      "WebFetch(domain:dart.dev)"
+      "WebFetch(domain:dart.dev)",
+      "Bash(done)"
     ]
   },
   "spinnerTipsEnabled": true

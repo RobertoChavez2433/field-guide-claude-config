@@ -2,7 +2,7 @@
 
 ## Model Pattern
 
-All data models follow this structure (see `lib/data/models/project.dart`):
+All data models follow this structure (see `lib/features/projects/data/models/project.dart`):
 
 ```dart
 class Example {
