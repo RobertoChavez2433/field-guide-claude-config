@@ -1,12 +1,48 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 227
+**Last Updated**: 2026-01-31 | **Session**: 228
 
 ## Current Phase
 - **Phase**: Dependency Modernization
-- **Status**: PLANNED - Ready for implementation
+- **Status**: IN PROGRESS - Stage 0 complete
 
-## Last Session (Session 227)
+## Last Session (Session 228)
+**Summary**: Implemented Stage 0 - Toolchain Baseline
+
+**Key Activities**:
+- **Stage 0 - Toolchain & Platform Baseline:**
+  - Verified Flutter 3.38.7 / Dart 3.10.7 meets all package minimums
+  - Verified Gradle 8.14 (meets 8.13+ requirement)
+  - Verified Kotlin 2.2.20 (meets device_info_plus requirements)
+  - Verified Android Gradle Plugin 8.11.1
+  - Verified Java 17 (LTS version)
+  - Verified compileSdk 36 (Android 16)
+  - Updated targetSdk 35 → 36 for full Android 16 compliance
+  - 0 analyzer errors in lib/ (67 pre-existing info/warnings)
+
+**Files Modified**:
+- `android/app/build.gradle.kts` - targetSdk 35 → 36
+
+**Commits**: (pending)
+
+## Active Plan
+**File**: `.claude/plans/dependency-modernization-plan-v2.md`
+**Status**: IN PROGRESS
+
+**Stages**:
+0. [x] Toolchain & Platform Baseline - COMPLETE (Session 228)
+1. [ ] Low-Risk Core Updates (path, collection, crypto, uuid, pdf, printing, sqflite)
+2. [ ] State & Storage Utilities (provider, shared_preferences, flutter_secure_storage)
+3. [ ] Networking & Connectivity (http, connectivity_plus)
+4. [ ] Location, Permissions, Device Info (geolocator, geocoding, permission_handler, device_info_plus)
+5. [ ] Files, Media, Pickers (file_picker, image_picker, path_provider)
+6. [ ] PDF Stack (syncfusion_flutter_pdf, syncfusion_flutter_pdfviewer)
+7. [ ] Navigation & Deep Links (go_router, app_links) - HIGH RISK
+8. [ ] Supabase (supabase_flutter)
+9. [ ] UI + Date/Calendar (table_calendar, intl)
+10. [ ] Test Tooling (patrol v3→v4)
+
+## Session 227
 **Summary**: Dependency Modernization Research & Planning
 
 **Key Activities**:
@@ -20,7 +56,7 @@
 - **Dependency Modernization Planning:**
   - Explored entire codebase usage of major packages via agents
   - Researched breaking changes for all major version upgrades
-  - Created comprehensive 8-stage upgrade plan with specific code changes
+  - Created comprehensive 10-stage upgrade plan with specific code changes
 
 - **Exploration Completed:**
   - go_router usage (18 files) - case-sensitive paths in v15+
@@ -31,29 +67,15 @@
   - patrol usage - $.native deprecated in v4
 
 **Files Created**:
-- `.claude/plans/dependency-modernization-plan.md` - Complete upgrade plan
+- `.claude/plans/dependency-modernization-plan-v2.md` - Complete upgrade plan
 
 **Commits**: None (planning-only session)
 
 **Decisions Made**:
-- Upgrade all 12 dependencies in 8 stages by risk level
-- Syncfusion upgrade first (fixes PDF clumped text issue)
-- go_router last (highest risk, 3 major versions)
-- Docling backend deferred for future when needed
-
-## Active Plan
-**File**: `.claude/plans/dependency-modernization-plan.md`
-**Status**: READY FOR IMPLEMENTATION
-
-**Stages**:
-1. [ ] Low-risk patches (provider, sqflite, image_picker, supabase)
-2. [ ] Syncfusion v28→v32 (PDF text extraction fix)
-3. [ ] Geolocator v13→v14 (LocationSettings API)
-4. [ ] Connectivity Plus v6→v7 (already compatible)
-5. [ ] File Picker v8→v10 (macOS entitlement)
-6. [ ] Permission Handler v11→v12
-7. [ ] go_router v14→v17 (HIGH RISK)
-8. [ ] Patrol v3→v4 ($.native → $.platform.mobile)
+- Upgrade all dependencies in 10 stages by risk level
+- Toolchain first, then low-risk patches
+- go_router stage 7 (highest risk, 3 major versions)
+- Patrol last (test tooling)
 
 ## Session 226
 **Summary**: Implemented Phase 4 (Quality Gates + Thresholds)
