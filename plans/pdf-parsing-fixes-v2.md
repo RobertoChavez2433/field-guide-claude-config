@@ -219,7 +219,9 @@ Success
 
 ---
 
-## Phase 3 (PR 5): Description Cap + Boilerplate Detection
+## Phase 3 (PR 5): Description Cap + Boilerplate Detection - COMPLETE
+
+**Status**: ✅ Implemented in Session 224
 
 Goal: Keep long legal language from producing fake items.
 
@@ -263,6 +265,17 @@ Tests
 Success
 - 70% reduction in boilerplate false positives
 - No entries with item+description only; boilerplate detected and suppressed
+
+Files Modified
+- `lib/features/pdf/services/parsers/row_state_machine.dart`
+- `lib/features/pdf/services/parsers/parsers.dart`
+
+Files Created
+- `lib/features/pdf/services/parsers/boilerplate_detector.dart`
+- `test/features/pdf/parsers/boilerplate_detector_test.dart`
+- `test/fixtures/pdf/runaway_description.txt`
+
+Tests: 304 PDF parser tests passing (38 new tests added)
 
 ---
 

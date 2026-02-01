@@ -1,45 +1,48 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 223
+**Last Updated**: 2026-01-31 | **Session**: 224
 
 ## Current Phase
 - **Phase**: PDF Parsing Fixes v2
-- **Status**: Phase 2 COMPLETE + Code Review Fixes
+- **Status**: Phase 3 COMPLETE
 
-## Last Session (Session 223)
-**Summary**: Implemented Phase 2 (Structural Keywords + Currency Fix) with code review fixes for Phases 0-2
+## Last Session (Session 224)
+**Summary**: Implemented Phase 3 (Description Cap + Boilerplate Detection)
 
 **Key Activities**:
-- **Phase 2 - Structural Keywords + Currency Fix:**
-  - Added structural keyword detection in TokenClassifier (SECTION, ARTICLE, CHAPTER, etc.)
-  - Stop "Section 5" / "Article 3" from becoming pay items via `_isStructuralContext()`
-  - Fixed currency pattern to allow 1-4 decimals ($12.5, $12.50, $12.500, $12.5000)
-  - Normalized spaced currency ($ 500.00 -> $500.00) in tokenizer
-  - Added test fixtures: boilerplate_section_5.txt, currency_variations.txt
-  - Added 48 new tests for structural context and currency variations
-- **Code Review Fixes (Phases 0-2):**
-  - DRY: ColumnLayoutParser now uses TokenClassifier.knownUnits (removed duplicate _knownUnits set)
-  - Extracted magic numbers to named constants (_qualityGateThreshold, _maxSampleLines)
-  - Added clarifying comments for duplicate suffix calculation (96 + count = 'a')
-  - Fixed test skip pattern to use proper framework integration (skip: parameter)
-  - Added negative tests for currency with 5+ decimals (should be rejected)
-- 266 PDF parser tests passing, 0 analyzer errors
+- **Phase 3 - Description Cap + Boilerplate Detection:**
+  - Created `BoilerplateDetector` class with phrase-based scoring
+    - 50+ boilerplate phrases (shall, must, contractor, specifications, etc.)
+    - 10 strong phrases with 2x weight (in accordance with, shall be, etc.)
+    - `calculateBoilerplateScore()` returns 0.0-1.0 normalized score
+    - `isLikelyBoilerplate()` returns true if score > 0.30 and text >= 30 chars
+    - `analyze()` returns diagnostic info for debugging
+  - Added description length cap (150 chars) in RowStateMachine
+    - `_maxDescriptionLength = 150` constant
+    - `_addDescriptionToken()` enforces limit and adds warning once
+  - Reduced `_maxTokensBeforeUnit` from 25 to 15
+    - Prevents runaway descriptions from boilerplate text
+  - Improved validation in `_finalizeCurrentRow()`
+    - Checks for boilerplate descriptions and adds warning
+    - Suppresses rows that are boilerplate AND have no unit
+    - Keeps non-boilerplate rows with warnings for missing fields
+  - Updated barrel export `parsers.dart`
+  - Added test fixture `runaway_description.txt`
+  - 38 new tests (BoilerplateDetector + RowStateMachine description cap/suppression)
+- 304 PDF parser tests passing, 0 analyzer errors
 
 **Files Modified**:
-- `lib/features/pdf/services/parsers/token_classifier.dart`
-- `lib/features/pdf/services/parsers/column_layout_parser.dart`
-- `lib/features/pdf/services/parsers/clumped_text_parser.dart`
-- `test/features/pdf/parsers/token_classifier_test.dart`
-- `test/features/pdf/parsers/column_layout_parser_test.dart`
+- `lib/features/pdf/services/parsers/row_state_machine.dart`
+- `lib/features/pdf/services/parsers/parsers.dart`
+- `test/features/pdf/parsers/row_state_machine_test.dart`
+- `test/features/pdf/parsers/fixture_parser_test.dart`
 
 **Files Created**:
-- `test/fixtures/pdf/boilerplate_section_5.txt`
-- `test/fixtures/pdf/currency_variations.txt`
-
-**Commits**: `1b5c24f`
+- `lib/features/pdf/services/parsers/boilerplate_detector.dart`
+- `test/features/pdf/parsers/boilerplate_detector_test.dart`
+- `test/fixtures/pdf/runaway_description.txt`
 
 **Next Session**:
-- Phase 3: Description Cap + Boilerplate Detection
 - Phase 4: Quality Gates + Thresholds
 
 ## Session 222
