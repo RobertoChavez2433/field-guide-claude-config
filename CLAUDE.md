@@ -6,10 +6,12 @@ Cross-platform mobile/desktop app for construction inspectors. Offline-first wit
 @.claude/memory/tech-stack.md
 @.claude/memory/standards.md
 @.claude/memory/defects.md
+@.claude/rules/quality-checklist.md
+@.claude/docs/architectural_patterns.md
 
-## Archives (On-Demand)
-@.claude/memory/state-archive.md
-@.claude/memory/defects-archive.md
+## Archives (On-Demand) DO NOT AUTO-LOAD THESE
+C:\Users\rseba\Projects\Field Guide App\.claude\memory\defects-archive.md
+C:\Users\rseba\Projects\Field Guide App\.claude\memory\state-archive.md
 
 ## Project Structure
 ```
