@@ -1,3 +1,9 @@
+---
+paths:
+  - "supabase/**/*"
+  - "lib/features/sync/**/*.dart"
+---
+
 # SQL Cookbook for Supabase
 
 ## Schema Migrations

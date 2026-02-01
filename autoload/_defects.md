@@ -1,7 +1,7 @@
 # Defects Log
 
 Active patterns to avoid. Max 15 defects - oldest auto-archives.
-Archive: @.claude/memory/defects-archive.md
+Archive: @.claude/logs/defects-archive.md
 
 ## Categories
 - **[ASYNC]** - Context safety, dispose issues

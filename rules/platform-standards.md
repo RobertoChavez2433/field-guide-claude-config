@@ -1,3 +1,10 @@
+---
+paths:
+  - "android/**/*"
+  - "ios/**/*"
+  - "pubspec.yaml"
+---
+
 # 2026 Platform Standards Update
 
 **Date**: 2026-01-21

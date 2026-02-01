@@ -1,3 +1,9 @@
+---
+paths:
+  - "lib/features/sync/**/*.dart"
+  - "lib/services/sync_service.dart"
+---
+
 # Sync Architecture Diagram
 
 ## Layer Diagram

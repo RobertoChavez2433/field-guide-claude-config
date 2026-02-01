@@ -1,3 +1,8 @@
+---
+paths:
+  - "lib/**/*.dart"
+---
+
 # Architectural Patterns
 
 ## Overview

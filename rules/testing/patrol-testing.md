@@ -1,3 +1,10 @@
+---
+paths:
+  - "integration_test/**/*.dart"
+  - "test/**/*.dart"
+  - "lib/shared/testing_keys.dart"
+---
+
 # E2E Testing Guide
 
 Complete guide to E2E testing with Patrol in the Construction Inspector app.
