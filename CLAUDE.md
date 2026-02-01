@@ -87,7 +87,7 @@ Screen -> Provider -> Repository -> SQLite (local) -> Supabase (sync)
 | compileSdk | 36 | Android 16 - Latest stable |
 | targetSdk | 36 | Required for Play Store |
 | minSdk | 24 | Android 7.0 - Drops devices older than 7 years |
-| Gradle | 8.14 | Latest stable |
+| Gradle | 8.13 | Latest stable |
 | Kotlin | 2.2.20 | Latest stable |
 | Java | 17 | LTS version |
 

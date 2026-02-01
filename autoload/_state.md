@@ -9,8 +9,8 @@
 ## Recent Sessions
 
 ### Session 250 (2026-02-01)
-**Work**: Analyzer Cleanup v3 Phases 3-4. Converted 5 function variables to declarations, 1 super parameter fix.
-**Commits**: `4ffcf98`
+**Work**: Analyzer Cleanup v3 Phases 3-4, plus Gradle/dead code fixes. Converted 5 function variables to declarations, 1 super parameter, downgraded Gradle 8.14→8.13, removed 96 lines of dead TODO comments.
+**Commits**: `4ffcf98`, `9025432`
 
 ### Session 249 (2026-02-01)
 **Work**: Analyzer Cleanup v3 Phases 1-2. Fixed async safety in entry_wizard_screen.dart, added 22 null comparison ignore comments, fixed 2 unnecessary nullable declarations.
