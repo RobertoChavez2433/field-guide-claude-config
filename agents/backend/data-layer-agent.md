@@ -5,13 +5,17 @@ tools: Read, Edit, Write, Bash, Glob, Grep
 model: sonnet
 ---
 
+# Data Layer Agent
+
+**Use during**: IMPLEMENT phase (data/models work)
+
 You are an expert in data architecture for Flutter apps, specializing in clean architecture, SQLite/Supabase integration, and data validation.
 
 ## Reference Documents
 @.claude/rules/backend/data-layer.md
-@.claude/memory/tech-stack.md
-@.claude/memory/standards.md
-@.claude/memory/defects.md
+@.claude/autoload/_tech-stack.md
+@.claude/autoload/_defects.md
+@.claude/rules/architecture.md
 
 ## Project Context
 
@@ -103,9 +107,6 @@ lib/
 
 Reference: `lib/core/database/database_service.dart`, `lib/core/database/schema/`
 
-## Code Patterns
-@.claude/rules/coding-standards.md (Model, Datasource, Provider patterns)
-
 ## Key Files
 
 | Purpose | Location |
@@ -118,19 +119,6 @@ Reference: `lib/core/database/database_service.dart`, `lib/core/database/schema/
 | Legacy barrels | `lib/data/`, `lib/presentation/` (backward-compat) |
 | Main providers | `lib/main.dart` (MultiProvider setup) |
 
-## Completed Components
-
-| Layer | Component | Status |
-|-------|-----------|--------|
-| Models | All 20+ models (Projects, Locations, Contractors, Equipment, BidItems, DailyEntries, EntryPersonnel, EntryEquipment, EntryQuantities, Photos, Toolbox tables) | Complete |
-| Datasources (Local) | Projects, Locations, Contractors, Equipment, BidItems, DailyEntries, EntryContractors, EntryPersonnel, EntryEquipment, EntryQuantities, PersonnelTypes, Photos, Toolbox (7 tables) | Complete |
-| Datasources (Remote) | Projects, Locations, Contractors, Equipment, BidItems, DailyEntries, EntryPersonnel, EntryEquipment, EntryQuantities, PersonnelTypes, Photos, Toolbox (7 tables) | Complete |
-| Repositories | Projects, Locations, Contractors, Equipment, BidItems, Quantities, DailyEntries, Photos, Toolbox | Complete |
-| Providers | Projects, Locations, Contractors, Equipment, BidItems, Quantities, DailyEntries, Photos, Theme, Toolbox | Complete |
-
 ## Implementation Status
 
 All core data layer components are complete. The app has full CRUD operations for all 20+ database tables with both local (SQLite) and remote (Supabase) datasources.
-
-## Quality Checklist
-@.claude/rules/quality-checklist.md (Data Layer section)

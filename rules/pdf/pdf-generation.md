@@ -163,6 +163,15 @@ test('fills project name field', () async {
 });
 ```
 
+## Quality Checklist
+
+- [ ] All fields map to correct visual positions
+- [ ] No `[PDF] Field not found` errors in console
+- [ ] Data appears in expected format
+- [ ] Page breaks don't split content awkwardly
+- [ ] Empty sections show appropriate placeholder
+- [ ] Maximum content tested (no overflow)
+
 ## Pull Request Template
 ```markdown
 ## PDF Changes

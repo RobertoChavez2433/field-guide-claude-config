@@ -3,15 +3,13 @@
 Cross-platform mobile/desktop app for construction inspectors. Offline-first with cloud sync.
 
 ## Quick Reference
-@.claude/memory/tech-stack.md
-@.claude/memory/standards.md
-@.claude/memory/defects.md
-@.claude/rules/quality-checklist.md
-@.claude/docs/architectural_patterns.md
+@.claude/autoload/_tech-stack.md
+@.claude/autoload/_defects.md
+@.claude/rules/architecture.md
 
 ## Archives (On-Demand) DO NOT AUTO-LOAD THESE
-C:\Users\rseba\Projects\Field Guide App\.claude\memory\defects-archive.md
-C:\Users\rseba\Projects\Field Guide App\.claude\memory\state-archive.md
+- `.claude/logs/state-archive.md`
+- `.claude/logs/defects-archive.md`
 
 ## Project Structure
 ```
@@ -33,37 +31,48 @@ lib/
 | `lib/core/database/database_service.dart` | SQLite schema |
 | `lib/features/sync/` | Sync orchestrator |
 
-## Domain Guidelines
-@.claude/rules/frontend/ (UI patterns)
-@.claude/rules/backend/ (Data layer)
-@.claude/rules/auth/ (Authentication)
+## Domain Rules (with paths: frontmatter)
+| Rule | Loads When |
+|------|------------|
+| `rules/architecture.md` | Any lib/**/*.dart |
+| `rules/platform-standards.md` | Android/iOS config files |
+| `rules/frontend/flutter-ui.md` | lib/**/presentation/** |
+| `rules/backend/data-layer.md` | lib/**/data/** |
+| `rules/backend/supabase-sql.md` | Supabase work |
+| `rules/auth/supabase-auth.md` | lib/features/auth/** |
+| `rules/pdf/pdf-generation.md` | lib/features/pdf/** |
+| `rules/sync/sync-patterns.md` | lib/features/sync/** |
+| `rules/database/schema-patterns.md` | lib/core/database/** |
+| `rules/testing/patrol-testing.md` | integration_test/**, test/** |
 
 ## Agents
-| Agent | Use For |
-|-------|---------|
-| `flutter-specialist-agent` | Screens, widgets, performance |
-| `data-layer-agent` | Models, repositories, providers |
-| `supabase-agent` | Sync, schema, RLS |
-| `auth-agent` | Auth flows |
-| `qa-testing-agent` | Testing, debugging |
-| `code-review-agent` | Architecture, code quality |
-| `pdf-agent` | PDF generation |
-| `planning-agent` | Requirements, implementation plans |
+| Agent | Use For | Phase |
+|-------|---------|-------|
+| `planning-agent` | Requirements, implementation plans | PLAN |
+| `flutter-specialist-agent` | Screens, widgets, performance | IMPLEMENT |
+| `data-layer-agent` | Models, repositories, providers | IMPLEMENT |
+| `supabase-agent` | Sync, schema, RLS | IMPLEMENT |
+| `auth-agent` | Auth flows | IMPLEMENT |
+| `pdf-agent` | PDF generation | IMPLEMENT |
+| `code-review-agent` | Architecture, code quality | REVIEW |
+| `qa-testing-agent` | Testing, debugging | TEST/VERIFY |
 
 ## Session
-- `/resume-session` - Load HOT context only (~25KB)
+- `/resume-session` - Load HOT context only
 - `/end-session` - Save state with auto-archiving
-- State: `.claude/plans/_state.md` (max 10 sessions)
-- Defects: `.claude/memory/defects.md` (max 15 defects)
-- Archives: `.claude/memory/state-archive.md`, `.claude/memory/defects-archive.md`
-- Plan: `.claude/implementation/implementation_plan.md`
+- State: `.claude/autoload/_state.md` (max 10 sessions)
+- Defects: `.claude/autoload/_defects.md` (max 15 defects)
+- Archives: `.claude/logs/state-archive.md`, `.claude/logs/defects-archive.md`
 
 ## Git Rules
 - **NEVER** include "Co-Authored-By" in commits
 - User is sole author
 
 ## Build Commands
-**CRITICAL**: Git Bash silently fails on Flutter. Always use `pwsh -Command "flutter clean && flutter build apk --release"`
+**CRITICAL**: Git Bash silently fails on Flutter. Always use:
+```bash
+pwsh -Command "flutter clean && flutter build apk --release"
+```
 
 ## Data Flow
 ```
@@ -96,11 +105,10 @@ Screen -> Provider -> Repository -> SQLite (local) -> Supabase (sync)
 | Max Tests Per Batch | 5 | Memory resets between batches |
 | Patrol | 4.1.0 | Native automation |
 
-### Key Files
+### Key Config Files
 - `android/app/build.gradle.kts` - SDK versions, test options
 - `android/gradle.properties` - JVM heap, Gradle settings
 - `ios/Runner.xcodeproj/project.pbxproj` - iOS deployment target
-- `.claude/docs/2026-platform-standards-update.md` - Full documentation
 
 ## Repositories
 | Repo | URL |

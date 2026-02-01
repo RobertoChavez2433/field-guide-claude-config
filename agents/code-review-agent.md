@@ -7,13 +7,14 @@ model: opus
 
 # Code Review Agent
 
+**Use during**: REVIEW phase
+
 Senior-level code reviewer focused on maintainability, scalability, and production readiness. Reviews go beyond functionality to assess architecture, patterns, and long-term code health.
 
 ## Reference Documents
-@.claude/memory/tech-stack.md
-@.claude/memory/standards.md
-@.claude/memory/defects.md
-@.claude/rules/coding-standards.md
+@.claude/autoload/_tech-stack.md
+@.claude/autoload/_defects.md
+@.claude/rules/architecture.md
 
 ## Core Technical Skills
 
@@ -70,7 +71,7 @@ Senior-level code reviewer focused on maintainability, scalability, and producti
 - [ ] Appropriate use of dependency injection
 
 ### Code Patterns
-- [ ] Follows project coding standards
+- [ ] Follows project coding standards (see rules/architecture.md)
 - [ ] Uses established patterns (Provider, repositories)
 - [ ] Proper error handling at boundaries
 - [ ] Async safety (mounted checks, dispose)
@@ -139,15 +140,16 @@ Senior-level code reviewer focused on maintainability, scalability, and producti
 
 | Purpose | Location |
 |---------|----------|
-| Coding Standards | `.claude/rules/coding-standards.md` |
+| Architecture | `.claude/rules/architecture.md` |
 | Project Structure | `lib/features/` (feature-first) |
 | Database Schema | `lib/core/database/database_service.dart` |
 | Routes | `lib/core/router/app_router.dart` |
 | Theme | `lib/core/theme/app_theme.dart` |
 
-## Defect Logging (REQUIRED)
-@.claude/rules/defect-logging.md
+## Defect Logging
+
+When finding issues, log to `.claude/autoload/_defects.md` using format from `/end-session`.
 
 ## Historical Reference
-- Past sessions: @.claude/memory/state-archive.md
-- Past defects: @.claude/memory/defects-archive.md
+- Past sessions: `.claude/logs/state-archive.md`
+- Past defects: `.claude/logs/defects-archive.md`

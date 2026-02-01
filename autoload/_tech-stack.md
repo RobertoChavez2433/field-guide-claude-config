@@ -27,6 +27,6 @@ flutter build apk        # Android release
 ```
 
 ## Detailed References
-- Platform versions: `.claude/docs/2026-platform-standards-update.md`
-- Architecture: `.claude/docs/architectural_patterns.md`
+- Platform versions: `.claude/rules/platform-standards.md`
+- Architecture: `.claude/rules/architecture.md`
 - Database schema: `lib/core/database/database_service.dart:50-215`

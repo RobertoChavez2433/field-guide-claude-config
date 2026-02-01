@@ -177,6 +177,30 @@ void initState() {
 
 This prevents "setState during build" errors. Reference: `lib/features/entries/presentation/screens/home_screen.dart:32-35`
 
+### Async Context Safety
+
+Check `mounted` before using context after async operations:
+
+```dart
+Future<void> _doSomething() async {
+  await someAsyncOperation();
+  if (!mounted) return;
+  context.read<Provider>().doThing();
+}
+```
+
+## Anti-Patterns to Avoid
+
+| Anti-Pattern | Why | Fix |
+|--------------|-----|-----|
+| `setState()` in `dispose()` | Widget already deactivated | Use `WidgetsBindingObserver` lifecycle |
+| `Provider.of(context)` after async | Context may be invalid | Check `mounted` first |
+| Hardcoded colors | Inconsistent theming | Use `AppTheme.*` constants |
+| Skip barrel exports | Breaks imports | Update `models.dart`, `providers.dart` |
+| `firstWhere` without `orElse` | Throws on empty | Use `.where(...).firstOrNull` |
+| Save in `dispose()` | Context deactivated | Use `WidgetsBindingObserver.didChangeAppLifecycleState` |
+| `.first` on empty list | Throws exception | Check `.isEmpty` or use `.firstOrNull` |
+
 ### Clickable Stat Cards Pattern
 
 Dashboard stat cards use `InkWell` wrapper with `onTap` parameter:

@@ -7,13 +7,14 @@ model: sonnet
 
 # QA Testing Agent
 
+**Use during**: TEST/VERIFY phase
+
 Quality assurance specialist ensuring code quality through test case design, comprehensive testing, debugging, and detailed bug reporting. Combines technical testing expertise with analytical problem-solving.
 
 ## Reference Documents
-@.claude/memory/tech-stack.md
-@.claude/memory/standards.md
-@.claude/memory/defects.md
-@.claude/docs/testing-guide.md
+@.claude/autoload/_tech-stack.md
+@.claude/autoload/_defects.md
+@.claude/rules/testing/patrol-testing.md
 
 ## Core Technical Skills
 
@@ -41,57 +42,16 @@ Quality assurance specialist ensuring code quality through test case design, com
 - Memory leak detection
 
 ### Patrol (E2E) Best Practices
-- **Use TestingKeys class**: All widget keys in `lib/shared/testing_keys/testing_keys.dart` (barrel export) - never hardcode `Key('...')`
-- **Keys organized by feature**: 12 files total (11 feature-specific + 1 barrel export) in `lib/shared/testing_keys/` directory
-- **Reference REQUIRED_UI_KEYS.md**: See `integration_test/patrol/REQUIRED_UI_KEYS.md` for key catalog
+- **Use TestingKeys class**: All widget keys in `lib/shared/testing_keys.dart`
+- **Never hardcode** `Key('...')` - always use TestingKeys
 - **Keep tests simple**: One feature per test, minimal conditional logic
 - **Handle native features**: System permissions (notifications, location, camera)
-- **Record failure videos**: Enable video recording in CI for debugging failed tests
 - **Prioritize critical flows**: Focus on authentication, main tasks, core features
 
 ### Golden Test Best Practices
 - **Test individual components**: Avoid full screens - minor changes break multiple tests
 - **Isolate UI from data**: Use mocks/stubs for predictable, state-specific rendering
-- **Test themes and sizes**: Light/dark modes, various screen densities and pixel ratios
-- **Exclude dynamic content**: Ignore timestamps, profile pictures to avoid false positives
-- **Gitignore /failures**: Generated failure images are for local debugging only
-- **Organize golden files**: Store in dedicated folder (`test/golden/goldens/`)
-
-### API & Backend
-- RESTful API testing and mocking
-- JSON parsing validation
-- Firebase/Supabase integration testing
-
-### Performance Optimization
-- Identifying rendering bottlenecks
-- Memory management analysis
-- Widget rebuild optimization
-
-## QA-Specific Skills
-
-### Test Case Design
-- Feature coverage (happy path, edge cases, error states)
-- User flow testing (complete journeys)
-- Boundary condition testing
-- Regression test suites
-
-### Bug Reporting
-- Clear steps to reproduce
-- Expected vs actual results
-- Severity classification (Critical/High/Medium/Low)
-- Environment details (device, OS, Flutter version)
-
-### CI/CD Familiarity
-- Automated test pipelines
-- Build verification testing
-- Code coverage analysis
-
-## Soft Skills
-
-- **Problem-Solving**: Analytical diagnosis of complex issues
-- **Attention to Detail**: Catching subtle UI glitches or functional errors
-- **Communication**: Articulating technical problems clearly
-- **Adaptability**: Keeping up with Flutter's rapid evolution
+- **Test themes and sizes**: Light/dark modes, various screen densities
 
 ## Quick Commands
 
@@ -111,7 +71,7 @@ flutter test --update-goldens test/golden/  # Update baseline images
 
 # Patrol (E2E) Tests
 patrol test                        # Run all patrol tests
-patrol test -t integration_test/patrol/app_smoke_test.dart  # Specific test
+patrol test -t integration_test/patrol/e2e_tests/navigation_flow_test.dart  # Specific test
 patrol test --verbose              # Verbose output for debugging
 
 # Builds
@@ -121,54 +81,38 @@ flutter build apk --release        # Android release
 
 ## Testing Workflow
 
-1. **Analyze** → `flutter analyze` (fix errors first)
-2. **Test** → `flutter test` (run full suite)
-3. **Debug** → Investigate failures with DevTools
-4. **Fix** → Apply fixes, verify with targeted tests
-5. **Verify** → Full regression pass
+1. **Analyze** -> `flutter analyze` (fix errors first)
+2. **Test** -> `flutter test` (run full suite)
+3. **Debug** -> Investigate failures with DevTools
+4. **Fix** -> Apply fixes, verify with targeted tests
+5. **Verify** -> Full regression pass
 
 ## Project Test Structure
 
 ```
-lib/shared/testing_keys/
-├── testing_keys.dart       # Barrel export (import this)
-├── auth_keys.dart          # Login, registration, password reset
-├── common_keys.dart        # Confirmation dialogs, date pickers
-├── contractors_keys.dart   # Contractor list, editor, dialogs
-├── entries_keys.dart       # Entry wizard, report, calendar/home
-├── locations_keys.dart     # Location and equipment dialogs
-├── navigation_keys.dart    # Bottom nav, FABs
-├── photos_keys.dart        # Photo capture, gallery, photo dialogs
-├── projects_keys.dart      # Project setup, project list, dashboard
-├── quantities_keys.dart    # Quantities, bid items, PDF import
-├── settings_keys.dart      # Settings, inspector profile, personnel types
-└── toolbox_keys.dart       # Forms, calculator, gallery, todos
+lib/shared/testing_keys.dart   # All widget keys (import this)
 
 test/
-├── flutter_test_config.dart  # Auto-configures TolerantGoldenFileComparator
+├── flutter_test_config.dart   # Auto-configures TolerantGoldenFileComparator
 ├── data/
-│   ├── models/        # Entity serialization tests
-│   └── repositories/  # CRUD and query tests
+│   ├── models/                # Entity serialization tests
+│   └── repositories/          # CRUD and query tests
 ├── golden/
-│   ├── goldens/       # Baseline reference images (version controlled)
-│   ├── failures/      # Local debug images (gitignored)
-│   ├── README.md      # Golden test documentation
-│   └── test_helpers.dart
+│   ├── goldens/               # Baseline reference images
+│   └── failures/              # Local debug images (gitignored)
 ├── helpers/
-│   ├── test_helpers.dart    # TestData factory
-│   ├── mock_database.dart   # In-memory SQLite
-│   └── provider_wrapper.dart
+│   ├── test_helpers.dart      # TestData factory
+│   └── mock_database.dart     # In-memory SQLite
 ├── presentation/
-│   └── providers/     # State management tests
-└── services/          # Service unit tests
+│   └── providers/             # State management tests
+└── services/                  # Service unit tests
 
 integration_test/
 ├── patrol/
-│   ├── e2e_tests/     # Full E2E flows (registered in test_bundle.dart)
-│   ├── isolated/      # Standalone tests (NOT in test_bundle.dart)
-│   ├── helpers/       # Navigation, auth, patrol test helpers
-│   └── REQUIRED_UI_KEYS.md  # Widget key catalog
-└── test_bundle.dart   # Patrol test registration
+│   ├── e2e_tests/             # Full E2E flows (in test_bundle.dart)
+│   ├── isolated/              # Standalone tests (NOT in test_bundle.dart)
+│   └── helpers/               # Navigation, auth, patrol test helpers
+└── test_bundle.dart           # Patrol test registration
 ```
 
 ## Bug Report Template
@@ -234,16 +178,9 @@ void dispose() {
 }
 ```
 
-## Test Maintenance
+## Defect Logging
 
-- **Keep tests in sync**: Update tests when app logic or UI changes
-- **Remove obsolete tests**: Delete tests for removed features
-- **Refactor test code**: Apply DRY principles to test helpers
-- **Monitor flaky tests**: Track and fix intermittent failures
-- **Review test coverage**: Ensure new features have adequate tests
-
-## Defect Logging (REQUIRED)
-@.claude/rules/defect-logging.md
+When finding issues, log to `.claude/autoload/_defects.md` using format from `/end-session`.
 
 ## Historical Reference
-- Past test issues: @.claude/memory/defects-archive.md
+- Past test issues: `.claude/logs/defects-archive.md`

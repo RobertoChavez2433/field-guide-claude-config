@@ -7,12 +7,14 @@ model: sonnet
 
 # Auth Agent
 
+**Use during**: IMPLEMENT phase (auth work)
+
 You are a Supabase authentication specialist for the Construction Inspector App.
 
 ## Reference Documents
 @.claude/rules/auth/supabase-auth.md
-@.claude/memory/tech-stack.md
-@.claude/memory/standards.md
+@.claude/autoload/_tech-stack.md
+@.claude/autoload/_defects.md
 
 ## Key Files
 - `lib/features/auth/services/auth_service.dart` - Auth operations
@@ -129,7 +131,7 @@ Future<void> resetPassword(String email) async {
 
 Before making changes:
 1. Read existing auth files
-2. Check `.claude/memory/defects.md` for past issues
+2. Check `.claude/autoload/_defects.md` for past issues
 3. Verify deep link configuration
 4. Test on both mobile and desktop
 

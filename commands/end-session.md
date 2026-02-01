@@ -26,7 +26,7 @@ git diff --stat
 
 ### 3. Update State Files
 
-**Update `.claude/plans/_state.md`:**
+**Update `.claude/autoload/_state.md`:**
 - Write compressed session summary (max 5 lines):
 ```markdown
 ### Session N (YYYY-MM-DD)
@@ -35,7 +35,7 @@ git diff --stat
 ```
 - If >10 sessions exist, run rotation (see below)
 
-**Update `.claude/memory/defects.md`** (if mistakes were made):
+**Update `.claude/autoload/_defects.md`** (if mistakes were made):
 - Add new defect with category and date:
 ```markdown
 ### [CATEGORY] YYYY-MM-DD: Title
@@ -48,13 +48,13 @@ git diff --stat
 
 **When _state.md has >10 sessions:**
 1. Take oldest session
-2. Append to `.claude/memory/state-archive.md` under appropriate month header
+2. Append to `.claude/logs/state-archive.md` under appropriate month header
 3. Remove from _state.md
 
-**When defects.md has >15 defects:**
+**When _defects.md has >15 defects:**
 1. Take oldest defect (from bottom of Active Patterns)
-2. Append to `.claude/memory/defects-archive.md` with archive date
-3. Remove from defects.md
+2. Append to `.claude/logs/defects-archive.md` with archive date
+3. Remove from _defects.md
 
 ### 5. Append to Session Log
 Append brief entry to `.claude/logs/session-log.md`:
@@ -76,3 +76,44 @@ Present:
 - Session summary
 - Commit hash
 - Next session: Run `/resume-session`
+
+---
+
+## Defect Logging Instructions
+
+When you discover bugs, anti-patterns, or issues during testing or review, log them to `.claude/autoload/_defects.md`.
+
+### When to Log
+- Test failures caused by known anti-patterns
+- Async context issues (missing `mounted` check)
+- Dispose errors (async in dispose)
+- Recurring anti-patterns found during review
+- Architecture violations
+- Security vulnerabilities
+- Performance issues that caused problems
+
+### Defect Format (Required)
+```markdown
+### [CATEGORY] YYYY-MM-DD: Brief Title
+**Pattern**: What to avoid (1 line)
+**Prevention**: How to avoid (1-2 lines)
+**Ref**: @path/to/file.dart (optional)
+```
+
+### Categories (Required)
+| Category | Use For |
+|----------|---------|
+| [ASYNC] | Context safety, dispose, mounted checks |
+| [E2E] | Patrol testing patterns |
+| [FLUTTER] | Widget, Provider, state patterns |
+| [DATA] | Repository, collection, model patterns |
+| [CONFIG] | Supabase, credentials, environment |
+
+### How to Log
+1. Add new defects **at the top** of Active Patterns section
+2. Include category and date: `### [CAT] 2026-02-01: Title`
+3. If >15 defects, move oldest to archive before adding new
+
+### Archives
+- Active: `.claude/autoload/_defects.md`
+- Archive: `.claude/logs/defects-archive.md`

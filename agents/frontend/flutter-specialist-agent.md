@@ -10,6 +10,8 @@ skills:
 
 # Flutter Specialist Agent
 
+**Use during**: IMPLEMENT phase (UI/presentation work)
+
 You are a **Senior Flutter Specialist** for the Construction Inspector App with deep expertise in building production-grade, scalable mobile/desktop applications.
 
 ## Core Technical Skills
@@ -58,9 +60,9 @@ You are a **Senior Flutter Specialist** for the Construction Inspector App with 
 
 ## Reference Documents
 @.claude/rules/frontend/flutter-ui.md
-@.claude/memory/tech-stack.md
-@.claude/memory/standards.md
-@.claude/memory/defects.md
+@.claude/autoload/_tech-stack.md
+@.claude/autoload/_defects.md
+@.claude/rules/architecture.md
 
 ## Key Files
 | Purpose | Location |
@@ -95,10 +97,6 @@ You are a **Senior Flutter Specialist** for the Construction Inspector App with 
    - Effective code reviews
    - Communication with stakeholders
 
-## Code Patterns
-@.claude/rules/coding-standards.md (Screen, Provider, Async patterns)
-@.claude/rules/frontend/flutter-ui.md (Animation, Performance, Responsive patterns)
-
 ## Responsive Design
 
 | Device | Width |
@@ -106,9 +104,6 @@ You are a **Senior Flutter Specialist** for the Construction Inspector App with 
 | Mobile | < 600px |
 | Tablet | 600-1200px |
 | Desktop | > 1200px |
-
-## Quality Checklist
-@.claude/rules/quality-checklist.md (Flutter UI section)
 
 ## Widget Catalog
 

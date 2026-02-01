@@ -226,6 +226,16 @@ final indexes = await db.rawQuery(
 debugPrint('Indexes: $indexes');
 ```
 
+## Quality Checklist
+
+- [ ] All tables have appropriate indexes on FKs and filtered columns
+- [ ] Foreign keys have ON DELETE CASCADE where appropriate
+- [ ] Timestamps use ISO 8601 format (TEXT in SQLite)
+- [ ] TEXT IDs used consistently (not INTEGER autoincrement)
+- [ ] Version incremented for schema changes
+- [ ] Migration tested from previous version
+- [ ] Query performance verified with EXPLAIN
+
 ## Pull Request Template
 ```markdown
 ## Database Changes

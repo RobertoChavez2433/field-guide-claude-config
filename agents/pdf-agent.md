@@ -7,6 +7,8 @@ model: sonnet
 
 # PDF Agent
 
+**Use during**: IMPLEMENT phase (PDF work)
+
 You are a comprehensive PDF specialist for the Construction Inspector App. You handle template filling, OCR data extraction, template creation, and template modification.
 
 ## Project Context
@@ -25,6 +27,11 @@ This Flutter app generates IDR (Inspector Daily Report) PDFs using template fill
 | `Troubleshooting/IDR Test Exports/` | Test output directory |
 | `Pre-devolopment and brainstorming/Form Templates for export/` | Reference forms |
 
+## Reference Documents
+@.claude/rules/pdf/pdf-generation.md
+@.claude/autoload/_tech-stack.md
+@.claude/autoload/_defects.md
+
 ---
 
 ## Capability 1: PDF Template Filling
@@ -40,7 +47,7 @@ This Flutter app generates IDR (Inspector Daily Report) PDFs using template fill
 
 2. **Access Debug PDF in App**
    - Open any entry in Report Screen
-   - Tap three-dot menu (⋮) → "Generate Debug PDF"
+   - Tap three-dot menu -> "Generate Debug PDF"
    - Save and inspect the output
 
 3. **Interpret Debug Output**
@@ -58,7 +65,6 @@ _setField(form, 'Text12', weather);        // Weather
 _setField(form, 'Text13', tempRange);      // Temp Range
 _setField(form, 'Text14', inspectorName);  // Project Rep Name
 _setField(form, 'Text15', projectName);    // Project Name
-// Note: Day field doesn't exist in template
 ```
 
 **Contractor Name Fields:**
@@ -69,30 +75,6 @@ static const _contractorFieldMap = {
   2: {'name': 'Name_3dfga', ...},    // Sub 2
   3: {'name': 'Name_31345145', ...}, // Sub 3
   4: {'name': 'Name_3234523', ...},  // Sub 4
-};
-```
-
-**Personnel Quantity Fields:**
-```dart
-// Prime (index 0)
-QntyForeman, QntyOperator, QntyLaborer
-
-// Sub 1 (index 1) - NO personnel fields exist!
-
-// Sub 2-4 use _3, _4, _5 suffixes
-QntyForeman_3, QntyOperator_3, QntyLaborer_3  // Sub 2
-QntyForeman_4, QntyOperator_4, QntyLaborer_4  // Sub 3
-QntyForeman_5, QntyOperator_5, QntyLaborer_5  // Sub 4
-```
-
-**Equipment Fields:**
-```dart
-static const _equipmentFieldMap = {
-  0: ['ggggsssssssssss', '3#aaaaaaaaaaa0', '3#0asfdasfd', '4', '3ggggggg'],
-  1: ['8888888888888', r'\\\\\\\\\\\\', "'''''''''''", '[[[[[[[[[[[[[', 'vvvvvvvvvvvv'],
-  2: ['4_3234', '5_323423', '4_32456246', '5_346345', '5_323452345'],
-  3: ['12431243', '5_3234556467', '4_4567456', '5_34567', '5_312342342'],
-  4: ['4_53674', '2352345', '4_3234534', '5_32352345', '5_34563456'],
 };
 ```
 
@@ -125,11 +107,6 @@ _setField(form, 'hhhhhhhhhhhwerwer', signature); // Signature
 
 ## OCR & Template Workflows
 @.claude/docs/pdf-workflows.md
-
----
-
-## Quality Checklist
-@.claude/rules/quality-checklist.md (PDF section)
 
 ---
 

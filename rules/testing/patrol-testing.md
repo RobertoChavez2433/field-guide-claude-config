@@ -164,4 +164,4 @@ context.read<Provider>().doThing();
 - TestingKeys: `lib/shared/testing_keys.dart`
 - UI Keys Reference: `integration_test/patrol/REQUIRED_UI_KEYS.md`
 - Golden Tests: `test/golden/README.md`
-- Defects to Avoid: `.claude/memory/defects.md`
+- Defects to Avoid: `.claude/autoload/_defects.md`

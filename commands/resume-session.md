@@ -10,14 +10,13 @@ Load HOT context only and prepare for work.
 ## Actions
 
 ### 1. Read HOT Memory Only
-1. `.claude/plans/_state.md` - Current state (max 10 sessions)
-2. `.claude/memory/defects.md` - Active patterns (max 15 defects)
-3. `.claude/memory/tech-stack.md` - Current tech stack
-4. `.claude/docs/architectural_patterns.md` - Architectural patterns
+1. `.claude/autoload/_state.md` - Current state (max 10 sessions)
+2. `.claude/autoload/_defects.md` - Active patterns (max 15 defects)
+3. `.claude/autoload/_tech-stack.md` - Current tech stack
 
 **DO NOT READ** (lazy load only when needed):
-- `.claude/memory/state-archive.md`
-- `.claude/memory/defects-archive.md`
+- `.claude/logs/state-archive.md`
+- `.claude/logs/defects-archive.md`
 - `.claude/logs/session-log.md`
 
 ### 2. Check Git
@@ -47,8 +46,9 @@ Do NOT start implementation until user confirms.
 
 ## On-Demand References
 Read these only when relevant to the task:
-- Session history: @.claude/memory/state-archive.md
-- Defect history: @.claude/memory/defects-archive.md
+- Session history: `.claude/logs/state-archive.md`
+- Defect history: `.claude/logs/defects-archive.md`
+- Architecture patterns: `.claude/rules/architecture.md`
 
 ## Agent Reference
 | Domain | Agent |
@@ -60,3 +60,4 @@ Read these only when relevant to the task:
 | QA/Testing | `qa-testing-agent` |
 | Code Review | `code-review-agent` |
 | PDF | `pdf-agent` |
+| Planning | `planning-agent` |

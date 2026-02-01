@@ -1,6 +1,6 @@
 # State Archive
 
-Session history archive. See `.claude/plans/_state.md` for current state (last 10 sessions).
+Session history archive. See `.claude/autoload/_state.md` for current state (last 10 sessions).
 
 ---
 

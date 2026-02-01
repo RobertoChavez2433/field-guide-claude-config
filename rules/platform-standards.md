@@ -215,7 +215,7 @@ flutter analyze
 | `android/gradle.properties` | JVM heap, workers, G1GC |
 | `ios/Flutter/AppFrameworkInfo.plist` | iOS 15.0 minimum |
 | `ios/Runner.xcodeproj/project.pbxproj` | iOS 15.0 deployment target (3x) |
-| `.claude/memory/tech-stack.md` | Platform requirements table |
+| `.claude/autoload/_tech-stack.md` | Platform requirements table |
 
 ## Next Steps
 
