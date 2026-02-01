@@ -4,10 +4,10 @@
 
 ## Current Phase
 - **Phase**: Dependency Modernization
-- **Status**: IN PROGRESS - Stage 0 complete
+- **Status**: IN PROGRESS - Stages 0-1 complete
 
 ## Last Session (Session 228)
-**Summary**: Implemented Stage 0 - Toolchain Baseline
+**Summary**: Implemented Stage 0 (Toolchain Baseline) and Stage 1 (Low-Risk Core Updates)
 
 **Key Activities**:
 - **Stage 0 - Toolchain & Platform Baseline:**
@@ -18,12 +18,23 @@
   - Verified Java 17 (LTS version)
   - Verified compileSdk 36 (Android 16)
   - Updated targetSdk 35 → 36 for full Android 16 compliance
+
+- **Stage 1 - Low-Risk Core Updates:**
+  - Updated path: ^1.9.0 → ^1.9.1
+  - Updated collection: ^1.19.0 → ^1.19.1
+  - Updated crypto: ^3.0.6 → ^3.0.7
+  - Updated uuid: ^4.5.1 → ^4.5.2
+  - Updated pdf: ^3.11.1 → ^3.11.3
+  - Updated printing: ^5.13.4 → ^5.14.2
+  - Updated sqflite: ^2.4.1 → ^2.4.2
+  - Updated sqflite_common_ffi: ^2.3.4 → ^2.4.0+2
   - 0 analyzer errors in lib/ (67 pre-existing info/warnings)
 
 **Files Modified**:
 - `android/app/build.gradle.kts` - targetSdk 35 → 36
+- `pubspec.yaml` - 8 dependency updates
 
-**Commits**: (pending)
+**Commits**: `bab9ae1` (Stage 0), (pending Stage 1)
 
 ## Active Plan
 **File**: `.claude/plans/dependency-modernization-plan-v2.md`
@@ -31,7 +42,7 @@
 
 **Stages**:
 0. [x] Toolchain & Platform Baseline - COMPLETE (Session 228)
-1. [ ] Low-Risk Core Updates (path, collection, crypto, uuid, pdf, printing, sqflite)
+1. [x] Low-Risk Core Updates - COMPLETE (Session 228)
 2. [ ] State & Storage Utilities (provider, shared_preferences, flutter_secure_storage)
 3. [ ] Networking & Connectivity (http, connectivity_plus)
 4. [ ] Location, Permissions, Device Info (geolocator, geocoding, permission_handler, device_info_plus)
