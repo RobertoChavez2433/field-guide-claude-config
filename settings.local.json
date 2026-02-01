@@ -86,7 +86,13 @@
       "Bash(adb connect:*)",
       "Bash(adb install:*)",
       "Bash(adb shell am start:*)",
-      "Bash(adb logcat:*)"
+      "Bash(adb logcat:*)",
+      "Bash(adb kill-server:*)",
+      "Bash(adb start-server:*)",
+      "Bash(timeout:*)",
+      "WebFetch(domain:pub.dev)",
+      "Bash(git restore:*)",
+      "Bash(git branch:*)"
     ]
   },
   "spinnerTipsEnabled": true
