@@ -1,12 +1,84 @@
 # Session State
 
-**Last Updated**: 2026-01-31 | **Session**: 224
+**Last Updated**: 2026-01-31 | **Session**: 226
 
 ## Current Phase
 - **Phase**: PDF Parsing Fixes v2
-- **Status**: Phase 3 COMPLETE
+- **Status**: COMPLETE - OCR research done, deferred for future
 
-## Last Session (Session 224)
+## Last Session (Session 226)
+**Summary**: OCR Research and Implementation Planning (Deferred)
+
+**Key Activities**:
+- **OCR Research:**
+  - Researched on-device OCR options: mobile_ocr (PaddleOCR ~96%), flusseract (Tesseract ~87%)
+  - Researched cloud OCR: Azure Document Intelligence, AWS Textract, Google Cloud Vision, Docling
+  - Researched PDF-to-image packages: pdfx (cross-platform), pdf_image_renderer
+  - Explored codebase PDF parsing infrastructure via agents
+  - **Key Discovery**: Current PDFs are NOT scanned - they're digital with clumped text formatting
+  - Existing parsers (ClumpedTextParser, ColumnLayoutParser) handle current issues correctly
+- **Plan Created:**
+  - Comprehensive OCR implementation plan saved to `.claude/plans/abstract-twirling-hummingbird.md`
+  - Dual-engine strategy: mobile_ocr (mobile) + flusseract (desktop)
+  - 7 phases, ~12 hours estimated
+  - Marked as DEFERRED until actual scanned PDFs are encountered
+
+**Files Created**:
+- `.claude/plans/abstract-twirling-hummingbird.md` - OCR implementation plan for future use
+
+**Commits**: None (research-only session)
+
+**Decisions Made**:
+- OCR fallback deferred - current PDFs are digital, not scanned
+- Current text parsers are sufficient for clumped text issues
+- Plan ready for implementation when scanned PDFs become an issue
+
+## Session 225
+**Summary**: Implemented Phase 4 (Quality Gates + Thresholds)
+
+**Key Activities**:
+- **Phase 4 - Quality Gates + Scanned PDF Detection:**
+  - Created `ParserQualityThresholds` class with configurable thresholds:
+    - `minValidItemRatio = 0.70` (70% of items must be valid)
+    - `minAverageConfidence = 0.60` (60% average confidence required)
+    - `maxMissingUnitRatio = 0.30` (max 30% missing units)
+    - `maxMissingPriceRatio = 0.30` (max 30% missing prices)
+    - `minItemCount = 3` (need at least 3 items)
+  - Created `ParserQualityMetrics` class:
+    - `fromItems()` factory method to compute metrics from parsed items
+    - `meetsThresholds()` validation method
+    - `toSummary()` for human-readable diagnostics
+  - Integrated quality gates in `ClumpedTextParser`:
+    - If quality gate fails, returns empty list to trigger fallback
+    - Detailed diagnostic logging when gate fails
+  - Integrated quality gates in `ColumnLayoutParser`:
+    - Same pattern - returns empty list on failure
+  - Added scanned PDF detection in `PdfImportService`:
+    - Empty text → scanned
+    - <50 chars/page → likely scanned
+    - >30% single-char words → OCR artifacts
+    - Adds warning to PdfImportResult when detected
+  - Updated barrel export `parsers.dart`
+  - Added 19 quality threshold tests
+- 323 PDF parser tests passing, 0 analyzer errors
+
+**Files Modified**:
+- `lib/features/pdf/services/parsers/clumped_text_parser.dart`
+- `lib/features/pdf/services/parsers/column_layout_parser.dart`
+- `lib/features/pdf/services/parsers/parsers.dart`
+- `lib/features/pdf/services/pdf_import_service.dart`
+
+**Files Created**:
+- `lib/features/pdf/services/parsers/parser_quality_thresholds.dart`
+- `test/features/pdf/parsers/parser_quality_thresholds_test.dart`
+
+**Commits**: `0c94e42`
+
+**Next Session**:
+- PDF Parsing Fixes v2 plan is COMPLETE (Phases 0-4)
+- Phase 5 (OCR Fallback) deferred until Phases 1-4 evaluated
+
+## Session 224
 **Summary**: Implemented Phase 3 (Description Cap + Boilerplate Detection)
 
 **Key Activities**:
@@ -42,8 +114,7 @@
 - `test/features/pdf/parsers/boilerplate_detector_test.dart`
 - `test/fixtures/pdf/runaway_description.txt`
 
-**Next Session**:
-- Phase 4: Quality Gates + Thresholds
+**Commits**: `d1c9270`
 
 ## Session 222
 **Summary**: Implemented Phase 1a and 1b of PDF Parsing Fixes v2
@@ -534,7 +605,22 @@
 ## Active Plan
 None - Ready for new tasks
 
+## Deferred Plans
+### OCR Fallback Implementation
+- **Location**: `.claude/plans/abstract-twirling-hummingbird.md`
+- **Status**: DEFERRED - Implement when scanned PDFs encountered
+- **Trigger**: `_isLikelyScannedPdf()` returns true (< 50 chars/page OR >30% single-char words)
+- **Estimated**: 12 hours across 7 phases
+
 ## Completed Plans
+### PDF Parsing Fixes v2 - FULLY COMPLETE (Session 225)
+- Phase 0: Observability + Fixtures - COMPLETE (Session 221)
+- Phase 1a: ColumnLayoutParser Clustering Fix - COMPLETE (Session 222)
+- Phase 1b: Multi-Page Header Detection - COMPLETE (Session 222)
+- Phase 2: Structural Keywords + Currency Fix - COMPLETE (Session 223)
+- Phase 3: Description Cap + Boilerplate Detection - COMPLETE (Session 224)
+- Phase 4: Quality Gates + Scanned PDF Detection - COMPLETE (Session 225)
+- Phase 5: OCR Fallback - DEFERRED (evaluate after Phase 1-4)
 ### Clumped Text PDF Parser - FULLY COMPLETE (Session 220)
 - Phase 1: Shared Extraction + Diagnostics - COMPLETE (Session 215)
 - Phase 2: Text Normalization - COMPLETE (Session 216)
