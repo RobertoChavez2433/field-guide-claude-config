@@ -57,6 +57,17 @@ lib/
 | `code-review-agent` | Architecture, code quality | REVIEW |
 | `qa-testing-agent` | Testing, debugging | TEST/VERIFY |
 
+## Skills (Agent Enhancements)
+| Skill | Purpose | Used By |
+|-------|---------|---------|
+| `brainstorming` | Collaborative design | planning-agent |
+| `systematic-debugging` | Root cause analysis | qa-testing-agent |
+| `test-driven-development` | Red-Green-Refactor | All IMPLEMENT + qa-testing |
+| `verification-before-completion` | Evidence gate | qa-testing, code-review |
+| `interface-design` | Design system | flutter-specialist |
+
+Skills are embedded in agent behavior via `@` references - no slash commands needed.
+
 ## Session
 - `/resume-session` - Load HOT context only
 - `/end-session` - Save state with auto-archiving

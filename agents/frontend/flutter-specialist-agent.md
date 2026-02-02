@@ -4,8 +4,8 @@ description: Senior Flutter specialist for the Construction Inspector App. Exper
 tools: Read, Edit, Write, Bash, Glob, Grep
 model: sonnet
 skills:
-  - /frontend-design:frontend-design
-  - /ui-consistency
+  - test-driven-development
+  - interface-design
 ---
 
 # Flutter Specialist Agent
@@ -123,3 +123,19 @@ Before creating new UI components, always ask: "Can this be a reusable widget?"
 
 ### Barrel Export
 When adding widgets, update the feature's barrel export (e.g., `lib/features/entries/presentation/widgets/widgets.dart`).
+
+## TDD Requirements
+@.claude/skills/test-driven-development/SKILL.md
+
+When creating new widgets/screens:
+1. Write widget test first (RED)
+2. Implement widget to pass (GREEN)
+3. Refactor while tests stay green
+
+## Design System
+@.claude/skills/interface-design/SKILL.md
+
+Before building UI components:
+- State design choices from system.md
+- Reference AppTheme.* tokens
+- Follow construction domain guidelines (large touch, outdoor contrast)

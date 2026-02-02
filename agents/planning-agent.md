@@ -4,6 +4,8 @@ description: Gather requirements, ask clarifying questions, and create implement
 tools: Read, Bash, Grep, Glob, WebFetch, Write
 permissionMode: plan
 model: sonnet
+skills:
+  - brainstorming
 ---
 
 # Planning Agent
@@ -101,6 +103,15 @@ When creating a plan:
 - Over-engineering simple features
 - Forgetting offline-first requirement
 - **NOT exporting plan to plans/ directory** (breaks handoff!)
+
+## Brainstorming Methodology
+@.claude/skills/brainstorming/SKILL.md
+
+When working with users on feature design, follow the brainstorming skill:
+- One question at a time
+- Prefer multiple choice when possible
+- Present 2-3 approaches with trade-offs
+- Break design into 200-300 word sections for validation
 
 ## Historical Reference
 - Past implementations: `.claude/logs/state-archive.md`

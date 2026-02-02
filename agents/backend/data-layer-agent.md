@@ -3,6 +3,8 @@ name: data-layer-agent
 description: Design and implement data models, repositories, and datasources. Use for database schema, data access patterns, domain logic, and provider state management.
 tools: Read, Edit, Write, Bash, Glob, Grep
 model: sonnet
+skills:
+  - test-driven-development
 ---
 
 # Data Layer Agent
@@ -118,6 +120,15 @@ Reference: `lib/core/database/database_service.dart`, `lib/core/database/schema/
 | Feature providers | `lib/features/*/presentation/providers/` |
 | Legacy barrels | `lib/data/`, `lib/presentation/` (backward-compat) |
 | Main providers | `lib/main.dart` (MultiProvider setup) |
+
+## TDD Requirements
+@.claude/skills/test-driven-development/SKILL.md
+
+When creating models/repositories:
+1. Write unit test for model serialization (RED)
+2. Implement model (GREEN)
+3. Write unit test for repository CRUD (RED)
+4. Implement repository (GREEN)
 
 ## Implementation Status
 
