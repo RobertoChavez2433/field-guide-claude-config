@@ -1,12 +1,17 @@
 # Session State
 
-**Last Updated**: 2026-02-02 | **Session**: 259
+**Last Updated**: 2026-02-02 | **Session**: 260
 
 ## Current Phase
 - **Phase**: PDF Enhancement
-- **Status**: ML Kit OCR foundation complete (Phase 1 of 3)
+- **Status**: OCR pipeline integration complete (Phase 2 of 3)
 
 ## Recent Sessions
+
+### Session 260 (2026-02-02)
+**Work**: Implemented Phase 2 of robust PDF extraction plan - OCR pipeline integration. Added needsOcr() detection (empty text, <50 chars/page, >30% single-char words). Implemented _runOcrPipeline() with page-by-page processing. Added usedOcr/ocrConfidence fields to PdfImportResult. Added OCR indicator chip to preview screen. Added OCR diagnostics logging. 9 new OCR integration tests, 386 total tests pass. Analyzer clean. Code review completed - placeholder rendering noted for Phase 3.
+**Commits**: Pending
+**Ref**: @.claude/plans/robust-pdf-extraction-plan.md
 
 ### Session 259 (2026-02-02)
 **Work**: Implemented Phase 1 of robust PDF extraction plan - ML Kit OCR foundation. Added google_mlkit_text_recognition and image packages. Created MlKitOcrService (text recognition), PdfPageRenderer (PDF-to-image), ImagePreprocessor (scan quality enhancement). Added 64-bit ABI filter for ML Kit. 20 new OCR tests, all pass. Analyzer clean.
@@ -48,14 +53,10 @@
 **Work**: Skills research session. Explored Claude Code skills best practices, researched interface-design, Superpowers, flutter-claude-code. Created skills implementation plan.
 **Commits**: None (planning only)
 
-### Session 250 (2026-02-01)
-**Work**: Analyzer Cleanup v3 Phases 3-4, plus Gradle/dead code fixes. Converted 5 function variables to declarations, 1 super parameter, downgraded Gradle 8.14→8.13, removed 96 lines of dead TODO comments.
-**Commits**: `4ffcf98`, `9025432`
-
 ## Completed Plans (Recent)
 
-### ML Kit OCR Phase 1 - COMPLETE (Session 259)
-Foundation layer: MlKitOcrService, PdfPageRenderer, ImagePreprocessor. 20 tests. Phase 2 (pipeline integration) and Phase 3 (quality polish) remain.
+### ML Kit OCR Phases 1-2 - COMPLETE (Sessions 259-260)
+Phase 1: Foundation layer (MlKitOcrService, PdfPageRenderer, ImagePreprocessor). Phase 2: Pipeline integration (needsOcr detection, _runOcrPipeline, PdfImportResult metadata, preview UI indicator). 29 OCR tests. Phase 3 (actual PDF rendering, quality polish) remains.
 
 ### Analyzer Findings Implementation Plan - COMPLETE (Session 256)
 5-phase plan: security rules (4), auto-disable mechanism, UTF-8 fixes (12 files), test splitting (2 large files), docs (3 new).
@@ -73,8 +74,8 @@ Created 5 skills: brainstorming (3 files), systematic-debugging (8 files), test-
 
 ### Robust PDF Extraction with OCR
 - **Phase 1**: COMPLETE - ML Kit foundation (Session 259)
-- **Phase 2**: TODO - Pipeline integration (modify PdfImportService)
-- **Phase 3**: TODO - Quality & edge cases
+- **Phase 2**: COMPLETE - Pipeline integration (Session 260)
+- **Phase 3**: TODO - Quality & edge cases (actual PDF rendering, confidence tracking)
 - **Ref**: @.claude/plans/robust-pdf-extraction-plan.md
 
 ## Deferred Plans
