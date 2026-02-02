@@ -65,6 +65,8 @@ lib/
 | `test-driven-development` | Red-Green-Refactor | All IMPLEMENT + qa-testing |
 | `verification-before-completion` | Evidence gate | qa-testing, code-review |
 | `interface-design` | Design system | flutter-specialist |
+| `pdf-processing` | CLI PDF analysis/debugging | pdf-agent |
+| `hookify` | Behavioral hooks for preventing unwanted patterns | All agents |
 
 Skills are embedded in agent behavior via `@` references - no slash commands needed.
 

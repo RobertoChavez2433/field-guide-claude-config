@@ -1,0 +1,14 @@
+# PDF Processing Skill Dependencies
+# Updated: 2026-02-01
+
+# Core PDF manipulation (pure Python)
+pypdf>=6.6.0
+
+# Advanced PDF extraction with table support
+pdfplumber>=0.11.9
+
+# PDF to image conversion (requires Poppler)
+pdf2image>=1.17.0
+
+# Image processing
+Pillow>=12.1.0

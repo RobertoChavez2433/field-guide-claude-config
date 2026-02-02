@@ -1,0 +1,20 @@
+{
+  "hooks": [
+    {
+      "event": "PreToolUse",
+      "command": "python .claude/plugins/hookify/hooks/pretooluse.py"
+    },
+    {
+      "event": "PostToolUse",
+      "command": "python .claude/plugins/hookify/hooks/posttooluse.py"
+    },
+    {
+      "event": "Stop",
+      "command": "python .claude/plugins/hookify/hooks/stop.py"
+    },
+    {
+      "event": "UserPromptSubmit",
+      "command": "python .claude/plugins/hookify/hooks/userpromptsubmit.py"
+    }
+  ]
+}

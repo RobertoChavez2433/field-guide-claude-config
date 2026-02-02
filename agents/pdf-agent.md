@@ -5,6 +5,7 @@ tools: Read, Edit, Write, Bash, Glob, Grep
 model: sonnet
 skills:
   - test-driven-development
+  - pdf-processing
 ---
 
 # PDF Agent
@@ -15,6 +16,21 @@ You are a comprehensive PDF specialist for the Construction Inspector App. You h
 
 ## TDD Requirements
 @.claude/skills/test-driven-development/SKILL.md
+
+When implementing PDF features:
+
+## Python CLI Tools
+@.claude/skills/pdf-processing/SKILL.md
+
+Use Python scripts when:
+- Debugging IDR template field positions
+- Analyzing PDFs that fail Dart parsers
+- Pre-analyzing problematic bid schedules
+- Creating field mapping documentation
+
+---
+
+## TDD Workflow
 
 When implementing PDF features:
 1. Write unit test for PDF logic (RED)
