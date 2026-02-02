@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 """Rule evaluation engine for hookify."""
 
@@ -33,6 +34,21 @@ except ImportError:
 
     def equals(expected: str, actual: str) -> bool:
         return expected.lower() == actual.lower()
+
+
+# Auto-disable threshold
+AUTO_DISABLE_THRESHOLD = 5
+
+# Session state (persists until Claude Code restarts)
+_session_trigger_counts = {}  # {rule_name: count}
+_disabled_rules = set()  # Rules auto-disabled this session
+
+
+def reset_session_state():
+    """Reset auto-disable state. Call at session start if needed."""
+    global _session_trigger_counts, _disabled_rules
+    _session_trigger_counts = {}
+    _disabled_rules = set()
 
 
 class RuleEngine:
@@ -160,11 +176,25 @@ class RuleEngine:
         Returns:
             Result dictionary with 'continue', 'message', 'action', 'rule'
         """
+        global _session_trigger_counts, _disabled_rules
+
         rules = self.get_rules_for_event(event_type, tool_name)
 
         # Check blocking rules first
         for rule in rules:
+            # Skip auto-disabled rules
+            if rule.name in _disabled_rules:
+                continue
+
             if rule.action == "block" and self._rule_matches(rule, tool_name, tool_input):
+                # Track trigger count
+                _session_trigger_counts[rule.name] = _session_trigger_counts.get(rule.name, 0) + 1
+
+                # Check if we should auto-disable
+                if _session_trigger_counts[rule.name] >= AUTO_DISABLE_THRESHOLD:
+                    _disabled_rules.add(rule.name)
+                    print(f"[hookify] Rule '{rule.name}' auto-disabled after {AUTO_DISABLE_THRESHOLD} triggers", file=sys.stderr)
+
                 return {
                     "continue": False,
                     "message": rule.message or f"Blocked by rule: {rule.name}",
@@ -174,7 +204,19 @@ class RuleEngine:
 
         # Then check warning rules
         for rule in rules:
+            # Skip auto-disabled rules
+            if rule.name in _disabled_rules:
+                continue
+
             if rule.action == "warn" and self._rule_matches(rule, tool_name, tool_input):
+                # Track trigger count
+                _session_trigger_counts[rule.name] = _session_trigger_counts.get(rule.name, 0) + 1
+
+                # Check if we should auto-disable
+                if _session_trigger_counts[rule.name] >= AUTO_DISABLE_THRESHOLD:
+                    _disabled_rules.add(rule.name)
+                    print(f"[hookify] Rule '{rule.name}' auto-disabled after {AUTO_DISABLE_THRESHOLD} triggers", file=sys.stderr)
+
                 return {
                     "continue": True,
                     "message": rule.message or f"Warning from rule: {rule.name}",

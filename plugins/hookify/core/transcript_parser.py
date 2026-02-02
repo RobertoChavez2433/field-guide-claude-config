@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 """Parse Claude Code transcript files (.jsonl) for analysis."""
 
@@ -421,6 +422,13 @@ def get_session_summary(messages: List[Message]) -> Dict[str, Any]:
 
 # CLI for testing
 if __name__ == "__main__":
+    import io
+
+    # Windows console fix
+    if sys.platform == 'win32':
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
     if len(sys.argv) < 2:
         print("Usage: python transcript_parser.py <transcript.jsonl>")
         print("       python transcript_parser.py --find [project_dir]")

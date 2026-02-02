@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
 """Pattern detection for conversation analysis."""
 
@@ -12,6 +13,20 @@ try:
     from .transcript_parser import Message, ToolCall, ToolResult
 except ImportError:
     from transcript_parser import Message, ToolCall, ToolResult
+
+
+def _ascii_safe(text: str) -> str:
+    """Replace Unicode characters with ASCII equivalents."""
+    replacements = {
+        '\u2192': '->',   # arrow
+        '\u2190': '<-',   # left arrow
+        '\u2713': '[OK]', # checkmark
+        '\u2717': '[X]',  # x mark
+        '\u2026': '...',  # ellipsis
+    }
+    for char, repl in replacements.items():
+        text = text.replace(char, repl)
+    return text
 
 
 class Severity(Enum):
@@ -851,9 +866,15 @@ def extract_all_patterns(messages: List[Message]) -> AnalysisResult:
 
 # CLI for testing
 if __name__ == "__main__":
+    import io
     import sys
     from pathlib import Path
     from .transcript_parser import parse_transcript
+
+    # Windows console fix
+    if sys.platform == 'win32':
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+        sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
     if len(sys.argv) < 2:
         print("Usage: python pattern_extractors.py <transcript.jsonl>")
