@@ -87,6 +87,20 @@ Skills are embedded in agent behavior via `@` references - no slash commands nee
 pwsh -Command "flutter clean && flutter build apk --release"
 ```
 
+## Debug Commands
+
+### PDF Parser Diagnostics
+Enable verbose logging to trace PDF parsing pipeline failures:
+```bash
+# Run app with PDF diagnostics
+pwsh -Command "flutter run --dart-define=PDF_PARSER_DIAGNOSTICS=true"
+
+# Run tests with PDF diagnostics
+pwsh -Command "flutter test test/features/pdf/ --dart-define=PDF_PARSER_DIAGNOSTICS=true"
+```
+
+Logs show: raw text stats, OCR preprocessing, line splitting, token classification, state machine transitions, parser success/failure reasons.
+
 ## Data Flow
 ```
 Screen -> Provider -> Repository -> SQLite (local) -> Supabase (sync)

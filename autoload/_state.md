@@ -1,12 +1,16 @@
 # Session State
 
-**Last Updated**: 2026-02-02 | **Session**: 257
+**Last Updated**: 2026-02-02 | **Session**: 258
 
 ## Current Phase
 - **Phase**: PDF Enhancement
-- **Status**: OCR preprocessor implemented
+- **Status**: Diagnostic logging + mega-line splitting implemented
 
 ## Recent Sessions
+
+### Session 258 (2026-02-02)
+**Work**: Added comprehensive PDF parser diagnostic logging (pipeline entry/exit, text stats, OCR preprocessing, state transitions, row generation, parser success/failure). Implemented mega-line splitting fallback (splits at item number boundaries when avg line length > 200 chars). Added debug commands to CLAUDE.md. 6 new tests, 357 total parser tests pass.
+**Commits**: Pending
 
 ### Session 257 (2026-02-02)
 **Work**: Implemented OCR preprocessor for scanned PDF bid schedules. Created OcrPreprocessor class with 6 correction patterns (s→$, trailing s, spaced letters, period-as-comma, header errors). Integrated into TextNormalizer, enhanced TokenClassifier with lenient currency patterns, improved RowStateMachine robustness. 28 new tests, 351 total parser tests pass.

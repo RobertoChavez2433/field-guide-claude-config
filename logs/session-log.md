@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-02 (Session 258)
+- PDF Parser Diagnostics: Added comprehensive diagnostic logging (pipeline stages, text stats, OCR preprocessing, state transitions). Implemented mega-line splitting fallback. 6 new tests, 357 total parser tests pass.
+
 ### 2026-02-02 (Session 257)
 - OCR PDF Import Fix: Created OcrPreprocessor class with 6 correction patterns (s→$, trailing s, spaced letters, period-as-comma). Integrated into parser pipeline. 28 new tests, 351 total parser tests pass.
 
