@@ -1,16 +1,21 @@
 # Session State
 
-**Last Updated**: 2026-02-02 | **Session**: 260
+**Last Updated**: 2026-02-02 | **Session**: 261
 
 ## Current Phase
 - **Phase**: PDF Enhancement
-- **Status**: OCR pipeline integration complete (Phase 2 of 3)
+- **Status**: OCR pipeline complete (Phases 1-3 done)
 
 ## Recent Sessions
 
+### Session 261 (2026-02-02)
+**Work**: Completed OCR pipeline PRs 1-2: (1) Real PDF rendering via pdf_render package replacing placeholders, (2) Confidence tracking with recognizeWithConfidence(), aggregation, OcrPreprocessor cleanup. Investigated skills not loading via Task tool - found subagent_type doesn't resolve custom agents. Moved 4 nested agents to root .claude/agents/ for discovery. Updated CLAUDE.md with prefixed agent names. Created skills-and-agents-integration.md plan. 390 tests pass.
+**Commits**: `0d77da6` (app), `e2ff168` (claude config)
+**Ref**: @.claude/plans/skills-and-agents-integration.md
+
 ### Session 260 (2026-02-02)
 **Work**: Implemented Phase 2 of robust PDF extraction plan - OCR pipeline integration. Added needsOcr() detection (empty text, <50 chars/page, >30% single-char words). Implemented _runOcrPipeline() with page-by-page processing. Added usedOcr/ocrConfidence fields to PdfImportResult. Added OCR indicator chip to preview screen. Added OCR diagnostics logging. 9 new OCR integration tests, 386 total tests pass. Analyzer clean. Code review completed - placeholder rendering noted for Phase 3.
-**Commits**: Pending
+**Commits**: `8281bd6`
 **Ref**: @.claude/plans/robust-pdf-extraction-plan.md
 
 ### Session 259 (2026-02-02)
@@ -49,14 +54,10 @@
 **Work**: Implemented 5 skills (21 files): brainstorming, systematic-debugging, TDD, verification-before-completion, interface-design. Updated 8 agents with skill references. Fixed flutter-specialist broken skill refs.
 **Commits**: Pending
 
-### Session 251 (2026-02-01)
-**Work**: Skills research session. Explored Claude Code skills best practices, researched interface-design, Superpowers, flutter-claude-code. Created skills implementation plan.
-**Commits**: None (planning only)
-
 ## Completed Plans (Recent)
 
-### ML Kit OCR Phases 1-2 - COMPLETE (Sessions 259-260)
-Phase 1: Foundation layer (MlKitOcrService, PdfPageRenderer, ImagePreprocessor). Phase 2: Pipeline integration (needsOcr detection, _runOcrPipeline, PdfImportResult metadata, preview UI indicator). 29 OCR tests. Phase 3 (actual PDF rendering, quality polish) remains.
+### Robust PDF Extraction - COMPLETE (Sessions 259-261)
+Phase 1: ML Kit foundation (MlKitOcrService, PdfPageRenderer, ImagePreprocessor). Phase 2: Pipeline integration (needsOcr detection, _runOcrPipeline, metadata). Phase 3: Real PDF rendering via pdf_render, confidence tracking/aggregation. 390 tests pass.
 
 ### Analyzer Findings Implementation Plan - COMPLETE (Session 256)
 5-phase plan: security rules (4), auto-disable mechanism, UTF-8 fixes (12 files), test splitting (2 large files), docs (3 new).
@@ -72,11 +73,16 @@ Created 5 skills: brainstorming (3 files), systematic-debugging (8 files), test-
 
 ## Active Plans
 
-### Robust PDF Extraction with OCR
+### Robust PDF Extraction with OCR - COMPLETE
 - **Phase 1**: COMPLETE - ML Kit foundation (Session 259)
 - **Phase 2**: COMPLETE - Pipeline integration (Session 260)
-- **Phase 3**: TODO - Quality & edge cases (actual PDF rendering, confidence tracking)
+- **Phase 3**: COMPLETE - Real PDF rendering, confidence tracking (Session 261)
 - **Ref**: @.claude/plans/robust-pdf-extraction-plan.md
+
+### Skills & Agents Integration
+- **Status**: Investigation complete, agents moved to root
+- **Finding**: Task tool subagent_type doesn't resolve custom agents - use auto-delegation instead
+- **Ref**: @.claude/plans/skills-and-agents-integration.md
 
 ## Deferred Plans
 - **AASHTOWARE Integration**: `.claude/backlogged-plans/AASHTOWARE_Implementation_Plan.md` - Integration with state DOT system
