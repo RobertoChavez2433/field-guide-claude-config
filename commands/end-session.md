@@ -20,8 +20,16 @@ Write Summary:
 ### 2. Run Quality Checks
 ```bash
 flutter analyze lib/ --no-fatal-infos
+```
+
+**Check both repos:**
+```bash
+# App repo
 git status
 git diff --stat
+
+# Claude config repo
+cd .claude && git status && git diff --stat && cd ..
 ```
 
 ### 3. Update State Files
@@ -31,7 +39,7 @@ git diff --stat
 ```markdown
 ### Session N (YYYY-MM-DD)
 **Work**: Brief 1-line summary
-**Commits**: `abc1234`
+**Commits**: app `abc1234`, config `def5678`
 ```
 - If >10 sessions exist, run rotation (see below)
 
@@ -63,10 +71,20 @@ Append brief entry to `.claude/logs/session-log.md`:
 - [Summary of main work]
 ```
 
-### 6. Commit Changes
+### 6. Commit Changes (Both Repos)
+
+**App Repository** (main project):
 ```bash
 git add -A
 git commit -m "Session: [summary]"
+```
+
+**Claude Config Repository** (`.claude` folder):
+```bash
+cd .claude
+git add -A
+git commit -m "Session: [summary]"
+cd ..
 ```
 
 **IMPORTANT**: Do NOT include "Co-Authored-By" in commit messages.
@@ -74,7 +92,8 @@ git commit -m "Session: [summary]"
 ### 7. Complete
 Present:
 - Session summary
-- Commit hash
+- App repo commit hash
+- Claude config repo commit hash
 - Next session: Run `/resume-session`
 
 ---
