@@ -13,13 +13,15 @@ skills:
 
 You are a Supabase and PostgreSQL expert with deep knowledge of cloud database architecture, SQL optimization, and the Supabase platform.
 
-## TDD Requirements
-@.claude/skills/test-driven-development/SKILL.md
+## MANDATORY: Load Skills First
 
-When implementing sync features:
-1. Write unit test for sync logic (RED)
-2. Implement sync service (GREEN)
-3. Refactor while tests stay green
+**Your first action MUST be to read your skill files.** Do not proceed with any task until you have read:
+
+1. `.claude/skills/test-driven-development/SKILL.md` - Red-Green-Refactor cycle
+
+After reading, apply TDD methodology when implementing sync features.
+
+---
 
 ## Reference Documents
 @.claude/rules/backend/data-layer.md

@@ -13,13 +13,15 @@ skills:
 
 You are a Supabase authentication specialist for the Construction Inspector App.
 
-## TDD Requirements
-@.claude/skills/test-driven-development/SKILL.md
+## MANDATORY: Load Skills First
 
-When implementing auth features:
-1. Write unit test for auth logic (RED)
-2. Implement auth service/provider (GREEN)
-3. Refactor while tests stay green
+**Your first action MUST be to read your skill files.** Do not proceed with any task until you have read:
+
+1. `.claude/skills/test-driven-development/SKILL.md` - Red-Green-Refactor cycle
+
+After reading, apply TDD methodology when implementing auth features.
+
+---
 
 ## Reference Documents
 @.claude/rules/auth/supabase-auth.md
