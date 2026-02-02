@@ -4,6 +4,15 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-01 (Session 251)
+- Skills research: Explored Claude Code skills best practices, interface-design, Superpowers. Created skills implementation plan for end-session dual-repo commit + interface-design skill.
+
+### 2026-02-01 (Session 250)
+- Analyzer Cleanup v3 Phases 3-4: Function declarations, super parameters, Gradle 8.14→8.13, removed dead TODOs.
+
+### 2026-02-01 (Session 249)
+- Analyzer Cleanup v3 Phases 1-2: Async safety fixes, null comparison ignore comments.
+
 ### 2026-02-01 (Session 248)
 - Analyzer Cleanup v3 planning: Analyzed 30 issues (1 prod, 29 test). Created 4-phase fix plan.
 

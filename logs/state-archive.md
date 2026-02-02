@@ -6,6 +6,15 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 241 (2026-01-31)
+Phase 7 - Patrol config/docs alignment (README update, patrol.yaml cleanup). `6189ae8`
+
+### Session 240 (2026-01-31)
+Session state management and archive rotation.
+
+### Session 239 (2026-01-31)
+Phase 6 - Test cleanup: unused imports, dead variables, async safety in tests.
+
 ### Session 238 (2026-01-31)
 Phase 3 - Deprecated Flutter APIs: WillPopScope to PopScope, withOpacity to withValues. `3ba5f38`
 
