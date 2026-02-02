@@ -1,12 +1,17 @@
 # Session State
 
-**Last Updated**: 2026-02-02 | **Session**: 261
+**Last Updated**: 2026-02-02 | **Session**: 262
 
 ## Current Phase
 - **Phase**: PDF Enhancement
-- **Status**: OCR pipeline complete (Phases 1-3 done)
+- **Status**: OCR code review plan complete (all 5 PRs done)
 
 ## Recent Sessions
+
+### Session 262 (2026-02-02)
+**Work**: Implemented PRs 3-5 from OCR code review findings plan. PR3: DRY/KISS refactors - consolidated needsOcr() detection, extracted threshold constants (kMinCharsPerPage, kMaxSingleCharRatio). PR4: Diagnostics + UX - OCR metadata in DiagnosticsMetadata, confidence display in preview chip. PR5: Tests - 47 comprehensive OCR integration tests. Code review passed all acceptance criteria. 424 PDF tests pass. Analyzer clean.
+**Commits**: `0744771`
+**Ref**: @.claude/plans/ocr-code-review-findings.md
 
 ### Session 261 (2026-02-02)
 **Work**: Completed OCR pipeline PRs 1-2: (1) Real PDF rendering via pdf_render package replacing placeholders, (2) Confidence tracking with recognizeWithConfidence(), aggregation, OcrPreprocessor cleanup. Investigated skills not loading via Task tool - found subagent_type doesn't resolve custom agents. Moved 4 nested agents to root .claude/agents/ for discovery. Updated CLAUDE.md with prefixed agent names. Created skills-and-agents-integration.md plan. 390 tests pass.
@@ -50,11 +55,10 @@
 **Work**: Fixed VS Code Gradle cache errors (8.9/8.14 mismatch). Committed gradle-wrapper.properties formatting (networkTimeout, validateDistributionUrl).
 **Commits**: `bc0b2ae`
 
-### Session 252 (2026-02-01)
-**Work**: Implemented 5 skills (21 files): brainstorming, systematic-debugging, TDD, verification-before-completion, interface-design. Updated 8 agents with skill references. Fixed flutter-specialist broken skill refs.
-**Commits**: Pending
-
 ## Completed Plans (Recent)
+
+### OCR Code Review Findings - COMPLETE (Session 262)
+PR 3: DRY/KISS refactors (threshold constants, consolidated detection). PR 4: Diagnostics + UX (metadata, confidence display). PR 5: Tests (47 comprehensive tests). Code review passed.
 
 ### Robust PDF Extraction - COMPLETE (Sessions 259-261)
 Phase 1: ML Kit foundation (MlKitOcrService, PdfPageRenderer, ImagePreprocessor). Phase 2: Pipeline integration (needsOcr detection, _runOcrPipeline, metadata). Phase 3: Real PDF rendering via pdf_render, confidence tracking/aggregation. 390 tests pass.
@@ -73,12 +77,6 @@ Created 5 skills: brainstorming (3 files), systematic-debugging (8 files), test-
 
 ## Active Plans
 
-### Robust PDF Extraction with OCR - COMPLETE
-- **Phase 1**: COMPLETE - ML Kit foundation (Session 259)
-- **Phase 2**: COMPLETE - Pipeline integration (Session 260)
-- **Phase 3**: COMPLETE - Real PDF rendering, confidence tracking (Session 261)
-- **Ref**: @.claude/plans/robust-pdf-extraction-plan.md
-
 ### Skills & Agents Integration
 - **Status**: Investigation complete, agents moved to root
 - **Finding**: Task tool subagent_type doesn't resolve custom agents - use auto-delegation instead
@@ -91,7 +89,7 @@ Created 5 skills: brainstorming (3 files), systematic-debugging (8 files), test-
 None
 
 ## Reference
-- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-247)
+- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-252)
 - **Defects**: `.claude/autoload/_defects.md`
 - **Branch**: `main`
 - **Analyzer**: 0 issues
