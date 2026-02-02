@@ -49,13 +49,15 @@ lib/
 | Agent | Use For | Phase |
 |-------|---------|-------|
 | `planning-agent` | Requirements, implementation plans | PLAN |
-| `flutter-specialist-agent` | Screens, widgets, performance | IMPLEMENT |
-| `data-layer-agent` | Models, repositories, providers | IMPLEMENT |
-| `supabase-agent` | Sync, schema, RLS | IMPLEMENT |
+| `frontend-flutter-specialist-agent` | Screens, widgets, performance | IMPLEMENT |
+| `backend-data-layer-agent` | Models, repositories, providers | IMPLEMENT |
+| `backend-supabase-agent` | Sync, schema, RLS | IMPLEMENT |
 | `auth-agent` | Auth flows | IMPLEMENT |
 | `pdf-agent` | PDF generation | IMPLEMENT |
 | `code-review-agent` | Architecture, code quality | REVIEW |
 | `qa-testing-agent` | Testing, debugging | TEST/VERIFY |
+
+**Note**: All agents must be at root `.claude/agents/` level (no subdirectories).
 
 ## Skills (Agent Enhancements)
 | Skill | Purpose | Used By |
@@ -64,11 +66,11 @@ lib/
 | `systematic-debugging` | Root cause analysis | qa-testing-agent |
 | `test-driven-development` | Red-Green-Refactor | All IMPLEMENT + qa-testing |
 | `verification-before-completion` | Evidence gate | qa-testing, code-review |
-| `interface-design` | Design system | flutter-specialist |
+| `interface-design` | Design system | frontend-flutter-specialist |
 | `pdf-processing` | CLI PDF analysis/debugging | pdf-agent |
 | `hookify` | Behavioral hooks for preventing unwanted patterns | All agents |
 
-Skills are embedded in agent behavior via `@` references - no slash commands needed.
+Skills are loaded via `skills:` frontmatter in agent files. Claude auto-delegates to agents based on task description.
 
 ## Session
 - `/resume-session` - Load HOT context only

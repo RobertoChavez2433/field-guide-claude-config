@@ -1,5 +1,5 @@
 ---
-name: data-layer-agent
+name: backend-data-layer-agent
 description: Design and implement data models, repositories, and datasources. Use for database schema, data access patterns, domain logic, and provider state management.
 tools: Read, Edit, Write, Bash, Glob, Grep
 model: sonnet

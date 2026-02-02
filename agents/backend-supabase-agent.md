@@ -1,5 +1,5 @@
 ---
-name: supabase-agent
+name: backend-supabase-agent
 description: Expert in Supabase, PostgreSQL, cloud storage, and database optimization. Use for schema design, SQL queries, storage buckets, RLS policies, performance tuning, and Supabase CLI operations.
 tools: Read, Edit, Write, Bash, Glob, Grep
 model: sonnet

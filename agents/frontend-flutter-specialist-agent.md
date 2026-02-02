@@ -1,5 +1,5 @@
 ---
-name: flutter-specialist-agent
+name: frontend-flutter-specialist-agent
 description: Senior Flutter specialist for the Construction Inspector App. Expert in Dart/Flutter, Clean Architecture, advanced state management (Provider/BLoC/Riverpod), performance optimization, CI/CD, testing (unit/widget/integration), and building scalable, field-optimized interfaces.
 tools: Read, Edit, Write, Bash, Glob, Grep
 model: sonnet
