@@ -1,12 +1,17 @@
 # Session State
 
-**Last Updated**: 2026-02-02 | **Session**: 266
+**Last Updated**: 2026-02-02 | **Session**: 267
 
 ## Current Phase
 - **Phase**: PDF Enhancement
-- **Status**: Cross-page mixing bug fix + unit expansion
+- **Status**: Table-aware extraction plan created
 
 ## Recent Sessions
+
+### Session 267 (2026-02-02)
+**Work**: Analyzed Springfield DWSRF bid schedule PDF extraction failures. Root cause: OCR extracts text but doesn't use visible table grid lines for column boundaries (prices end up in descriptions). Created comprehensive plan for layered column detection: Layer 1 (header-based detection via OCR keyword positions), Layer 2 (table line detection from rendered images), Layer 3 (cross-validation). Plan estimates 13-18 hours across 5 PRs. Key insight: transform "parse unstructured text" into "read structured cells" by detecting column boundaries first.
+**Commits**: none (planning session)
+**Ref**: @.claude/plans/table-aware-pdf-extraction.md
 
 ### Session 266 (2026-02-02)
 **Work**: Fixed OCR row reconstruction cross-page mixing bug. Added pageIndex field to OcrElement and OcrRow. Updated OcrRowReconstructor to group elements by page before Y-clustering (prevents "114 - 33 6 60" concatenation). Added 6 missing units (SFT, SYD, CYD, DLR, LSUM, HOUR). Added boilerplate filtering to OcrRowParser (skips SECTION 00 41 00 headers). Fixed router null cast error on app restore. Added view_pdf_logs.ps1 utility. 5 new page-boundary tests. 541 PDF tests pass.
@@ -55,11 +60,6 @@
 **Work**: Implemented OCR preprocessor for scanned PDF bid schedules. Created OcrPreprocessor class with 6 correction patterns (s→$, trailing s, spaced letters, period-as-comma, header errors). Integrated into TextNormalizer, enhanced TokenClassifier with lenient currency patterns, improved RowStateMachine robustness. 28 new tests, 351 total parser tests pass.
 **Commits**: `c604660`
 
-### Session 256 (2026-02-01)
-**Work**: Implemented all 5 phases from analyzer findings plan in parallel: 4 security hookify rules, auto-disable mechanism, UTF-8 fixes (12 Python files), test splitting (2 large files → 4 smaller), 3 documentation files. All tests pass (127), analyzer clean.
-**Commits**: `4bf90ec`
-**Ref**: @.claude/plans/analyzer-findings-implementation-plan.md
-
 ## Completed Plans (Recent)
 
 ### OCR-First Restructure Plan v2 - COMPLETE (Sessions 263-265)
@@ -85,7 +85,14 @@ Created 5 skills: brainstorming (3 files), systematic-debugging (8 files), test-
 
 ## Active Plans
 
-None - ready for new work.
+### Table-Aware PDF Extraction - PLANNED
+**Ref**: @.claude/plans/table-aware-pdf-extraction.md
+**Estimate**: 13-18 hours across 5 PRs
+- PR 1: Header-based column detection (3-4 hours)
+- PR 2: Table line detection (4-5 hours)
+- PR 3: Unified column detector (2-3 hours)
+- PR 4: Pipeline integration (2-3 hours)
+- PR 5: Edge cases & polish (2-3 hours)
 
 ## Deferred Plans
 - **AASHTOWARE Integration**: `.claude/backlogged-plans/AASHTOWARE_Implementation_Plan.md` - Integration with state DOT system
