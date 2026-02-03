@@ -1,12 +1,17 @@
 # Session State
 
-**Last Updated**: 2026-02-02 | **Session**: 270
+**Last Updated**: 2026-02-02 | **Session**: 271
 
 ## Current Phase
 - **Phase**: PDF Enhancement
-- **Status**: Table-aware extraction V3 PRs 1-4 complete, continuing implementation
+- **Status**: Table-aware extraction V3 PRs 1-6 complete, continuing implementation
 
 ## Recent Sessions
+
+### Session 271 (2026-02-02)
+**Work**: Implemented PRs 5-6 from Table-Aware PDF Extraction V3 plan using parallel pdf-agents with TDD skills. PR5: ColumnDetector - unified orchestrator combining header-based and line-based detection with cross-validation, prefers line-based when methods disagree, falls back to header-based then standard ratios, confidence boosting for aligned methods. PR6: CellExtractor - groups OCR elements by Y-position into rows, assigns elements to columns based on X-position overlap, detects merged blocks spanning multiple columns, added recognizeRegion() to MlKitOcrService for cell-level re-OCR. 35 new tests (15 column + 20 cell), 133 total table extraction tests pass. Analyzer clean.
+**Commits**: `e7479a4`
+**Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
 
 ### Session 270 (2026-02-02)
 **Work**: Implemented PRs 3-4 from Table-Aware PDF Extraction V3 plan using parallel pdf-agents with TDD skills. PR3: HeaderColumnDetector - header keyword position detection, midpoint-based boundary calculation, 6 keyword categories with aliases, confidence scoring (keywordsFound/6), standard ratio fallback when <3 keywords found. PR4: LineColumnDetector - vertical grid line detection via edge detection, grayscale image processing using `image` package, X-position clustering (10px tolerance), minimum 50% height ratio filter for valid lines. 29 new tests (13 header + 16 line), 98 total table extraction tests pass. Analyzer clean.
@@ -52,11 +57,6 @@
 **Commits**: `0744771`
 **Ref**: @.claude/plans/ocr-code-review-findings.md
 
-### Session 261 (2026-02-02)
-**Work**: Completed OCR pipeline PRs 1-2: (1) Real PDF rendering via pdf_render package replacing placeholders, (2) Confidence tracking with recognizeWithConfidence(), aggregation, OcrPreprocessor cleanup. Investigated skills not loading via Task tool - found subagent_type doesn't resolve custom agents. Moved 4 nested agents to root .claude/agents/ for discovery. Updated CLAUDE.md with prefixed agent names. Created skills-and-agents-integration.md plan. 390 tests pass.
-**Commits**: `0d77da6` (app), `e2ff168` (claude config)
-**Ref**: @.claude/plans/skills-and-agents-integration.md
-
 ## Completed Plans (Recent)
 
 ### OCR-First Restructure Plan v2 - COMPLETE (Sessions 263-265)
@@ -82,15 +82,15 @@ Created 5 skills: brainstorming (3 files), systematic-debugging (8 files), test-
 
 ## Active Plans
 
-### Table-Aware PDF Extraction V3 - IN PROGRESS (PRs 1-4 complete)
+### Table-Aware PDF Extraction V3 - IN PROGRESS (PRs 1-6 complete)
 **Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
 **Approach**: Unified `TableExtractor` pipeline (complete refactor)
 - ~~PR 1: Foundation & Models~~ ✓ (Session 269)
 - ~~PR 2: Table Locator~~ ✓ (Session 269)
 - ~~PR 3: Column Detector - Header Based~~ ✓ (Session 270)
 - ~~PR 4: Column Detector - Line Based~~ ✓ (Session 270)
-- PR 5: Column Detector - Unified
-- PR 6: Cell Extractor
+- ~~PR 5: Column Detector - Unified~~ ✓ (Session 271)
+- ~~PR 6: Cell Extractor~~ ✓ (Session 271)
 - PR 7: Table Row Parser
 - PR 8: Table Extractor Orchestrator
 - PR 9: UI Integration
