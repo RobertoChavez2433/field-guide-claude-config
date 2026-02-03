@@ -1,12 +1,17 @@
 # Session State
 
-**Last Updated**: 2026-02-02 | **Session**: 269
+**Last Updated**: 2026-02-02 | **Session**: 270
 
 ## Current Phase
 - **Phase**: PDF Enhancement
-- **Status**: Table-aware extraction V3 PRs 1-2 complete, continuing implementation
+- **Status**: Table-aware extraction V3 PRs 1-4 complete, continuing implementation
 
 ## Recent Sessions
+
+### Session 270 (2026-02-02)
+**Work**: Implemented PRs 3-4 from Table-Aware PDF Extraction V3 plan using parallel pdf-agents with TDD skills. PR3: HeaderColumnDetector - header keyword position detection, midpoint-based boundary calculation, 6 keyword categories with aliases, confidence scoring (keywordsFound/6), standard ratio fallback when <3 keywords found. PR4: LineColumnDetector - vertical grid line detection via edge detection, grayscale image processing using `image` package, X-position clustering (10px tolerance), minimum 50% height ratio filter for valid lines. 29 new tests (13 header + 16 line), 98 total table extraction tests pass. Analyzer clean.
+**Commits**: `6d319b3`
+**Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
 
 ### Session 269 (2026-02-02)
 **Work**: Implemented PRs 1-2 from Table-Aware PDF Extraction V3 plan. PR1: Foundation & Models - TableRegion (page/Y boundaries), ColumnBoundaries/ColumnDef (column detection tracking), CellValue (extracted cell data), TableRow (cells by column name), ExtractionStage (pipeline progress), TableExtractionDiagnostics (extraction metrics). PR2: TableLocator - header row detection (6 keyword categories with variants), BASE BID marker detection, boilerplate filtering (ARTICLE, SECTION 00, legal text), multi-page table tracking, repeated header detection, data row identification. 69 new tests, all pass. Analyzer clean.
@@ -52,11 +57,6 @@
 **Commits**: `0d77da6` (app), `e2ff168` (claude config)
 **Ref**: @.claude/plans/skills-and-agents-integration.md
 
-### Session 260 (2026-02-02)
-**Work**: Implemented Phase 2 of robust PDF extraction plan - OCR pipeline integration. Added needsOcr() detection (empty text, <50 chars/page, >30% single-char words). Implemented _runOcrPipeline() with page-by-page processing. Added usedOcr/ocrConfidence fields to PdfImportResult. Added OCR indicator chip to preview screen. Added OCR diagnostics logging. 9 new OCR integration tests, 386 total tests pass. Analyzer clean. Code review completed - placeholder rendering noted for Phase 3.
-**Commits**: `8281bd6`
-**Ref**: @.claude/plans/robust-pdf-extraction-plan.md
-
 ## Completed Plans (Recent)
 
 ### OCR-First Restructure Plan v2 - COMPLETE (Sessions 263-265)
@@ -82,13 +82,13 @@ Created 5 skills: brainstorming (3 files), systematic-debugging (8 files), test-
 
 ## Active Plans
 
-### Table-Aware PDF Extraction V3 - IN PROGRESS (PRs 1-2 complete)
+### Table-Aware PDF Extraction V3 - IN PROGRESS (PRs 1-4 complete)
 **Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
 **Approach**: Unified `TableExtractor` pipeline (complete refactor)
 - ~~PR 1: Foundation & Models~~ ✓ (Session 269)
 - ~~PR 2: Table Locator~~ ✓ (Session 269)
-- PR 3: Column Detector - Header Based
-- PR 4: Column Detector - Line Based
+- ~~PR 3: Column Detector - Header Based~~ ✓ (Session 270)
+- ~~PR 4: Column Detector - Line Based~~ ✓ (Session 270)
 - PR 5: Column Detector - Unified
 - PR 6: Cell Extractor
 - PR 7: Table Row Parser
