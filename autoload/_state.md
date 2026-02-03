@@ -1,12 +1,17 @@
 # Session State
 
-**Last Updated**: 2026-02-02 | **Session**: 268
+**Last Updated**: 2026-02-02 | **Session**: 269
 
 ## Current Phase
 - **Phase**: PDF Enhancement
-- **Status**: Table-aware extraction V3 plan complete, ready for implementation
+- **Status**: Table-aware extraction V3 PRs 1-2 complete, continuing implementation
 
 ## Recent Sessions
+
+### Session 269 (2026-02-02)
+**Work**: Implemented PRs 1-2 from Table-Aware PDF Extraction V3 plan. PR1: Foundation & Models - TableRegion (page/Y boundaries), ColumnBoundaries/ColumnDef (column detection tracking), CellValue (extracted cell data), TableRow (cells by column name), ExtractionStage (pipeline progress), TableExtractionDiagnostics (extraction metrics). PR2: TableLocator - header row detection (6 keyword categories with variants), BASE BID marker detection, boilerplate filtering (ARTICLE, SECTION 00, legal text), multi-page table tracking, repeated header detection, data row identification. 69 new tests, all pass. Analyzer clean.
+**Commits**: `3f772ce`
+**Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
 
 ### Session 268 (2026-02-02)
 **Work**: Reviewed V2 plan using brainstorming skill. Analyzed Springfield PDF screenshots - identified 5 failure modes: prices in descriptions, OCR artifacts, boilerplate parsed as items, missing fields, cross-page mixing. Created comprehensive V3 plan with unified `TableExtractor` pipeline: 4 stages (TableLocator → ColumnDetector → CellExtractor → RowParser), dual column detection (header + line-based with cross-validation), cell-level re-OCR for merged blocks, auto table start detection, progress UX. Complete refactor approved - no legacy to preserve. 10 PR breakdown.
@@ -52,19 +57,6 @@
 **Commits**: `8281bd6`
 **Ref**: @.claude/plans/robust-pdf-extraction-plan.md
 
-### Session 259 (2026-02-02)
-**Work**: Implemented Phase 1 of robust PDF extraction plan - ML Kit OCR foundation. Added google_mlkit_text_recognition and image packages. Created MlKitOcrService (text recognition), PdfPageRenderer (PDF-to-image), ImagePreprocessor (scan quality enhancement). Added 64-bit ABI filter for ML Kit. 20 new OCR tests, all pass. Analyzer clean.
-**Commits**: `c26df07`
-**Ref**: @.claude/plans/robust-pdf-extraction-plan.md
-
-### Session 258 (2026-02-02)
-**Work**: Added comprehensive PDF parser diagnostic logging (pipeline entry/exit, text stats, OCR preprocessing, state transitions, row generation, parser success/failure). Implemented mega-line splitting fallback (splits at item number boundaries when avg line length > 200 chars). Added debug commands to CLAUDE.md. 6 new tests, 357 total parser tests pass.
-**Commits**: `770776b`
-
-### Session 257 (2026-02-02)
-**Work**: Implemented OCR preprocessor for scanned PDF bid schedules. Created OcrPreprocessor class with 6 correction patterns (s→$, trailing s, spaced letters, period-as-comma, header errors). Integrated into TextNormalizer, enhanced TokenClassifier with lenient currency patterns, improved RowStateMachine robustness. 28 new tests, 351 total parser tests pass.
-**Commits**: `c604660`
-
 ## Completed Plans (Recent)
 
 ### OCR-First Restructure Plan v2 - COMPLETE (Sessions 263-265)
@@ -90,11 +82,11 @@ Created 5 skills: brainstorming (3 files), systematic-debugging (8 files), test-
 
 ## Active Plans
 
-### Table-Aware PDF Extraction V3 - READY FOR IMPLEMENTATION
+### Table-Aware PDF Extraction V3 - IN PROGRESS (PRs 1-2 complete)
 **Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
 **Approach**: Unified `TableExtractor` pipeline (complete refactor)
-- PR 1: Foundation & Models
-- PR 2: Table Locator
+- ~~PR 1: Foundation & Models~~ ✓ (Session 269)
+- ~~PR 2: Table Locator~~ ✓ (Session 269)
 - PR 3: Column Detector - Header Based
 - PR 4: Column Detector - Line Based
 - PR 5: Column Detector - Unified
