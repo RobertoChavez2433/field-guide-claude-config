@@ -1,12 +1,17 @@
 # Session State
 
-**Last Updated**: 2026-02-02 | **Session**: 271
+**Last Updated**: 2026-02-03 | **Session**: 272
 
 ## Current Phase
 - **Phase**: PDF Enhancement
-- **Status**: Table-aware extraction V3 PRs 1-6 complete, continuing implementation
+- **Status**: Table-aware extraction V3 PRs 1-8 complete, UI integration next
 
 ## Recent Sessions
+
+### Session 272 (2026-02-03)
+**Work**: Implemented PRs 7-8 from Table-Aware PDF Extraction V3 plan using parallel pdf-agents with TDD skills. PR7: TableRowParser - converts TableRow cells to ParsedBidItem with cell-to-typed-field parsing, header row skipping (ITEM/NO./DESCRIPTION keywords), OCR artifact cleanup (S→$, pipes, accented chars), confidence scoring (5 components × 0.2 = max 1.0), warning generation, 27 new tests. PR8: TableExtractor orchestrator - wires all 4 stages (TableLocator → ColumnDetector → CellExtractor → TableRowParser), progress callbacks (7 ExtractionStage values), TableExtractionDiagnostics collection, graceful degradation, 19 new tests. 179 total table extraction tests pass. Analyzer clean.
+**Commits**: `7eeb531`
+**Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
 
 ### Session 271 (2026-02-02)
 **Work**: Implemented PRs 5-6 from Table-Aware PDF Extraction V3 plan using parallel pdf-agents with TDD skills. PR5: ColumnDetector - unified orchestrator combining header-based and line-based detection with cross-validation, prefers line-based when methods disagree, falls back to header-based then standard ratios, confidence boosting for aligned methods. PR6: CellExtractor - groups OCR elements by Y-position into rows, assigns elements to columns based on X-position overlap, detects merged blocks spanning multiple columns, added recognizeRegion() to MlKitOcrService for cell-level re-OCR. 35 new tests (15 column + 20 cell), 133 total table extraction tests pass. Analyzer clean.
@@ -52,11 +57,6 @@
 **Commits**: `fc17ae0`
 **Ref**: @.claude/plans/ocr-first-restructure-plan-v2.md
 
-### Session 262 (2026-02-02)
-**Work**: Implemented PRs 3-5 from OCR code review findings plan. PR3: DRY/KISS refactors - consolidated needsOcr() detection, extracted threshold constants (kMinCharsPerPage, kMaxSingleCharRatio). PR4: Diagnostics + UX - OCR metadata in DiagnosticsMetadata, confidence display in preview chip. PR5: Tests - 47 comprehensive OCR integration tests. Code review passed all acceptance criteria. 424 PDF tests pass. Analyzer clean.
-**Commits**: `0744771`
-**Ref**: @.claude/plans/ocr-code-review-findings.md
-
 ## Completed Plans (Recent)
 
 ### OCR-First Restructure Plan v2 - COMPLETE (Sessions 263-265)
@@ -82,7 +82,7 @@ Created 5 skills: brainstorming (3 files), systematic-debugging (8 files), test-
 
 ## Active Plans
 
-### Table-Aware PDF Extraction V3 - IN PROGRESS (PRs 1-6 complete)
+### Table-Aware PDF Extraction V3 - IN PROGRESS (PRs 1-8 complete)
 **Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
 **Approach**: Unified `TableExtractor` pipeline (complete refactor)
 - ~~PR 1: Foundation & Models~~ ✓ (Session 269)
@@ -91,8 +91,8 @@ Created 5 skills: brainstorming (3 files), systematic-debugging (8 files), test-
 - ~~PR 4: Column Detector - Line Based~~ ✓ (Session 270)
 - ~~PR 5: Column Detector - Unified~~ ✓ (Session 271)
 - ~~PR 6: Cell Extractor~~ ✓ (Session 271)
-- PR 7: Table Row Parser
-- PR 8: Table Extractor Orchestrator
+- ~~PR 7: Table Row Parser~~ ✓ (Session 272)
+- ~~PR 8: Table Extractor Orchestrator~~ ✓ (Session 272)
 - PR 9: UI Integration
 - PR 10: Cleanup & Polish
 
