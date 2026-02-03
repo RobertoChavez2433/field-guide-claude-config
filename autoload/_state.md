@@ -1,12 +1,16 @@
 # Session State
 
-**Last Updated**: 2026-02-02 | **Session**: 265
+**Last Updated**: 2026-02-02 | **Session**: 266
 
 ## Current Phase
 - **Phase**: PDF Enhancement
-- **Status**: OCR-first restructure plan COMPLETE (all 6 PRs)
+- **Status**: Cross-page mixing bug fix + unit expansion
 
 ## Recent Sessions
+
+### Session 266 (2026-02-02)
+**Work**: Fixed OCR row reconstruction cross-page mixing bug. Added pageIndex field to OcrElement and OcrRow. Updated OcrRowReconstructor to group elements by page before Y-clustering (prevents "114 - 33 6 60" concatenation). Added 6 missing units (SFT, SYD, CYD, DLR, LSUM, HOUR). Added boilerplate filtering to OcrRowParser (skips SECTION 00 41 00 headers). Fixed router null cast error on app restore. Added view_pdf_logs.ps1 utility. 5 new page-boundary tests. 541 PDF tests pass.
+**Commits**: pending
 
 ### Session 265 (2026-02-02)
 **Work**: Implemented PRs 5-6 from ocr-first-restructure-plan-v2. PR5: Image Preprocessing Enhancements - deskew detection (projection profile, ±15°, 1° steps), rotation detection (90°/180°/270°), adaptive contrast enhancement, configurable adaptive thresholding, preprocessWithEnhancements() full pipeline. PR6: Integration Tests + Fixtures - 22 comprehensive integration tests, 7 OCR JSON fixtures (simple, clumped, rotated, low_confidence, empty, header_noise, missing_fields). Code review on PRs 1-6: PASS WITH NOTES (minor suggestions). 536 PDF tests pass. Analyzer clean.
