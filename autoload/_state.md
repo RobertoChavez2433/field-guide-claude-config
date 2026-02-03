@@ -1,12 +1,17 @@
 # Session State
 
-**Last Updated**: 2026-02-03 | **Session**: 274
+**Last Updated**: 2026-02-03 | **Session**: 275
 
 ## Current Phase
 - **Phase**: PDF Enhancement
-- **Status**: Table-aware extraction V3 completion PRs 1-3 DONE
+- **Status**: Table-aware extraction V3 COMPLETE
 
 ## Recent Sessions
+
+### Session 275 (2026-02-03)
+**Work**: Implemented PRs 4-6 from Table-Aware PDF Extraction V3 Completion plan. PR4: Progress UI Wiring - PdfImportProgressManager for dialog state, wired into project_setup_screen and quantities_screen, users see stage-by-stage feedback. PR5: Integration Tests + Fixtures - Springfield fixtures (3 pages), FixtureLoader utility, 6 integration tests validating full pipeline. PR6: Cleanup + Deprecation - @Deprecated on OcrRowParser with migration guidance, comprehensive diagnostic logging in PdfImportService (success stats, fallback reasons). 787 PDF tests pass. Table-Aware PDF Extraction V3 Completion plan COMPLETE.
+**Commits**: `a22c87d`
+**Ref**: @.claude/plans/table-aware-pdf-extraction-v3-completion.md
 
 ### Session 274 (2026-02-03)
 **Work**: Implemented PRs 1-3 from Table-Aware PDF Extraction V3 Completion plan. PR1: Column Naming + Dimension Fix - line-based columns get semantic names (itemNumber, description, etc.) via ratio-based mapping, TableExtractor uses actual page image dimensions (pageImageSizes) instead of hardcoded 800x1100. PR2: Cell-Level Re-OCR - CellExtractor.extractRowsWithReOcr() detects merged OCR blocks spanning multiple columns and re-OCRs each cell region separately using MlKitOcrService.recognizeRegion(), image caching per page, usedCellReOcr flag for diagnostics. PR3: Row Boundary Detection - new RowBoundaryDetector for horizontal grid line detection, CellExtractor.extractRowsWithBoundaries() uses detected row boundaries when provided (fallback to Y-clustering). Code review: PR1 PASS, PR2 PASS, PR3 CONDITIONAL PASS (building block, not yet wired into pipeline). 218 table extraction tests pass.
@@ -52,12 +57,10 @@
 **Work**: Fixed OCR row reconstruction cross-page mixing bug. Added pageIndex field to OcrElement and OcrRow. Updated OcrRowReconstructor to group elements by page before Y-clustering (prevents "114 - 33 6 60" concatenation). Added 6 missing units (SFT, SYD, CYD, DLR, LSUM, HOUR). Added boilerplate filtering to OcrRowParser (skips SECTION 00 41 00 headers). Fixed router null cast error on app restore. Added view_pdf_logs.ps1 utility. 5 new page-boundary tests. 541 PDF tests pass.
 **Commits**: pending
 
-### Session 265 (2026-02-02)
-**Work**: Implemented PRs 5-6 from ocr-first-restructure-plan-v2. PR5: Image Preprocessing Enhancements - deskew detection, rotation detection, adaptive contrast, configurable thresholding. PR6: Integration Tests + Fixtures - 22 integration tests, 7 OCR JSON fixtures. Code review PASS WITH NOTES. 536 PDF tests pass.
-**Commits**: `27627e8`
-**Ref**: @.claude/plans/ocr-first-restructure-plan-v2.md
-
 ## Completed Plans (Recent)
+
+### Table-Aware PDF Extraction V3 Completion - COMPLETE (Sessions 274-275)
+6 PRs finishing V3 pipeline. PR1: Column naming + dimensions. PR2: Cell-level re-OCR. PR3: Row boundary detection. PR4: Progress UI wiring. PR5: Integration tests + fixtures. PR6: Cleanup + deprecation. 787 PDF tests pass.
 
 ### Table-Aware PDF Extraction V3 - COMPLETE (Sessions 269-273)
 10 PRs implementing unified TableExtractor pipeline. PR1-2: Foundation/Models + TableLocator. PR3-4: Column detection (header + line-based). PR5-6: Unified ColumnDetector + CellExtractor. PR7-8: TableRowParser + orchestrator. PR9-10: UI integration + cleanup. 200+ new tests.
@@ -85,9 +88,7 @@ Created 5 skills: brainstorming (3 files), systematic-debugging (8 files), test-
 
 ## Active Plans
 
-### Table-Aware PDF Extraction V3 Completion - IN PROGRESS
-PRs 1-3 complete (column naming, re-OCR, row boundaries). PRs 4-6 pending (progress UI wiring, integration tests, cleanup).
-**Ref**: @.claude/plans/table-aware-pdf-extraction-v3-completion.md
+None
 
 ## Deferred Plans
 - **AASHTOWARE Integration**: `.claude/backlogged-plans/AASHTOWARE_Implementation_Plan.md` - Integration with state DOT system
