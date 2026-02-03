@@ -1,12 +1,17 @@
 # Session State
 
-**Last Updated**: 2026-02-03 | **Session**: 273
+**Last Updated**: 2026-02-03 | **Session**: 274
 
 ## Current Phase
 - **Phase**: PDF Enhancement
-- **Status**: Table-aware extraction V3 COMPLETE (all 10 PRs)
+- **Status**: Table-aware extraction V3 completion PRs 1-3 DONE
 
 ## Recent Sessions
+
+### Session 274 (2026-02-03)
+**Work**: Implemented PRs 1-3 from Table-Aware PDF Extraction V3 Completion plan. PR1: Column Naming + Dimension Fix - line-based columns get semantic names (itemNumber, description, etc.) via ratio-based mapping, TableExtractor uses actual page image dimensions (pageImageSizes) instead of hardcoded 800x1100. PR2: Cell-Level Re-OCR - CellExtractor.extractRowsWithReOcr() detects merged OCR blocks spanning multiple columns and re-OCRs each cell region separately using MlKitOcrService.recognizeRegion(), image caching per page, usedCellReOcr flag for diagnostics. PR3: Row Boundary Detection - new RowBoundaryDetector for horizontal grid line detection, CellExtractor.extractRowsWithBoundaries() uses detected row boundaries when provided (fallback to Y-clustering). Code review: PR1 PASS, PR2 PASS, PR3 CONDITIONAL PASS (building block, not yet wired into pipeline). 218 table extraction tests pass.
+**Commits**: `2bc588e` (PR3), `cbb0f8c` (PRs 1-2)
+**Ref**: @.claude/plans/table-aware-pdf-extraction-v3-completion.md
 
 ### Session 273 (2026-02-03)
 **Work**: Implemented PRs 9-10 from Table-Aware PDF Extraction V3 plan using frontend-flutter-specialist-agent and qa-testing-agent with skills. PR9: UI Integration - PdfImportProgressDialog widget with stage-by-stage feedback (7 stages), wired TableExtractor into PdfImportService with progress callbacks, 12 new widget tests. PR10: Cleanup & Polish - deprecated OcrRowReconstructor (kept for fallback), added diagnostic logging to TableExtractor, added convenience methods to ColumnBoundaries/ColumnDef (width, centerX, getColumn, totalWidth), 11 new integration tests. Table-Aware PDF Extraction V3 plan COMPLETE.
@@ -48,13 +53,8 @@
 **Commits**: pending
 
 ### Session 265 (2026-02-02)
-**Work**: Implemented PRs 5-6 from ocr-first-restructure-plan-v2. PR5: Image Preprocessing Enhancements - deskew detection (projection profile, ±15°, 1° steps), rotation detection (90°/180°/270°), adaptive contrast enhancement, configurable adaptive thresholding, preprocessWithEnhancements() full pipeline. PR6: Integration Tests + Fixtures - 22 comprehensive integration tests, 7 OCR JSON fixtures (simple, clumped, rotated, low_confidence, empty, header_noise, missing_fields). Code review on PRs 1-6: PASS WITH NOTES (minor suggestions). 536 PDF tests pass. Analyzer clean.
+**Work**: Implemented PRs 5-6 from ocr-first-restructure-plan-v2. PR5: Image Preprocessing Enhancements - deskew detection, rotation detection, adaptive contrast, configurable thresholding. PR6: Integration Tests + Fixtures - 22 integration tests, 7 OCR JSON fixtures. Code review PASS WITH NOTES. 536 PDF tests pass.
 **Commits**: `27627e8`
-**Ref**: @.claude/plans/ocr-first-restructure-plan-v2.md
-
-### Session 264 (2026-02-02)
-**Work**: Implemented PRs 3-4 from ocr-first-restructure-plan-v2. PR3: OCR Row Reconstruction - OcrElement (text + bounding box), OcrRow (column assignments), OcrRowReconstructor (spatial analysis: Y-sort, row grouping by threshold, X-sort, column detection by content patterns), 13 tests. PR4: OCR Row Parser - OcrRowParser converts OcrRow to ParsedBidItem with confidence scoring, warning generation, LS item handling, 19 tests. Used pdf-agent with TDD and pdf-processing skills. 492 PDF tests pass. Analyzer clean.
-**Commits**: `1168e5a`
 **Ref**: @.claude/plans/ocr-first-restructure-plan-v2.md
 
 ## Completed Plans (Recent)
@@ -85,7 +85,9 @@ Created 5 skills: brainstorming (3 files), systematic-debugging (8 files), test-
 
 ## Active Plans
 
-None - Table-Aware PDF Extraction V3 complete.
+### Table-Aware PDF Extraction V3 Completion - IN PROGRESS
+PRs 1-3 complete (column naming, re-OCR, row boundaries). PRs 4-6 pending (progress UI wiring, integration tests, cleanup).
+**Ref**: @.claude/plans/table-aware-pdf-extraction-v3-completion.md
 
 ## Deferred Plans
 - **AASHTOWARE Integration**: `.claude/backlogged-plans/AASHTOWARE_Implementation_Plan.md` - Integration with state DOT system
