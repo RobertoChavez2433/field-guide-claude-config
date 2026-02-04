@@ -10,7 +10,7 @@
 
 ### Session 280 (2026-02-04)
 **Work**: Implemented Flusseract OCR Migration Phases 4-6 using pdf-agents. Phase 4: OCR Quality Safeguards - verified DPI at 300, confirmed preprocessing integration, added 21 new configuration tests (no code changes needed). Phase 5: Legacy Cleanup - removed stale ML Kit references from 6 files, renamed ParserType.ocrRowParser→tableExtractor, fixed test mock for isPooled. Phase 6: Performance Hardening - verified instance pooling works with flusseract, fixed pooled disposal bug (dispose() now no-op for pooled instances), added disposeInternal() for pool-managed disposal, 37 Phase 6 tests pass. Code review 8.5/10 - 2 major suggestions (TesseractConfig fallback path, OcrConcurrencyGate integration) for future consideration. 200+ OCR tests pass. Migration COMPLETE.
-**Commits**: TBD
+**Commits**: `ed267db`
 **Ref**: @.claude/plans/ocr-tesseract-migration-plan.md
 
 ### Session 279 (2026-02-04)
