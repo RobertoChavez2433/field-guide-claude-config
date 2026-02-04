@@ -1,12 +1,17 @@
 # Session State
 
-**Last Updated**: 2026-02-03 | **Session**: 275
+**Last Updated**: 2026-02-04 | **Session**: 276
 
 ## Current Phase
 - **Phase**: PDF Enhancement
-- **Status**: Table-aware extraction V3 COMPLETE
+- **Status**: Post-Processing Pipeline COMPLETE
 
 ## Recent Sessions
+
+### Session 276 (2026-02-04)
+**Work**: Implemented PDF Post-Processing Accuracy Plan (5 phases) using pdf-agents with TDD and PDF skills. Phase 1: PostProcessEngine scaffolding + raw data capture. Phase 2: Normalization + type enforcement (centralized OCR cleanup). Phase 3: Consistency & inference (qty/price/amount validation, LS handling). Phase 4: Split/multi-value & column-shift repairs. Phase 5: Dedupe, sequencing, UI review flags. Code reviews: post-processing pipeline 9/10 (all PASS), commit a22c87d 8/10 (DRY violation identified). 182 new tests, all pass. Analyzer clean.
+**Commits**: `6a0a910`
+**Ref**: @.claude/plans/pdf-post-processing-accuracy-plan.md
 
 ### Session 275 (2026-02-03)
 **Work**: Implemented PRs 4-6 from Table-Aware PDF Extraction V3 Completion plan. PR4: Progress UI Wiring - PdfImportProgressManager for dialog state, wired into project_setup_screen and quantities_screen, users see stage-by-stage feedback. PR5: Integration Tests + Fixtures - Springfield fixtures (3 pages), FixtureLoader utility, 6 integration tests validating full pipeline. PR6: Cleanup + Deprecation - @Deprecated on OcrRowParser with migration guidance, comprehensive diagnostic logging in PdfImportService (success stats, fallback reasons). 787 PDF tests pass. Table-Aware PDF Extraction V3 Completion plan COMPLETE.
@@ -53,11 +58,10 @@
 **Commits**: none (planning session)
 **Ref**: @.claude/plans/table-aware-pdf-extraction.md
 
-### Session 266 (2026-02-02)
-**Work**: Fixed OCR row reconstruction cross-page mixing bug. Added pageIndex field to OcrElement and OcrRow. Updated OcrRowReconstructor to group elements by page before Y-clustering (prevents "114 - 33 6 60" concatenation). Added 6 missing units (SFT, SYD, CYD, DLR, LSUM, HOUR). Added boilerplate filtering to OcrRowParser (skips SECTION 00 41 00 headers). Fixed router null cast error on app restore. Added view_pdf_logs.ps1 utility. 5 new page-boundary tests. 541 PDF tests pass.
-**Commits**: pending
-
 ## Completed Plans (Recent)
+
+### PDF Post-Processing Accuracy - COMPLETE (Session 276)
+5 phases improving bid item extraction quality. Phase 1: PostProcessEngine scaffolding. Phase 2: Normalization + type enforcement. Phase 3: Consistency & inference. Phase 4: Split/multi-value repairs. Phase 5: Dedupe + sequencing. 182 new tests.
 
 ### Table-Aware PDF Extraction V3 Completion - COMPLETE (Sessions 274-275)
 6 PRs finishing V3 pipeline. PR1: Column naming + dimensions. PR2: Cell-level re-OCR. PR3: Row boundary detection. PR4: Progress UI wiring. PR5: Integration tests + fixtures. PR6: Cleanup + deprecation. 787 PDF tests pass.
