@@ -1,12 +1,17 @@
 # Session State
 
-**Last Updated**: 2026-02-04 | **Session**: 278
+**Last Updated**: 2026-02-04 | **Session**: 279
 
 ## Current Phase
 - **Phase**: Ready for new work
-- **Status**: Tesseract OCR Migration COMPLETE
+- **Status**: Flusseract OCR Migration Phases 1-3 COMPLETE
 
 ## Recent Sessions
+
+### Session 279 (2026-02-04)
+**Work**: Implemented Flusseract OCR Migration Phases 1-3 using sequential pdf-agents. Phase 1: Cleanup - added isPooled property to OcrEngine, fixed pooled instance disposal (no-op for pooled, throws on double-dispose for non-pooled), added Tesseract initialization at app startup, added logging. Phase 2: Dependency swap - replaced flutter_tesseract_ocr with flusseract for Windows support, updated TesseractConfig and TesseractInitializer for flusseract API. Phase 3: Engine adapter - updated TesseractOcrEngine to use flusseract byte-based PixImage API, removed temp file operations, updated TesseractPageSegMode mapping, made dispose() idempotent. 164 OCR tests pass.
+**Commits**: `b5a38eb`
+**Ref**: @.claude/plans/ocr-tesseract-migration-plan.md
 
 ### Session 278 (2026-02-04)
 **Work**: Implemented Tesseract OCR Migration Phases 4-6 using parallel pdf-agents. Phase 4: Input quality improvements - TesseractPageSegMode enum (5 modes), character whitelist/blacklist config, 45 new tests. Phase 5: ML Kit removal - removed google_mlkit_text_recognition dependency, deleted MlKitOcrEngine/MlKitOcrService, made Tesseract default, 151 OCR tests pass. Phase 6: Performance hardening - TesseractInstancePool for instance reuse, OcrConcurrencyGate for memory management, OcrPerformanceLogger for diagnostics, PHASE6_USAGE.md documentation, 38 new tests. Code review 7.5/10 - critical issue found: Phase 6 not wired into production. Fixed: updated pdf_import_service.dart and table_extractor.dart to use usePool: true. Total 243+ PDF tests pass.
@@ -53,14 +58,12 @@
 **Commits**: `6d319b3`
 **Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
 
-### Session 269 (2026-02-02)
-**Work**: Implemented PRs 1-2 from Table-Aware PDF Extraction V3 plan. PR1: Foundation & Models - TableRegion (page/Y boundaries), ColumnBoundaries/ColumnDef (column detection tracking), CellValue (extracted cell data), TableRow (cells by column name), ExtractionStage (pipeline progress), TableExtractionDiagnostics (extraction metrics). PR2: TableLocator - header row detection (6 keyword categories with variants), BASE BID marker detection, boilerplate filtering (ARTICLE, SECTION 00, legal text), multi-page table tracking, repeated header detection, data row identification. 69 new tests, all pass. Analyzer clean.
-**Commits**: `3f772ce`
-**Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
-
 ## Completed Plans (Recent)
 
-### Tesseract OCR Migration - COMPLETE (Sessions 277-278)
+### Flusseract OCR Migration - IN PROGRESS (Session 279)
+Migrating from flutter_tesseract_ocr to flusseract for Windows support. Phases 1-3 complete: lifecycle fixes, dependency swap, engine adapter. Phases 4-6 pending: quality safeguards, legacy cleanup, performance hardening. 164 OCR tests pass.
+
+### Tesseract OCR Migration (ML Kit → flutter_tesseract_ocr) - COMPLETE (Sessions 277-278)
 6 phases replacing ML Kit with Tesseract. Phase 1: OCR abstraction layer. Phase 2: Tesseract dependencies. Phase 3: Tesseract adapter. Phase 4: Input quality (PSM, whitelist/blacklist). Phase 5: ML Kit removal. Phase 6: Performance hardening (instance pooling, concurrency gating). 243+ tests.
 
 ### PDF Post-Processing Accuracy - COMPLETE (Session 276)
