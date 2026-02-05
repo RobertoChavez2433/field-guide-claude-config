@@ -1,13 +1,24 @@
 # Session State
 
-**Last Updated**: 2026-02-05 | **Session**: 289
+**Last Updated**: 2026-02-05 | **Session**: 292
 
 ## Current Phase
-- **Phase**: Regression Recovery COMPLETE
-- **Status**: All 6 phases implemented and verified. 690/690 tests pass.
-- **Plan**: `.claude/plans/pdf-extraction-regression-recovery-plan.md`
+- **Phase**: Plan Review & Merge Complete
+- **Status**: Original table-structure-analyzer plan reviewed via brainstorming; merged with regression-recovery plan into `pdf-table-structure-analyzer-v2.md`.
+- **Plan**: `.claude/plans/pdf-table-structure-analyzer-v2.md`
 
 ## Recent Sessions
+
+### Session 292 (2026-02-05)
+**Work**: Comprehensive brainstorming review of `pdf-table-structure-analyzer-plan.md`. Key decisions: (1) DP dropped — two-pass linear scan sufficient, (2) Column priors simplified to anchor-based correction (Layers 1-3, Layer 4 deferred), (3) 5 row types added (HEADER, DATA, BOILERPLATE, CONTINUATION, SECTION_HEADER), (4) Cross-multiplication validation (detection only), (5) Adaptive upgrade for priors integration. Created merged plan v2 combining regression recovery + analyzer improvements.
+**Commits**: pending (plan file only)
+**Next**: Review merged plan, implement Phase 1 (Row Classifier)
+
+### Session 291 (2026-02-05)
+**Work**: Completed missing items from `pdf-extraction-regression-recovery-plan.md`: build metadata added to DebugLogger session header; preprocessing fallback + re-OCR source logging in PDF import summary; deprecated `preprocessLightweight()` redirecting to fallback; expanded `cleanOcrArtifacts` with gridline/quote cleanup and new tests; added header primary keyword gating in TableLocator to skip section headings; added detailed header-element logging in TableExtractor; added batch-level gating for column shifts using numeric-unit ratio; added tests (table_locator + post_process_normalization + DebugLogger).
+**Commits**: pending
+**Tests**: not run
+**Next**: Run targeted tests and re-import Springfield PDF to confirm startY/header and item count improvements.
 
 ### Session 289 (2026-02-05)
 **Work**: Implemented full 6-phase PDF extraction regression recovery plan via parallel agents. Phase 0: Observability (build metadata, preprocessing logging, diagnostics fields). Phase 1: Preprocessing reliability (fallback binarization, re-OCR uses preprocessed images). Phase 2: OCR artifact cleanup (brackets, dashes, tildes, curly quotes removed from item numbers). Phase 3: Header detection (multi-line normalization, bare "NO" removed, all 6 columns). Phase 4: Column shift prevention (page number detection, batch-level validation). Phase 5: Regression guards (Springfield baseline >= 85, numeric validation, extraction metrics). 25 files modified (13 production + 12 test), +3294/-240 lines.
@@ -184,7 +195,7 @@ Migrated from flutter_tesseract_ocr to flusseract for Windows support. 6 phases.
 
 ## Active Plans
 
-- None — all plans complete. Next: test Springfield PDF to measure real-world improvement.
+- **PDF Table Structure Analyzer v2**: `.claude/plans/pdf-table-structure-analyzer-v2.md` — Merged plan combining regression recovery + new analyzer. 6 phases. Ready for implementation.
 
 ## Deferred Plans
 - **AASHTOWARE Integration**: `.claude/backlogged-plans/AASHTOWARE_Implementation_Plan.md` - Integration with state DOT system
