@@ -14,6 +14,11 @@ Archive: @.claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [DATA] 2026-02-04: else-if Chain Blocks Multi-Category Keyword Matching
+**Pattern**: Using `else if` chain in keyword matching prevents independent elements from matching different categories
+**Prevention**: Use independent `if` + `continue` pattern; each element checks all categories before moving to next
+**Ref**: @lib/features/pdf/services/table_extraction/header_column_detector.dart:228
+
 ### [ASYNC] 2026-01-21: Async Context Safety
 **Pattern**: Using context after await without mounted check
 **Prevention**: Always `if (!mounted) return;` before setState/context after await
@@ -67,10 +72,6 @@ Archive: @.claude/logs/defects-archive.md
 ### [CONFIG] 2026-01-19: Supabase Instance Access
 **Pattern**: Accessing Supabase.instance without checking configuration
 **Prevention**: Always check `SupabaseConfig.isConfigured` before accessing Supabase.instance
-
-### [CONFIG] 2026-01-14: flutter_secure_storage v10 Changes
-**Pattern**: Using deprecated `encryptedSharedPreferences` option
-**Prevention**: Remove option - v10 uses custom ciphers by default, auto-migrates data
 
 ### [FLUTTER] 2026-01-18: Deprecated Flutter APIs
 **Pattern**: Using deprecated APIs (WillPopScope, withOpacity)

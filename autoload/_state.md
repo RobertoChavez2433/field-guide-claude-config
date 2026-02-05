@@ -1,12 +1,80 @@
 # Session State
 
-**Last Updated**: 2026-02-04 | **Session**: 283
+**Last Updated**: 2026-02-04 | **Session**: 284
 
 ## Current Phase
-- **Phase**: Testing
-- **Status**: Comprehensive logging system implemented, Springfield PDF needs re-test with new logging
+- **Phase**: Implementing
+- **Status**: Springfield PDF column detection fixes applied, needs rebuild and re-test
 
 ## Recent Sessions
+
+### Session 284 (2026-02-04) - EXTENSIVE CONTEXT FOR NEXT SESSION
+**Work**: Springfield PDF column detection improvements from `column-detection-improvements-plan.md`
+**Commits**: pending (23 modified files, 675 insertions)
+
+#### What Was Done
+1. **Fix 1**: Multi-row header combining in `table_extractor.dart:_extractHeaderRowElements()` - iterates ALL `headerRowYPositions` instead of just `.first`
+2. **Fix 2**: `kHeaderYTolerance` 15→25 in `table_extractor.dart:58`
+3. **Fix 3**: Added "DESCRIPTION OF WORK" to `_descKeywords` in `header_column_detector.dart:47`
+4. **Fix 4**: OCR punctuation normalization in `_containsAny()` - strips leading/trailing `'"\`.,;:()`
+5. **Fix 5**: Added `'EST QUANTITY'` to `_qtyKeywords` in `header_column_detector.dart:65`
+6. **Fix 6**: `kHeaderXTolerance` 15→25 in `header_column_detector.dart:88`
+7. **Backwards OCR detection**: `_detectAndFixReversedText()` added to `tesseract_ocr_engine.dart` - detects reversed text by scoring forward/reversed against dollar patterns, common words, capitalized words
+8. **Comprehensive logging**: Added `DebugLogger.pdf()` calls to `column_detector.dart`, `header_column_detector.dart`, `line_column_detector.dart`
+
+#### What's Still Broken (MUST FIX NEXT SESSION)
+1. **CRITICAL: `_findHeaderKeywords()` uses else-if chain** at `header_column_detector.dart:228-246` - logging agent REVERTED the if+continue fix back to else-if. Must change `else if` to `if` with `continue` after each match. This is why only 4/6 keywords match.
+2. **Per-page column fallback**: Global header detection works (method:header, 66.7%) but per-page extraction still uses fallback. Need to investigate how `table_extractor.dart` applies detected columns to pages.
+3. **Only 87/131 items extracted** (67%) - expected 131 items across 6 pages (items 1-131). Missing ~44 items.
+
+#### Springfield PDF Details
+- **File**: `864130 Springfield DWSRF Water System Improvements CTC [16-23] Pay Items.pdf`
+- **Location**: `Pre-devolopment and brainstorming/Screenshot examples/Companies IDR Templates and examples/Pay items and M&P/`
+- **Also on Desktop**: `C:\Users\rseba\OneDrive\Desktop\864130 Springfield...`
+- **Pages**: 6 (page 1 has boilerplate + first 5 items at bottom, pages 2-5 have items with gridlines, page 6 has last items + total row)
+- **Items**: 131 total (items 1-131)
+- **Header format** (split across 2 lines):
+  ```
+  Line 1: Item    Description    Unit    Est.        Unit Price    Bid Amount
+  Line 2: No.                           Quantity
+  ```
+- **6 columns with CLEAR GRIDLINES**: Item No., Description, Unit, Est. Quantity, Unit Price, Bid Amount
+- **Page 1 boilerplate**: SECTION 00 41 00, BID FORM, ARTICLE 1-3 text before table
+- **Page 6 backwards OCR**: `ez'926'288'z$:suall p!8 acud lun llv lo lElol` = "Total of All Unit Price Bid Items:$7,882,926.73" reversed
+- **Total row**: "Total of All Unit Price Bid Items: $7,882,926.73" should be excluded from extraction
+
+#### Extraction Metrics History
+| Metric | Before Fixes | After Fixes | Target |
+|--------|-------------|-------------|--------|
+| Column Method | fallback | header | header |
+| Confidence | 16.7% | 66.7% | >= 83% |
+| Keywords Found | 2/6 | 4/6 | 6/6 |
+| Items Extracted | 87 | 87 | 131 |
+| Success Rate | 69% | 69% | > 90% |
+
+#### Key Files to Check
+| File | What to Fix |
+|------|------------|
+| `header_column_detector.dart:228-246` | Change else-if → if+continue in `_findHeaderKeywords()` |
+| `table_extractor.dart` | Investigate per-page column fallback |
+| `column_detector.dart` | Orchestrates header+line detection |
+| `line_column_detector.dart` | Gridline detection (PDF has clear gridlines!) |
+| `tesseract_ocr_engine.dart:490-536` | New `_detectAndFixReversedText()` method |
+
+#### Test Fixtures
+- `test/features/pdf/table_extraction/fixtures/springfield_*.json`
+- `test/features/pdf/table_extraction/springfield_integration_test.dart`
+- `test/features/pdf/services/regex_fallback_parser_springfield_test.dart`
+
+#### Debug Logs Location
+`Troubleshooting/Detailed App Wide Logs/session_2026-02-04_22-20-07/` (most recent with fixes)
+
+#### User Requirements
+- All parsing logic should be GENERAL PURPOSE, not Springfield-specific
+- Gridlines should be leveraged for column detection
+- Need boilerplate filtering for page 1 legal text
+- Need total row exclusion logic
+- User wants to see extensive data in logs for debugging
 
 ### Session 283 (2026-02-04)
 **Work**: Implemented comprehensive app-wide debug logging system (DebugLogger class). Always-on file logging to `Troubleshooting/Detailed App Wide Logs/` with 9 category-specific log files (ocr.log, pdf_import.log, sync.log, database.log, auth.log, navigation.log, ui.log, errors.log, app_session.log). Integrated into main.dart, ocr_engine_factory, sync_orchestrator, database_service, table_extractor. Created test suite (5 tests pass), documentation (DEBUG_LOGGING_GUIDE.md, IMPLEMENTATION_SUMMARY.md, QUICK_REFERENCE.md). Research agents analyzed entire codebase logging gaps. Planning agent saved comprehensive-logging-plan.md.
@@ -52,21 +120,6 @@
 **Work**: Implemented PRs 4-6 from Table-Aware PDF Extraction V3 Completion plan. PR4: Progress UI Wiring - PdfImportProgressManager for dialog state, wired into project_setup_screen and quantities_screen, users see stage-by-stage feedback. PR5: Integration Tests + Fixtures - Springfield fixtures (3 pages), FixtureLoader utility, 6 integration tests validating full pipeline. PR6: Cleanup + Deprecation - @Deprecated on OcrRowParser with migration guidance, comprehensive diagnostic logging in PdfImportService (success stats, fallback reasons). 787 PDF tests pass. Table-Aware PDF Extraction V3 Completion plan COMPLETE.
 **Commits**: `a22c87d`
 **Ref**: @.claude/plans/table-aware-pdf-extraction-v3-completion.md
-
-### Session 274 (2026-02-03)
-**Work**: Implemented PRs 1-3 from Table-Aware PDF Extraction V3 Completion plan. PR1: Column Naming + Dimension Fix - line-based columns get semantic names (itemNumber, description, etc.) via ratio-based mapping, TableExtractor uses actual page image dimensions (pageImageSizes) instead of hardcoded 800x1100. PR2: Cell-Level Re-OCR - CellExtractor.extractRowsWithReOcr() detects merged OCR blocks spanning multiple columns and re-OCRs each cell region separately using MlKitOcrService.recognizeRegion(), image caching per page, usedCellReOcr flag for diagnostics. PR3: Row Boundary Detection - new RowBoundaryDetector for horizontal grid line detection, CellExtractor.extractRowsWithBoundaries() uses detected row boundaries when provided (fallback to Y-clustering). Code review: PR1 PASS, PR2 PASS, PR3 CONDITIONAL PASS (building block, not yet wired into pipeline). 218 table extraction tests pass.
-**Commits**: `2bc588e` (PR3), `cbb0f8c` (PRs 1-2)
-**Ref**: @.claude/plans/table-aware-pdf-extraction-v3-completion.md
-
-### Session 273 (2026-02-03)
-**Work**: Implemented PRs 9-10 from Table-Aware PDF Extraction V3 plan using frontend-flutter-specialist-agent and qa-testing-agent with skills. PR9: UI Integration - PdfImportProgressDialog widget with stage-by-stage feedback (7 stages), wired TableExtractor into PdfImportService with progress callbacks, 12 new widget tests. PR10: Cleanup & Polish - deprecated OcrRowReconstructor (kept for fallback), added diagnostic logging to TableExtractor, added convenience methods to ColumnBoundaries/ColumnDef (width, centerX, getColumn, totalWidth), 11 new integration tests. Table-Aware PDF Extraction V3 plan COMPLETE.
-**Commits**: `db11078`
-**Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
-
-### Session 272 (2026-02-03)
-**Work**: Implemented PRs 7-8 from Table-Aware PDF Extraction V3 plan using parallel pdf-agents with TDD skills. PR7: TableRowParser - converts TableRow cells to ParsedBidItem with cell-to-typed-field parsing, header row skipping (ITEM/NO./DESCRIPTION keywords), OCR artifact cleanup (S→$, pipes, accented chars), confidence scoring (5 components × 0.2 = max 1.0), warning generation, 27 new tests. PR8: TableExtractor orchestrator - wires all 4 stages (TableLocator → ColumnDetector → CellExtractor → TableRowParser), progress callbacks (7 ExtractionStage values), TableExtractionDiagnostics collection, graceful degradation, 19 new tests. 179 total table extraction tests pass. Analyzer clean.
-**Commits**: `7eeb531`
-**Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
 
 ## Completed Plans (Recent)
 

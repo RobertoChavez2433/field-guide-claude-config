@@ -6,6 +6,15 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 274 (2026-02-03)
+Implemented PRs 1-3 from Table-Aware PDF Extraction V3 Completion. PR1: Column naming + dimension fix. PR2: Cell-level re-OCR. PR3: Row boundary detection. 218 tests pass. `2bc588e`, `cbb0f8c`
+
+### Session 273 (2026-02-03)
+Implemented PRs 9-10 from Table-Aware PDF Extraction V3. PR9: UI integration (PdfImportProgressDialog). PR10: Cleanup & polish (deprecated OcrRowReconstructor, diagnostic logging). `db11078`
+
+### Session 272 (2026-02-03)
+Implemented PRs 7-8 from Table-Aware PDF Extraction V3. PR7: TableRowParser (cell-to-typed-field parsing, confidence scoring). PR8: TableExtractor orchestrator (4-stage pipeline). 179 tests pass. `7eeb531`
+
 ### Session 271 (2026-02-02)
 Implemented PRs 5-6 from Table-Aware PDF Extraction V3. PR5: ColumnDetector unified orchestrator. PR6: CellExtractor with recognizeRegion(). 35 new tests. `e7479a4`
 

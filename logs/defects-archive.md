@@ -4,6 +4,10 @@ Historical defects moved from defects.md or already fixed. Reference only.
 
 ---
 
+### [CONFIG] 2026-01-14: flutter_secure_storage v10 Changes (archived 2026-02-04)
+**Pattern**: Using deprecated `encryptedSharedPreferences` option
+**Prevention**: Remove option - v10 uses custom ciphers by default, auto-migrates data
+
 ## Archived Active Patterns (2026-01)
 
 These were active patterns that didn't make the top 15 in defects.md.
