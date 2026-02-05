@@ -1,12 +1,38 @@
 # Session State
 
-**Last Updated**: 2026-02-04 | **Session**: 284
+**Last Updated**: 2026-02-04 | **Session**: 285
 
 ## Current Phase
 - **Phase**: Implementing
-- **Status**: Springfield PDF column detection fixes applied, needs rebuild and re-test
+- **Status**: Springfield PDF extraction fixes applied (3 of 4 tasks done), 5 test failures need fixing, then rebuild+test
 
 ## Recent Sessions
+
+### Session 285 (2026-02-04)
+**Work**: Systematic debugging of Springfield PDF extraction (87/131 items). Root cause analysis via 6 research agents. Applied 3 fixes: (1) Header Y position filtering in table_extractor.dart - filters headerRowYPositions to within 100px of startY (was collecting 11 Y positions, should be ~2), (2) else-if→if+continue in header_column_detector.dart _findHeaderKeywords(), (3) Cell assignment tolerance in cell_extractor.dart - 5px overlap tolerance + nearest-column fallback. TableLocator now limits header Y positions to first page only.
+**Commits**: pending (7 modified files, 609 insertions)
+
+#### Key Findings from Debug Logs
+- App did NOT crash (errors.log empty) - "Lost connection" was just app close
+- OCR completed: 1,239 elements, 74.8% confidence, 6 pages at 300 DPI
+- **ROOT CAUSE**: 11 headerRowYPositions detected (should be 2), causing data row elements to dilute header keyword matching
+- Only 4/6 columns found: `[unit, unitPrice, description, bidAmount]` - MISSING itemNumber and quantity
+- 133 rows found, 87 items extracted (69.2% success), 242 warnings
+
+#### Remaining Work (MUST DO NEXT SESSION)
+1. **Fix 5 failing TableExtractor tests** - Agent was working on this (a5477e0). Tests fail because: (a) MockColumnDetector doesn't capture firstHeaderRowElements properly, (b) Diagnostics tests expect old row counts. The test file already has updated expected values for diagnostics (lines 391, 431, 500-502), but mock capture needs fixing.
+2. **Build and test Springfield PDF** - After tests pass, run app and import Springfield PDF to verify improvement
+3. **Target**: >100/131 items (was 87), 6/6 columns detected (was 4/6)
+
+#### Files Modified
+| File | Change |
+|------|--------|
+| `table_extractor.dart` | `_extractHeaderRowElements()` filters Y positions to within 100px of startY |
+| `table_locator.dart` | `_identifyHeaderRows()` limits headers to first page only |
+| `header_column_detector.dart` | `_findHeaderKeywords()` else-if → if+continue |
+| `cell_extractor.dart` | 5px tolerance + nearest-column fallback + logging |
+| `table_extractor_test.dart` | New header filtering tests + updated diagnostics expectations |
+| `table_locator_test.dart` | New Springfield multi-page header test |
 
 ### Session 284 (2026-02-04) - EXTENSIVE CONTEXT FOR NEXT SESSION
 **Work**: Springfield PDF column detection improvements from `column-detection-improvements-plan.md`
@@ -115,11 +141,6 @@
 **Work**: Implemented PDF Post-Processing Accuracy Plan (5 phases) using pdf-agents with TDD and PDF skills. Phase 1: PostProcessEngine scaffolding + raw data capture. Phase 2: Normalization + type enforcement (centralized OCR cleanup). Phase 3: Consistency & inference (qty/price/amount validation, LS handling). Phase 4: Split/multi-value & column-shift repairs. Phase 5: Dedupe, sequencing, UI review flags. Code reviews: post-processing pipeline 9/10 (all PASS), commit a22c87d 8/10 (DRY violation identified). 182 new tests, all pass. Analyzer clean.
 **Commits**: `6a0a910`
 **Ref**: @.claude/plans/pdf-post-processing-accuracy-plan.md
-
-### Session 275 (2026-02-03)
-**Work**: Implemented PRs 4-6 from Table-Aware PDF Extraction V3 Completion plan. PR4: Progress UI Wiring - PdfImportProgressManager for dialog state, wired into project_setup_screen and quantities_screen, users see stage-by-stage feedback. PR5: Integration Tests + Fixtures - Springfield fixtures (3 pages), FixtureLoader utility, 6 integration tests validating full pipeline. PR6: Cleanup + Deprecation - @Deprecated on OcrRowParser with migration guidance, comprehensive diagnostic logging in PdfImportService (success stats, fallback reasons). 787 PDF tests pass. Table-Aware PDF Extraction V3 Completion plan COMPLETE.
-**Commits**: `a22c87d`
-**Ref**: @.claude/plans/table-aware-pdf-extraction-v3-completion.md
 
 ## Completed Plans (Recent)
 

@@ -4,6 +4,12 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-04 (Session 285)
+- Springfield PDF Extraction Debugging: Systematic root cause analysis via 6 research agents. Found ROOT CAUSE: 11 headerRowYPositions (should be 2) diluting keyword matching → only 4/6 columns detected. Applied 3 fixes: header Y filtering to startY±100px, else-if→if+continue in keyword matching, 5px cell tolerance + nearest-column fallback. 5 test failures remain to fix.
+
+### 2026-02-04 (Session 284)
+- Springfield PDF column detection improvements: 8 fixes applied (multi-row header combining, tolerance increases, keyword additions, OCR punctuation normalization, backwards OCR detection). Got to 4/6 keywords (66.7% confidence), 87/131 items.
+
 ### 2026-02-04 (Session 283)
 - Comprehensive Logging: Implemented DebugLogger with 9 category-specific log files (ocr, pdf, sync, db, auth, nav, ui, errors, app). Always-on file logging to Troubleshooting/Detailed App Wide Logs/. Integrated across app. 5 tests pass. Created 3 documentation files.
 

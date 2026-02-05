@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 275 (2026-02-03)
+Implemented PRs 4-6 from Table-Aware PDF Extraction V3 Completion. PR4: Progress UI Wiring. PR5: Integration Tests + Fixtures. PR6: Cleanup + Deprecation. 787 PDF tests pass. `a22c87d`
+
 ### Session 274 (2026-02-03)
 Implemented PRs 1-3 from Table-Aware PDF Extraction V3 Completion. PR1: Column naming + dimension fix. PR2: Cell-level re-OCR. PR3: Row boundary detection. 218 tests pass. `2bc588e`, `cbb0f8c`
 
