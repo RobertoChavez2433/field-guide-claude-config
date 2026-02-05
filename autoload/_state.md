@@ -1,12 +1,17 @@
 # Session State
 
-**Last Updated**: 2026-02-04 | **Session**: 281
+**Last Updated**: 2026-02-04 | **Session**: 282
 
 ## Current Phase
-- **Phase**: Ready for new work
-- **Status**: Windows OCR Accuracy Fix IMPLEMENTED (Phases 1-3)
+- **Phase**: Testing
+- **Status**: Springfield PDF extraction fixes - needs verification
 
 ## Recent Sessions
+
+### Session 282 (2026-02-04)
+**Work**: Debugged Springfield PDF extraction failure (0 items extracted). Root cause: Windows lightweight preprocessing skipped binarization, causing grid lines to be OCR'd as garbage characters. Fixes: (1) Full preprocessing on all platforms (removes grid lines via adaptive thresholding), (2) Added no-item-number regex pattern for Springfield format (`Description UNIT $PRICE $AMOUNT`), (3) TableLocator improvements - lowered kMinHeaderKeywords from 3 to 2, added multi-row header detection, fallback data-row pattern detection, new keyword variations. 200+ OCR tests pass, analyzer clean (only info-level prints remain).
+**Commits**: pending
+**Next**: Test Springfield PDF import with fixes, verify extraction works
 
 ### Session 281 (2026-02-04)
 **Work**: Implemented Windows OCR Accuracy Fix (Phases 1-3). Phase 1: PNG format for all platforms (was JPEG 80% on Windows). Phase 2: Adaptive DPI based on page count (300/250/200 for <=10/<=25/>25 pages). Phase 3: Already implemented (lightweight preprocessing). Code review of working tree 7.5/10 - 2 critical issues (RootIsolateToken null safety, silent HOCR errors), 5 major suggestions. Updated tech stack docs with OCR packages, custom packages section, debug commands.
