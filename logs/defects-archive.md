@@ -4,6 +4,10 @@ Historical defects moved from defects.md or already fixed. Reference only.
 
 ---
 
+### [FLUTTER] 2026-01-18: Deprecated Flutter APIs (archived 2026-02-04)
+**Pattern**: Using deprecated APIs (WillPopScope, withOpacity)
+**Prevention**: `WillPopScope` -> `PopScope`; `withOpacity(0.5)` -> `withValues(alpha: 0.5)`
+
 ### [CONFIG] 2026-01-14: flutter_secure_storage v10 Changes (archived 2026-02-04)
 **Pattern**: Using deprecated `encryptedSharedPreferences` option
 **Prevention**: Remove option - v10 uses custom ciphers by default, auto-migrates data

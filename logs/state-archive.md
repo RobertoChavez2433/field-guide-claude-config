@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 276 (2026-02-04)
+Implemented PDF Post-Processing Accuracy Plan (5 phases) using pdf-agents with TDD. PostProcessEngine scaffolding, normalization + type enforcement, consistency & inference, split/multi-value repairs, dedupe + sequencing. 182 new tests. `6a0a910`
+
 ### Session 275 (2026-02-03)
 Implemented PRs 4-6 from Table-Aware PDF Extraction V3 Completion. PR4: Progress UI Wiring. PR5: Integration Tests + Fixtures. PR6: Cleanup + Deprecation. 787 PDF tests pass. `a22c87d`
 

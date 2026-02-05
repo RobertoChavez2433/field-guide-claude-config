@@ -14,6 +14,11 @@ Archive: @.claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [DATA] 2026-02-04: Substring Keyword Matching Causes False Positives
+**Pattern**: Using `String.contains()` for keyword matching allows substring false positives ("BIDDER" matches "BID", "PRICES" matches "PRICE")
+**Prevention**: Use word-boundary matching (RegExp `\bKEYWORD\b`) for single-word patterns; multi-word patterns can use contains safely
+**Ref**: @lib/features/pdf/services/table_extraction/table_locator.dart:299
+
 ### [DATA] 2026-02-04: else-if Chain Blocks Multi-Category Keyword Matching
 **Pattern**: Using `else if` chain in keyword matching prevents independent elements from matching different categories
 **Prevention**: Use independent `if` + `continue` pattern; each element checks all categories before moving to next
@@ -72,10 +77,6 @@ Archive: @.claude/logs/defects-archive.md
 ### [CONFIG] 2026-01-19: Supabase Instance Access
 **Pattern**: Accessing Supabase.instance without checking configuration
 **Prevention**: Always check `SupabaseConfig.isConfigured` before accessing Supabase.instance
-
-### [FLUTTER] 2026-01-18: Deprecated Flutter APIs
-**Pattern**: Using deprecated APIs (WillPopScope, withOpacity)
-**Prevention**: `WillPopScope` -> `PopScope`; `withOpacity(0.5)` -> `withValues(alpha: 0.5)`
 
 ---
 

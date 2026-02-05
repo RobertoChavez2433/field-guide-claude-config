@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-04 (Session 286)
+- Tested Springfield PDF extraction - no improvement (85/131, down from 87). Root cause: TableLocator's startY=1600.5 points at boilerplate text containing "unit prices" keywords, not real table header. Also found `_containsAny()` substring matching bug. Created general-purpose header-detection-hardening-plan.md with 3 layers: word-boundary matching, keyword density gating, data-row lookahead. Identified 18 pre-existing test failures.
+
 ### 2026-02-04 (Session 285)
 - Springfield PDF Extraction Debugging: Systematic root cause analysis via 6 research agents. Found ROOT CAUSE: 11 headerRowYPositions (should be 2) diluting keyword matching → only 4/6 columns detected. Applied 3 fixes: header Y filtering to startY±100px, else-if→if+continue in keyword matching, 5px cell tolerance + nearest-column fallback. 5 test failures remain to fix.
 

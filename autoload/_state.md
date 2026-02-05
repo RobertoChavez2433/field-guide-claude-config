@@ -1,12 +1,30 @@
 # Session State
 
-**Last Updated**: 2026-02-04 | **Session**: 285
+**Last Updated**: 2026-02-04 | **Session**: 286
 
 ## Current Phase
-- **Phase**: Implementing
-- **Status**: Springfield PDF extraction fixes applied (3 of 4 tasks done), 5 test failures need fixing, then rebuild+test
+- **Phase**: Planning
+- **Status**: Header detection hardening plan created. 18 pre-existing test failures. App tested - extraction still at 85/131 (65%).
 
 ## Recent Sessions
+
+### Session 286 (2026-02-04)
+**Work**: Diagnosed why Springfield PDF extraction didn't improve (85/131 items, down from 87). Root cause: TableLocator sets startY=1600.5 at boilerplate text "3.01 A. Bidder will perform the following Work at the indicated unit prices:" which contains "Unit" and "Price" keywords. The REAL table header ("Item No.", "Description", etc.) is ~150px below, outside the 100px Y-filter. Also found `_containsAny()` uses substring matching ("BIDDER" matches "BID"). Created general-purpose header detection hardening plan with 3 layers: (1) word-boundary keyword matching, (2) keyword density gating, (3) data-row lookahead confirmation.
+**Commits**: pending
+**Plan**: `.claude/plans/header-detection-hardening-plan.md`
+
+#### Key Findings
+- Header is ONE row with wrapped text in some cells (not 2 separate rows)
+- startY=1600.5 points at boilerplate, real header at ~Y=1700+
+- `_containsAny()` substring bug: "BIDDER"→"BID", "PRICES"→"PRICE"
+- Only 2/6 keywords found (was 4/6 before, regressed due to Y-filter collecting wrong elements)
+- Pages 2-6 gridlines work great (90% confidence, 7 lines), page 1 has no gridlines
+- 18 pre-existing test failures across 6 files (cell_extractor, post_process, springfield integration)
+
+#### Next Session (MUST DO)
+1. **Implement header-detection-hardening-plan.md** (10 steps)
+2. **Fix 18 failing tests** (after header fix, Springfield integration tests should auto-fix)
+3. **Rebuild and test** - Target: >100/131 items, 6/6 columns
 
 ### Session 285 (2026-02-04)
 **Work**: Systematic debugging of Springfield PDF extraction (87/131 items). Root cause analysis via 6 research agents. Applied 3 fixes: (1) Header Y position filtering in table_extractor.dart - filters headerRowYPositions to within 100px of startY (was collecting 11 Y positions, should be ~2), (2) else-if→if+continue in header_column_detector.dart _findHeaderKeywords(), (3) Cell assignment tolerance in cell_extractor.dart - 5px overlap tolerance + nearest-column fallback. TableLocator now limits header Y positions to first page only.
@@ -137,51 +155,25 @@
 **Commits**: `17a0773`
 **Ref**: @.claude/plans/ocr-tesseract-migration-plan.md
 
-### Session 276 (2026-02-04)
-**Work**: Implemented PDF Post-Processing Accuracy Plan (5 phases) using pdf-agents with TDD and PDF skills. Phase 1: PostProcessEngine scaffolding + raw data capture. Phase 2: Normalization + type enforcement (centralized OCR cleanup). Phase 3: Consistency & inference (qty/price/amount validation, LS handling). Phase 4: Split/multi-value & column-shift repairs. Phase 5: Dedupe, sequencing, UI review flags. Code reviews: post-processing pipeline 9/10 (all PASS), commit a22c87d 8/10 (DRY violation identified). 182 new tests, all pass. Analyzer clean.
-**Commits**: `6a0a910`
-**Ref**: @.claude/plans/pdf-post-processing-accuracy-plan.md
-
 ## Completed Plans (Recent)
 
+### Header Detection Hardening - PLANNED (Session 286)
+3-layer fix: word-boundary matching, keyword density gating, data-row lookahead. Plan at `.claude/plans/header-detection-hardening-plan.md`
+
 ### Windows OCR Accuracy Fix - IMPLEMENTED (Session 281)
-3 phases addressing Windows safe mode degradations. Phase 1: PNG format. Phase 2: Adaptive DPI. Phase 3: Lightweight preprocessing (pre-existing). Code review 7.5/10. Phase 4 testing pending.
+3 phases addressing Windows safe mode degradations. Phase 1: PNG format. Phase 2: Adaptive DPI. Phase 3: Lightweight preprocessing (pre-existing). Code review 7.5/10.
 
 ### Flusseract OCR Migration - COMPLETE (Sessions 279-280)
-Migrated from flutter_tesseract_ocr to flusseract for Windows support. Phase 1: Lifecycle fixes (isPooled property, disposal). Phase 2: Dependency swap. Phase 3: Engine adapter (PixImage API). Phase 4: Quality safeguards (21 config tests). Phase 5: Legacy cleanup (ML Kit references). Phase 6: Performance hardening (pooled disposal fix). Code review 8.5/10. 200+ OCR tests pass.
+Migrated from flutter_tesseract_ocr to flusseract for Windows support. 6 phases. Code review 8.5/10. 200+ OCR tests pass.
 
-### Tesseract OCR Migration (ML Kit → flutter_tesseract_ocr) - COMPLETE (Sessions 277-278)
-6 phases replacing ML Kit with Tesseract. Phase 1: OCR abstraction layer. Phase 2: Tesseract dependencies. Phase 3: Tesseract adapter. Phase 4: Input quality (PSM, whitelist/blacklist). Phase 5: ML Kit removal. Phase 6: Performance hardening (instance pooling, concurrency gating). 243+ tests.
+### Tesseract OCR Migration - COMPLETE (Sessions 277-278)
+6 phases replacing ML Kit with Tesseract. 243+ tests.
 
 ### PDF Post-Processing Accuracy - COMPLETE (Session 276)
-5 phases improving bid item extraction quality. Phase 1: PostProcessEngine scaffolding. Phase 2: Normalization + type enforcement. Phase 3: Consistency & inference. Phase 4: Split/multi-value repairs. Phase 5: Dedupe + sequencing. 182 new tests.
+5 phases improving bid item extraction quality. 182 new tests.
 
-### Table-Aware PDF Extraction V3 Completion - COMPLETE (Sessions 274-275)
-6 PRs finishing V3 pipeline. PR1: Column naming + dimensions. PR2: Cell-level re-OCR. PR3: Row boundary detection. PR4: Progress UI wiring. PR5: Integration tests + fixtures. PR6: Cleanup + deprecation. 787 PDF tests pass.
-
-### Table-Aware PDF Extraction V3 - COMPLETE (Sessions 269-273)
-10 PRs implementing unified TableExtractor pipeline. PR1-2: Foundation/Models + TableLocator. PR3-4: Column detection (header + line-based). PR5-6: Unified ColumnDetector + CellExtractor. PR7-8: TableRowParser + orchestrator. PR9-10: UI integration + cleanup. 200+ new tests.
-
-### OCR-First Restructure Plan v2 - COMPLETE (Sessions 263-265)
-PR 1: OCR diagnostics logging (5 new metrics, pipeline tags). PR 2: Guarded 200 DPI rendering (pixel/memory/time/page-count guardrails). PR 3: OCR Row Reconstruction (OcrElement, OcrRow, OcrRowReconstructor). PR 4: OCR Row Parser (confidence scoring, warning generation). PR 5: Image Preprocessing Enhancements (deskew, rotation, contrast). PR 6: Integration Tests (22 tests, 7 fixtures). Code review passed. 536 tests pass.
-
-### OCR Code Review Findings - COMPLETE (Session 262)
-PR 3: DRY/KISS refactors (threshold constants, consolidated detection). PR 4: Diagnostics + UX (metadata, confidence display). PR 5: Tests (47 comprehensive tests). Code review passed.
-
-### Robust PDF Extraction - COMPLETE (Sessions 259-261)
-Phase 1: ML Kit foundation (MlKitOcrService, PdfPageRenderer, ImagePreprocessor). Phase 2: Pipeline integration (needsOcr detection, _runOcrPipeline, metadata). Phase 3: Real PDF rendering via pdf_render, confidence tracking/aggregation. 390 tests pass.
-
-### Analyzer Findings Implementation Plan - COMPLETE (Session 256)
-5-phase plan: security rules (4), auto-disable mechanism, UTF-8 fixes (12 files), test splitting (2 large files), docs (3 new).
-
-### Conversation Analyzer - COMPLETE (Session 254)
-6 files implementing comprehensive session analysis: transcript_parser.py, pattern_extractors.py, analyze.md, analysis-report.md, conversation-analyzer.md (updated), hookify.md (updated). 5 analysis dimensions.
-
-### Skills Implementation - COMPLETE (Session 252)
-Created 5 skills: brainstorming (3 files), systematic-debugging (8 files), test-driven-development (4 files), verification-before-completion (3 files), interface-design (3 files). Updated 8 agents with skill references.
-
-### Analyzer Cleanup v3 - COMPLETE (Sessions 248-250)
-4 phases: Async safety, null comparisons, function declarations, super parameters. 30→0 analyzer issues.
+### Table-Aware PDF Extraction V3 - COMPLETE (Sessions 269-275)
+16 PRs implementing unified TableExtractor pipeline + completion. 787 PDF tests pass.
 
 ## Active Plans
 
