@@ -68,9 +68,11 @@ lib/
 | `verification-before-completion` | Evidence gate | qa-testing, code-review |
 | `interface-design` | Design system | frontend-flutter-specialist |
 | `pdf-processing` | CLI PDF analysis/debugging | pdf-agent |
-| `hookify` | Behavioral hooks for preventing unwanted patterns | All agents |
 
 Skills are loaded via `skills:` frontmatter in agent files. Claude auto-delegates to agents based on task description.
+
+## Hookify (Behavioral Guards)
+Hookify is a **plugin** (not a skill) that enforces project rules via pattern matching. Rules are defined in `.claude/hookify.*.local.md` files. See `.claude/plugins/hookify/` for the plugin and `writing-rules` skill.
 
 ## Session
 - `/resume-session` - Load HOT context only
