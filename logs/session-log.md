@@ -4,6 +4,15 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-05 (Session 289)
+- PDF Extraction Regression Recovery: Implemented full 6-phase plan via parallel agents. Phase 0: observability. Phase 1: preprocessing reliability. Phase 2: OCR artifact cleanup. Phase 3: header detection hardening. Phase 4: column shift prevention. Phase 5: regression guards. 690/690 tests pass. 25 files modified (+3294/-240 lines). App rebuilt, both repos pushed.
+
+### 2026-02-05 (Session 288)
+- PDF Pipeline Hardening Phases 2-3: Header detection hardening (density gating, word-boundary matching) and cross-page column bootstrapping. Superseded by Session 289 regression recovery.
+
+### 2026-02-05 (Session 287)
+- Root cause analysis of PDF extraction pipeline (8 root causes identified). Created 6-phase pipeline hardening plan. Completed Phase 1 (observability logging to 6 files).
+
 ### 2026-02-04 (Session 286)
 - Tested Springfield PDF extraction - no improvement (85/131, down from 87). Root cause: TableLocator's startY=1600.5 points at boilerplate text containing "unit prices" keywords, not real table header. Also found `_containsAny()` substring matching bug. Created general-purpose header-detection-hardening-plan.md with 3 layers: word-boundary matching, keyword density gating, data-row lookahead. Identified 18 pre-existing test failures.
 
