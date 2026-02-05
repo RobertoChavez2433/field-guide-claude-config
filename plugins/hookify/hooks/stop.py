@@ -14,29 +14,32 @@ from core.rule_engine import RuleEngine
 
 def main():
     """Process stop event."""
-    # Read event data from stdin
     try:
-        event_data = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        # No input or invalid JSON
+        # Read event data from stdin
+        try:
+            event_data = json.load(sys.stdin)
+        except (json.JSONDecodeError, ValueError):
+            print(json.dumps({"continue": True}))
+            return
+
+        stop_reason = event_data.get("stop_reason", "")
+        final_response = event_data.get("final_response", "")
+
+        # Initialize rule engine
+        engine = RuleEngine()
+
+        # Check rules
+        result = engine.check_rules(
+            event_type="stop",
+            tool_name="stop",
+            content=final_response
+        )
+
+        # Output result
+        print(json.dumps(result))
+    except Exception:
+        # Never crash - always return valid JSON so agent handoff succeeds
         print(json.dumps({"continue": True}))
-        return
-
-    stop_reason = event_data.get("stop_reason", "")
-    final_response = event_data.get("final_response", "")
-
-    # Initialize rule engine
-    engine = RuleEngine()
-
-    # Check rules
-    result = engine.check_rules(
-        event_type="stop",
-        tool_name="stop",
-        content=final_response
-    )
-
-    # Output result
-    print(json.dumps(result))
 
 
 if __name__ == "__main__":

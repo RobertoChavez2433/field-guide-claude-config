@@ -14,29 +14,31 @@ from core.rule_engine import RuleEngine
 
 def main():
     """Process post-tool-use event."""
-    # Read event data from stdin
     try:
-        event_data = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        # No input or invalid JSON
+        try:
+            event_data = json.load(sys.stdin)
+        except (json.JSONDecodeError, ValueError):
+            print(json.dumps({"continue": True}))
+            return
+
+        tool_name = event_data.get("tool_name", "")
+        tool_output = event_data.get("tool_output", "")
+
+        # Initialize rule engine
+        engine = RuleEngine()
+
+        # Check rules against output
+        result = engine.check_rules(
+            event_type="posttooluse",
+            tool_name=tool_name.lower(),
+            content=str(tool_output)
+        )
+
+        # Output result
+        print(json.dumps(result))
+    except Exception:
+        # Never crash - always return valid JSON so agent handoff succeeds
         print(json.dumps({"continue": True}))
-        return
-
-    tool_name = event_data.get("tool_name", "")
-    tool_output = event_data.get("tool_output", "")
-
-    # Initialize rule engine
-    engine = RuleEngine()
-
-    # Check rules against output
-    result = engine.check_rules(
-        event_type="posttooluse",
-        tool_name=tool_name.lower(),
-        content=str(tool_output)
-    )
-
-    # Output result
-    print(json.dumps(result))
 
 
 if __name__ == "__main__":

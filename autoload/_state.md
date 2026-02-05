@@ -1,12 +1,52 @@
 # Session State
 
-**Last Updated**: 2026-02-04 | **Session**: 286
+**Last Updated**: 2026-02-05 | **Session**: 288
 
 ## Current Phase
-- **Phase**: Planning
-- **Status**: Header detection hardening plan created. 18 pre-existing test failures. App tested - extraction still at 85/131 (65%).
+- **Phase**: Implementation (Phase 4 of 6)
+- **Status**: Phases 1-3 COMPLETE. Next: Phase 4 (Row Parser Robustness).
+- **Plan**: `.claude/plans/pdf-extraction-pipeline-hardening.md`
 
 ## Recent Sessions
+
+### Session 288 (2026-02-05)
+**Work**: Implemented Phase 2 (Header Detection Hardening) and Phase 3 (Cross-Page Column Bootstrapping). Phase 2: Added `_HeaderMatchResult` class with keyword density gating, refactored `_countHeaderKeywords` → `_analyzeHeaderKeywords`, added data-row lookahead confirmation, fixed `_containsAny` word-boundary matching in both table_locator.dart and header_column_detector.dart, tightened keyword lists (removed bare 'BID', 'NO'). 6 new tests + 20 existing tests fixed → 43/43 pass. Phase 3: Added `_bootstrapWeakPages` method to table_extractor.dart, bootstraps weak pages (confidence < 0.5) from strong line-detected pages (confidence >= 0.7). 4 new tests → 25/25 pass.
+**Commits**: pending (all changes uncommitted)
+**Plan**: `.claude/plans/pdf-extraction-pipeline-hardening.md`
+
+#### 6-Phase Plan Summary
+| Phase | Focus | Impact | Status |
+|-------|-------|--------|--------|
+| 1. Observability | Logging to all pipeline stages | Diagnostic | COMPLETE |
+| 2. Header Detection | Word-boundary, density, lookahead | +15-20% | COMPLETE |
+| 3. Column Bootstrap | Cross-page column inheritance | +5-8% | COMPLETE |
+| 4. Row Parser | Stop dropping rows, OCR items | +5-8% | NEXT |
+| 5. Post-Processing | Pattern-based repair | +2-5% | Pending |
+| 6. Test Stabilization | Fix 18 failures, regression guard | Verify | Pending |
+
+#### Files Modified (Session 288)
+| File | Phase | Changes |
+|------|-------|---------|
+| `table_locator.dart` | 2 | `_HeaderMatchResult`, `_analyzeHeaderKeywords`, word-boundary `_containsAny`, lookahead, keyword tightening |
+| `header_column_detector.dart` | 2 | Word-boundary `_containsAny` |
+| `table_extractor.dart` | 3 | `_bootstrapWeakPages()` cross-page column bootstrapping |
+| `table_locator_test.dart` | 2 | 6 new tests + 20 existing updated (43 total) |
+| `table_extractor_test.dart` | 3 | 4 new tests + mock helper (25 total) |
+
+#### Test Results (Session 288)
+- table_locator_test.dart: **43/43 pass**
+- table_extractor_test.dart: **25/25 pass**
+- Pre-existing failures in other files: 18 (cell_extractor, post_process, springfield integration) → Phase 6
+
+#### Next Session (MUST DO)
+1. **Rebuild and test Springfield PDF** to measure Phase 2+3 improvement
+2. **Implement Phase 4** - Row Parser Robustness (RC3, RC5, RC7)
+3. **Target after Phase 4**: 90-95% (118-124/131 items)
+
+### Session 287 (2026-02-05)
+**Work**: Full root cause analysis of PDF extraction pipeline (8 root causes identified). Created comprehensive 6-phase plan to fix Springfield extraction from 65% (85/131) to 95%+ (125+/131). Completed Phase 1: added DebugLogger.pdf() logging to 6 files (post_process_engine, splitter, consistency, dedupe, table_row_parser, table_locator) — ~20 logging calls total. Verified old header-detection-hardening-plan.md is 0% implemented, no conflicts.
+**Commits**: pending
+**Plan**: `.claude/plans/pdf-extraction-pipeline-hardening.md`
 
 ### Session 286 (2026-02-04)
 **Work**: Diagnosed why Springfield PDF extraction didn't improve (85/131 items, down from 87). Root cause: TableLocator sets startY=1600.5 at boilerplate text "3.01 A. Bidder will perform the following Work at the indicated unit prices:" which contains "Unit" and "Price" keywords. The REAL table header ("Item No.", "Description", etc.) is ~150px below, outside the 100px Y-filter. Also found `_containsAny()` uses substring matching ("BIDDER" matches "BID"). Created general-purpose header detection hardening plan with 3 layers: (1) word-boundary keyword matching, (2) keyword density gating, (3) data-row lookahead confirmation.
@@ -140,25 +180,13 @@
 **Commits**: `ed267db`
 **Ref**: @.claude/plans/ocr-tesseract-migration-plan.md
 
-### Session 279 (2026-02-04)
-**Work**: Implemented Flusseract OCR Migration Phases 1-3 using sequential pdf-agents. Phase 1: Cleanup - added isPooled property to OcrEngine, fixed pooled instance disposal (no-op for pooled, throws on double-dispose for non-pooled), added Tesseract initialization at app startup, added logging. Phase 2: Dependency swap - replaced flutter_tesseract_ocr with flusseract for Windows support, updated TesseractConfig and TesseractInitializer for flusseract API. Phase 3: Engine adapter - updated TesseractOcrEngine to use flusseract byte-based PixImage API, removed temp file operations, updated TesseractPageSegMode mapping, made dispose() idempotent. 164 OCR tests pass.
-**Commits**: `b5a38eb`
-**Ref**: @.claude/plans/ocr-tesseract-migration-plan.md
-
-### Session 278 (2026-02-04)
-**Work**: Implemented Tesseract OCR Migration Phases 4-6 using parallel pdf-agents. Phase 4: Input quality improvements - TesseractPageSegMode enum (5 modes), character whitelist/blacklist config, 45 new tests. Phase 5: ML Kit removal - removed google_mlkit_text_recognition dependency, deleted MlKitOcrEngine/MlKitOcrService, made Tesseract default, 151 OCR tests pass. Phase 6: Performance hardening - TesseractInstancePool for instance reuse, OcrConcurrencyGate for memory management, OcrPerformanceLogger for diagnostics, PHASE6_USAGE.md documentation, 38 new tests. Code review 7.5/10 - critical issue found: Phase 6 not wired into production. Fixed: updated pdf_import_service.dart and table_extractor.dart to use usePool: true. Total 243+ PDF tests pass.
-**Commits**: `bebd2d3`, `6da4de0`
-**Ref**: @.claude/plans/ocr-tesseract-migration-plan.md
-
-### Session 277 (2026-02-04)
-**Work**: Implemented Tesseract OCR Migration Plan Phases 1-3 using pdf-agents. Phase 1: OCR Abstraction Layer - OcrEngine interface, MlKitOcrEngine implementation, OcrEngineFactory, refactored CellExtractor/TableExtractor to use abstraction. Phase 2: Tesseract Dependencies - flutter_tesseract_ocr package, eng.traineddata asset (15MB), TesseractConfig for paths, TesseractInitializer for asset copying. Phase 3: Tesseract Adapter - TesseractOcrEngine with HOCR parsing for bounding boxes, OcrConfig for engine selection, xml package for parsing. Code review 8/10 (2 major issues fixed: barrel exports, OcrConfig wiring). 95 OCR tests pass.
-**Commits**: `17a0773`
-**Ref**: @.claude/plans/ocr-tesseract-migration-plan.md
+### Sessions 278-279 (2026-02-04)
+**Archived to**: `.claude/logs/state-archive.md` — Tesseract/Flusseract OCR Migration Phases 1-6
 
 ## Completed Plans (Recent)
 
-### Header Detection Hardening - PLANNED (Session 286)
-3-layer fix: word-boundary matching, keyword density gating, data-row lookahead. Plan at `.claude/plans/header-detection-hardening-plan.md`
+### PDF Pipeline Hardening - IN PROGRESS (Sessions 287-288)
+6-phase plan: observability, header detection, column bootstrap, row parser, post-processing, tests. Phases 1-3 complete. Plan at `.claude/plans/pdf-extraction-pipeline-hardening.md`. Supersedes `header-detection-hardening-plan.md`.
 
 ### Windows OCR Accuracy Fix - IMPLEMENTED (Session 281)
 3 phases addressing Windows safe mode degradations. Phase 1: PNG format. Phase 2: Adaptive DPI. Phase 3: Lightweight preprocessing (pre-existing). Code review 7.5/10.
@@ -177,7 +205,7 @@ Migrated from flutter_tesseract_ocr to flusseract for Windows support. 6 phases.
 
 ## Active Plans
 
-None
+- **PDF Pipeline Hardening** (Phase 2 next): `.claude/plans/pdf-extraction-pipeline-hardening.md`
 
 ## Deferred Plans
 - **AASHTOWARE Integration**: `.claude/backlogged-plans/AASHTOWARE_Implementation_Plan.md` - Integration with state DOT system

@@ -14,28 +14,30 @@ from core.rule_engine import RuleEngine
 
 def main():
     """Process user prompt submit event."""
-    # Read event data from stdin
     try:
-        event_data = json.load(sys.stdin)
-    except json.JSONDecodeError:
-        # No input or invalid JSON
+        try:
+            event_data = json.load(sys.stdin)
+        except (json.JSONDecodeError, ValueError):
+            print(json.dumps({"continue": True}))
+            return
+
+        user_prompt = event_data.get("user_prompt", "")
+
+        # Initialize rule engine
+        engine = RuleEngine()
+
+        # Check rules
+        result = engine.check_rules(
+            event_type="userpromptsubmit",
+            tool_name="userprompt",
+            content=user_prompt
+        )
+
+        # Output result
+        print(json.dumps(result))
+    except Exception:
+        # Never crash - always return valid JSON so agent handoff succeeds
         print(json.dumps({"continue": True}))
-        return
-
-    user_prompt = event_data.get("user_prompt", "")
-
-    # Initialize rule engine
-    engine = RuleEngine()
-
-    # Check rules
-    result = engine.check_rules(
-        event_type="userpromptsubmit",
-        tool_name="userprompt",
-        content=user_prompt
-    )
-
-    # Output result
-    print(json.dumps(result))
 
 
 if __name__ == "__main__":
