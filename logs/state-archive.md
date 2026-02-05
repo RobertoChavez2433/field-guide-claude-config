@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 271 (2026-02-02)
+Implemented PRs 5-6 from Table-Aware PDF Extraction V3. PR5: ColumnDetector unified orchestrator. PR6: CellExtractor with recognizeRegion(). 35 new tests. `e7479a4`
+
 ### Session 252 (2026-02-01)
 Implemented 5 skills (21 files): brainstorming, systematic-debugging, TDD, verification-before-completion, interface-design. Updated 8 agents with skill references.
 

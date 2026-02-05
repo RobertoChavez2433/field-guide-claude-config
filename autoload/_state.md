@@ -1,12 +1,17 @@
 # Session State
 
-**Last Updated**: 2026-02-04 | **Session**: 280
+**Last Updated**: 2026-02-04 | **Session**: 281
 
 ## Current Phase
 - **Phase**: Ready for new work
-- **Status**: Flusseract OCR Migration COMPLETE (All 6 phases)
+- **Status**: Windows OCR Accuracy Fix IMPLEMENTED (Phases 1-3)
 
 ## Recent Sessions
+
+### Session 281 (2026-02-04)
+**Work**: Implemented Windows OCR Accuracy Fix (Phases 1-3). Phase 1: PNG format for all platforms (was JPEG 80% on Windows). Phase 2: Adaptive DPI based on page count (300/250/200 for <=10/<=25/>25 pages). Phase 3: Already implemented (lightweight preprocessing). Code review of working tree 7.5/10 - 2 critical issues (RootIsolateToken null safety, silent HOCR errors), 5 major suggestions. Updated tech stack docs with OCR packages, custom packages section, debug commands.
+**Commits**: pending
+**Ref**: @.claude/plans/windows-ocr-accuracy-fix.md
 
 ### Session 280 (2026-02-04)
 **Work**: Implemented Flusseract OCR Migration Phases 4-6 using pdf-agents. Phase 4: OCR Quality Safeguards - verified DPI at 300, confirmed preprocessing integration, added 21 new configuration tests (no code changes needed). Phase 5: Legacy Cleanup - removed stale ML Kit references from 6 files, renamed ParserType.ocrRowParser→tableExtractor, fixed test mock for isPooled. Phase 6: Performance Hardening - verified instance pooling works with flusseract, fixed pooled disposal bug (dispose() now no-op for pooled instances), added disposeInternal() for pool-managed disposal, 37 Phase 6 tests pass. Code review 8.5/10 - 2 major suggestions (TesseractConfig fallback path, OcrConcurrencyGate integration) for future consideration. 200+ OCR tests pass. Migration COMPLETE.
@@ -53,12 +58,10 @@
 **Commits**: `7eeb531`
 **Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
 
-### Session 271 (2026-02-02)
-**Work**: Implemented PRs 5-6 from Table-Aware PDF Extraction V3 plan using parallel pdf-agents with TDD skills. PR5: ColumnDetector - unified orchestrator combining header-based and line-based detection with cross-validation, prefers line-based when methods disagree, falls back to header-based then standard ratios, confidence boosting for aligned methods. PR6: CellExtractor - groups OCR elements by Y-position into rows, assigns elements to columns based on X-position overlap, detects merged blocks spanning multiple columns, added recognizeRegion() to MlKitOcrService for cell-level re-OCR. 35 new tests (15 column + 20 cell), 133 total table extraction tests pass. Analyzer clean.
-**Commits**: `e7479a4`
-**Ref**: @.claude/plans/table-aware-pdf-extraction-v3.md
-
 ## Completed Plans (Recent)
+
+### Windows OCR Accuracy Fix - IMPLEMENTED (Session 281)
+3 phases addressing Windows safe mode degradations. Phase 1: PNG format. Phase 2: Adaptive DPI. Phase 3: Lightweight preprocessing (pre-existing). Code review 7.5/10. Phase 4 testing pending.
 
 ### Flusseract OCR Migration - COMPLETE (Sessions 279-280)
 Migrated from flutter_tesseract_ocr to flusseract for Windows support. Phase 1: Lifecycle fixes (isPooled property, disposal). Phase 2: Dependency swap. Phase 3: Engine adapter (PixImage API). Phase 4: Quality safeguards (21 config tests). Phase 5: Legacy cleanup (ML Kit references). Phase 6: Performance hardening (pooled disposal fix). Code review 8.5/10. 200+ OCR tests pass.
@@ -110,4 +113,4 @@ None
 - **Archive**: `.claude/logs/state-archive.md` (Sessions 193-252)
 - **Defects**: `.claude/autoload/_defects.md`
 - **Branch**: `main`
-- **Analyzer**: 0 issues
+- **Analyzer**: 5 issues (2 info, 3 warnings - pre-existing)
