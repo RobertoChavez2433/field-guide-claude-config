@@ -4,6 +4,10 @@ Historical defects moved from defects.md or already fixed. Reference only.
 
 ---
 
+### [E2E] 2026-01-25: Silent Skip with if(widget.exists) (archived 2026-02-06)
+**Pattern**: Using `if (widget.exists) { ... }` silently skips when widget not visible
+**Prevention**: Use `waitForVisible()` instead - let it fail explicitly if widget should exist
+
 ### [E2E] 2026-01-24: Test Helper Missing scrollTo() (archived 2026-02-06)
 **Pattern**: Calling `$(finder).tap()` on widgets below the fold
 **Prevention**: Always `$(finder).scrollTo()` before `$(finder).tap()` for form fields

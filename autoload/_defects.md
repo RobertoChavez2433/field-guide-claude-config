@@ -14,6 +14,11 @@ Archive: @.claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [DATA] 2026-02-06: OCR Used on Digital PDFs Without Trying Native Text First
+**Pattern**: `importBidSchedule()` always renders PDF to images and runs Tesseract OCR, even on digital PDFs with extractable native text. Produces ~72% confidence garbage. `extractRawText()` and `needsOcr()` exist but are dead code for bid schedules.
+**Prevention**: Always try native text extraction first (Syncfusion `extractTextLines()` with word-level bounds), fall back to OCR only when `needsOcr()` returns true
+**Ref**: @lib/features/pdf/services/pdf_import_service.dart:694 (OCR-first), :177 (extractRawText dead code), :263 (needsOcr dead code)
+
 ### [DATA] 2026-02-06: Adaptive Thresholding Destroys Clean PDF Images
 **Pattern**: Unconditional binarization (adaptive threshold blockSize=11, c=5) converts 300 DPI grayscale to binary, destroying 92% of image data including column headers
 **Prevention**: Only apply binarization to noisy scans/photos; clean PDF renders need grayscale + contrast only
@@ -42,10 +47,6 @@ Archive: @.claude/logs/defects-archive.md
 **Pattern**: Returning Provider from `create:` before async init completes
 **Prevention**: Add `isInitializing` flag, show loading state until false
 **Ref**: @lib/main.dart:365-378
-
-### [E2E] 2026-01-25: Silent Skip with if(widget.exists)
-**Pattern**: Using `if (widget.exists) { ... }` silently skips when widget not visible
-**Prevention**: Use `waitForVisible()` instead - let it fail explicitly if widget should exist
 
 ---
 

@@ -4,6 +4,12 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-06 (Session 303)
+- Deep diagnostic session on PDF extraction quality. Analyzed logs across 3 extraction runs (all producing garbage: 3-71 items with 13-31% invalid IDs). Launched 6 parallel research agents. Key findings: (1) binarization debate is a red herring — both approaches produce ~72% confidence garbage, (2) no word-level OCR confidence filtering exists, (3) these PDFs are NOT scanned (Session 226 confirmed native text works), (4) the pipeline always OCRs even digital PDFs. Wrote comprehensive redesign plan: native text extraction as primary path (Syncfusion TextWord -> OcrElement converter), OCR as fallback with confidence filtering + PSM tuning. Plan saved to `.claude/plans/2026-02-06-pdf-extraction-pipeline-redesign.md`.
+
+### 2026-02-06 (Session 302)
+- Implemented Phase 2+3 from OCR preprocessing fix plan. Numeric gate + post-processing safeguards. 612 tests pass.
+
 ### 2026-02-06 (Session 301)
 - Implemented Phase 1 (Remove Binarization) from OCR preprocessing fix plan. Removed adaptive thresholding from 3 functions in image_preprocessor.dart. All 202 OCR + 577 PDF tests pass. Manual verification pending.
 

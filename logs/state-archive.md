@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 298 (2026-02-06)
+Implemented Phase 3 (Anchor-Based Column Correction + Gridline Quality Scoring) and Phase 4 (Post-Processing Math Validation) from PDF Table Structure Analyzer v2.1 plan. Commit: `eafae91`.
+
 ### Session 297 (2026-02-05)
 Implemented Phase 1 (Row Classifier) and Phase 2 (Table Region Detector) from PDF Table Structure Analyzer v2.1 plan. RowClassification model (6 row types), RowClassifier with Phase 1A/1B. TableRegionDetector with two-pass linear scan, cross-page header confirmation, multi-table detection. 523/524 tests pass.
 
