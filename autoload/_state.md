@@ -1,6 +1,6 @@
 # Session State
 
-**Last Updated**: 2026-02-05 | **Session**: 295
+**Last Updated**: 2026-02-05 | **Session**: 296
 
 ## Current Phase
 - **Phase**: PDF Table Structure Analyzer v2.1 — Plan reviewed, ready for implementation
@@ -8,6 +8,10 @@
 - **Plan**: `.claude/plans/pdf-table-structure-analyzer-v2.md`
 
 ## Recent Sessions
+
+### Session 296 (2026-02-05)
+**Work**: Claude config structure brainstorming. Analyzed global vs project file separation, removed ~880 tokens/session of duplicated content. Deleted _tech-stack.md (merged into CLAUDE.md), trimmed MEMORY.md from 53→26 lines, removed duplicate Git Rules, cleaned stale refs from 8 agents. Trimmed limits to 5 sessions / 7 defects.
+**Commits**: config pending
 
 ### Session 295 (2026-02-05)
 **Work**: Brainstorming review of v2 plan against 7 production files. User raised 14 concerns (4 high-risk, 5 medium-risk, 3 integration, 2 other). Launched 3 parallel research agents. Made 14 design decisions via structured Q&A. Key decisions: two-pass classification (1A pre-column, 1B post-column), cross-page header lookahead, item regex alignment, bootstrap+anchor merge, optional parser integration. Updated plan v2.0→v2.1.
@@ -29,30 +33,8 @@
 **Commits**: pending (plan file only)
 **Next**: Review merged plan, implement Phase 1 (Row Classifier)
 
-### Session 291 (2026-02-05)
-**Work**: Completed missing items from `pdf-extraction-regression-recovery-plan.md`: build metadata, preprocessing fallback, re-OCR source logging, deprecated `preprocessLightweight()`, expanded `cleanOcrArtifacts`, header primary keyword gating, detailed header-element logging, batch-level gating for column shifts.
-**Commits**: pending
-**Next**: Run targeted tests and re-import Springfield PDF
-
-### Session 289 (2026-02-05)
-**Work**: Implemented full 6-phase PDF extraction regression recovery plan via parallel agents. 25 files modified (13 production + 12 test), +3294/-240 lines.
-**Commits**: app `1b3991f`, config `771fb49`
-**Tests**: 690/690 pass (482 table_extraction + 202 OCR + 6 debug_logger)
-
-### Session 288 (2026-02-05)
-**Work**: Pipeline hardening Phases 2-3: Density gating, word-boundary matching, column bootstrapping.
-**Commits**: pending (superseded by Session 289)
-
-### Session 287 (2026-02-05)
-**Work**: Root cause analysis of PDF extraction pipeline (8 root causes). Created 6-phase hardening plan. Completed Phase 1 (observability logging).
-**Commits**: pending
-
-### Session 286 (2026-02-04)
-**Work**: Tested Springfield PDF — no improvement (85/131). Root cause: TableLocator startY at boilerplate. Created header-detection-hardening-plan.md.
-**Commits**: pending
-
-### Sessions 280-285 (2026-02-04)
-**Archived to**: `.claude/logs/state-archive.md` — Flusseract migration, Windows OCR fix, Springfield debugging, DebugLogger, column detection improvements, headerRowYPositions fix
+### Sessions 280-291 (2026-02-04 to 2026-02-05)
+**Archived to**: `.claude/logs/state-archive.md` — Flusseract migration, Windows OCR fix, Springfield debugging, DebugLogger, column detection improvements, headerRowYPositions fix, regression recovery, pipeline hardening, root cause analysis, regression recovery completion
 
 ## Active Plans
 
@@ -73,6 +55,6 @@ Migrated from flutter_tesseract_ocr to flusseract. 200+ OCR tests pass.
 - **AASHTOWARE Integration**: `.claude/backlogged-plans/AASHTOWARE_Implementation_Plan.md`
 
 ## Reference
-- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-285)
+- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-291)
 - **Defects**: `.claude/autoload/_defects.md`
 - **Branch**: `main`

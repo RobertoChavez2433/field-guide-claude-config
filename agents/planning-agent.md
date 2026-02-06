@@ -36,7 +36,6 @@ After reading, apply this methodology when working with users on feature design.
 6. Get user approval before code is written
 
 ## Reference Documents
-@.claude/autoload/_tech-stack.md
 @.claude/autoload/_defects.md
 
 **Plans Directory**: `.claude/plans/`

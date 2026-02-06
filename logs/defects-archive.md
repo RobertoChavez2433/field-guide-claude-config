@@ -12,6 +12,42 @@ Historical defects moved from defects.md or already fixed. Reference only.
 **Pattern**: Using deprecated `encryptedSharedPreferences` option
 **Prevention**: Remove option - v10 uses custom ciphers by default, auto-migrates data
 
+## Archived Active Patterns (2026-02-05 trim)
+
+These were active patterns archived when _defects.md was trimmed from 15 to 7.
+
+### [E2E] 2026-01-23: TestingKeys Defined But Not Wired (archived 2026-02-05)
+**Pattern**: Adding key to TestingKeys class but not assigning to widget
+**Prevention**: After adding TestingKey, immediately wire: `key: TestingKeys.myKey`
+
+### [E2E] 2026-01-22: Patrol CLI Version Mismatch (archived 2026-02-05)
+**Pattern**: Upgrading patrol package without upgrading patrol_cli
+**Prevention**: patrol v4.x requires patrol_cli v4.x - run `dart pub global activate patrol_cli`
+
+### [E2E] 2026-01-18: dismissKeyboard() Closes Dialogs (archived 2026-02-05)
+**Pattern**: Using `h.dismissKeyboard()` (pressBack) inside dialogs
+**Prevention**: Use `scrollTo()` to make buttons visible instead of pressBack
+
+### [E2E] 2026-01-17: Git Bash Silent Output (archived 2026-02-05)
+**Pattern**: Running Flutter/Patrol commands through Git Bash loses stdout/stderr
+**Prevention**: Always use PowerShell: `pwsh -File run_patrol_batched.ps1`
+
+### [DATA] 2026-01-20: Unsafe Collection Access (archived 2026-02-05)
+**Pattern**: `.first` on empty list, `firstWhere` without `orElse`
+**Prevention**: Use `.where((e) => e.id == id).firstOrNull` pattern
+
+### [DATA] 2026-01-16: Seed Version Not Incremented (archived 2026-02-05)
+**Pattern**: Updating form JSON definitions without incrementing seed version
+**Prevention**: Always increment `seedVersion` in seed data when modifying form JSON
+
+### [DATA] 2026-01-15: Missing Auto-Fill Source Config (archived 2026-02-05)
+**Pattern**: Form field JSON missing `autoFillSource` property
+**Prevention**: Include `autoFillSource` for fields that should auto-fill; increment seed version
+
+### [CONFIG] 2026-01-19: Supabase Instance Access (archived 2026-02-05)
+**Pattern**: Accessing Supabase.instance without checking configuration
+**Prevention**: Always check `SupabaseConfig.isConfigured` before accessing Supabase.instance
+
 ## Archived Active Patterns (2026-01)
 
 These were active patterns that didn't make the top 15 in defects.md.

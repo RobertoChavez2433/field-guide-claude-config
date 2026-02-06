@@ -26,7 +26,6 @@ After reading, apply this methodology before approving any code or claiming revi
 ---
 
 ## Reference Documents
-@.claude/autoload/_tech-stack.md
 @.claude/autoload/_defects.md
 @.claude/rules/architecture.md
 

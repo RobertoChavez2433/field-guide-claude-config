@@ -137,9 +137,9 @@ android.enableJetifier=false
 
 ### Documentation Updates
 
-#### Tech Stack (`\.claude\memory\tech-stack.md`)
+#### Project CLAUDE.md
 
-Added comprehensive platform requirements table:
+Added comprehensive platform requirements table to `.claude/CLAUDE.md`:
 
 ```markdown
 ## Platform Requirements (2026 Standards)
@@ -215,7 +215,7 @@ flutter analyze
 | `android/gradle.properties` | JVM heap, workers, G1GC |
 | `ios/Flutter/AppFrameworkInfo.plist` | iOS 15.0 minimum |
 | `ios/Runner.xcodeproj/project.pbxproj` | iOS 15.0 deployment target (3x) |
-| `.claude/autoload/_tech-stack.md` | Platform requirements table |
+| `.claude/CLAUDE.md` | Platform requirements table |
 
 ## Next Steps
 

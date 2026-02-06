@@ -3,7 +3,6 @@
 Cross-platform mobile/desktop app for construction inspectors. Offline-first with cloud sync.
 
 ## Quick Reference
-@.claude/autoload/_tech-stack.md
 @.claude/autoload/_defects.md
 @.claude/rules/architecture.md
 
@@ -75,13 +74,9 @@ Hookify is a **plugin** (not a skill) that enforces project rules via pattern ma
 ## Session
 - `/resume-session` - Load HOT context only
 - `/end-session` - Save state with auto-archiving
-- State: `.claude/autoload/_state.md` (max 10 sessions)
-- Defects: `.claude/autoload/_defects.md` (max 15 defects)
+- State: `.claude/autoload/_state.md` (max 5 sessions)
+- Defects: `.claude/autoload/_defects.md` (max 7 defects)
 - Archives: `.claude/logs/state-archive.md`, `.claude/logs/defects-archive.md`
-
-## Git Rules
-- **NEVER** include "Co-Authored-By" in commits
-- User is sole author
 
 ## Quick Reference Commands
 
@@ -118,6 +113,27 @@ Hookify is a **plugin** (not a skill) that enforces project rules via pattern ma
 - ALWAYS use `-ErrorAction SilentlyContinue` on Stop-Process
 - ALWAYS set `timeout: 600000` on `flutter run` commands (default 120s is too short)
 - ALWAYS quote paths with spaces: `"C:\Users\rseba\Projects\Field Guide App"`
+
+## Key Packages
+| Package | Purpose |
+|---------|---------|
+| provider | State management |
+| go_router | Navigation |
+| supabase_flutter | Backend/Auth |
+| sqflite | Local storage |
+| syncfusion_flutter_pdf | PDF generation |
+| pdfx | PDF rendering to images |
+| printing | PDF preview/rasterization |
+| flusseract | Tesseract OCR (`packages/flusseract/`) |
+| syncfusion_flutter_pdfviewer | PDF viewing/rendering |
+| image | Image preprocessing |
+| xml | HOCR parsing |
+
+## Development Tools
+| Tool | Location | Purpose |
+|------|----------|---------|
+| run_and_tail_logs.ps1 | `tools/` | Run app with live log tailing |
+| dump_inspect.py | `tools/` | Crash dump analysis |
 
 ## Data Flow
 ```

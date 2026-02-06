@@ -61,7 +61,6 @@ This Flutter app generates IDR (Inspector Daily Report) PDFs using template fill
 
 ## Reference Documents
 @.claude/rules/pdf/pdf-generation.md
-@.claude/autoload/_tech-stack.md
 @.claude/autoload/_defects.md
 
 ---

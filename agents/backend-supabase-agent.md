@@ -25,7 +25,6 @@ After reading, apply TDD methodology when implementing sync features.
 
 ## Reference Documents
 @.claude/rules/backend/data-layer.md
-@.claude/autoload/_tech-stack.md
 @.claude/autoload/_defects.md
 
 ## Your Expertise

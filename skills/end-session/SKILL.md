@@ -43,7 +43,7 @@ cd .claude && git status && git diff --stat && cd ..
 **Work**: Brief 1-line summary
 **Commits**: app `abc1234`, config `def5678`
 ```
-- If >10 sessions exist, run rotation (see below)
+- If >5 sessions exist, run rotation (see below)
 
 **Update `.claude/autoload/_defects.md`** (if mistakes were made):
 - Add new defect with category and date:
@@ -52,16 +52,16 @@ cd .claude && git status && git diff --stat && cd ..
 **Pattern**: What to avoid
 **Prevention**: How to avoid
 ```
-- If >15 defects exist, run rotation (see below)
+- If >7 defects exist, run rotation (see below)
 
 ### 4. Session Rotation Logic
 
-**When _state.md has >10 sessions:**
+**When _state.md has >5 sessions:**
 1. Take oldest session
 2. Append to `.claude/logs/state-archive.md` under appropriate month header
 3. Remove from _state.md
 
-**When _defects.md has >15 defects:**
+**When _defects.md has >7 defects:**
 1. Take oldest defect (from bottom of Active Patterns)
 2. Append to `.claude/logs/defects-archive.md` with archive date
 3. Remove from _defects.md
@@ -133,7 +133,7 @@ When you discover bugs, anti-patterns, or issues during testing or review, log t
 ### How to Log
 1. Add new defects **at the top** of Active Patterns section
 2. Include category and date: `### [CAT] 2026-02-01: Title`
-3. If >15 defects, move oldest to archive before adding new
+3. If >7 defects, move oldest to archive before adding new
 
 ### Archives
 - Active: `.claude/autoload/_defects.md`

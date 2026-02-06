@@ -12,9 +12,9 @@ Load HOT context only and prepare for work.
 ## Actions
 
 ### 1. Read HOT Memory Only
-1. `.claude/autoload/_state.md` - Current state (max 10 sessions)
-2. `.claude/autoload/_defects.md` - Active patterns (max 15 defects)
-3. `.claude/autoload/_tech-stack.md` - Current tech stack
+1. `.claude/memory/MEMORY.md` - Key learnings and patterns
+2. `.claude/autoload/_state.md` - Current state (max 5 sessions)
+3. `.claude/autoload/_defects.md` - Active patterns (max 7 defects)
 
 **DO NOT READ** (lazy load only when needed):
 - `.claude/logs/state-archive.md`

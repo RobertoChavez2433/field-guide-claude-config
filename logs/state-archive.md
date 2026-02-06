@@ -1,10 +1,25 @@
 # State Archive
 
-Session history archive. See `.claude/autoload/_state.md` for current state (last 10 sessions).
+Session history archive. See `.claude/autoload/_state.md` for current state (last 5 sessions).
 
 ---
 
 ## February 2026
+
+### Session 291 (2026-02-05)
+Completed missing items from pdf-extraction-regression-recovery-plan.md: build metadata, preprocessing fallback, re-OCR source logging, deprecated preprocessLightweight(), expanded cleanOcrArtifacts, header primary keyword gating, detailed header-element logging, batch-level gating for column shifts.
+
+### Session 289 (2026-02-05)
+Implemented full 6-phase PDF extraction regression recovery plan via parallel agents. 25 files modified (13 production + 12 test), +3294/-240 lines. Commits: app `1b3991f`, config `771fb49`. Tests: 690/690 pass (482 table_extraction + 202 OCR + 6 debug_logger).
+
+### Session 288 (2026-02-05)
+Pipeline hardening Phases 2-3: Density gating, word-boundary matching, column bootstrapping. Commits pending (superseded by Session 289).
+
+### Session 287 (2026-02-05)
+Root cause analysis of PDF extraction pipeline (8 root causes). Created 6-phase hardening plan. Completed Phase 1 (observability logging). Commits pending.
+
+### Session 286 (2026-02-04)
+Tested Springfield PDF — no improvement (85/131). Root cause: TableLocator startY at boilerplate. Created header-detection-hardening-plan.md. Commits pending.
 
 ### Session 285 (2026-02-04)
 Systematic debugging of Springfield extraction (87/131). Found root cause: 11 headerRowYPositions. Applied 3 fixes. Commits pending (7 modified files).

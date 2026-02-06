@@ -4,7 +4,6 @@
 Located in `../autoload/`:
 - `_state.md` - Current 10 sessions (loaded every session)
 - `_defects.md` - Current 15 defects (loaded every session)
-- `_tech-stack.md` - Tech reference (loaded every session)
 
 ## Archives (Cold Storage)
 - `state-archive.md` - Sessions 193+, auto-rotated when >10 active

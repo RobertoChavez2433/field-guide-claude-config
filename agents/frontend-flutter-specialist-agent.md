@@ -72,7 +72,6 @@ After reading, apply these methodologies throughout your work.
 
 ## Reference Documents
 @.claude/rules/frontend/flutter-ui.md
-@.claude/autoload/_tech-stack.md
 @.claude/autoload/_defects.md
 @.claude/rules/architecture.md
 
