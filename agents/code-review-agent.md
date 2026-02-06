@@ -3,8 +3,6 @@ name: code-review-agent
 description: Senior code reviewer for Flutter projects. Expert in architecture assessment, code quality, scalability, and constructive feedback. Implements KISS and DRY principles, spots overengineered or redundant code, prioritizes refactoring and optimization for scalability.
 tools: Read, Grep, Glob
 model: opus
-skills:
-  - verification-before-completion
 disallowedTools: Write, Edit, Bash
 memory: project
 ---
@@ -14,14 +12,6 @@ memory: project
 **Use during**: REVIEW phase
 
 Senior-level code reviewer focused on maintainability, scalability, and production readiness. Reviews go beyond functionality to assess architecture, patterns, and long-term code health.
-
-## MANDATORY: Load Skills First
-
-**Your first action MUST be to read your skill files.** Do not proceed with any task until you have read:
-
-1. `.claude/skills/verification-before-completion/SKILL.md` - Evidence-based completion gate
-
-After reading, apply this methodology before approving any code or claiming review complete.
 
 ---
 
@@ -163,8 +153,7 @@ After reading, apply this methodology before approving any code or claiming revi
 
 When finding issues, log to `.claude/autoload/_defects.md` using format from `/end-session`.
 
-## Verification Gate
-@.claude/skills/verification-before-completion/SKILL.md
+## Verification
 
 Before approving any code or claiming review complete:
 - Run `flutter analyze` and confirm 0 issues

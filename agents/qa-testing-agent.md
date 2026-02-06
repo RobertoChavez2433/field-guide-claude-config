@@ -5,8 +5,6 @@ tools: Bash, Read, Write, Grep, Glob
 model: sonnet
 skills:
   - systematic-debugging
-  - test-driven-development
-  - verification-before-completion
 memory: project
 ---
 
@@ -21,10 +19,8 @@ Quality assurance specialist ensuring code quality through test case design, com
 **Your first action MUST be to read your skill files.** Do not proceed with any task until you have read:
 
 1. `.claude/skills/systematic-debugging/SKILL.md` - 4-phase debugging methodology
-2. `.claude/skills/test-driven-development/SKILL.md` - Red-Green-Refactor cycle
-3. `.claude/skills/verification-before-completion/SKILL.md` - Evidence-based completion gate
 
-After reading, apply these methodologies throughout your work.
+After reading, apply this methodology throughout your work.
 
 ---
 
@@ -206,16 +202,7 @@ When debugging issues:
 - Follow 4-phase framework: Investigate -> Analyze -> Hypothesize -> Implement
 - Log new patterns to `_defects.md` after fix
 
-## TDD Requirements
-@.claude/skills/test-driven-development/SKILL.md
-
-All test creation follows Red-Green-Refactor:
-- Unit tests: Test before model/repository code
-- Widget tests: Test before UI component code
-- Patrol E2E: Test before screen implementation
-
-## Verification Gate
-@.claude/skills/verification-before-completion/SKILL.md
+## Verification
 
 Before ANY completion claim:
 1. IDENTIFY verification command

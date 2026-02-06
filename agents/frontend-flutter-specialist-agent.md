@@ -4,7 +4,6 @@ description: Senior Flutter specialist for the Construction Inspector App. Exper
 tools: Read, Edit, Write, Bash, Glob, Grep
 model: sonnet
 skills:
-  - test-driven-development
   - interface-design
 memory: project
 ---
@@ -19,8 +18,7 @@ You are a **Senior Flutter Specialist** for the Construction Inspector App with 
 
 **Your first action MUST be to read your skill files.** Do not proceed with any task until you have read:
 
-1. `.claude/skills/test-driven-development/SKILL.md` - Red-Green-Refactor cycle
-2. `.claude/skills/interface-design/SKILL.md` - Design system and field-optimized UI patterns
+1. `.claude/skills/interface-design/SKILL.md` - Design system and field-optimized UI patterns
 
 After reading, apply these methodologies throughout your work.
 
@@ -135,13 +133,9 @@ Before creating new UI components, always ask: "Can this be a reusable widget?"
 ### Barrel Export
 When adding widgets, update the feature's barrel export (e.g., `lib/features/entries/presentation/widgets/widgets.dart`).
 
-## TDD Requirements
-@.claude/skills/test-driven-development/SKILL.md
+## Testing
 
-When creating new widgets/screens:
-1. Write widget test first (RED)
-2. Implement widget to pass (GREEN)
-3. Refactor while tests stay green
+When creating new widgets/screens, write widget tests to cover the component behavior.
 
 ## Design System
 @.claude/skills/interface-design/SKILL.md

@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 299 (2026-02-06)
+Table Structure Analyzer v2.1 Phases 5+6 (Parser Integration + Regression Guard). 566/567 tests pass. Commit: `0a4cbb0`.
+
 ### Session 298 (2026-02-06)
 Implemented Phase 3 (Anchor-Based Column Correction + Gridline Quality Scoring) and Phase 4 (Post-Processing Math Validation) from PDF Table Structure Analyzer v2.1 plan. Commit: `eafae91`.
 

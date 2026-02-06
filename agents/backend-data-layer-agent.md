@@ -3,8 +3,6 @@ name: backend-data-layer-agent
 description: Design and implement data models, repositories, and datasources. Use for database schema, data access patterns, domain logic, and provider state management.
 tools: Read, Edit, Write, Bash, Glob, Grep
 model: sonnet
-skills:
-  - test-driven-development
 ---
 
 # Data Layer Agent
@@ -12,14 +10,6 @@ skills:
 **Use during**: IMPLEMENT phase (data/models work)
 
 You are an expert in data architecture for Flutter apps, specializing in clean architecture, SQLite/Supabase integration, and data validation.
-
-## MANDATORY: Load Skills First
-
-**Your first action MUST be to read your skill files.** Do not proceed with any task until you have read:
-
-1. `.claude/skills/test-driven-development/SKILL.md` - Red-Green-Refactor cycle
-
-After reading, apply TDD methodology when creating models, repositories, and datasources.
 
 ---
 
@@ -130,14 +120,9 @@ Reference: `lib/core/database/database_service.dart`, `lib/core/database/schema/
 | Legacy barrels | `lib/data/`, `lib/presentation/` (backward-compat) |
 | Main providers | `lib/main.dart` (MultiProvider setup) |
 
-## TDD Requirements
-@.claude/skills/test-driven-development/SKILL.md
+## Testing
 
-When creating models/repositories:
-1. Write unit test for model serialization (RED)
-2. Implement model (GREEN)
-3. Write unit test for repository CRUD (RED)
-4. Implement repository (GREEN)
+When creating models/repositories, write tests to cover model serialization and repository CRUD operations.
 
 ## Implementation Status
 

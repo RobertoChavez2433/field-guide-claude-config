@@ -61,8 +61,6 @@ lib/
 |-------|---------|---------|
 | `brainstorming` | Collaborative design | planning-agent |
 | `systematic-debugging` | Root cause analysis | qa-testing-agent |
-| `test-driven-development` | Red-Green-Refactor | All IMPLEMENT + qa-testing |
-| `verification-before-completion` | Evidence gate | qa-testing, code-review |
 | `interface-design` | Design system | frontend-flutter-specialist |
 | `pdf-processing` | CLI PDF analysis/debugging | pdf-agent |
 

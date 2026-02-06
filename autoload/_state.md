@@ -1,18 +1,22 @@
 # Session State
 
-**Last Updated**: 2026-02-06 | **Session**: 303
+**Last Updated**: 2026-02-06 | **Session**: 304
 
 ## Current Phase
-- **Phase**: PDF Extraction Pipeline Redesign — PLANNING
-- **Status**: Comprehensive plan written. Need to verify native text extraction with spike tool, then implement native-text-first routing.
+- **Phase**: PDF Extraction Pipeline Redesign — APPROVED, READY TO IMPLEMENT
+- **Status**: Plan brainstormed, reviewed, and finalized. Pre-work: commit numeric gate changes, run spike tool. Then implement Phase 1 (NativeTextExtractor + routing).
 - **Plan**: `.claude/plans/2026-02-06-pdf-extraction-pipeline-redesign.md`
 
 ## Recent Sessions
 
+### Session 304 (2026-02-06)
+**Work**: Brainstorming session continuing pipeline redesign plan. Resolved all 5 open questions: (1) Hybrid column detection — text-derived first, image-scan fallback, (2) Feed native text into v2 pipeline via TextWord→OcrElement (preserves post-processing), (3) Whole-document routing with TODO for per-page, (4) Researched legacy ColumnLayoutParser X-position clustering algorithm — found existing gap-based clustering at lines 619-645, (5) Compared ColumnLayoutParser output vs v2 pipeline input — identified coordinate transform as key bridge (scaleFactor = renderDPI/72). Finalized plan to "Approved" status.
+**Commits**: none (brainstorming only)
+**Next**: Commit numeric gate changes, run spike tool, implement Phase 1
+
 ### Session 303 (2026-02-06)
-**Work**: Deep diagnostic session. Ran app, analyzed extraction logs across 3 sessions (all terrible: 3-71 items with 13-31% garbage). Launched 6 research agents investigating preprocessing, row classifier, region detection, OCR quality, native text capabilities, and OcrElement compatibility. Key findings: (1) Both binarized and non-binarized preprocessing produce garbage OCR, (2) No word-level confidence filtering exists, (3) 65% of rows classified UNKNOWN due to garbage input, (4) These PDFs are NOT scanned (confirmed Session 226) — native text extraction should be tried first. Wrote comprehensive redesign plan: native text extraction as primary path, OCR as fallback.
+**Work**: Deep diagnostic session. Analyzed extraction logs across 3 sessions (all terrible). Launched 6 research agents. Key findings: PDFs are NOT scanned, OCR is wrong tool for digital PDFs. Wrote comprehensive redesign plan.
 **Commits**: none (research/planning only)
-**Next**: Run spike tool to verify native text extraction, then implement Phase 1 of redesign plan
 
 ### Session 302 (2026-02-06)
 **Work**: Implemented Phase 2+3 from OCR preprocessing fix plan. Numeric content gate + post-processing safeguards. 612 tests pass.
@@ -26,17 +30,13 @@
 **Work**: Diagnostic session. Discovered preprocessing adaptive thresholding destroys 92% of image data. Created 3-phase fix plan.
 **Commits**: none
 
-### Session 299 (2026-02-06)
-**Work**: Table Structure Analyzer v2.1 Phases 5+6 (Parser Integration + Regression Guard). 566/567 tests pass.
-**Commits**: `0a4cbb0`
-
-### Sessions 280-298 (2026-02-04 to 2026-02-06)
+### Sessions 280-299 (2026-02-04 to 2026-02-06)
 **Archived to**: `.claude/logs/state-archive.md`
 
 ## Active Plans
 
-### PDF Extraction Pipeline Redesign (Session 303)
-Native text first, OCR fallback. Phase 1: verify native text + build converter. Phase 2: OCR quality fixes. Phase 3: integration.
+### PDF Extraction Pipeline Redesign — APPROVED (Session 304)
+Native text first, OCR fallback. 3 phases: (1) NativeTextExtractor + routing, (2) Hybrid column detection, (3) Logging/metrics. Each independently shippable.
 **Plan**: `.claude/plans/2026-02-06-pdf-extraction-pipeline-redesign.md`
 
 ## Completed Plans (Recent)
@@ -55,6 +55,6 @@ Native text first, OCR fallback. Phase 1: verify native text + build converter. 
 - `row_classifier_test.dart` — updated test expectations
 
 ## Reference
-- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-298)
+- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-299)
 - **Defects**: `.claude/autoload/_defects.md`
 - **Branch**: `main`

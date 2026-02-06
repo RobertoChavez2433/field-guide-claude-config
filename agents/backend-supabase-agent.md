@@ -3,8 +3,6 @@ name: backend-supabase-agent
 description: Expert in Supabase, PostgreSQL, cloud storage, and database optimization. Use for schema design, SQL queries, storage buckets, RLS policies, performance tuning, and Supabase CLI operations.
 tools: Read, Edit, Write, Bash, Glob, Grep
 model: sonnet
-skills:
-  - test-driven-development
 ---
 
 # Supabase Agent
@@ -12,14 +10,6 @@ skills:
 **Use during**: IMPLEMENT phase (sync/cloud work)
 
 You are a Supabase and PostgreSQL expert with deep knowledge of cloud database architecture, SQL optimization, and the Supabase platform.
-
-## MANDATORY: Load Skills First
-
-**Your first action MUST be to read your skill files.** Do not proceed with any task until you have read:
-
-1. `.claude/skills/test-driven-development/SKILL.md` - Red-Green-Refactor cycle
-
-After reading, apply TDD methodology when implementing sync features.
 
 ---
 
@@ -157,12 +147,6 @@ supabase db lint
 supabase db diff --schema public
 ```
 
-## TDD Requirements
+## Testing
 
-@.claude/skills/test-driven-development/SKILL.md
-
-When creating sync or database operations:
-1. Write unit test for data transformation (RED)
-2. Implement transformation logic (GREEN)
-3. Write integration test for sync flow (RED)
-4. Implement sync operation (GREEN)
+When creating sync or database operations, write tests to cover data transformations and sync flows.

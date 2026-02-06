@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-06 (Session 304)
+- Brainstorming session continuing PDF extraction pipeline redesign plan. Resolved all 5 open questions from Session 303 draft: (1) hybrid column detection (text-derived first, image-scan fallback), (2) TextWord→OcrElement→v2 pipeline (preserves post-processing), (3) whole-document routing with TODO for per-page, (4) researched legacy ColumnLayoutParser X-position clustering vs v2 pipeline interfaces, (5) coordinate transform bridge (scaleFactor = renderDPI/72). Plan finalized to "Approved" status with 3 implementation phases.
+
 ### 2026-02-06 (Session 303)
 - Deep diagnostic session on PDF extraction quality. Analyzed logs across 3 extraction runs (all producing garbage: 3-71 items with 13-31% invalid IDs). Launched 6 parallel research agents. Key findings: (1) binarization debate is a red herring — both approaches produce ~72% confidence garbage, (2) no word-level OCR confidence filtering exists, (3) these PDFs are NOT scanned (Session 226 confirmed native text works), (4) the pipeline always OCRs even digital PDFs. Wrote comprehensive redesign plan: native text extraction as primary path (Syncfusion TextWord -> OcrElement converter), OCR as fallback with confidence filtering + PSM tuning. Plan saved to `.claude/plans/2026-02-06-pdf-extraction-pipeline-redesign.md`.
 

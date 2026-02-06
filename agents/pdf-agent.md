@@ -4,7 +4,6 @@ description: Comprehensive PDF expert for template filling, OCR extraction, and 
 tools: Read, Edit, Write, Bash, Glob, Grep
 model: sonnet
 skills:
-  - test-driven-development
   - pdf-processing
 memory: project
 ---
@@ -19,8 +18,7 @@ You are a comprehensive PDF specialist for the Construction Inspector App. You h
 
 **Your first action MUST be to read your skill files.** Do not proceed with any task until you have read:
 
-1. `.claude/skills/test-driven-development/SKILL.md` - TDD methodology (required for all code changes)
-2. `.claude/skills/pdf-processing/SKILL.md` - PDF CLI tools and workflows
+1. `.claude/skills/pdf-processing/SKILL.md` - PDF CLI tools and workflows
 
 After reading, apply these methodologies throughout your work.
 
@@ -36,12 +34,9 @@ Use Python scripts when:
 
 ---
 
-## TDD Workflow
+## Testing Workflow
 
-When implementing PDF features:
-1. Write unit test for PDF logic (RED)
-2. Implement PDF service (GREEN)
-3. Refactor while tests stay green
+When implementing PDF features, write tests to cover PDF logic, field mapping, and data formatting.
 
 ## Project Context
 
@@ -179,12 +174,6 @@ flutter analyze lib/features/pdf/services/pdf_service.dart
 | `[PDF] Set contractor X name: Y -> Z` | Contractor mapping applied |
 | `[PDF] Template filled successfully` | Generation complete |
 
-## TDD Requirements
+## Testing
 
-@.claude/skills/test-driven-development/SKILL.md
-
-When creating PDF features:
-1. Write unit test for field mapping (RED)
-2. Implement mapping logic (GREEN)
-3. Write unit test for data formatting (RED)
-4. Implement formatting (GREEN)
+When creating PDF features, write tests to cover field mapping and data formatting.

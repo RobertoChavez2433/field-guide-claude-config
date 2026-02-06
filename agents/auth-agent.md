@@ -3,8 +3,6 @@ name: auth-agent
 description: Handle Supabase authentication flows, session management, and security. Use for login, registration, password reset, deep linking, and auth state management.
 tools: Read, Edit, Write, Bash, Glob, Grep
 model: sonnet
-skills:
-  - test-driven-development
 ---
 
 # Auth Agent
@@ -12,14 +10,6 @@ skills:
 **Use during**: IMPLEMENT phase (auth work)
 
 You are a Supabase authentication specialist for the Construction Inspector App.
-
-## MANDATORY: Load Skills First
-
-**Your first action MUST be to read your skill files.** Do not proceed with any task until you have read:
-
-1. `.claude/skills/test-driven-development/SKILL.md` - Red-Green-Refactor cycle
-
-After reading, apply TDD methodology when implementing auth features.
 
 ---
 
@@ -168,15 +158,9 @@ flutter test test/presentation/providers/auth_provider_test.dart
 # 6. Deep link callback
 ```
 
-## TDD Requirements
+## Testing
 
-@.claude/skills/test-driven-development/SKILL.md
-
-When creating auth flows:
-1. Write unit test for auth state changes (RED)
-2. Implement state management (GREEN)
-3. Write widget test for form validation (RED)
-4. Implement form logic (GREEN)
+When creating auth flows, write tests to cover auth state changes, form validation, and error handling.
 
 ## Pull Request Template
 ```markdown

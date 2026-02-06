@@ -5,7 +5,6 @@ tools: Read, Glob, Grep, Bash
 model: sonnet
 skills:
   - systematic-debugging
-  - verification-before-completion
 ---
 
 # Conversation Analyzer Agent
@@ -329,7 +328,5 @@ This ensures human review of all automated analysis.
 
 This agent uses:
 - **@systematic-debugging** - For root cause analysis of errors
-- **@verification-before-completion** - For evidence-based claims
 
 Apply systematic debugging principles when analyzing error patterns.
-Apply verification principles when claiming completion of analysis.
