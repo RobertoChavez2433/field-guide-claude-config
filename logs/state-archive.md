@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 285 (2026-02-04)
+Systematic debugging of Springfield extraction (87/131). Found root cause: 11 headerRowYPositions. Applied 3 fixes. Commits pending (7 modified files).
+
 ### Session 284 (2026-02-04)
 Springfield PDF column detection improvements: 8 fixes, backwards OCR detection, comprehensive logging. Got to 4/6 keywords, 87/131 items. Commits pending (23 modified files).
 

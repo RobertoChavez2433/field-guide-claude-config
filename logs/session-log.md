@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-05 (Session 295)
+- PDF Table Structure Analyzer v2 plan review brainstorming. User raised 14 concerns against 7 production files. 3 parallel research agents analyzed circular dependency, cross-page/integration gaps, and medium-risk gaps. Made 14 design decisions: two-pass classification (1A pre-column, 1B post-column), cross-page header lookahead via RowClassifier, item regex alignment with parser, multi-row header assembly in Phase 2, gridline quality scoring, anchor filtering to DATA rows, SECTION_HEADER termination exclusion, column count 3-8, bootstrap+anchor merge, optional parser integration, math validation as hard diagnostic, adaptive row grouping, artifact cleaning before classification. Plan updated v2.0→v2.1.
+
 ### 2026-02-05 (Session 294)
 - Implemented 9-phase Claude Directory Modernization: cleanup, architecture.md trim, skill frontmatter, commands→skills, agent modernization, CLAUDE.md update, supporting files, agent memory
 
