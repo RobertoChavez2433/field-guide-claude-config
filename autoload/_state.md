@@ -11,7 +11,7 @@
 
 ### Session 301 (2026-02-06)
 **Work**: Implemented Phase 1 (Remove Binarization) from OCR preprocessing fix plan via pdf-agent. Removed adaptive thresholding from 3 functions in image_preprocessor.dart (_preprocessIsolate, _preprocessFallbackIsolate, _preprocessWithEnhancementsIsolate). Updated corresponding tests. All 202 OCR tests + 577 PDF table extraction tests pass. Expected benefits: preprocessing time 11s→2-3s per page, preserve 256 grayscale levels vs 2 binary levels, OCR confidence 74.8%→>85%. Manual verification pending.
-**Commits**: (pending)
+**Commits**: `836b856`
 **Next**: Manual verification (rebuild + extract Springfield PDF), verify metrics match targets in plan
 
 ### Session 300 (2026-02-06)
