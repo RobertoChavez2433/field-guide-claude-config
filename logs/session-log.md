@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-06 (Session 300)
+- Diagnostic/brainstorming session. Ran app, imported Springfield PDF, analyzed extraction logs. Systematic root cause analysis: discovered image preprocessing adaptive thresholding destroys clean 300 DPI images (1.7MB→136KB binary), causing 3/6 headers lost, 64% unknown rows, garbage item numbers, post-processing amplification. Created phased fix plan: remove binarization, strengthen classifier, add post-processing safeguards.
+
 ### 2026-02-05 (Session 296)
 - Claude config structure brainstorming. Analyzed global vs project file separation, identified ~880 tokens/session of duplicated content. Deleted _tech-stack.md (merged into CLAUDE.md), trimmed MEMORY.md (53→26 lines), removed duplicate Git Rules section, cleaned _tech-stack refs from 8 agents. Trimmed limits: 10→5 sessions, 15→7 defects. Created global memory at ~/.claude/memory/.
 

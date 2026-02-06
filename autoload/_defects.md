@@ -14,6 +14,11 @@ Archive: @.claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [DATA] 2026-02-06: Adaptive Thresholding Destroys Clean PDF Images
+**Pattern**: Unconditional binarization (adaptive threshold blockSize=11, c=5) converts 300 DPI grayscale to binary, destroying 92% of image data including column headers
+**Prevention**: Only apply binarization to noisy scans/photos; clean PDF renders need grayscale + contrast only
+**Ref**: @lib/features/pdf/services/ocr/image_preprocessor.dart:152-177
+
 ### [DATA] 2026-02-04: Substring Keyword Matching Causes False Positives
 **Pattern**: Using `String.contains()` for keyword matching allows substring false positives ("BIDDER" matches "BID", "PRICES" matches "PRICE")
 **Prevention**: Use word-boundary matching (RegExp `\bKEYWORD\b`) for single-word patterns; multi-word patterns can use contains safely
@@ -41,10 +46,6 @@ Archive: @.claude/logs/defects-archive.md
 ### [E2E] 2026-01-25: Silent Skip with if(widget.exists)
 **Pattern**: Using `if (widget.exists) { ... }` silently skips when widget not visible
 **Prevention**: Use `waitForVisible()` instead - let it fail explicitly if widget should exist
-
-### [E2E] 2026-01-24: Test Helper Missing scrollTo()
-**Pattern**: Calling `$(finder).tap()` on widgets below the fold
-**Prevention**: Always `$(finder).scrollTo()` before `$(finder).tap()` for form fields
 
 ---
 

@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 297 (2026-02-05)
+Implemented Phase 1 (Row Classifier) and Phase 2 (Table Region Detector) from PDF Table Structure Analyzer v2.1 plan. RowClassification model (6 row types), RowClassifier with Phase 1A/1B. TableRegionDetector with two-pass linear scan, cross-page header confirmation, multi-table detection. 523/524 tests pass.
+
 ### Session 291 (2026-02-05)
 Completed missing items from pdf-extraction-regression-recovery-plan.md: build metadata, preprocessing fallback, re-OCR source logging, deprecated preprocessLightweight(), expanded cleanOcrArtifacts, header primary keyword gating, detailed header-element logging, batch-level gating for column shifts.
 

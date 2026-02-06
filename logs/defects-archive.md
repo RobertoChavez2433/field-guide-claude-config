@@ -4,6 +4,10 @@ Historical defects moved from defects.md or already fixed. Reference only.
 
 ---
 
+### [E2E] 2026-01-24: Test Helper Missing scrollTo() (archived 2026-02-06)
+**Pattern**: Calling `$(finder).tap()` on widgets below the fold
+**Prevention**: Always `$(finder).scrollTo()` before `$(finder).tap()` for form fields
+
 ### [FLUTTER] 2026-01-18: Deprecated Flutter APIs (archived 2026-02-04)
 **Pattern**: Using deprecated APIs (WillPopScope, withOpacity)
 **Prevention**: `WillPopScope` -> `PopScope`; `withOpacity(0.5)` -> `withValues(alpha: 0.5)`
