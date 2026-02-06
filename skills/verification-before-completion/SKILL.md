@@ -1,3 +1,8 @@
+---
+name: verification-before-completion
+description: Evidence-based verification gate
+---
+
 # Verification Before Completion Skill
 
 **Purpose**: Evidence-based claims that prevent false confidence.

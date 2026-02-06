@@ -47,7 +47,6 @@
       "mcp__notion__*",
       "Bash(winget *)",
       "Bash(choco *)",
-      "Bash(git commit -m \"$\\(cat <<''EOF''\nSession 248: Analyzer Cleanup v3 plan\n\n- Analyzed 30 analyzer issues \\(1 prod, 29 test\\)\n- Created 4-phase fix plan\n- Updated state and session log\n- Removed completed context-management-redesign plan\nEOF\n\\)\")",
       "Bash(git commit:*)",
       "Bash(pwsh -Command:*)"
     ]

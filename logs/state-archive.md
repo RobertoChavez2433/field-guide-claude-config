@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 284 (2026-02-04)
+Springfield PDF column detection improvements: 8 fixes, backwards OCR detection, comprehensive logging. Got to 4/6 keywords, 87/131 items. Commits pending (23 modified files).
+
 ### Session 280 (2026-02-04)
 Flusseract OCR Migration Phases 4-6: OCR quality safeguards (21 config tests), legacy cleanup (stale ML Kit refs removed, ParserType renamed), performance hardening (pooled disposal fix). 200+ OCR tests pass. `ed267db`
 

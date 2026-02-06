@@ -1,3 +1,11 @@
+---
+name: systematic-debugging
+description: Root cause analysis framework that prevents guess-and-check debugging
+context: fork
+agent: qa-testing-agent
+user-invocable: true
+---
+
 # Systematic Debugging Skill
 
 **Purpose**: Root cause analysis framework that prevents guess-and-check debugging.

@@ -6,6 +6,7 @@ model: sonnet
 skills:
   - test-driven-development
   - interface-design
+memory: project
 ---
 
 # Flutter Specialist Agent
@@ -84,7 +85,7 @@ After reading, apply these methodologies throughout your work.
 | Feature Providers | `lib/features/*/presentation/providers/` |
 | Feature Widgets | `lib/features/*/presentation/widgets/` |
 | Feature Screens | `lib/features/*/presentation/screens/` |
-| Legacy Barrels | `lib/data/`, `lib/presentation/` (EMPTY - legacy directories) |
+| Legacy Barrels | Removed (previously `lib/data/`, `lib/presentation/`) |
 
 ## Responsibilities
 

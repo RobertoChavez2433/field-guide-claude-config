@@ -6,6 +6,7 @@ model: sonnet
 skills:
   - test-driven-development
   - pdf-processing
+memory: project
 ---
 
 # PDF Agent

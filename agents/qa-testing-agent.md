@@ -7,6 +7,7 @@ skills:
   - systematic-debugging
   - test-driven-development
   - verification-before-completion
+memory: project
 ---
 
 # QA Testing Agent

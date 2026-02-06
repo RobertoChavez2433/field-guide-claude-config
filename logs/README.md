@@ -20,5 +20,5 @@ Located in `../autoload/`:
    - Move oldest entries to `defects-archive.md`
    - Update `archive-index.md` with new counts
 
-## Deprecated Files
-- `session-log.md` - Historical artifact, duplicates `_state.md`. Do not update.
+## Historical Files
+- `session-log.md` - Historical record of all sessions (kept by user decision, updated by `/end-session`)

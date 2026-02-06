@@ -1,3 +1,9 @@
+---
+name: interface-design
+description: Flutter design system and UI tokens
+agent: frontend-flutter-specialist-agent
+---
+
 # Interface Design Skill
 
 **Purpose**: Consistent UI through design system discipline.

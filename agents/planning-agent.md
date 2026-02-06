@@ -3,9 +3,10 @@ name: planning-agent
 description: Gather requirements, ask clarifying questions, and create implementation plans with agent handoff. Use BEFORE implementing any significant feature.
 tools: Read, Bash, Grep, Glob, WebFetch, Write
 permissionMode: plan
-model: sonnet
+model: opus
 skills:
   - brainstorming
+disallowedTools: Edit
 ---
 
 # Planning Agent

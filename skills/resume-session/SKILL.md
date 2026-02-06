@@ -1,6 +1,8 @@
 ---
 name: resume-session
 description: Resume session with minimal context load
+user-invocable: true
+disable-model-invocation: true
 ---
 
 # Resume Session

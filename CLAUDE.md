@@ -18,8 +18,6 @@ lib/
 ├── shared/      # Base classes, utilities
 ├── features/    # 13 features: auth, contractors, dashboard, entries, locations,
 │                # pdf, photos, projects, quantities, settings, sync, toolbox, weather
-├── data/        # LEGACY: empty directories
-├── presentation/# LEGACY: empty directories
 └── services/    # Cross-cutting (photo, image, permission)
 ```
 
@@ -85,25 +83,41 @@ Hookify is a **plugin** (not a skill) that enforces project rules via pattern ma
 - **NEVER** include "Co-Authored-By" in commits
 - User is sole author
 
-## Build Commands
-**CRITICAL**: Git Bash silently fails on Flutter. Always use:
-```bash
-pwsh -Command "flutter clean && flutter build apk --release"
-```
+## Quick Reference Commands
 
-## Debug Commands
+**CRITICAL**: Git Bash silently fails on Flutter. ALWAYS use pwsh wrapper.
 
-### PDF Parser Diagnostics
-Enable verbose logging to trace PDF parsing pipeline failures:
-```bash
-# Run app with PDF diagnostics
-pwsh -Command "flutter run --dart-define=PDF_PARSER_DIAGNOSTICS=true"
+### Build & Run
+1. `pwsh -Command "flutter run -d windows"`                                    — Run on desktop
+2. `pwsh -Command "flutter clean && flutter build apk --release"`              — Build APK
+3. `pwsh -Command "flutter clean"`                                             — Clean build artifacts
 
-# Run tests with PDF diagnostics
-pwsh -Command "flutter test test/features/pdf/ --dart-define=PDF_PARSER_DIAGNOSTICS=true"
-```
+### Testing
+4. `pwsh -Command "flutter test"`                                              — All tests
+5. `pwsh -Command "flutter test test/features/pdf/table_extraction/"`          — PDF extraction tests
+6. `pwsh -Command "flutter test test/features/pdf/services/ocr/"`              — OCR tests
+7. `pwsh -Command "flutter test <path/to/specific_test.dart>"`                 — Single test file
+8. `pwsh -Command "flutter test --dart-define=PDF_PARSER_DIAGNOSTICS=true"`    — Tests with diagnostics
 
-Logs show: raw text stats, OCR preprocessing, line splitting, token classification, state machine transitions, parser success/failure reasons.
+### Process Management
+9. `pwsh -Command "Stop-Process -Name 'construction_inspector' -Force -ErrorAction SilentlyContinue; Stop-Process -Name 'dart' -Force -ErrorAction SilentlyContinue"`
+
+### Dependencies & Diagnostics
+10. `pwsh -Command "flutter pub get"`       — Get dependencies
+11. `pwsh -Command "flutter pub upgrade"`   — Upgrade dependencies
+12. `pwsh -Command "flutter analyze"`       — Static analysis
+13. `pwsh -Command "flutter doctor"`        — Environment diagnostics
+
+### Git
+14. `git log --oneline -10`                 — Recent commits
+15. `git diff --stat`                       — Change summary
+
+### Common Mistakes (from 577+ errors across 30+ sessions)
+- NEVER run flutter/dart directly in Git Bash — ALWAYS use `pwsh -Command "..."`
+- NEVER use wc, sed, awk, grep as Bash — use Read/Edit/Grep tools instead
+- ALWAYS use `-ErrorAction SilentlyContinue` on Stop-Process
+- ALWAYS set `timeout: 600000` on `flutter run` commands (default 120s is too short)
+- ALWAYS quote paths with spaces: `"C:\Users\rseba\Projects\Field Guide App"`
 
 ## Data Flow
 ```

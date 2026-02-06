@@ -1,3 +1,10 @@
+---
+name: pdf-processing
+description: PDF template filling, OCR extraction, CLI tools
+context: fork
+agent: pdf-agent
+---
+
 # PDF Processing Skill
 
 **Purpose**: Python CLI tools for PDF template debugging, extraction analysis, and import troubleshooting.

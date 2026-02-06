@@ -119,3 +119,93 @@ debugPrint('INFO: $message');  // Development only
 - [ ] Widget tests added
 - [ ] Manual testing on target device
 ```
+
+## Detailed UI Patterns (from architecture.md)
+
+### Screen Structure (Detailed)
+
+Standard screen template from `lib/features/entries/presentation/screens/home_screen.dart`:
+
+1. `StatefulWidget` for screens with local state
+2. `initState()` for initialization
+3. `dispose()` for cleanup
+4. Private `_build*()` methods for UI sections
+5. Private action methods (e.g., `_createNewEntry()`)
+
+### Card-Based Lists (Detailed)
+
+List items rendered as tappable cards with:
+- Leading icon/avatar
+- Title and subtitle
+- Trailing status indicator or action button
+
+Reference: `lib/features/projects/presentation/screens/project_list_screen.dart:35-85`
+
+### Split View / Master-Detail Pattern
+
+Used in Calendar screen for entry list + report preview:
+
+```
+┌─────────────────────────────────────────────────┐
+│ [Calendar Header + Month View]                  │
+├─────────────────────────────────────────────────┤
+│ Entry List (180px)  │  Report Preview (flex)    │
+│ ┌────────────────┐  │ ┌───────────────────────┐ │
+│ │ ▶ Location A   │  │ │ Weather: Sunny        │ │
+│ │   Draft        │  │ │ Activities: ...       │ │
+│ │                │  │ │ Safety: ...           │ │
+│ │   Location B   │  │ │ [Edit] buttons        │ │
+│ │   Complete     │  │ │                       │ │
+│ └────────────────┘  │ └───────────────────────┘ │
+└─────────────────────────────────────────────────┘
+```
+
+Implementation pattern (Reference: `lib/features/entries/presentation/screens/home_screen.dart:395-410`):
+- Track `_selectedEntryId` state for highlighting
+- Left panel: Fixed-width `SizedBox` with `ListView.builder`
+- Right panel: `Expanded` widget with scrollable content
+- Selection state updates preview via `setState()`
+- Edit buttons pass section identifier as query parameter
+
+Reference: `lib/features/entries/presentation/screens/home_screen.dart:326-760`
+
+### Form Organization (Detailed)
+
+Multi-step forms use Flutter's `Stepper` widget with:
+- Step validation before advancing
+- Custom controls builder for navigation buttons
+- Form state preserved across steps
+
+Reference: `lib/features/entries/presentation/screens/entry_wizard_screen.dart:80-95`
+
+### Theming Pattern
+
+Centralized theme with brand colors. Reference: `lib/core/theme/app_theme.dart:1-95`
+
+#### Color Naming
+
+- Primary brand colors: `primaryBlue`, `secondaryBlue`
+- Semantic colors: `success`, `warning`, `error`
+- Domain-specific: `sunny`, `rainy`, `overcast` (weather tags)
+
+#### Theme Usage
+
+Access via `Theme.of(context)` or direct `AppTheme.primaryBlue` for custom widgets.
+
+### Clickable Stat Cards Pattern
+
+Dashboard stat cards use `InkWell` wrapper with `onTap` parameter:
+
+```dart
+Widget _buildStatCard(String label, String value, IconData icon, Color color, {VoidCallback? onTap}) {
+  return Card(
+    child: InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: // ... content
+    ),
+  );
+}
+```
+
+Reference: `lib/features/dashboard/presentation/screens/project_dashboard_screen.dart:265-295`

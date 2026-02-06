@@ -18,7 +18,8 @@
 | syncfusion_flutter_pdf | PDF generation |
 | pdfx | PDF rendering to images |
 | printing | PDF preview/rasterization |
-| flusseract | Tesseract OCR (local package) |
+| flusseract | Tesseract OCR (replaces flutter_tesseract_ocr, Session 280) |
+| syncfusion_flutter_pdfviewer | PDF viewing/rendering |
 | image | Image preprocessing |
 | xml | HOCR parsing |
 

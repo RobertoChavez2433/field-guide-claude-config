@@ -24,8 +24,6 @@ lib/
 │       ├── data/         # Models, repositories, datasources
 │       └── presentation/ # Screens, widgets, providers
 │       # Note: No domain/ layer in most features (only sync uses full Clean Architecture)
-├── data/        # LEGACY: empty directories
-├── presentation/# LEGACY: empty directories
 └── services/    # Cross-cutting services
 ```
 
@@ -82,78 +80,6 @@ Uses **go_router** with shell routes for persistent bottom nav. Reference: `lib/
 - Path parameters for required IDs: `/entry/:projectId/:date`
 - Query parameters for optional data: `?locationId=abc`
 
-## UI Component Patterns
-
-### Screen Structure
-
-Standard screen template from `lib/features/entries/presentation/screens/home_screen.dart`:
-
-1. `StatefulWidget` for screens with local state
-2. `initState()` for initialization
-3. `dispose()` for cleanup
-4. Private `_build*()` methods for UI sections
-5. Private action methods (e.g., `_createNewEntry()`)
-
-### Card-Based Lists
-
-List items rendered as tappable cards with:
-- Leading icon/avatar
-- Title and subtitle
-- Trailing status indicator or action button
-
-Reference: `lib/features/projects/presentation/screens/project_list_screen.dart:35-85`
-
-### Split View / Master-Detail Pattern
-
-Used in Calendar screen for entry list + report preview:
-
-```
-┌─────────────────────────────────────────────────┐
-│ [Calendar Header + Month View]                  │
-├─────────────────────────────────────────────────┤
-│ Entry List (180px)  │  Report Preview (flex)    │
-│ ┌────────────────┐  │ ┌───────────────────────┐ │
-│ │ ▶ Location A   │  │ │ Weather: Sunny        │ │
-│ │   Draft        │  │ │ Activities: ...       │ │
-│ │                │  │ │ Safety: ...           │ │
-│ │   Location B   │  │ │ [Edit] buttons        │ │
-│ │   Complete     │  │ │                       │ │
-│ └────────────────┘  │ └───────────────────────┘ │
-└─────────────────────────────────────────────────┘
-```
-
-Implementation pattern (Reference: `lib/features/entries/presentation/screens/home_screen.dart:395-410`):
-- Track `_selectedEntryId` state for highlighting
-- Left panel: Fixed-width `SizedBox` with `ListView.builder`
-- Right panel: `Expanded` widget with scrollable content
-- Selection state updates preview via `setState()`
-- Edit buttons pass section identifier as query parameter
-
-Reference: `lib/features/entries/presentation/screens/home_screen.dart:326-760`
-
-### Form Organization
-
-Multi-step forms use Flutter's `Stepper` widget with:
-- Step validation before advancing
-- Custom controls builder for navigation buttons
-- Form state preserved across steps
-
-Reference: `lib/features/entries/presentation/screens/entry_wizard_screen.dart:80-95`
-
-## Theming Pattern
-
-Centralized theme with brand colors. Reference: `lib/core/theme/app_theme.dart:1-95`
-
-### Color Naming
-
-- Primary brand colors: `primaryBlue`, `secondaryBlue`
-- Semantic colors: `success`, `warning`, `error`
-- Domain-specific: `sunny`, `rainy`, `overcast` (weather tags)
-
-### Theme Usage
-
-Access via `Theme.of(context)` or direct `AppTheme.primaryBlue` for custom widgets.
-
 ## State Management
 
 Provider pattern implemented with:
@@ -200,24 +126,6 @@ Future<void> _doSomething() async {
 | `firstWhere` without `orElse` | Throws on empty | Use `.where(...).firstOrNull` |
 | Save in `dispose()` | Context deactivated | Use `WidgetsBindingObserver.didChangeAppLifecycleState` |
 | `.first` on empty list | Throws exception | Check `.isEmpty` or use `.firstOrNull` |
-
-### Clickable Stat Cards Pattern
-
-Dashboard stat cards use `InkWell` wrapper with `onTap` parameter:
-
-```dart
-Widget _buildStatCard(String label, String value, IconData icon, Color color, {VoidCallback? onTap}) {
-  return Card(
-    child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: // ... content
-    ),
-  );
-}
-```
-
-Reference: `lib/features/dashboard/presentation/screens/project_dashboard_screen.dart:265-295`
 
 ## Offline-First Pattern
 

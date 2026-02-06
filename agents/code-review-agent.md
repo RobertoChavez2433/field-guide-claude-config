@@ -5,6 +5,8 @@ tools: Read, Grep, Glob
 model: opus
 skills:
   - verification-before-completion
+disallowedTools: Write, Edit, Bash
+memory: project
 ---
 
 # Code Review Agent

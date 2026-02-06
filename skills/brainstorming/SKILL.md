@@ -1,3 +1,10 @@
+---
+name: brainstorming
+description: Collaborative design through structured questioning
+agent: planning-agent
+user-invocable: true
+---
+
 # Brainstorming Skill
 
 **Purpose**: Collaborative design through structured questioning and incremental validation.
