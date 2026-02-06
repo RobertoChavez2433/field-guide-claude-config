@@ -6,6 +6,18 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 280 (2026-02-04)
+Flusseract OCR Migration Phases 4-6: OCR quality safeguards (21 config tests), legacy cleanup (stale ML Kit refs removed, ParserType renamed), performance hardening (pooled disposal fix). 200+ OCR tests pass. `ed267db`
+
+### Session 281 (2026-02-04)
+Windows OCR Accuracy Fix Phases 1-3: PNG format for all platforms, adaptive DPI, lightweight preprocessing. Code review 7.5/10.
+
+### Session 282 (2026-02-04)
+Springfield PDF extraction debugging: Windows preprocessing skipped binarization. Full preprocessing on all platforms, no-item-number regex, TableLocator improvements (lowered kMinHeaderKeywords to 2, multi-row header detection).
+
+### Session 283 (2026-02-04)
+Comprehensive app-wide debug logging: DebugLogger with 9 category-specific log files. Integrated across main.dart, ocr, sync, database, table_extractor. 5 tests pass.
+
 ### Session 277 (2026-02-04)
 Implemented Tesseract OCR Migration Plan Phases 1-3 using pdf-agents. Phase 1: OCR Abstraction Layer. Phase 2: Tesseract Dependencies. Phase 3: Tesseract Adapter. 95 OCR tests pass. `17a0773`
 

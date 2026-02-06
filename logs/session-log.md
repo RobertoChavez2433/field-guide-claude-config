@@ -4,6 +4,15 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-05 (Session 293)
+- Claude Directory Modernization Brainstorming: Launched 5 research agents (codebase inventory, web best practices, token analysis, conversation history, stale files). Finalized 9-phase plan: cleanup (3+4+2 files, 2 dirs), architecture.md trim (-620 tokens), context:fork for 2 skills, commands→skills migration, agent memory for 4 agents, skill frontmatter for 6, 15-command Quick Reference + Common Mistakes, supporting file updates. All decisions logged in plan.
+
+### 2026-02-05 (Session 292)
+- PDF Table Structure Analyzer brainstorming review. Created merged plan v2 combining regression recovery + analyzer improvements. Key decisions: DP dropped, anchor-based correction, 5 row types, cross-multiplication validation, adaptive upgrade.
+
+### 2026-02-05 (Session 291)
+- Completed remaining items from regression recovery plan: build metadata, preprocessing fallback logging, deprecated preprocessLightweight(), expanded cleanOcrArtifacts, header keyword gating, batch-level column shift gating.
+
 ### 2026-02-05 (Session 289)
 - PDF Extraction Regression Recovery: Implemented full 6-phase plan via parallel agents. Phase 0: observability. Phase 1: preprocessing reliability. Phase 2: OCR artifact cleanup. Phase 3: header detection hardening. Phase 4: column shift prevention. Phase 5: regression guards. 690/690 tests pass. 25 files modified (+3294/-240 lines). App rebuilt, both repos pushed.
 
