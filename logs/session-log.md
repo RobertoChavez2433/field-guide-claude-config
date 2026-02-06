@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-06 (Session 301)
+- Implemented Phase 1 (Remove Binarization) from OCR preprocessing fix plan. Removed adaptive thresholding from 3 functions in image_preprocessor.dart. All 202 OCR + 577 PDF tests pass. Manual verification pending.
+
 ### 2026-02-06 (Session 300)
 - Diagnostic/brainstorming session. Ran app, imported Springfield PDF, analyzed extraction logs. Systematic root cause analysis: discovered image preprocessing adaptive thresholding destroys clean 300 DPI images (1.7MB→136KB binary), causing 3/6 headers lost, 64% unknown rows, garbage item numbers, post-processing amplification. Created phased fix plan: remove binarization, strengthen classifier, add post-processing safeguards.
 

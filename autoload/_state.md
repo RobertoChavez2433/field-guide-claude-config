@@ -1,13 +1,18 @@
 # Session State
 
-**Last Updated**: 2026-02-06 | **Session**: 300
+**Last Updated**: 2026-02-06 | **Session**: 301
 
 ## Current Phase
-- **Phase**: Fix OCR Preprocessing — Awaiting approval
-- **Status**: Root cause identified: adaptive thresholding (binarization) destroys clean PDF images before OCR. Plan written, pending review.
+- **Phase**: Fix OCR Preprocessing — Phase 1 Complete
+- **Status**: Removed binarization from preprocessing. All automated tests pass. Awaiting manual verification (rebuild + extract Springfield PDF to verify metrics).
 - **Plan**: `.claude/plans/2026-02-06-fix-ocr-preprocessing-binarization.md`
 
 ## Recent Sessions
+
+### Session 301 (2026-02-06)
+**Work**: Implemented Phase 1 (Remove Binarization) from OCR preprocessing fix plan via pdf-agent. Removed adaptive thresholding from 3 functions in image_preprocessor.dart (_preprocessIsolate, _preprocessFallbackIsolate, _preprocessWithEnhancementsIsolate). Updated corresponding tests. All 202 OCR tests + 577 PDF table extraction tests pass. Expected benefits: preprocessing time 11s→2-3s per page, preserve 256 grayscale levels vs 2 binary levels, OCR confidence 74.8%→>85%. Manual verification pending.
+**Commits**: (pending)
+**Next**: Manual verification (rebuild + extract Springfield PDF), verify metrics match targets in plan
 
 ### Session 300 (2026-02-06)
 **Work**: Diagnostic/brainstorming session. Ran app, imported Springfield PDF, analyzed extraction logs. Systematic root cause analysis across 5 pipeline layers. Key discovery: image preprocessing applies adaptive thresholding that converts clean 300 DPI grayscale (1.7MB) to binary black/white (136KB), destroying 92% of image data including column headers. This causes cascade: 3/6 headers lost → bad column assignment → 64% unknown rows → garbage item numbers → post-processing amplification. Created phased fix plan: Phase 1 remove binarization, Phase 2 strengthen classifier, Phase 3 post-processing safeguards.
