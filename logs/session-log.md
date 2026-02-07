@@ -4,6 +4,12 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-06 (Session 306)
+- First real-world PDF test of native text pipeline. Fixed 3 bugs: (1) empty Uint8List crash in img.decodeImage — added isEmpty guards in 4 files, (2) kMaxDataElements=8 too low for word-level native text — raised to 20 with numeric content guard, (3) kMaxDataRowLookahead=5 too narrow — raised to 15. Also raised kMaxContinuationElements 3→10. 614 tests pass.
+
+### 2026-02-06 (Session 305)
+- Implemented all 3 phases of PDF Extraction Pipeline Redesign. Native text first, OCR fallback. 1319 tests pass.
+
 ### 2026-02-06 (Session 304)
 - Brainstorming session continuing PDF extraction pipeline redesign plan. Resolved all 5 open questions from Session 303 draft: (1) hybrid column detection (text-derived first, image-scan fallback), (2) TextWord→OcrElement→v2 pipeline (preserves post-processing), (3) whole-document routing with TODO for per-page, (4) researched legacy ColumnLayoutParser X-position clustering vs v2 pipeline interfaces, (5) coordinate transform bridge (scaleFactor = renderDPI/72). Plan finalized to "Approved" status with 3 implementation phases.
 

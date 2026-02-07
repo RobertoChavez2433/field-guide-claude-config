@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 301 (2026-02-06)
+Phase 1: Removed binarization from image preprocessing. 202 OCR + 577 PDF tests pass. Commit: `836b856`.
+
 ### Session 299 (2026-02-06)
 Table Structure Analyzer v2.1 Phases 5+6 (Parser Integration + Regression Guard). 566/567 tests pass. Commit: `0a4cbb0`.
 

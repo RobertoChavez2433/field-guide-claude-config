@@ -4,6 +4,11 @@ Historical defects moved from defects.md or already fixed. Reference only.
 
 ---
 
+### [ASYNC] 2026-01-19: Provider Returned Before Async Init (archived 2026-02-06)
+**Pattern**: Returning Provider from `create:` before async init completes
+**Prevention**: Add `isInitializing` flag, show loading state until false
+**Ref**: @lib/main.dart:365-378
+
 ### [E2E] 2026-01-25: Silent Skip with if(widget.exists) (archived 2026-02-06)
 **Pattern**: Using `if (widget.exists) { ... }` silently skips when widget not visible
 **Prevention**: Use `waitForVisible()` instead - let it fail explicitly if widget should exist
