@@ -1,29 +1,40 @@
 # Session State
 
-**Last Updated**: 2026-02-07 | **Session**: 311
+**Last Updated**: 2026-02-07 | **Session**: 312
 
 ## Current Phase
-- **Phase**: PDF Extraction Pipeline — Encoding fix, debug images, PSM fallback
-- **Status**: All 3 parts shipped. 1386 PDF tests pass. No regressions.
+- **Phase**: PDF Extraction Pipeline — OCR "Empty Page" + Encoding Corruption Fix Plan
+- **Status**: Comprehensive 4-part plan created. No code changes yet.
 
 ## HOT CONTEXT — Resume Here
 
-### What Was Done This Session (311)
-1. **Part 2 (Debug Images)**: Save rendered + preprocessed page images to `{logDir}/pdf_debug_images/` when `kPdfParserDiagnostics` enabled. In `_ocrCorruptedPages`.
-2. **Part 1 (Encoding-Aware Normalization)**: Threaded `hasEncodingCorruption` flag through `PostProcessConfig` → `PostProcessEngine` → `PostProcessNumeric` → `PostProcessNormalization._normalizeNumericLike`. Added encoding substitutions (z→7, e→3, J→3, apostrophe→comma). **Key change**: unmappable chars in encoding path now fail parse (return '') instead of silently stripping to wrong values.
-3. **Part 3 (PSM Fallback)**: After OCR in `_ocrCorruptedPages`, if < 3 elements, retry with PSM 11 (sparseText) on preprocessed then raw image. Uses best result.
-4. 13 new encoding tests added. 103 normalization tests pass. 1386 full PDF suite pass.
+### What Was Done This Session (312)
+1. **Deep research** into two interacting bugs using 5 parallel exploration agents
+2. **Root cause confirmed (Issue 1)**: `img.grayscale()` keeps 4-channel RGBA → `encodePng()` produces 32-bit PNG → Tesseract Otsu binarization fails → "Empty page!!" on page 6
+3. **Root cause confirmed (Issue 2)**: `hasEncodingCorruption` flag not threaded to initial parsing in `TableRowParser` + dangerous letter stripping produces wrong-but-valid numbers → encoding re-parse never triggers
+4. **Comprehensive plan written**: `.claude/plans/ocr-empty-page-encoding-fix.md`
+   - Part 1: RGBA→Grayscale fix (4 locations + C++ diagnostics)
+   - Part 2: Replace letter stripping with fail-parse
+   - Part 3: Force re-parse when encoding flag set
+   - Part 4: Thread `hasEncodingCorruption` through 23 call sites in 7 files
+5. **Decision**: Keep `kCorruptionScoreThreshold=15` (no threshold change). Pages 2-4 can be fixed via normalization pipeline alone.
+6. **Decision**: Unrecognized letters → fail-parse on both OCR and encoding paths
 
-### What Needs to Happen Next (Session 312)
-- Manual test with Springfield PDF to verify encoding fixes on pages 2-4 dollar amounts
-- Check debug images saved for page 6 to diagnose "Empty page!!" root cause
-- Verify PSM fallback produces elements on page 6 (check logs)
-- Ready for new feature work or AASHTOWARE integration
+### What Needs to Happen Next (Session 313)
+- Implement plan in `.claude/plans/ocr-empty-page-encoding-fix.md`
+- Phase 1: Image channel fix (Low risk)
+- Phase 2: Stop letter stripping + force re-parse (Medium risk)
+- Phase 3: Thread encoding flag through 23 call sites (Medium risk)
+- Phase 4: Full test verification
 
 ### Uncommitted Changes
-- 6 lib files + 1 test file modified (encoding normalization + debug images + PSM fallback)
+- Config repo only: new plan file + research log
 
 ## Recent Sessions
+
+### Session 312 (2026-02-07)
+**Work**: Research + plan for OCR "Empty page" (RGBA channel bug) and encoding corruption (flag threading). 5 agents explored codebase. Comprehensive 4-part plan created.
+**Plan**: `.claude/plans/ocr-empty-page-encoding-fix.md`
 
 ### Session 311 (2026-02-07)
 **Work**: Encoding-aware currency normalization (z→7, e→3, fail on unmappable), debug image saving, PSM 11 fallback for empty OCR pages.
@@ -45,13 +56,15 @@
 **Tests**: 828 passing. No regressions.
 **Review**: 1 critical, 2 major, 5 minor, 2 DRY issues. Fix plan created.
 
-### Session 307 (2026-02-06)
-**Work**: Font encoding investigation. Added diagnostic logging, ran Springfield PDF, discovered multi-page corruption.
-**Key Finding**: Pages 1-4 mild corruption, page 6 catastrophic. Syncfusion has no fix. OCR fallback needed.
-**Tests**: 816 passing. No regressions.
-
-### Sessions 280-306
+### Sessions 280-307
 **Archived to**: `.claude/logs/state-archive.md`
+
+## Active Plans
+
+### OCR "Empty Page" + Encoding Corruption Fix — IN PROGRESS
+4-part plan: RGBA→Grayscale, fail-parse, force re-parse, thread encoding flag.
+- Plan: `.claude/plans/ocr-empty-page-encoding-fix.md`
+- Research: `.claude/logs/session-312-ocr-research.md`
 
 ## Completed Plans (Recent)
 
@@ -63,14 +76,9 @@ Fix A: `user_defined_dpi` threading. Fix B: HOCR text reconstruction (eliminates
 
 ### Code Review Fixes — COMPLETE (Session 309)
 All 13 issues fixed. 4 phases: safety-critical, testability, normalization, DRY.
-- Plan: `.claude/plans/2026-02-06-code-review-fixes-plan.md`
 
 ### Per-Page OCR Fallback — COMPLETE (Session 308)
 Phase 1 (encoding normalizer) + Phase 2 (per-page OCR routing) shipped.
-- Plan: `.claude/plans/2026-02-06-native-text-quality-plan.md`
-
-### PDF Extraction Pipeline Redesign — COMPLETE (Session 305)
-All 3 phases shipped. Native text first, OCR fallback.
 
 ## Deferred Plans
 - **AASHTOWARE Integration**: `.claude/backlogged-plans/AASHTOWARE_Implementation_Plan.md`

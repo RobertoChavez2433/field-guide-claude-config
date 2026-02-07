@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-07 (Session 312)
+- Research + planning session for OCR "Empty page" and encoding corruption bugs. Launched 5 parallel exploration agents to validate root causes across image preprocessing, normalization pipeline, and corruption scoring. Confirmed: (1) `img.grayscale()` keeps 4-channel RGBA causing Tesseract "Empty page!!" on page 6, (2) `hasEncodingCorruption` flag not threaded to 23 call sites across 7 files, (3) dangerous letter stripping produces wrong-but-valid numbers blocking re-parse. Created comprehensive 4-part fix plan. Decision: keep `kCorruptionScoreThreshold=15`, fix via normalization pipeline. Plan: `.claude/plans/ocr-empty-page-encoding-fix.md`.
+
 ### 2026-02-07 (Session 311)
 - Implemented 3-part plan: (1) encoding-aware currency normalization — threaded `hasEncodingCorruption` flag through PostProcessConfig → Engine → Numeric → Normalization, added z→7/e→3/J→3 substitutions, replaced blind catch-all strip with fail-on-unmappable for encoding path, 13 new tests; (2) debug image saving in `_ocrCorruptedPages` behind kPdfParserDiagnostics; (3) PSM 11 (sparseText) fallback for pages with < 3 OCR elements, tries preprocessed then raw image. 6 files changed. 1386 PDF tests pass, 0 regressions.
 

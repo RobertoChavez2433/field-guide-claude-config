@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 307 (2026-02-06)
+Font encoding investigation. Added diagnostic logging, ran Springfield PDF, discovered multi-page corruption. Pages 1-4 mild, page 6 catastrophic. OCR fallback needed.
+
 ### Session 306 (2026-02-06)
 First real-world PDF test of native text pipeline. Fixed 3 bugs: empty Uint8List crash, element count thresholds, data row lookahead.
 
