@@ -51,5 +51,6 @@
       "Bash(pwsh -Command:*)"
     ]
   },
-  "spinnerTipsEnabled": true
+  "spinnerTipsEnabled": true,
+  "prefersReducedMotion": true
 }
