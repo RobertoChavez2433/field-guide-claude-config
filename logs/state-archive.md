@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 304 (2026-02-06)
+Brainstorming session continuing pipeline redesign plan.
+
 ### Session 301 (2026-02-06)
 Phase 1: Removed binarization from image preprocessing. 202 OCR + 577 PDF tests pass. Commit: `836b856`.
 

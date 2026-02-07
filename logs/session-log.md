@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-06 (Session 308)
+- Implemented Phase 1 (encoding-aware item number normalizer with conditional chaining) and Phase 2 (per-page OCR fallback for catastrophically corrupted pages). Code reviewed last 5 commits: 1 critical, 2 major, 5 minor, 2 DRY issues. Created fix plan (4 PRs). Commits: `92904a7`, `a7237e3`. 828 tests passing.
+
 ### 2026-02-06 (Session 306)
 - First real-world PDF test of native text pipeline. Fixed 3 bugs: (1) empty Uint8List crash in img.decodeImage — added isEmpty guards in 4 files, (2) kMaxDataElements=8 too low for word-level native text — raised to 20 with numeric content guard, (3) kMaxDataRowLookahead=5 too narrow — raised to 15. Also raised kMaxContinuationElements 3→10. 614 tests pass.
 
