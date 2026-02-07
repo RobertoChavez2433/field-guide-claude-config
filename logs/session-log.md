@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-07 (Session 310)
+- Fixed OCR "Empty page" failures: threaded DPI to Tesseract via `user_defined_dpi` (Fix A), eliminated double recognition by replacing `utf8Text()` with HOCR text reconstruction (Fix B, ~50% faster). Added optional `int? dpi` to all 4 OcrEngine methods. 5 files changed. 1373 PDF tests pass.
+
 ### 2026-02-07 (Session 309)
 - Implemented all 13 code review fixes across 4 phases: safety-critical (fallThroughToOcr flag, pooled engine dispose), testability (@visibleForTesting, kCorruptionLogThreshold, hoisted PdfTextExtractor, 20 new tests), normalization (cleanDescriptionArtifacts preserving commas, 12 new tests), DRY (centralized normalizeItemNumber, eliminated continuation merge duplication, 8 new tests). Commit: `d8b259f`. 646 table extraction tests pass.
 

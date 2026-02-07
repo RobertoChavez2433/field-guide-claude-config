@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 305 (2026-02-06)
+Implemented all 3 phases of PDF Extraction Pipeline Redesign. Native text first, OCR fallback.
+
 ### Session 304 (2026-02-06)
 Brainstorming session continuing pipeline redesign plan.
 

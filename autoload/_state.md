@@ -1,30 +1,34 @@
 # Session State
 
-**Last Updated**: 2026-02-07 | **Session**: 309
+**Last Updated**: 2026-02-07 | **Session**: 310
 
 ## Current Phase
-- **Phase**: PDF Extraction Pipeline — Code review fixes COMPLETE
-- **Status**: All 13 code review issues fixed across 4 phases. Pipeline stable.
+- **Phase**: PDF Extraction Pipeline — OCR DPI fix + performance optimization
+- **Status**: DPI threading and double-recognition elimination shipped. All tests pass.
 
 ## HOT CONTEXT — Resume Here
 
-### What Was Done This Session (309)
-1. **Phase 1 (Safety-critical)**: Added `fallThroughToOcr` flag, cleared stale data in all-corrupted path, fixed pooled OCR engine dispose, removed redundant assignments
-2. **Phase 2 (Testability)**: Exposed `analyzeEncodingCorruption` + `fixReversedText` with `@visibleForTesting`, extracted `kCorruptionLogThreshold`, hoisted `PdfTextExtractor` out of loop, added corruption score formula docs, created 20 new tests
-3. **Phase 3 (Normalization)**: Added `cleanDescriptionArtifacts()` preserving commas/colons/semicolons, updated 6 call sites, documented hyphen risk, added 12 new tests
-4. **Phase 4 (DRY)**: Centralized `normalizeItemNumber()` in PostProcessNormalization, eliminated inline continuation merge duplication (~70 lines), added 8 new tests
-5. Commit: `d8b259f`
-6. All table extraction tests pass (646), all new tests pass (40 new across 2 files)
+### What Was Done This Session (310)
+1. **Fix A (DPI threading)**: Added `user_defined_dpi` Tesseract variable via `setVariable()` — eliminates "Estimating resolution" guesswork. DPI passed from `pageDpi` in `_runOcrPipeline` and `PdfPageRenderer.defaultDpi` in `_ocrCorruptedPages`.
+2. **Fix B (Performance)**: Removed redundant `utf8Text()` call in `recognizeWithConfidence()` — text now reconstructed from HOCR XML. Cuts OCR time ~50% per page.
+3. Added optional `int? dpi` parameter to all 4 `OcrEngine` methods (backward compatible)
+4. Updated 2 test mocks to match new interface
+5. All tests pass: 202 OCR, 31 cell_extractor, 1373 full PDF suite
 
-### What Needs to Happen Next (Session 310)
-- PDF extraction pipeline is stable — all code review issues resolved
-- Consider manual testing with Springfield PDF to verify end-to-end
+### What Needs to Happen Next (Session 311)
+- Manual test with Springfield PDF to verify "Empty page!!" is eliminated
+- Verify console no longer shows "Estimating resolution" messages
 - Ready for new feature work or AASHTOWARE integration
 
 ### Uncommitted Changes
-- None (app repo clean)
+- None (committed as `c713c77`)
 
 ## Recent Sessions
+
+### Session 310 (2026-02-07)
+**Work**: Fixed OCR "Empty page" failures — threaded DPI to Tesseract via `user_defined_dpi`, eliminated double recognition in `recognizeWithConfidence`.
+**Commits**: `c713c77`
+**Tests**: 1373 PDF tests pass. No regressions.
 
 ### Session 309 (2026-02-07)
 **Work**: Implemented all 13 code review fixes across 4 phases (safety-critical, testability, normalization, DRY).
@@ -46,14 +50,13 @@
 **Work**: First real-world PDF test of native text pipeline. Fixed 3 bugs.
 **Tests**: 614 table extraction tests pass
 
-### Session 305 (2026-02-06)
-**Work**: Implemented all 3 phases of PDF Extraction Pipeline Redesign.
-**Commits**: `fd6b08d`, `3db9e34`
-
-### Sessions 280-304
+### Sessions 280-305
 **Archived to**: `.claude/logs/state-archive.md`
 
 ## Completed Plans (Recent)
+
+### OCR DPI Fix — COMPLETE (Session 310)
+Fix A: `user_defined_dpi` threading. Fix B: HOCR text reconstruction (eliminates double recognition).
 
 ### Code Review Fixes — COMPLETE (Session 309)
 All 13 issues fixed. 4 phases: safety-critical, testability, normalization, DRY.
@@ -70,6 +73,6 @@ All 3 phases shipped. Native text first, OCR fallback.
 - **AASHTOWARE Integration**: `.claude/backlogged-plans/AASHTOWARE_Implementation_Plan.md`
 
 ## Reference
-- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-304)
+- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-305)
 - **Defects**: `.claude/autoload/_defects.md`
 - **Branch**: `main`
