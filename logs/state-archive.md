@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 306 (2026-02-06)
+First real-world PDF test of native text pipeline. Fixed 3 bugs: empty Uint8List crash, element count thresholds, data row lookahead.
+
 ### Session 305 (2026-02-06)
 Implemented all 3 phases of PDF Extraction Pipeline Redesign. Native text first, OCR fallback.
 

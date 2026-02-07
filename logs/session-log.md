@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-07 (Session 311)
+- Implemented 3-part plan: (1) encoding-aware currency normalization — threaded `hasEncodingCorruption` flag through PostProcessConfig → Engine → Numeric → Normalization, added z→7/e→3/J→3 substitutions, replaced blind catch-all strip with fail-on-unmappable for encoding path, 13 new tests; (2) debug image saving in `_ocrCorruptedPages` behind kPdfParserDiagnostics; (3) PSM 11 (sparseText) fallback for pages with < 3 OCR elements, tries preprocessed then raw image. 6 files changed. 1386 PDF tests pass, 0 regressions.
+
 ### 2026-02-07 (Session 310)
 - Fixed OCR "Empty page" failures: threaded DPI to Tesseract via `user_defined_dpi` (Fix A), eliminated double recognition by replacing `utf8Text()` with HOCR text reconstruction (Fix B, ~50% faster). Added optional `int? dpi` to all 4 OcrEngine methods. 5 files changed. 1373 PDF tests pass.
 
