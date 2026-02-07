@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-07 (Session 309)
+- Implemented all 13 code review fixes across 4 phases: safety-critical (fallThroughToOcr flag, pooled engine dispose), testability (@visibleForTesting, kCorruptionLogThreshold, hoisted PdfTextExtractor, 20 new tests), normalization (cleanDescriptionArtifacts preserving commas, 12 new tests), DRY (centralized normalizeItemNumber, eliminated continuation merge duplication, 8 new tests). Commit: `d8b259f`. 646 table extraction tests pass.
+
 ### 2026-02-06 (Session 308)
 - Implemented Phase 1 (encoding-aware item number normalizer with conditional chaining) and Phase 2 (per-page OCR fallback for catastrophically corrupted pages). Code reviewed last 5 commits: 1 critical, 2 major, 5 minor, 2 DRY issues. Created fix plan (4 PRs). Commits: `92904a7`, `a7237e3`. 828 tests passing.
 
