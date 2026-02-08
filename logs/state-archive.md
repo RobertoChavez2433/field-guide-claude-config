@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 311 (2026-02-07)
+Encoding-aware currency normalization (z→7, e→3, fail on unmappable), debug image saving, PSM 11 fallback for empty OCR pages. 1386 PDF tests pass. 13 new encoding tests.
+
 ### Session 310 (2026-02-07)
 Fixed OCR "Empty page" failures — threaded DPI to Tesseract via `user_defined_dpi`, eliminated double recognition in `recognizeWithConfidence`. 1373 PDF tests pass. Commit: `c713c77`.
 

@@ -653,3 +653,138 @@ For pages with real X shifts (~20px), the existing anchor system handles this:
 
 ### Impact
 This fix should resolve the unit+quantity merging on pages 2-5, which is the primary cause of the ~42% extraction failure rate. The encoding fixes from session 313 will then be able to properly process correctly-columned data.
+
+### Update (Session 316): Column Propagation Fix Confirmed Working But Insufficient
+
+The two-change fix (commit `9c361e7`) IS working correctly:
+- Change 1 (confidence comparison): Per-page 0% results properly fall back to 83% global
+- Change 2 (identity correction): Anchor corrections apply to all pages (offsets -39 to -52px, 100% confidence)
+- All 1,386 tests pass
+
+**However**, the fix propagates a **wrong 5-column layout** — it correctly gives all pages the 83% header result, but that result itself merges unit and quantity into one column because the "Quantity" header was never detected. See Issue 4 below for the real root cause.
+
+---
+
+## Issue 4: Missing "Quantity" Column — Header Y Tolerance Too Tight (Session 316)
+
+### Symptoms
+After column propagation fix, manual Springfield PDF test still shows 50+ items with merged unit+quantity:
+- "FT640", "EA48", "SYD27400", "EATO", "LSUM1", etc.
+- All pages affected equally (propagation fix correctly spreads same wrong layout)
+- 131 items extracted, 57.96% success rate
+- Encoding corruption also present ($ → s, character confusion) but secondary to column issue
+
+### Root Cause: "Quantity" Header Element Never Collected
+
+The Springfield PDF header is 2 rows:
+```
+Row 1 (y≈2509): Item | Description | Unit | Est.     | Unit   | Bid
+Row 2 (y≈2539): No.  | of Work     |      | Quantity | Price  | Amount
+```
+
+Syncfusion native text extraction produces 8 elements (all from Row 1's Y band):
+
+| # | Text | X Center | Y Center | Matched To |
+|---|------|----------|----------|-----------|
+| 1 | "Item" | 186.0 | ~2509 | itemNumber |
+| 2 | "Description" | 725.9 | ~2509 | description |
+| 3 | "Unit" | 1286.9 | ~2509 | unit |
+| 4 | "Est." | 1543.4 | ~2509 | NONE |
+| 5 | "Unit" | 1802.9 | ~2509 | NONE (duplicate) |
+| 6 | "Price" | 1904.5 | ~2509 | unitPrice |
+| 7 | "Bid" | 2116.6 | ~2509 | NONE |
+| 8 | "Amount" | 2238.4 | ~2509 | bidAmount |
+
+**"Quantity" is missing entirely** — it's on Row 2 at y≈2539, never collected.
+
+### Failure Chain (5 steps)
+
+1. **`headerRowYPositions` filtered to 1 entry** (`_extractHeaderRowElements`, line 580)
+   - 6 entries (one per page) → `kHeaderRegionTolerance = 100.0` filter → only Y=2509.6 survives
+   - Row 2 Y (≈2539) either not in the list or same page entry as Row 1
+
+2. **`kHeaderYTolerance = 25.0px` too tight** (`_collectHeaderElementsForYs`, line 691)
+   - Row 2 elements at y≈2539 are 30px from Row 1 at y≈2509
+   - 30 > 25 → "Quantity" filtered out before reaching keyword matching
+
+3. **Multi-row combiner gets no partner for "Est."** (`_combineMultiRowHeaders`)
+   - `combinedGroups: 0` — "Est." (x=1543) has no vertically-aligned partner
+   - If "Quantity" had been collected, they'd combine to "Est. Quantity" → matches keyword
+
+4. **Header detection produces 5 columns (no quantity)**
+   - `[itemNumber, description, unit, unitPrice, bidAmount]`
+   - "unit" column spans x=1206-1488, covering BOTH unit text (x≈1287) and quantity text (x≈1450)
+
+5. **Cell extractor concatenates overlapping elements**
+   - "FT" (x≈1300) + "640" (x≈1400) both fall in unit column → "FT640"
+
+### Column Boundaries Produced (83% Header Detection)
+```
+itemNumber:   135 - 407    (Item at x=186)
+description:  407 - 1206   (Description at x=726)
+unit:         1206 - 1488  ← Covers BOTH unit and quantity text
+unitPrice:    1488 - 2046  (Price at x=1905)
+bidAmount:    2046 - 2324  (Amount at x=2238)
+```
+
+### App Log Evidence (2026-02-07T19:55)
+```
+HeaderExtractor: Filtered header Y positions: originalCount=6, filteredCount=1, removed=5
+HeaderColumnDetector: Checking element {"text":"Est.","matched":"none","xCenter":"1543.4"}
+HeaderColumnDetector: Multi-row header combination complete: combinedGroups=0
+Columns detected: 5 columns, method: header, confidence: 83.3%
+Applied anchor correction to page 0 (offset=-44.7, scale=0.979, confidence=30.0%)
+Applied anchor correction to page 1 (offset=-43.0, scale=0.980, confidence=100.0%)
+Applied anchor correction to page 2 (offset=-47.5, scale=0.981, confidence=100.0%)
+Applied anchor correction to page 3 (offset=-52.0, scale=0.981, confidence=100.0%)
+Applied anchor correction to page 4 (offset=-41.5, scale=0.977, confidence=100.0%)
+Applied anchor correction to page 5 (offset=-39.5, scale=0.978, confidence=100.0%)
+```
+
+### Extraction Output Patterns (131 items, 57.96% success)
+
+**Merged unit+quantity (50+ items):**
+| Item | Unit Field | Should Be | Quantity |
+|------|-----------|-----------|---------|
+| 6 | FT640 | FT | 640 |
+| 13 | SYD27400 | SYD | 27,400 |
+| 40 | FT15 | FT | 15 |
+| 41 | FT9740 | FT | 9,740 |
+| 45 | EA48 | EA | 48 |
+| 58 | EATO | EA | (corrupted) |
+
+**Encoding corruption (secondary):**
+- `$` → `s` (~60 occurrences)
+- `$ll.l0` → should be `$11.10`
+- `$?01.70` → should be `$501.70`
+
+### Three-Layer Fix Strategy
+
+1. **Increase `kHeaderYTolerance` to 40.0** (PRIMARY)
+   - File: `table_extractor.dart:71`
+   - Captures Row 2 elements (30px gap < 40px tolerance)
+   - Multi-row combiner then groups "Est." + "Quantity" → matches keyword
+   - Result: 6 columns with quantity column
+
+2. **Gap-based column inference** (SAFETY NET)
+   - File: `header_column_detector.dart` after `_buildColumnsFromHeaders()`
+   - If "unit" exists, "quantity" missing, and large gap before "unitPrice": infer quantity column
+   - Catches cases where header elements are truly missing
+
+3. **Post-processing concatenated split** (SAFETY NET)
+   - File: `post_process_splitter.dart:~155`
+   - Regex split "FT640" → FT + 640, validated against known units
+   - Catches any remaining merged values that escape column detection
+
+### Key Files
+| File | Lines | Issue |
+|------|-------|-------|
+| `table_extractor.dart` | 71 | `kHeaderYTolerance = 25.0` (too tight for 2-row headers) |
+| `table_extractor.dart` | 682-698 | `_collectHeaderElementsForYs()` Y filter |
+| `table_extractor.dart` | 560-615 | `_extractHeaderRowElements()` region filter |
+| `header_column_detector.dart` | 60-69 | `_qtyKeywords` includes "EST. QUANTITY" |
+| `header_column_detector.dart` | 89 | `kHeaderXTolerance = 25.0` for X grouping |
+| `header_column_detector.dart` | 135-212 | `_combineMultiRowHeaders()` (works if elements reach it) |
+| `header_column_detector.dart` | 305-354 | Column boundary construction (midpoint logic) |
+| `post_process_splitter.dart` | 142-211 | `splitMergedUnitQuantity()` (no concat pattern) |
+| `post_process_splitter.dart` | 165 | Whitespace split misses "FT640" |
