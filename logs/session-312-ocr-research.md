@@ -437,3 +437,219 @@ Validated ParsedBidItems -> BidItem model -> SQLite database
 | `9cdd787` | Native text pipeline crash and classification bugs |
 | `3db9e34` | PDF extraction pipeline redesign (native text first) |
 | `836b856` | Remove destructive binarization from OCR preprocessing |
+
+---
+
+## Issue 3: Column Detection Fails on Pages 2-5 (Discovered Session 314)
+
+### Symptoms
+After session 313 encoding fixes, manual Springfield PDF test shows:
+- Page 1: 8 header elements found, 83% confidence, 5 correct columns
+- Pages 2-5: **0 header elements**, fallback ratios, **0% confidence**, 6 wrong columns
+- Page 6: 0 header elements, fallback + line detection, 0% confidence
+- Unit+quantity merging: "FT15", "FT9740", "EA48", "EA134", "EAL13", "EA4L", "EATO"
+- This is the **primary remaining accuracy blocker** — encoding fixes can't help when elements land in wrong columns
+
+### Root Cause: Three Interconnected Bugs in table_extractor.dart
+
+#### Bug A: Header Elements Only Collected from Page 0
+`_extractHeaderRowElements()` at line 574:
+```dart
+final headerPageElements = ocrByPage[tableRegion.startPage] ?? [];
+```
+Only looks at page 0's elements. Headers on pages 1-5 are never searched.
+
+The filter at lines 580-583 then removes 5 of 6 header Y positions because they're from subsequent pages (Y ~182 vs startY ~2509):
+```dart
+final filteredHeaderYs = tableRegion.headerRowYPositions
+    .where((y) => (y - tableRegion.startY).abs() <= kHeaderRegionTolerance)
+    .toList();
+```
+Log: `Filtered header Y positions: originalCount=6, filteredCount=1, removed=5`
+
+#### Bug B: Per-Page Detection Gets Empty Headers
+`_detectColumnsPerPage()` at line 862:
+```dart
+headerRowElements: <OcrElement>[],  // Always empty for every page
+```
+Pages 2-5 never get header-based column detection. They can only use line detection (which fails — no gridlines) or standard ratio fallback (0% confidence).
+
+#### Bug C: Fallback Comparison Broken
+Line 873:
+```dart
+perPage[pageIdx] = detected.columns.isNotEmpty ? detected : fallback;
+```
+Standard ratio fallback ALWAYS produces 6 columns (non-empty), so the good global result (page 1, 83%) is **never used** as the fallback. The condition should compare confidence, not emptiness.
+
+### Data Flow
+```
+_selectPrimaryRegion() merges 6 per-page regions into 1
+  → headerRowYPositions = [2509.6, 182.6, 181.1, 184.1, 181.1, 176.0]
+    ↓
+_extractHeaderRowElements() filters to startY±100
+  → Only Y=2509.6 survives → 8 header elements from page 0
+    ↓
+_detectColumns() [global] → 83% confidence, 5 columns ← WORKS
+    ↓
+_detectColumnsPerPage() passes empty headers per page
+  → Pages 2-5: 0% confidence fallback ratios ← BREAKS
+  → `detected.columns.isNotEmpty` is always true ← NEVER FALLS BACK
+```
+
+### Fallback Ratio Columns (0% confidence)
+```
+itemNumber:   0-8%    of table width
+description:  8-50%
+unit:         50-60%  ← OVERLAPS with quantity
+quantity:     60-72%  ← OVERLAPS with unit
+unitPrice:    72-86%
+bidAmount:    86-100%
+```
+vs Page 1 header-detected columns (83%):
+```
+itemNumber:   135-407   (keyword: "Item" at x=186)
+description:  407-1206  (keyword: "Description" at x=726)
+unit:         1206-1488 (keyword: "Unit" at x=1287)
+unitPrice:    1488-2046 (keywords: "Unit Price" at x=1803-1905)
+bidAmount:    2046-2324 (keywords: "Bid Amount" at x=2117-2238)
+```
+Note: quantity column is MISSING from header detection (merged into "Est. Quantity" → "Unit Price"). This is fine — the 5-column layout correctly separates unit from quantity.
+
+### Key Files
+| File | Lines | Issue |
+|------|-------|-------|
+| `table_extractor.dart` | 574 | Only looks at startPage elements |
+| `table_extractor.dart` | 580-583 | Filters out cross-page header Ys |
+| `table_extractor.dart` | 862 | Empty header elements per page |
+| `table_extractor.dart` | 873 | `isNotEmpty` check never falls back |
+| `header_column_detector.dart` | 14-22 | Standard ratio definitions |
+| `header_column_detector.dart` | 122-128 | Fallback always produces columns |
+
+### Fix Strategy (Refined after anchor system investigation)
+
+The original assumption was that we needed to extract per-page headers. After tracing the full pipeline, the fix is simpler — the anchor system was already designed to handle this but has two bugs preventing it from working.
+
+### Anchor Correction System (Existing Infrastructure)
+
+The column detection pipeline has a 3-layer architecture:
+
+```
+Layer 1: Header/Line Detection → Global ColumnBoundaries (83% confidence)
+Layer 2: Per-page Detection → Independent columns per page (0% fallback)
+Layer 3: Anchor Correction → Per-page offset/scale from element positions
+```
+
+**How it works:**
+1. `_detectColumns()` [GLOBAL] runs header detection on page 1 → 83% confidence, 5 columns
+2. `_applyAnchorCorrection()` computes per-page corrections using data element X positions
+   - Reference anchors from page 1: left=135.5, right=2323.8, width=2188.3
+   - Per-page: finds leftmost/rightmost data elements → computes offset & scale
+   - Stores corrections in `ColumnBoundaries.pageCorrections` map
+3. `_detectColumnsPerPage()` runs independent detection per page → all get 0% fallback
+4. `_bootstrapWeakPages()` looks for strong line-detected pages → none found → no-op
+5. `_applyAnchorCorrectionsToPerPage()` projects global boundaries onto each page
+   - Uses `_projectReferenceBoundariesToPage(reference, correction, pageIdx)`
+   - Applies offset+scale to each column boundary
+
+**Key files:**
+| File | Lines | Purpose |
+|------|-------|---------|
+| `column_detector.dart` | 396-605 | `_applyAnchorCorrection()` — compute per-page corrections |
+| `column_detector.dart` | 451-464 | `_computePageCorrection()` — per-page offset/scale |
+| `column_detector.dart` | 564-577 | Priors promotion (strong priors + weak headers) |
+| `table_extractor.dart` | 959-987 | `_applyAnchorCorrectionsToPerPage()` — project onto pages |
+| `table_extractor.dart` | 989-1019 | `_projectReferenceBoundariesToPage()` — offset+scale math |
+| `table_extractor.dart` | 907-957 | `_bootstrapWeakPages()` — cross-page line bootstrap |
+| `models/page_correction.dart` | 45 | `isIdentity`: offset < 0.01 && scale ≈ 1.0 |
+
+**Anchor correction constants:**
+| Constant | Value | Location | Purpose |
+|----------|-------|----------|---------|
+| `kMinAnchorPageCoverage` | 0.60 | column_detector.dart | Min % of pages with anchors |
+| `kPriorsPromotionThreshold` | 0.70 | column_detector.dart | Min priors confidence to promote |
+| `kHeaderWeakThreshold` | 0.50 | column_detector.dart | Header confidence below this = weak |
+| `kMinScaleRatio` | varies | column_detector.dart | Scale clamping bounds |
+| `kMaxScaleRatio` | varies | column_detector.dart | Scale clamping bounds |
+
+### Three Bugs Preventing Anchor Propagation
+
+#### Bug 1: Per-page detection produces wrong-but-non-empty columns (line 862)
+`_detectColumnsPerPage()` passes `headerRowElements: <OcrElement>[]` for every page. With no headers and no gridlines, falls back to standard ratios (6 wrong columns at 0% confidence).
+
+#### Bug 2: Fallback comparison never triggers (line 873)
+```dart
+perPage[pageIdx] = detected.columns.isNotEmpty ? detected : fallback;
+```
+Standard ratio fallback ALWAYS produces 6 columns, so `isNotEmpty` is always true. The 83% global result is never used as fallback.
+
+#### Bug 3: Anchor correction skips identity corrections (line 971)
+```dart
+if (correction == null || correction.isIdentity) {
+    continue;  // Leaves bad 0% result in place!
+}
+```
+When pages have similar X positions to reference (offset ≈ 0, scale ≈ 1.0), correction is identity and gets skipped. The bad 0% fallback ratios remain.
+
+### Pipeline Trace from Today's Logs
+```
+Global Detection:
+  headerResult: 83% confidence, 5 columns (page 1 headers)
+  lineResult: null (no gridlines)
+  bestResult: header (83%)
+
+  Anchor Correction:
+    Reference: left=135.5, right=2323.8, width=2188.3
+    Page 0: rejected as outlier
+    Pages 1-5: anchors found (coverage=83% > threshold 60%)
+    priorsConfidence: 0.83
+    headerConfidence: 0.83
+    → Neither "promoted" nor "boosted" (both thresholds fail for strong headers)
+    → Returns: ColumnBoundaries(83%, pageCorrections={1:..., 2:..., 3:..., 4:..., 5:...})
+
+Per-Page Detection:
+  Page 0: detectColumns(headers=[]) → 0% fallback
+  Page 1: detectColumns(headers=[]) → 0% fallback
+  Page 2: detectColumns(headers=[]) → 0% fallback
+  Page 3: detectColumns(headers=[]) → 0% fallback
+  Page 4: detectColumns(headers=[]) → 0% fallback
+  Page 5: detectColumns(headers=[]) → 0% fallback (has image, line detection → no lines)
+
+  isNotEmpty check: all 0% results have 6 columns → fallback never used ← BUG 2
+
+  _bootstrapWeakPages: no line-detected pages → no-op
+  _applyAnchorCorrectionsToPerPage: corrections likely identity → skipped ← BUG 3
+
+  Result: All pages use 0% fallback ratio columns
+```
+
+### Fix: Two Minimal Changes in table_extractor.dart
+
+**Change 1** (line 873): Replace `isNotEmpty` with confidence comparison:
+```dart
+perPage[pageIdx] = detected.confidence > fallback.confidence ? detected : fallback;
+```
+
+**Change 2** (lines 969-973): On identity corrections, propagate reference if better:
+```dart
+if (correction.isIdentity) {
+    final current = perPage[pageIdx];
+    if (current != null && current.confidence < reference.confidence) {
+        perPage[pageIdx] = reference;
+    }
+    continue;
+}
+```
+
+### Per-Page X Shift Handling
+For pages with real X shifts (~20px), the existing anchor system handles this:
+- `_computePageCorrection()` measures leftmost/rightmost data elements per page
+- Computes offset (translation) and scale (width ratio) vs reference
+- `_projectReferenceBoundariesToPage()` transforms each column boundary:
+  ```dart
+  startX = ((col.startX - refLeft) / scale) + correction.leftAnchorX
+  endX = ((col.endX - refLeft) / scale) + correction.leftAnchorX
+  ```
+- This correctly handles both uniform shifts and proportional width changes
+
+### Impact
+This fix should resolve the unit+quantity merging on pages 2-5, which is the primary cause of the ~42% extraction failure rate. The encoding fixes from session 313 will then be able to properly process correctly-columned data.

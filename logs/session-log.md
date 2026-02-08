@@ -4,6 +4,15 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-07 (Session 315)
+- Implemented column detection propagation fix: confidence comparison replaces isNotEmpty check (line 873), identity corrections now propagate reference boundaries (lines 969-987). 1386 PDF tests pass, 0 regressions. Pending manual Springfield PDF verification.
+
+### 2026-02-07 (Session 314)
+- Diagnosed column detection propagation failure on pages 2-5 (3 interconnected bugs in table_extractor.dart). Traced anchor correction system. Created fix plan.
+
+### 2026-02-07 (Session 313)
+- Implemented all 4 parts of OCR Empty Page + Encoding Corruption fix plan. RGBA→grayscale, fail-parse, force re-parse, thread encoding flag through 28 call sites in 16 files. Commit: d808e01.
+
 ### 2026-02-07 (Session 312)
 - Research + planning session for OCR "Empty page" and encoding corruption bugs. Launched 5 parallel exploration agents to validate root causes across image preprocessing, normalization pipeline, and corruption scoring. Confirmed: (1) `img.grayscale()` keeps 4-channel RGBA causing Tesseract "Empty page!!" on page 6, (2) `hasEncodingCorruption` flag not threaded to 23 call sites across 7 files, (3) dangerous letter stripping produces wrong-but-valid numbers blocking re-parse. Created comprehensive 4-part fix plan. Decision: keep `kCorruptionScoreThreshold=15`, fix via normalization pipeline. Plan: `.claude/plans/ocr-empty-page-encoding-fix.md`.
 

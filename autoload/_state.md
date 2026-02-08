@@ -1,36 +1,40 @@
 # Session State
 
-**Last Updated**: 2026-02-07 | **Session**: 312
+**Last Updated**: 2026-02-07 | **Session**: 315
 
 ## Current Phase
-- **Phase**: PDF Extraction Pipeline — OCR "Empty Page" + Encoding Corruption Fix Plan
-- **Status**: Comprehensive 4-part plan created. No code changes yet.
+- **Phase**: PDF Extraction Pipeline — Column detection propagation fix
+- **Status**: Implemented and tested. Pending manual verification.
 
 ## HOT CONTEXT — Resume Here
 
-### What Was Done This Session (312)
-1. **Deep research** into two interacting bugs using 5 parallel exploration agents
-2. **Root cause confirmed (Issue 1)**: `img.grayscale()` keeps 4-channel RGBA → `encodePng()` produces 32-bit PNG → Tesseract Otsu binarization fails → "Empty page!!" on page 6
-3. **Root cause confirmed (Issue 2)**: `hasEncodingCorruption` flag not threaded to initial parsing in `TableRowParser` + dangerous letter stripping produces wrong-but-valid numbers → encoding re-parse never triggers
-4. **Comprehensive plan written**: `.claude/plans/ocr-empty-page-encoding-fix.md`
-   - Part 1: RGBA→Grayscale fix (4 locations + C++ diagnostics)
-   - Part 2: Replace letter stripping with fail-parse
-   - Part 3: Force re-parse when encoding flag set
-   - Part 4: Thread `hasEncodingCorruption` through 23 call sites in 7 files
-5. **Decision**: Keep `kCorruptionScoreThreshold=15` (no threshold change). Pages 2-4 can be fixed via normalization pipeline alone.
-6. **Decision**: Unrecognized letters → fail-parse on both OCR and encoding paths
+### What Was Done This Session (315)
+1. **Implemented 2-change fix** in `table_extractor.dart` per plan
+2. **Change 1** (line 873): Confidence comparison replaces `isNotEmpty` — global 83% result now wins over 0% fallback
+3. **Change 2** (lines 969-987): Identity corrections propagate reference boundaries instead of skipping
+4. **All 1,386 PDF tests pass**, 0 failures, no regressions
 
-### What Needs to Happen Next (Session 313)
-- Implement plan in `.claude/plans/ocr-empty-page-encoding-fix.md`
-- Phase 1: Image channel fix (Low risk)
-- Phase 2: Stop letter stripping + force re-parse (Medium risk)
-- Phase 3: Thread encoding flag through 23 call sites (Medium risk)
-- Phase 4: Full test verification
+### What Needs to Happen Next
+- Manual test: Import Springfield PDF, verify pages 2-5 unit/quantity separation
+- Commit app changes if manual test passes
 
 ### Uncommitted Changes
-- Config repo only: new plan file + research log
+- `table_extractor.dart` — 2 changes (+12 lines, -2 lines)
 
 ## Recent Sessions
+
+### Session 315 (2026-02-07)
+**Work**: Implemented column detection propagation fix (2 changes in table_extractor.dart). Confidence comparison + identity correction propagation.
+**Tests**: 1386 PDF tests pass. No regressions.
+
+### Session 314 (2026-02-07)
+**Work**: Manual test of Springfield PDF. Diagnosed column detection propagation failure on pages 2-5 (3 interconnected bugs). Traced anchor correction system. Created fix plan.
+**Plan**: `.claude/plans/column-detection-propagation-fix.md`
+
+### Session 313 (2026-02-07)
+**Work**: Implemented all 4 parts of OCR Empty Page + Encoding Corruption fix plan. RGBA→grayscale, fail-parse, force re-parse, thread encoding flag through 28 call sites in 16 files.
+**Commits**: `d808e01`
+**Tests**: 1386 PDF tests pass. No regressions.
 
 ### Session 312 (2026-02-07)
 **Work**: Research + plan for OCR "Empty page" (RGBA channel bug) and encoding corruption (flag threading). 5 agents explored codebase. Comprehensive 4-part plan created.
@@ -40,33 +44,21 @@
 **Work**: Encoding-aware currency normalization (z→7, e→3, fail on unmappable), debug image saving, PSM 11 fallback for empty OCR pages.
 **Tests**: 1386 PDF tests pass. 13 new encoding tests. No regressions.
 
-### Session 310 (2026-02-07)
-**Work**: Fixed OCR "Empty page" failures — threaded DPI to Tesseract via `user_defined_dpi`, eliminated double recognition in `recognizeWithConfidence`.
-**Commits**: `c713c77`
-**Tests**: 1373 PDF tests pass. No regressions.
-
-### Session 309 (2026-02-07)
-**Work**: Implemented all 13 code review fixes across 4 phases (safety-critical, testability, normalization, DRY).
-**Commits**: `d8b259f`
-**Tests**: 646 table extraction + 40 new tests pass. No regressions.
-
-### Session 308 (2026-02-06)
-**Work**: Implemented Phase 1 (encoding normalizer) and Phase 2 (per-page OCR fallback). Code review of last 5 commits.
-**Commits**: `92904a7`, `a7237e3`
-**Tests**: 828 passing. No regressions.
-**Review**: 1 critical, 2 major, 5 minor, 2 DRY issues. Fix plan created.
-
-### Sessions 280-307
+### Sessions 280-310
 **Archived to**: `.claude/logs/state-archive.md`
 
 ## Active Plans
 
-### OCR "Empty Page" + Encoding Corruption Fix — IN PROGRESS
-4-part plan: RGBA→Grayscale, fail-parse, force re-parse, thread encoding flag.
-- Plan: `.claude/plans/ocr-empty-page-encoding-fix.md`
-- Research: `.claude/logs/session-312-ocr-research.md`
+### Column Detection Propagation Fix — IMPLEMENTED (Session 315)
+2-change fix: confidence comparison + identity correction propagation.
+- Plan: `.claude/plans/column-detection-propagation-fix.md`
+- Pending: manual verification
 
 ## Completed Plans (Recent)
+
+### OCR "Empty Page" + Encoding Corruption Fix — COMPLETE (Session 313)
+4-part plan: RGBA→Grayscale, fail-parse, force re-parse, thread encoding flag.
+- Plan: `.claude/plans/ocr-empty-page-encoding-fix.md`
 
 ### Encoding Fix + Debug Images + PSM Fallback — COMPLETE (Session 311)
 3-part plan: encoding-aware normalization, debug image saving, PSM 11 fallback.
@@ -84,6 +76,6 @@ Phase 1 (encoding normalizer) + Phase 2 (per-page OCR routing) shipped.
 - **AASHTOWARE Integration**: `.claude/backlogged-plans/AASHTOWARE_Implementation_Plan.md`
 
 ## Reference
-- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-306)
+- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-310)
 - **Defects**: `.claude/autoload/_defects.md`
 - **Branch**: `main`

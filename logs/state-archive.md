@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 310 (2026-02-07)
+Fixed OCR "Empty page" failures — threaded DPI to Tesseract via `user_defined_dpi`, eliminated double recognition in `recognizeWithConfidence`. 1373 PDF tests pass. Commit: `c713c77`.
+
 ### Session 307 (2026-02-06)
 Font encoding investigation. Added diagnostic logging, ran Springfield PDF, discovered multi-page corruption. Pages 1-4 mild, page 6 catastrophic. OCR fallback needed.
 
