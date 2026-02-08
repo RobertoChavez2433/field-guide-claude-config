@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-08 (Session 320)
+- Diagnosed jumbled Springfield DWSRF extraction data using pipeline stage dumps. Found 2 root causes in detectingColumns stage: (1) multi-line header cells only capture first line ("Est." but not "Quantity"), (2) `_detectColumnsPerPage()` hardcodes empty header elements for all continuation pages. Plan written at `.claude/plans/drifting-swimming-ember.md`.
+
 ### 2026-02-08 (Session 319)
 - Runtime Pipeline Dumper Integration: Wired PipelineFileSink into PdfImportService (native-text + OCR paths), enriched 3 stages with 9 diagnostic artifact keys (column topology, merged patterns, item number analysis), 5 new tests (22 total), troubleshooting docs. 689 table extraction tests pass, 0 regressions.
 

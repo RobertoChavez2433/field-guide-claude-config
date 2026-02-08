@@ -4,6 +4,11 @@ Historical defects moved from defects.md or already fixed. Reference only.
 
 ---
 
+### [ASYNC] 2026-01-21: Async Context Safety (archived 2026-02-08)
+**Pattern**: Using context after await without mounted check
+**Prevention**: Always `if (!mounted) return;` before setState/context after await
+**Ref**: @lib/features/entries/presentation/screens/entry_wizard_screen.dart
+
 ### [ASYNC] 2026-01-19: Provider Returned Before Async Init (archived 2026-02-06)
 **Pattern**: Returning Provider from `create:` before async init completes
 **Prevention**: Add `isInitializing` flag, show loading state until false

@@ -14,6 +14,11 @@ Archive: @.claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [DATA] 2026-02-08: Per-Page Column Detection Hardcodes Empty Header Elements
+**Pattern**: `_detectColumnsPerPage()` passes `headerRowElements: <OcrElement>[]` for every page, so continuation pages never get header-based column detection — always falling to 0% confidence fallback.
+**Prevention**: When adding per-page processing loops, verify inputs aren't hardcoded empty. Extract header elements per-page using repeated header Y positions.
+**Ref**: @lib/features/pdf/services/table_extraction/table_extractor.dart:1039
+
 ### [DATA] 2026-02-06: Empty Uint8List Passes Null Guards But Crashes img.decodeImage()
 **Pattern**: Native text path creates `Uint8List(0)` per page. Code checks `if (bytes == null)` but empty list is not null — `img.decodeImage()` throws RangeError on empty bytes instead of returning null.
 **Prevention**: Always check `bytes == null || bytes.isEmpty` before passing to image decoders
@@ -43,11 +48,6 @@ Archive: @.claude/logs/defects-archive.md
 **Pattern**: Using `else if` chain in keyword matching prevents independent elements from matching different categories
 **Prevention**: Use independent `if` + `continue` pattern
 **Ref**: @lib/features/pdf/services/table_extraction/header_column_detector.dart:228
-
-### [ASYNC] 2026-01-21: Async Context Safety
-**Pattern**: Using context after await without mounted check
-**Prevention**: Always `if (!mounted) return;` before setState/context after await
-**Ref**: @lib/features/entries/presentation/screens/entry_wizard_screen.dart
 
 ---
 

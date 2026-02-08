@@ -1,31 +1,35 @@
 # Session State
 
-**Last Updated**: 2026-02-08 | **Session**: 319
+**Last Updated**: 2026-02-08 | **Session**: 320
 
 ## Current Phase
-- **Phase**: PDF Extraction Pipeline — Runtime Pipeline Dumper Integration
-- **Status**: Feature complete. All tests pass. Ready for commit.
+- **Phase**: PDF Extraction Pipeline — Multi-Line Header & Per-Page Detection Fix
+- **Status**: Investigation complete. Plan written. Ready to implement.
 
 ## HOT CONTEXT — Resume Here
 
-### What Was Done This Session (319)
-1. **Wired PipelineFileSink into PdfImportService** — Both native-text and OCR extraction paths now generate stage dumps when diagnostics enabled
-2. **Stable run identity** — `_createPipelineSink()` helper generates `<timestamp>_<sanitized_basename>` labels, outputs to `<logDir>/pipeline_dumps/`
-3. **Enriched stage artifacts** — detectingColumns (+4 keys: unmatchedHeaderTokens, inferenceDecision, hasQuantityColumn, hasUnitColumn), extractingCells (+2: mergedUnitQtyPatternCount, sampledProblematicRows), parsingRows (+3: invalidItemNumberCount, emptyItemNumberCount, topWarningCategories)
-4. **5 new tests** — 3 enriched artifact tests + 2 runtime sink creation tests (22 total dumper tests)
-5. **689 table extraction tests pass** — Zero regressions
-6. **Troubleshooting docs** — `TROUBLESHOOTING_PIPELINE_DUMPS.md` with stage-by-stage diagnosis guide
+### What Was Done This Session (320)
+1. **Diagnosed jumbled data** — Analyzed pipeline stage dumps from Springfield DWSRF PDF (88.5% valid, 15 invalid items)
+2. **Root cause: detectingColumns stage** — Two bugs identified:
+   - **Bug 1 (Page 0)**: `_extractHeaderRowElements()` only scans first line of multi-line header cells. "Est." captured but "Quantity" (line 2) missing → only 5 columns detected, no quantity column
+   - **Bug 2 (Pages 1-5)**: `_detectColumnsPerPage()` line 1039 hardcodes `headerRowElements: <OcrElement>[]` → 0 header elements on all continuation pages → 0% confidence fallback
+3. **Full pipeline trace** — Reviewed app logs, native text extraction, header keyword matching, per-page column detection, gap inference, and multi-row header combination code
+4. **Plan written** — `.claude/plans/drifting-swimming-ember.md`
 
 ### What Needs to Happen Next
-- **Commit changes** — All implementation complete per plan
-- **Run real import with diagnostics** — Verify dumps generate at `Troubleshooting/pipeline_dumps/`
-- **Investigate remaining extraction failures** — 57.96% success rate on Springfield
+- **Implement Bug 1 fix** — Add second-line scan phase to `_extractHeaderRowElements()` (scan ~35px below first header line)
+- **Implement Bug 2 fix** — Create `_extractPerPageHeaderElements()` and update `_detectColumnsPerPage()` to pass real header elements
+- **Both fixes in** `table_extractor.dart` only
+- **Run tests** — Verify 1373+ tests still pass, then test with Springfield PDF
 
 ### Uncommitted Changes
-- Modified: `pdf_import_service.dart`, `table_extractor.dart`, `pipeline_stage_dumper_test.dart`
-- New: `TROUBLESHOOTING_PIPELINE_DUMPS.md`
+- New: `.claude/plans/drifting-swimming-ember.md`
 
 ## Recent Sessions
+
+### Session 320 (2026-02-08)
+**Work**: Diagnosed jumbled Springfield data via pipeline dumps. Found 2 bugs: (1) multi-line header "Est.\nQuantity" only captures first line, (2) per-page detection hardcodes empty header elements. Plan written.
+**Plan**: `.claude/plans/drifting-swimming-ember.md`
 
 ### Session 319 (2026-02-08)
 **Work**: Runtime Pipeline Dumper Integration — Wired PipelineFileSink into PdfImportService (native + OCR paths), enriched 3 stages with diagnostic artifacts, 5 new tests, troubleshooting docs.
@@ -36,35 +40,22 @@
 **Tests**: 684 table extraction tests pass. 17 new dumper tests. No regressions.
 
 ### Session 317 (2026-02-08)
-**Work**: Diagnosed Springfield extraction failures. Brainstormed and planned Pipeline Stage Dumper diagnostic tool. Plan at `.claude/plans/pipeline-stage-dumper.md`.
+**Work**: Diagnosed Springfield extraction failures. Brainstormed and planned Pipeline Stage Dumper diagnostic tool.
 **Tests**: 869 PDF tests pass. No regressions.
 
 ### Session 316 (2026-02-07)
 **Work**: 3-layer fix for missing quantity column: Y tolerance increase, gap inference, concatenated unit+qty split. 8 new tests.
 **Tests**: 1394 PDF tests pass. No regressions.
 
-### Session 315 (2026-02-07)
-**Work**: Implemented column detection propagation fix (2 changes in table_extractor.dart). Confidence comparison + identity correction propagation.
-**Tests**: 1386 PDF tests pass. No regressions.
-
-### Session 314 (2026-02-07)
-**Work**: Manual test of Springfield PDF. Diagnosed column detection propagation failure on pages 2-5 (3 interconnected bugs). Traced anchor correction system. Created fix plan.
-**Plan**: `.claude/plans/column-detection-propagation-fix.md`
-
-### Sessions 280-313
+### Sessions 280-315
 **Archived to**: `.claude/logs/state-archive.md`
 
 ## Active Plans
 
-### Pipeline Stage Dumper — COMPLETE (Session 318)
-Visual diagnostic tool to trace data through each extraction pipeline stage.
-- Plan: `.claude/plans/pipeline-stage-dumper.md`
-- Status: Implemented, all tests pass
-
-### Missing Quantity Column Fix — IMPLEMENTED (Session 316)
-3-layer fix: Y tolerance, gap inference, concatenated split.
-- Plan: `.claude/plans/sparkling-wiggling-dream.md`
-- Pending: manual verification
+### Multi-Line Header & Per-Page Detection Fix — IN PROGRESS (Session 320)
+Fix two-line header scanning and per-page header element extraction.
+- Plan: `.claude/plans/drifting-swimming-ember.md`
+- Status: Investigation complete, ready to implement
 
 ## Completed Plans (Recent)
 
