@@ -1,29 +1,35 @@
 # Session State
 
-**Last Updated**: 2026-02-08 | **Session**: 318
+**Last Updated**: 2026-02-08 | **Session**: 319
 
 ## Current Phase
-- **Phase**: PDF Extraction Pipeline — Pipeline Stage Dumper implemented
-- **Status**: Feature complete. All tests pass. Ready for use in diagnosing extraction issues.
+- **Phase**: PDF Extraction Pipeline — Runtime Pipeline Dumper Integration
+- **Status**: Feature complete. All tests pass. Ready for commit.
 
 ## HOT CONTEXT — Resume Here
 
-### What Was Done This Session (318)
-1. **Implemented Pipeline Stage Dumper** — Full 5-phase implementation per plan
-2. **Created 4 new source files**: `pipeline_stage_event.dart`, `pipeline_stage_sink.dart`, `pipeline_file_sink.dart`, test file
-3. **Modified `table_extractor.dart`** — Optional `stageSink` + `fixtureName` params, events at all stage boundaries, try/catch isolation
-4. **17 new tests all pass** — Contract, artifact, non-blocking, determinism, verdict, file export, backup pruning
-5. **684 existing table extraction tests pass** — Zero regressions
+### What Was Done This Session (319)
+1. **Wired PipelineFileSink into PdfImportService** — Both native-text and OCR extraction paths now generate stage dumps when diagnostics enabled
+2. **Stable run identity** — `_createPipelineSink()` helper generates `<timestamp>_<sanitized_basename>` labels, outputs to `<logDir>/pipeline_dumps/`
+3. **Enriched stage artifacts** — detectingColumns (+4 keys: unmatchedHeaderTokens, inferenceDecision, hasQuantityColumn, hasUnitColumn), extractingCells (+2: mergedUnitQtyPatternCount, sampledProblematicRows), parsingRows (+3: invalidItemNumberCount, emptyItemNumberCount, topWarningCategories)
+4. **5 new tests** — 3 enriched artifact tests + 2 runtime sink creation tests (22 total dumper tests)
+5. **689 table extraction tests pass** — Zero regressions
+6. **Troubleshooting docs** — `TROUBLESHOOTING_PIPELINE_DUMPS.md` with stage-by-stage diagnosis guide
 
 ### What Needs to Happen Next
-- **Use dumps to diagnose extraction issues** — Run `PipelineFileSink` against Springfield PDF to trace stage-by-stage data
-- **Investigate remaining extraction failures** — 57.96% success rate on Springfield, encoding corruption + merged unit+qty
-- **Manual verification** of missing quantity column fix (session 316)
+- **Commit changes** — All implementation complete per plan
+- **Run real import with diagnostics** — Verify dumps generate at `Troubleshooting/pipeline_dumps/`
+- **Investigate remaining extraction failures** — 57.96% success rate on Springfield
 
 ### Uncommitted Changes
-- 4 new files + 2 modified files (see commit below)
+- Modified: `pdf_import_service.dart`, `table_extractor.dart`, `pipeline_stage_dumper_test.dart`
+- New: `TROUBLESHOOTING_PIPELINE_DUMPS.md`
 
 ## Recent Sessions
+
+### Session 319 (2026-02-08)
+**Work**: Runtime Pipeline Dumper Integration — Wired PipelineFileSink into PdfImportService (native + OCR paths), enriched 3 stages with diagnostic artifacts, 5 new tests, troubleshooting docs.
+**Tests**: 689 table extraction tests pass. 22 dumper tests. No regressions.
 
 ### Session 318 (2026-02-08)
 **Work**: Implemented Pipeline Stage Dumper — 4 new files, 17 tests, optional observer/sink in TableExtractor. JSON/TXT/HTML dump generation with backup retention.

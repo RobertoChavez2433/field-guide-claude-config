@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-08 (Session 319)
+- Runtime Pipeline Dumper Integration: Wired PipelineFileSink into PdfImportService (native-text + OCR paths), enriched 3 stages with 9 diagnostic artifact keys (column topology, merged patterns, item number analysis), 5 new tests (22 total), troubleshooting docs. 689 table extraction tests pass, 0 regressions.
+
 ### 2026-02-08 (Session 318)
 - Implemented Pipeline Stage Dumper: 4 new source files (PipelineStageEvent, PipelineStageSink, PipelineFileSink, test), integrated optional stage sink into TableExtractor with try/catch isolation, JSON/TXT/HTML dump generation with backup retention (max 2 per fixture+circumstance). 17 new tests, 684 existing tests pass, 0 regressions.
 
