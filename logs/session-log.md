@@ -4,6 +4,15 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-08 (Session 318)
+- Implemented Pipeline Stage Dumper: 4 new source files (PipelineStageEvent, PipelineStageSink, PipelineFileSink, test), integrated optional stage sink into TableExtractor with try/catch isolation, JSON/TXT/HTML dump generation with backup retention (max 2 per fixture+circumstance). 17 new tests, 684 existing tests pass, 0 regressions.
+
+### 2026-02-08 (Session 317)
+- Diagnosed Springfield extraction failures. Brainstormed and planned Pipeline Stage Dumper diagnostic tool. Plan at `.claude/plans/pipeline-stage-dumper.md`.
+
+### 2026-02-07 (Session 316)
+- 3-layer fix for missing quantity column: Y tolerance increase (25->40px), gap-based column inference, concatenated unit+qty split. 8 new tests. 1394 PDF tests pass.
+
 ### 2026-02-07 (Session 315)
 - Implemented column detection propagation fix: confidence comparison replaces isNotEmpty check (line 873), identity corrections now propagate reference boundaries (lines 969-987). 1386 PDF tests pass, 0 regressions. Pending manual Springfield PDF verification.
 

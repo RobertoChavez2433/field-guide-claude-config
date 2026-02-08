@@ -1,32 +1,37 @@
 # Session State
 
-**Last Updated**: 2026-02-07 | **Session**: 316
+**Last Updated**: 2026-02-08 | **Session**: 318
 
 ## Current Phase
-- **Phase**: PDF Extraction Pipeline — Missing quantity column fix
-- **Status**: Implemented and tested. Pending manual verification.
+- **Phase**: PDF Extraction Pipeline — Pipeline Stage Dumper implemented
+- **Status**: Feature complete. All tests pass. Ready for use in diagnosing extraction issues.
 
 ## HOT CONTEXT — Resume Here
 
-### What Was Done This Session (316)
-1. **Layer 1**: Increased `kHeaderYTolerance` from 25.0 to 40.0 in `table_extractor.dart` — captures Row 2 elements (~30px below Row 1)
-2. **Layer 2**: Added `_inferMissingColumns()` gap-based column inference in `header_column_detector.dart` — safety net for missing quantity column
-3. **Layer 3**: Added concatenated unit+qty regex split in `post_process_splitter.dart` — handles "FT640"→FT/640, "EA48"→EA/48
-4. **8 new tests** added (multi-row combining, gap inference, concatenated splits)
-5. **1394 PDF tests pass**, 0 failures, no regressions
+### What Was Done This Session (318)
+1. **Implemented Pipeline Stage Dumper** — Full 5-phase implementation per plan
+2. **Created 4 new source files**: `pipeline_stage_event.dart`, `pipeline_stage_sink.dart`, `pipeline_file_sink.dart`, test file
+3. **Modified `table_extractor.dart`** — Optional `stageSink` + `fixtureName` params, events at all stage boundaries, try/catch isolation
+4. **17 new tests all pass** — Contract, artifact, non-blocking, determinism, verdict, file export, backup pruning
+5. **684 existing table extraction tests pass** — Zero regressions
 
 ### What Needs to Happen Next
-- Manual test: Import Springfield PDF, verify pages 2-5 have separate unit/quantity columns
-- Push unpushed commits to origin (2 from prior sessions + this session's commit)
+- **Use dumps to diagnose extraction issues** — Run `PipelineFileSink` against Springfield PDF to trace stage-by-stage data
+- **Investigate remaining extraction failures** — 57.96% success rate on Springfield, encoding corruption + merged unit+qty
+- **Manual verification** of missing quantity column fix (session 316)
 
 ### Uncommitted Changes
-- `table_extractor.dart` — kHeaderYTolerance 25→40
-- `header_column_detector.dart` — +115 lines (_inferMissingColumns)
-- `post_process_splitter.dart` — +33 lines (concatenated split)
-- `header_column_detector_test.dart` — +86 lines (3 new tests)
-- `post_process_splitter_test.dart` — +70 lines (4 new tests)
+- 4 new files + 2 modified files (see commit below)
 
 ## Recent Sessions
+
+### Session 318 (2026-02-08)
+**Work**: Implemented Pipeline Stage Dumper — 4 new files, 17 tests, optional observer/sink in TableExtractor. JSON/TXT/HTML dump generation with backup retention.
+**Tests**: 684 table extraction tests pass. 17 new dumper tests. No regressions.
+
+### Session 317 (2026-02-08)
+**Work**: Diagnosed Springfield extraction failures. Brainstormed and planned Pipeline Stage Dumper diagnostic tool. Plan at `.claude/plans/pipeline-stage-dumper.md`.
+**Tests**: 869 PDF tests pass. No regressions.
 
 ### Session 316 (2026-02-07)
 **Work**: 3-layer fix for missing quantity column: Y tolerance increase, gap inference, concatenated unit+qty split. 8 new tests.
@@ -40,19 +45,15 @@
 **Work**: Manual test of Springfield PDF. Diagnosed column detection propagation failure on pages 2-5 (3 interconnected bugs). Traced anchor correction system. Created fix plan.
 **Plan**: `.claude/plans/column-detection-propagation-fix.md`
 
-### Session 313 (2026-02-07)
-**Work**: Implemented all 4 parts of OCR Empty Page + Encoding Corruption fix plan. RGBA→grayscale, fail-parse, force re-parse, thread encoding flag through 28 call sites in 16 files.
-**Commits**: `d808e01`
-**Tests**: 1386 PDF tests pass. No regressions.
-
-### Session 312 (2026-02-07)
-**Work**: Research + plan for OCR "Empty page" (RGBA channel bug) and encoding corruption (flag threading). 5 agents explored codebase. Comprehensive 4-part plan created.
-**Plan**: `.claude/plans/ocr-empty-page-encoding-fix.md`
-
-### Sessions 280-311
+### Sessions 280-313
 **Archived to**: `.claude/logs/state-archive.md`
 
 ## Active Plans
+
+### Pipeline Stage Dumper — COMPLETE (Session 318)
+Visual diagnostic tool to trace data through each extraction pipeline stage.
+- Plan: `.claude/plans/pipeline-stage-dumper.md`
+- Status: Implemented, all tests pass
 
 ### Missing Quantity Column Fix — IMPLEMENTED (Session 316)
 3-layer fix: Y tolerance, gap inference, concatenated split.
@@ -77,6 +78,6 @@ Fix A: `user_defined_dpi` threading. Fix B: HOCR text reconstruction.
 - **AASHTOWARE Integration**: `.claude/backlogged-plans/AASHTOWARE_Implementation_Plan.md`
 
 ## Reference
-- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-311)
+- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-313)
 - **Defects**: `.claude/autoload/_defects.md`
 - **Branch**: `main`

@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 313 (2026-02-07)
+Implemented all 4 parts of OCR Empty Page + Encoding Corruption fix. RGBA→grayscale, fail-parse, force re-parse, thread encoding flag through 28 call sites. Commit: d808e01.
+
 ### Session 311 (2026-02-07)
 Encoding-aware currency normalization (z→7, e→3, fail on unmappable), debug image saving, PSM 11 fallback for empty OCR pages. 1386 PDF tests pass. 13 new encoding tests.
 
