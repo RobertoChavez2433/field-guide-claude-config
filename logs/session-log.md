@@ -4,6 +4,9 @@ Historical session log. Current state is in `.claude/autoload/_state.md`.
 
 ---
 
+### 2026-02-10 (Session 322)
+- Implemented Phase 1 of PDF extraction pipeline redesign: 15 source files with 17+ types (DocumentProfile, OcrElement, UnifiedExtractionResult, ClassifiedRows, DetectedRegions, ColumnMap, CellGrid, ParsedItems, ProcessedItems, QualityReport, ConfidenceScore, StageReport, Sidecar, CoordinateNormalizer), barrel export, DB schema v21 (extraction_metrics + stage_metrics), 16 test files with 192 tests all passing, code review with fixes applied.
+
 ### 2026-02-08 (Session 320)
 - Diagnosed jumbled Springfield DWSRF extraction data using pipeline stage dumps. Found 2 root causes in detectingColumns stage: (1) multi-line header cells only capture first line ("Est." but not "Quantity"), (2) `_detectColumnsPerPage()` hardcodes empty header elements for all continuation pages. Plan written at `.claude/plans/drifting-swimming-ember.md`.
 
