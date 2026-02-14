@@ -1,9 +1,9 @@
 # PDF Extraction Pipeline V2 — PRD 2.0
 
-**Date**: 2026-02-11
+**Date**: 2026-02-11 (Updated 2026-02-14)
 **Status**: Approved
 **Supersedes**: `2026-02-10-pdf-extraction-pipeline-redesign.md` (PRD 1.0)
-**Scope**: Complete specification of the V2 extraction pipeline as-built + all approved enhancements
+**Scope**: Complete specification of the V2 extraction pipeline as-built (OCR-only)
 
 ---
 
@@ -40,36 +40,31 @@ Every stage is a **pure function** with:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    EXTRACTION PIPELINE                       │
+│              EXTRACTION PIPELINE (OCR-ONLY)                  │
 │                                                             │
 │  ┌──────────────────────────────────┐                       │
-│  │ Stage 0: DOCUMENT ANALYSIS       │                       │
+│  │ Stage 0: DOCUMENT QUALITY        │                       │
+│  │          PROFILING               │                       │
 │  │ • Page count, file size          │                       │
-│  │ • Has embedded text? (per page)  │                       │
-│  │ • Corruption score (per page)    │                       │
+│  │ • Text quality analysis          │                       │
+│  │ • Always returns strategy:       │                       │
+│  │   'ocr_only'                     │                       │
 │  │ • Output: DocumentProfile        │                       │
 │  └───────────────┬──────────────────┘                       │
 │                  ▼                                           │
-│         ┌────────────────┐                                  │
-│         │  Has embedded   │                                  │
-│         │  text?          │                                  │
-│         └───┬────────┬───┘                                  │
-│         YES │        │ NO / SCANNED / CORRUPTED             │
-│             ▼        ▼                                       │
-│  ┌──────────────┐  ┌──────────────────────────────────────┐ │
-│  │ Stage 2A:    │  │ Stage 2B: OCR PATH                   │ │
-│  │ NATIVE TEXT  │  │  2B-i:   Page Rendering              │ │
-│  │ EXTRACTION   │  │  2B-ii:  Image Preprocessing         │ │
-│  │              │  │  2B-iii: Text Recognition (Tesseract) │ │
-│  └──────┬───────┘  └─────────────────┬────────────────────┘ │
-│         │                            │                       │
-│         ▼                            ▼                       │
 │  ┌──────────────────────────────────────────────────────┐   │
-│  │ Stage 3: STRUCTURE PRESERVATION (MERGE)               │   │
-│  │ • Merge native + OCR into unified OcrElement list     │   │
+│  │ Stage 2B: OCR PATH (ALL pages)                        │   │
+│  │  2B-i:   Page Rendering (adaptive DPI)                │   │
+│  │  2B-ii:  Image Preprocessing (3-step)                 │   │
+│  │  2B-iii: Text Recognition (Tesseract)                 │   │
+│  └───────────────┬──────────────────────────────────────┘   │
+│                  ▼                                           │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ Stage 3: ELEMENT VALIDATION                           │   │
+│  │ • Validate OCR elements                               │   │
 │  │ • Normalize all coordinates to 0.0-1.0                │   │
-│  │ • Validate coordinate alignment                       │   │
-│  │ • Tag extraction method per page                      │   │
+│  │ • Clamp out-of-bounds coordinates                     │   │
+│  │ • Output: UnifiedExtractionResult                     │   │
 │  └───────────────┬──────────────────────────────────────┘   │
 │                  ▼                                           │
 │  ┌──────────────────────────────────────────────────────┐   │
@@ -77,6 +72,7 @@ Every stage is a **pure function** with:
 │  │  4A: Row Classification (data/header/total/boiler.)   │   │
 │  │  4B: Table Region Detection (header→total boundaries) │   │
 │  │  4C: Column Detection (header + clustering + gaps)    │   │
+│  │  4A(1B): Post-column refinement (UNKNOWN→SECTION_HDR) │   │
 │  │  4D: Cell Extraction (+ optional cell re-OCR)         │   │
 │  │  4E: Row Parsing (→ ParsedBidItem with confidence)    │   │
 │  └───────────────┬──────────────────────────────────────┘   │
@@ -103,34 +99,13 @@ Every stage is a **pure function** with:
 │             ▼        ▼                                       │
 │     ┌────────────┐  ┌────────────────────────────────────┐  │
 │     │ OUTPUT:    │  │ RE-EXTRACTION (max 3 attempts)      │  │
-│     │ Pipeline   │  │ Attempt 1: Force full OCR            │  │
-│     │ Result     │  │ Attempt 2: Higher DPI (400) + OCR    │  │
-│     └────────────┘  │ After 3: Return best attempt         │  │
+│     │ Pipeline   │  │ Attempt 0: Default (300 DPI, PSM 6) │  │
+│     │ Result     │  │ Attempt 1: 400 DPI + PSM 3 (auto)   │  │
+│     └────────────┘  │ Attempt 2: 400 DPI + PSM 6 (block)  │  │
+│                     │ After max: Return best attempt       │  │
 │                     │ Loop back to Stage 2B                │  │
 │                     └─────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
-```
-
-### OCR Decision Points
-
-| Decision Point | Trigger | OCR Action |
-|---|---|---|
-| Stage 0 → 2 | `charsPerPage < 50` OR `singleCharRatio > 0.30` | Route entire document to OCR path (2B) |
-| Stage 2A → 2B | Per-page corruption score > 15 | Route individual corrupt pages to OCR |
-| Stage 4D | Merged cell blocks detected | Cell-level re-OCR on specific cells only |
-| Stage 6 → Re-extract | Quality score < 0.65 | Force full OCR at higher DPI |
-
-### Hybrid Path (Native + OCR Merge)
-
-```
-Page 1: Native text OK (corruption=2)    → Native elements, conf=1.0
-Page 2: Native text OK (corruption=5)    → Native elements, conf=1.0
-Page 3: Corrupted (corruption=18)        → OCR elements, conf=0.85
-Page 4: Native text OK (corruption=3)    → Native elements, conf=1.0
-Page 5: Scanned (chars=12)              → OCR elements, conf=0.78
-
-Stage 3 merges: [native, native, OCR, native, OCR]
-Each page tagged with its extraction method
 ```
 
 ### "Exclude Don't Delete" Principle
@@ -148,18 +123,17 @@ Every "excluded" row/element goes to a `Sidecar` collection:
 
 ### Stage Name Constants
 
-All stages use centralized snake_case constants:
+All stages use centralized snake_case constants from `stages/stage_names.dart`:
 
 ```dart
 abstract class StageNames {
   static const documentAnalysis = 'document_analysis';
-  static const nativeExtraction = 'native_extraction';
   static const pageRendering = 'page_rendering';
   static const imagePreprocessing = 'image_preprocessing';
   static const textRecognition = 'text_recognition';
-  static const structurePreservation = 'structure_preservation';
+  static const elementValidation = 'element_validation';
   static const rowClassification = 'row_classification';
-  static const rowRefinement = 'row_refinement';
+  static const postColumnRefinement = 'post_column_refinement';
   static const regionDetection = 'region_detection';
   static const columnDetection = 'column_detection';
   static const cellExtraction = 'cell_extraction';
@@ -169,44 +143,34 @@ abstract class StageNames {
 }
 ```
 
-### Stage 0: Document Analysis
-**File**: `extraction/stages/document_analyzer.dart`
+### Stage 0: Document Quality Profiling
+**File**: `extraction/stages/document_quality_profiler.dart`
+**Class**: `DocumentQualityProfiler` with `TextQualityAnalyzer` mixin
 
 ```
 INPUT:  PdfDocument + raw bytes
 OUTPUT: DocumentProfile {
   pageCount, fileSize,
   pages[]{hasEmbeddedText, charCount, singleCharRatio, corruptionScore, needsOcr},
-  recommendedStrategy, documentHash (SHA-256)
+  overallStrategy: 'ocr_only', documentHash (SHA-256)
 }
 ```
 
-- **Algorithm**: Extract raw text per page, classify each as native/ocr needed
-- **Thresholds**: charsPerPage < 50, singleCharRatio > 0.30, corruptionScore > 15
+- **Algorithm**: Analyze text quality per page, but always route ALL pages to OCR
+- **Strategy**: Always returns `strategy: 'ocr_only'` — no native/hybrid routing
 - **Confidence**: 1.0 (deterministic analysis)
 - **Document Hash**: SHA-256 content hash (NOT `hashCode` — must be content-based for dedup/caching)
-
-### Stage 2A: Native Text Extraction
-**File**: `extraction/stages/native_extractor.dart`
-
-```
-INPUT:  PdfDocument + PageProfile[] (native pages only)
-OUTPUT: NativeExtractionResult {elementsPerPage, confidencePerPage (always 1.0), methodPerPage}
-```
-
-- **Algorithm**: Syncfusion TextWord → OcrElement with normalized coordinates
-- **Confidence**: Always 1.0 for native text
 
 ### Stage 2B-i: Page Rendering
 **File**: `extraction/stages/page_renderer_v2.dart`
 
 ```
-INPUT:  PdfDocument + PageProfile[] (OCR pages only)
+INPUT:  PdfDocument + ALL pages
 OUTPUT: RenderedPages {rawImages, imageSizes, dpi}
 ```
 
 - **Algorithm**: Adaptive DPI (≤10 pages → 300, 11-25 → 250, >25 → 200)
-- **Re-extraction override**: Attempt 2 uses 400 DPI (deviation from PRD 1.0's 300 — see Section 11)
+- **Re-extraction override**: Attempts 1-2 use 400 DPI (deviation from PRD 1.0's 300 — see Section 11)
 
 ### Stage 2B-ii: Image Preprocessing
 **File**: `extraction/stages/image_preprocessor_v2.dart`
@@ -232,18 +196,19 @@ OUTPUT: OcrExtractionResult {elementsPerPage, confidencePerPage (median), method
 - **Algorithm**: Tesseract via TesseractEngineV2, word-level confidence, normalized coordinates
 - **Confidence**: Median of word confidences per page (not mean — less sensitive to outliers)
 
-### Stage 3: Structure Preservation (Merge)
-**File**: `extraction/stages/structure_preserver.dart`
+### Stage 3: Element Validation
+**File**: `extraction/stages/element_validator.dart`
+**Class**: `ElementValidator`
 
 ```
-INPUT:  NativeExtractionResult + OcrExtractionResult + DocumentProfile
+INPUT:  DocumentProfile + OcrElements (per page)
 OUTPUT: UnifiedExtractionResult {
   elementsPerPage (ALL pages), confidencePerPage, methodPerPage, pageImages
 }
 ```
 
-- **Algorithm**: Merge native + OCR, normalize coordinates to 0.0-1.0, validate alignment
-- **Validation**: All elements pass `isNormalized()`, dual-extract comparison on hybrid docs
+- **Algorithm**: Validate OCR elements, normalize coordinates to 0.0-1.0, clamp out-of-bounds values
+- **Validation**: All elements pass `isNormalized()` — no merge logic (OCR-only pipeline)
 
 ### Stage 4A: Row Classification
 **File**: `extraction/stages/row_classifier_v2.dart`
@@ -256,6 +221,8 @@ OUTPUT: ClassifiedRows {
 ```
 
 - **Algorithm**: Two-phase (1A pre-column, 1B post-column). Adaptive Y-threshold grouping
+- **Phase 1A**: Pre-column classification (run before column detection)
+- **Phase 1B**: Post-column refinement via `refinePostColumn()` — reclassifies UNKNOWN rows as SECTION_HEADER using column context. Runs after Stage 4C with stage name `postColumnRefinement`
 - **Row types**: `header`, `data`, `continuation`, `boilerplate`, `sectionHeader`, `total`, `unknown`
 - **Total row detection**: Keyword regex + structural signals + position (see Section 6.2)
 - **ALL rows preserved** — UNKNOWN is a valid classification, nothing is dropped
@@ -282,8 +249,8 @@ OUTPUT: ColumnMap {columns[], method, confidence, perPageAdjustments}
 
 **Layered strategy** (see Section 9 for full detail):
 - **Layer 1**: Header keyword detection (primary)
-- **Layer 2**: Text alignment clustering (NEW — replaces TODO stub)
-- **Layer 2b**: Whitespace gap analysis (NEW — fallback)
+- **Layer 2**: Text alignment clustering (IMPLEMENTED — `kTextAlignmentTolerance = 0.015`)
+- **Layer 2b**: Whitespace gap analysis (IMPLEMENTED — fallback)
 - **Layer 3**: Anchor-based correction (existing)
 - **Cross-validation**: Multiple agreeing strategies boost confidence by 0.1-0.2
 
@@ -477,17 +444,17 @@ overallScore = (
 
 ### Re-Extraction Loop
 
+Uses `QualityThresholds.maxReExtractionAttempts` (constant = 2) from `shared/quality_thresholds.dart` as single source of truth.
+
 ```dart
-for (int attempt = 0; attempt < 3; attempt++) {
+final maxAttempts = QualityThresholds.maxReExtractionAttempts + 1; // 3 total
+for (int attempt = 0; attempt < maxAttempts; attempt++) {
   final config = _adjustConfigForAttempt(baseConfig, attempt);
   final result = await _runFullPipeline(config, attempt);
   bestAttempt = _selectBest(bestAttempt, result); // highest overallScore
 
-  if (result.status == autoAccept || result.status == reviewFlagged) {
-    return bestAttempt; // Success — exit early
-  }
-  if (result.status == partialResult) {
-    return bestAttempt; // Can't improve — exit
+  if (result.status != reExtract) {
+    return bestAttempt; // Success or can't improve — exit
   }
   // status == reExtract → continue loop with adjusted config
 }
@@ -496,9 +463,9 @@ return bestAttempt; // Max attempts reached
 
 | Attempt | Config Adjustment | What Changes |
 |---|---|---|
-| 0 | Original config | Normal extraction |
-| 1 | `forceFullOcr: true` | All pages through OCR, ignore native text |
-| 2 | `forceFullOcr: true, ocrDpi: 400` | Higher resolution OCR |
+| 0 | Original config | Default extraction (300 DPI, PSM 6) |
+| 1 | `ocrDpi: 400, tesseractPsmMode: 3` | Higher DPI + auto page segmentation |
+| 2 | `ocrDpi: 400, tesseractPsmMode: 6` | Higher DPI + single block mode |
 
 **Best attempt selection**: Compares `qualityReport.overallScore`, returns higher.
 
@@ -728,20 +695,20 @@ Searches for known column header patterns: ITEM, DESCRIPTION, UNIT, QTY/QUANTITY
 
 **Confidence**: `matchCount / 6` (0.5-1.0 based on headers found)
 
-### Layer 2: Text Alignment Clustering (NEW)
+### Layer 2: Text Alignment Clustering (IMPLEMENTED)
 
 Detects columns by clustering text elements' X-coordinates using 1D agglomerative clustering:
 
 1. Collect all data row element left-edge X positions (normalized 0.0-1.0)
-2. Sort and cluster using tolerance ~0.015 (1.5% page width)
+2. Sort and cluster using tolerance `kTextAlignmentTolerance = 0.015` (1.5% page width)
 3. Cluster centroids = column left edges
 4. Estimate right edges from gap analysis between clusters
 5. Cross-validate with header keywords for confidence boost
 
 **Confidence**: 0.75 base, 0.85+ when header keywords agree
-**Advantages**: Works on both native and OCR paths, no image processing required
+**Constants**: Defined in `column_detector_v2.dart` — `kTextAlignmentTolerance = 0.015`, `kColumnOverlapTolerance = 0.006`, `kHeaderXTolerance = 0.03`
 
-### Layer 2b: Whitespace Gap Analysis (NEW — Fallback)
+### Layer 2b: Whitespace Gap Analysis (IMPLEMENTED — Fallback)
 
 Detects columns by finding consistent vertical gaps in text:
 
@@ -772,14 +739,13 @@ When multiple strategies agree, confidence is boosted by 0.1-0.2. The highest-co
 | **Contract** | Stage input → output shape | Data flow between stages |
 | **Integration** | Multi-stage with real fixtures | Pipeline end-to-end |
 
-### Contract Tests (9 total)
+### Contract Tests (8 total)
 
 All enforce the no-data-loss invariant: `outputCount + excludedCount == inputCount`
 
 | Test | Boundary |
 |---|---|
-| `stage_0_to_2_contract_test.dart` | Document analysis → Text extraction |
-| `stage_2_to_3_contract_test.dart` | Text extraction → Structure preservation |
+| `stage_2_to_3_contract_test.dart` | OCR extraction → Element validation |
 | `stage_3_to_4a_contract_test.dart` | Structure → Row classification |
 | `stage_4a_to_4b_contract_test.dart` | Rows → Region detection |
 | `stage_4b_to_4c_contract_test.dart` | Regions → Column detection |
@@ -794,15 +760,15 @@ All 9 fixtures must be generated by running pipeline against Springfield PDF and
 
 | Stage | Golden File | Status |
 |---|---|---|
-| Stage 0 | `springfield_document_profile.json` | MISSING |
-| Stage 3 | `springfield_unified_elements.json` | MISSING |
-| Stage 4A | `springfield_classified_rows.json` | MISSING |
-| Stage 4B | `springfield_detected_regions.json` | MISSING |
-| Stage 4C | `springfield_column_map.json` | MISSING |
-| Stage 4D | `springfield_cell_grid.json` | MISSING |
-| Stage 4E | `springfield_parsed_items.json` | MISSING |
-| Stage 5 | `springfield_processed_items.json` | EXISTS — needs validation |
-| Stage 6 | `springfield_quality_report.json` | EXISTS — needs validation |
+| Stage 0 | `springfield_document_profile.json` | GENERATED |
+| Stage 3 | `springfield_unified_elements.json` | GENERATED |
+| Stage 4A | `springfield_classified_rows.json` | GENERATED |
+| Stage 4B | `springfield_detected_regions.json` | GENERATED |
+| Stage 4C | `springfield_column_map.json` | GENERATED |
+| Stage 4D | `springfield_cell_grid.json` | GENERATED |
+| Stage 4E | `springfield_parsed_items.json` | GENERATED |
+| Stage 5 | `springfield_processed_items.json` | GENERATED |
+| Stage 6 | `springfield_quality_report.json` | GENERATED |
 
 ### Golden File Matcher
 
@@ -852,7 +818,17 @@ These deviations are intentional improvements. They MUST be documented in code c
 
 **Rationale**: Real-world PDFs often have minor rounding differences. A $0.50 discrepancy on a $7.8M total should score differently than a $500K discrepancy. Granularity provides more useful quality signals.
 
-### 11.4 Feature Flag Skipped (V1 Deleted Directly)
+### 11.4 OCR-Only Migration (Native Extraction Removed)
+
+**PRD 1.0/2.0 (original)**: Native/OCR/hybrid routing with Stage 2A (native text extraction), Stage 3 (merge native + OCR)
+**Actual**: OCR-only pipeline. Stage 2A (`native_extractor.dart`) and merge logic (`structure_preserver.dart`) deleted entirely. Stage 0 always returns `strategy: 'ocr_only'`. Stage 3 replaced by `ElementValidator` (coordinate validation only).
+
+**Rationale**: CMap corruption in PDF fonts caused unreliable native text extraction — single-character ratio analysis proved insufficient to detect all corruption modes. Native extraction produced inconsistent results across PDF generators (Bluebeam, Adobe, etc.). OCR-only provides uniform quality regardless of PDF source. The `DocumentQualityProfiler` still analyzes text quality for diagnostic purposes but never routes to native extraction.
+
+**Files deleted**: `document_analyzer.dart`, `native_extractor.dart`, `structure_preserver.dart`
+**Files added**: `document_quality_profiler.dart`, `element_validator.dart`
+
+### 11.5 Feature Flag Skipped (V1 Deleted Directly)
 
 **PRD 1.0**: "Preserve V1 behind `useNewPipeline` flag"
 **Actual**: V1 deleted entirely in Phase 6 cutover
@@ -885,13 +861,13 @@ lib/features/pdf/services/extraction/
 │   ├── sidecar.dart
 │   └── stage_report.dart
 ├── stages/
-│   ├── document_analyzer.dart       # Stage 0
-│   ├── native_extractor.dart        # Stage 2A
+│   ├── document_quality_profiler.dart # Stage 0 (was document_analyzer.dart)
+│   ├── element_validator.dart       # Stage 3 (was structure_preserver.dart)
+│   ├── stage_names.dart             # Canonical StageNames constants
 │   ├── page_renderer_v2.dart        # Stage 2B-i
 │   ├── image_preprocessor_v2.dart   # Stage 2B-ii
 │   ├── text_recognizer_v2.dart      # Stage 2B-iii
-│   ├── structure_preserver.dart     # Stage 3
-│   ├── row_classifier_v2.dart       # Stage 4A
+│   ├── row_classifier_v2.dart       # Stage 4A + Phase 1B post-column refinement
 │   ├── region_detector_v2.dart      # Stage 4B
 │   ├── column_detector_v2.dart      # Stage 4C
 │   ├── cell_extractor_v2.dart       # Stage 4D
@@ -900,7 +876,7 @@ lib/features/pdf/services/extraction/
 │   ├── quality_validator.dart       # Stage 6
 │   └── stages.dart                  # Barrel export
 ├── pipeline/
-│   ├── confidence_model.dart        # Canonical ConfidenceConstants
+│   ├── confidence_model.dart        # Canonical ConfidenceConstants (single source of truth)
 │   ├── coordinate_normalizer.dart
 │   ├── extraction_metrics.dart      # SQLite persistence
 │   ├── extraction_pipeline.dart     # Orchestrator + re-extraction loop
@@ -912,7 +888,14 @@ lib/features/pdf/services/extraction/
 │   ├── tesseract_pool_v2.dart
 │   └── concurrency_gate_v2.dart
 └── shared/
-    └── unit_registry.dart
+    ├── extraction_patterns.dart     # Regex patterns for extraction
+    ├── field_format_validator.dart   # Field-level format validation
+    ├── header_keywords.dart         # Column header keyword lists
+    ├── math_utils.dart              # Numeric/math utility functions
+    ├── post_process_utils.dart      # Post-processing helpers
+    ├── quality_thresholds.dart      # QualityThresholds constants (single source of truth)
+    ├── text_quality_analyzer.dart   # TextQualityAnalyzer mixin (used by Stage 0)
+    └── unit_registry.dart           # Unit normalization registry
 ```
 
 ### Test Files
@@ -934,118 +917,71 @@ test/features/pdf/extraction/
 
 ## 13. TODO: Implementation Tasks
 
-All items below require individual research and implementation planning before execution.
+Status legend: COMPLETE, MOSTLY COMPLETE, NOT STARTED
 
-### Phase R1: Critical Correctness (Sessions 1-2)
+### Phase R1: Critical Correctness — COMPLETE
 
-#### R1.1 — Rewrite Quality Formula to Flat 6-Component
+#### R1.1 — Rewrite Quality Formula to Flat 6-Component ✅
 - **File**: `lib/features/pdf/services/extraction/stages/quality_validator.dart`
-- **What**: Remove hierarchical `tableConfidence` intermediate. Implement flat weighted sum with weights: completeness=0.20, coherence=0.15, math=0.25, checksum=0.15, confidence_dist=0.10, structural=0.15
-- **Include mathScore**: Currently computed (line 46) but excluded from formula — add with 0.25 weight
-- **Tests**: Update `stage_6_quality_validation_test.dart` with new expected values. Add test vectors pinning scores for representative scenarios (all-good, one-bad-component, edge thresholds)
+- **What**: Flat 6-component weighted sum implemented (completeness=0.20, coherence=0.15, math=0.25, checksum=0.15, confidence_dist=0.10, structural=0.15)
 
-#### R1.2 — Delete Duplicate ConfidenceConstants
-- **File**: `lib/features/pdf/services/extraction/stages/post_processor_v2.dart` (lines 1202-1210)
-- **What**: Delete local `class ConfidenceConstants`. Import from `confidence_model.dart`. Verify 3 conflicting values resolve to canonical: `kAdjQuantityInferred=-0.05`, `kAdjPriceInferred=-0.05`, `kAdjItemNumberCorrected=-0.10`
-- **Tests**: Update `stage_5_post_processing_test.dart` if any test asserts on the old values
+#### R1.2 — Delete Duplicate ConfidenceConstants ✅
+- Canonical `ConfidenceConstants` in `pipeline/confidence_model.dart`. No duplicates remain.
 
-#### R1.3 — Standardize Stage Name Constants
-- **Files**: All 14 stage files in `stages/` + `quality_validator.dart`
-- **What**: Create `StageNames` abstract class with snake_case constants. Update all stages to use `StageNames.xxx`. Fix QualityValidator lookups (lines 255/258) to match actual names
-- **Critical fix**: After this, structural score will use real Stage 4B/4C confidences instead of fallback defaults
-- **Tests**: Verify stage name matching in quality validation tests
+#### R1.3 — Standardize Stage Name Constants ✅
+- `StageNames` in `stages/stage_names.dart`. All stages reference these constants. QualityValidator lookups use real Stage 4B/4C confidences.
 
-#### R1.4 — Content-Based Document Hash (SHA-256)
-- **File**: `lib/features/pdf/services/extraction/pipeline/extraction_pipeline.dart` (line 228)
-- **What**: Replace `pdfBytes.hashCode.abs().toString()` with `sha256.convert(pdfBytes).toString()`. Add `crypto` package if needed
-- **Tests**: Verify same PDF bytes produce identical hash across multiple calls
+#### R1.4 — Content-Based Document Hash (SHA-256) ✅
+- `sha256.convert(pdfBytes).toString()` in `extraction_pipeline.dart`. Uses `crypto` package.
 
-### Phase R2: Model Enhancements (Sessions 3-4)
+### Phase R2: Model Enhancements — COMPLETE
 
-#### R2.1 — DocumentChecksum: Add Missing Fields + Factories
-- **File**: `lib/features/pdf/services/extraction/models/document_checksum.dart`
-- **Add fields**: `tolerance` (double, default 0.02), `sourcePageIndex` (int?), `detectionConfidence` (double?)
-- **Add factories**: `DocumentChecksum.withTotal(...)` and `DocumentChecksum.noTotalFound(...)`
-- **Update**: `post_processor_v2.dart` checksum construction to use factories
-- **Tests**: Create `document_checksum_test.dart` (see R5.2)
+#### R2.1 — DocumentChecksum: Add Missing Fields + Factories ✅
+- `tolerance`, `sourcePageIndex`, `detectionConfidence` fields added. `withTotal()` and `noTotalFound()` factories implemented.
 
-#### R2.2 — ParsedItems: Add totalRowDescription
-- **File**: `lib/features/pdf/services/extraction/models/parsed_items.dart`
-- **Add field**: `String? totalRowDescription` alongside `extractedDocumentTotal` (line 223)
-- **Propagate**: Stage 4E row parser extracts description text from total row
-- **Update**: `copyWith()`, constructor, serialization, tests
+#### R2.2 — ParsedItems: Add totalRowDescription ✅
+- `totalRowDescription` field propagated through Stage 4E.
 
-#### R2.3 — Weighted Geometric Mean for Row Confidence
-- **Files**: `confidence.dart`, `row_parser_v2.dart`, `row_classifier_v2.dart`, `cell_extractor_v2.dart`
-- **What**: Add `compositeGeometric` getter to `FieldConfidence` using log-space weighted geometric mean. Replace arithmetic mean in 3 locations. Clamp min at 0.01. Weight itemNumber and quantity 1.5x
-- **Threshold adjustment**: Quality gate may need threshold lowered from 0.65 to ~0.60
-- **Tests**: Extensive — verify geometric produces lower scores for single-bad-field scenarios. Update all affected test expectations
+#### R2.3 — Weighted Geometric Mean for Row Confidence ✅
+- `compositeGeometric` getter on `FieldConfidence`. Log-space weighted geometric mean with 1.5x weight on itemNumber and quantity.
 
-#### R2.4 — 4-Factor Field Confidence Formula
-- **File**: `lib/features/pdf/services/extraction/stages/post_processor_v2.dart` (lines 957-1020)
-- **What**: Replace binary presence checks with `0.40*ocrConf + 0.30*formatValidation + 0.20*consistencyScore + 0.10*contextScore` per field
-- **Format validation**: Regex-based per PRD Section 3 table (itemNumber, unit, quantity, unitPrice, bidAmount, description)
-- **Consistency**: Math check (qty * price = amount within tolerance)
-- **Context**: Sequence position, value range reasonableness
-- **Tests**: Update all field confidence tests with new expected values
+#### R2.4 — 4-Factor Field Confidence Formula ✅
+- Implemented: `0.40*ocrConf + 0.30*formatValidation + 0.20*consistencyScore + 0.10*contextScore`. Format validation uses `FieldFormatValidator` in `shared/field_format_validator.dart`.
 
-### Phase R3: Column Detection Enhancement (Sessions 5-6)
+### Phase R3: Column Detection Enhancement — COMPLETE
 
-#### R3.1 — Text Alignment Clustering (Layer 2)
-- **File**: `lib/features/pdf/services/extraction/stages/column_detector_v2.dart` (replace TODO at line 473)
-- **What**: Implement `_detectFromAlignment()` using 1D agglomerative clustering of element X-coordinates. Tolerance ~0.015 normalized. Cross-validate with headers
-- **Confidence**: 0.75 base, 0.85+ with header agreement
-- **Tests**: Add test cases for various column layouts, edge cases (ragged edges, indented text)
+#### R3.1 — Text Alignment Clustering (Layer 2) ✅
+- `_detectFromAlignment()` implemented in `column_detector_v2.dart` using 1D agglomerative clustering (`kTextAlignmentTolerance = 0.015`).
 
-#### R3.2 — Whitespace Gap Analysis (Layer 2b Fallback)
-- **File**: Same as R3.1
-- **What**: Implement `_detectFromGaps()` using X-axis histogram. 200 bins, gaps >1% width, consistent >50% rows
-- **Confidence**: 0.60 (weak fallback signal)
-- **Tests**: Sparse table cases, false positive prevention
+#### R3.2 — Whitespace Gap Analysis (Layer 2b Fallback) ✅
+- `_detectFromGaps()` implemented. 200-bin X-axis histogram, gaps >1% width, consistent >50% rows. Confidence 0.60.
 
-### Phase R4: Pipeline Wiring (Session 6)
+### Phase R4: Pipeline Wiring — COMPLETE
 
-#### R4.1 — ProgressCallback Wiring
-- **Files**: `extraction_pipeline.dart`, `pdf_import_service.dart`
-- **What**: Add `ProgressCallback? onProgress` to `extract()`. Invoke at each stage boundary with stage name + index/total. Pass from `importBidSchedule()` to `extract()`
-- **Future note**: Add `// TODO: Expand progress detail per-stage (page count, items found)` for UX iteration
-- **Tests**: Verify callback invoked correct number of times with correct stage names
+#### R4.1 — ProgressCallback Wiring ✅
+- `onProgress` and `onStageOutput` callbacks wired through `extract()` method. Invoked at each stage boundary.
 
-### Phase R5: Test Infrastructure (Sessions 7-8)
+### Phase R5: Test Infrastructure — MOSTLY COMPLETE
 
-#### R5.1 — Generate All 9 Springfield Golden Fixtures
-- **Location**: `test/features/pdf/extraction/fixtures/`
-- **What**: Run pipeline against Springfield PDF, serialize each stage output. Validate ALL 9 fixtures against ground truth (131 items, $7,882,926.73). Verify existing 2 fixtures are correct
-- **Requires**: Access to Springfield PDF file, ability to run full pipeline
-- **Output**: 7 new JSON files + 2 validated existing files
+#### R5.1 — Generate All 9 Springfield Golden Fixtures ✅
+- All 9 fixtures generated and validated in `test/features/pdf/extraction/fixtures/`.
 
-#### R5.2 — Add document_checksum_test.dart
-- **File**: `test/features/pdf/extraction/models/document_checksum_test.dart`
-- **Test cases**: Exact match, within tolerance ($0.02), at boundary, beyond tolerance, `noTotalFound()` factory, `withTotal()` factory, large values (Springfield total), new fields (tolerance, sourcePageIndex, detectionConfidence)
+#### R5.2 — Add document_checksum_test.dart ✅
+- Test file exists with all required test cases.
 
-#### R5.3 — Add Extraction Schema Migration Test
-- **File**: `test/core/database/extraction_schema_test.dart`
-- **Test cases**: Create extraction_metrics table (21 columns), create stage_metrics table (8 columns), verify indexes, test v20→v21 upgrade path
+#### R5.3 — Add Extraction Schema Migration Test ❌
+- **Still missing**: `test/core/database/extraction_schema_test.dart` — v20→v21 upgrade path test not yet written.
 
-### Phase R6: Cleanup (Session 9)
+### Phase R6: Cleanup — MOSTLY COMPLETE
 
-#### R6.1 — Delete Orphaned Golden PNGs
-- **Delete**: `test/golden/pdf/goldens/` directory (12 PNG files from deleted test `pdf_import_widgets_test.dart`)
+#### R6.1 — Delete Orphaned Golden PNGs ✅
+#### R6.2 — Remove enrichWithMeasurementSpecs Dead Code ✅
 
-#### R6.2 — Remove enrichWithMeasurementSpecs Dead Code
-- **File**: `lib/features/quantities/presentation/providers/bid_item_provider.dart`
-- **Delete**: `enrichWithMeasurementSpecs()` method (lines 286-332). No UI path calls it after import type dialog removal
+#### R6.3 — Fix Flutter Analyze Warnings ❓
+- **Unverified**: May still have issues in extraction directory. Needs re-run of `flutter analyze`.
 
-#### R6.3 — Fix Flutter Analyze Warnings
-- **Scope**: 19 issues in `lib/features/pdf/services/extraction/`
-- **Types**: Unnecessary imports, doc-comment formatting, null-check issues in `page_renderer_v2.dart`
-- **Command**: `pwsh -Command "flutter analyze lib/features/pdf/services/extraction"`
-
-#### R6.4 — Document Justified Deviations
-- **Add code comments** in 3 files documenting why implementation differs from PRD 1.0:
-  - `image_preprocessor_v2.dart`: 3 steps not 6 (binarization destroyed 92% of data)
-  - `extraction_pipeline.dart`: 400 DPI not 300 (better results)
-  - `quality_validator.dart`: Granular checksum scoring (improvement)
+#### R6.4 — Document Justified Deviations ❓
+- **Unverified**: Code comments may not all be present in deviation files.
 
 ### Phase R7: Enhancements (Sessions 10-15)
 
@@ -1074,16 +1010,15 @@ All items below require individual research and implementation planning before e
 
 ## Execution Summary
 
-| Phase | Sessions | Scope |
-|-------|----------|-------|
-| R1: Critical Correctness | 1-2 | Quality formula, constants, stage names, hash |
-| R2: Model Enhancements | 3-4 | Checksum model, geometric mean, 4-factor confidence |
-| R3: Column Detection | 5-6 | Text clustering, whitespace gaps |
-| R4: Pipeline Wiring | 6 | ProgressCallback |
-| R5: Test Infrastructure | 7-8 | Golden fixtures, missing tests |
-| R6: Cleanup | 9 | PNGs, dead code, warnings, docs |
-| R7: Enhancements | 10-15 | TEDS/GriTS, calibration, benchmarks |
-| **Total** | **~11-17** | |
+| Phase | Status | Scope |
+|-------|--------|-------|
+| R1: Critical Correctness | COMPLETE | Quality formula, constants, stage names, hash |
+| R2: Model Enhancements | COMPLETE | Checksum model, geometric mean, 4-factor confidence |
+| R3: Column Detection | COMPLETE | Text clustering, whitespace gaps |
+| R4: Pipeline Wiring | COMPLETE | ProgressCallback + onStageOutput |
+| R5: Test Infrastructure | MOSTLY COMPLETE | Golden fixtures done; R5.3 schema migration test missing |
+| R6: Cleanup | MOSTLY COMPLETE | R6.3, R6.4 unverified |
+| R7: Enhancements | NOT STARTED | TEDS/GriTS, calibration, benchmarks |
 
 ---
 

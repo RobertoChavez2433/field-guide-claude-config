@@ -4,6 +4,17 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ---
 
+## February 2026
+
+### Session 335 (2026-02-13)
+**Work**: Ran 3 parallel code-review agents on `.claude/` directory. Fixed ~90+ broken refs, archived 10 stale files, renamed 3 constraint files, deleted _defects.md redirect, fixed all agent/state/constraint file paths.
+
+### Session 333 (2026-02-13)
+**Work**: Tested `/resume-session` — removed 4-path intent questions (zero-question flow). Audited `.claude/` directory: found 16 broken refs, 9 orphans, 3 outdated items. Designed 3 native Claude Code hooks (post-edit analyzer, doc staleness, sub-agent pre-flight). Wrote Phase 4 implementation plan.
+**Decisions**: Zero-question resume (user's first message = intent). Native hooks over manual scripts. Blocking PostToolUse analyzer. Hook-enforced doc updates (no dedicated docs agent). No PreToolUse gates (V1 patterns moot).
+
+---
+
 ### Session 332 (2026-02-13)
 **Work**: Fixed 16 issues in `.claude/` directory config across 5 phases. Rewrote session skills (no git), fixed broken references, wired agent feature_docs, created 13 per-feature defect files, migrated existing defects.
 **Decisions**: Per-feature defects in `.claude/defects/`, overviews-only for multi-feature agents (token efficiency), original _defects.md kept as redirect.

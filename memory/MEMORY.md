@@ -6,15 +6,15 @@
 - Build folder lock: kill dart.exe and construction_inspector.exe, wait 5s, then delete build/
 
 ### PDF Extraction Pipeline
-- TableExtractor pipeline: TableLocator -> ColumnDetector -> CellExtractor -> TableRowParser
-- ColumnDetector orchestrates both HeaderColumnDetector (keywords) and LineColumnDetector (gridlines)
+- **OCR-ONLY pipeline** — Native text extraction is OFF. CMap corruption across PDFs made native extraction unreliable. 2 weeks spent decoding corruption, scrapped. DO NOT suggest native/hybrid extraction.
+- V2 pipeline: DocumentQualityProfiler → PageRenderer → ImagePreprocessor → TextRecognizer → ElementValidator → RowClassifier → RegionDetector → ColumnDetector → CellExtractor → RowParser → PostProcessor → QualityValidator
 - Springfield PDF: 131 items across 6 pages, headers split multi-line ("Item\nNo.", "Est.\nQuantity")
-- Page 6 sometimes OCRs text backwards - _detectAndFixReversedText() added to tesseract_ocr_engine.dart
-- **New**: RowClassifier (Phase 1A pre-column, Phase 1B post-column) classifies rows into 6 types
-- **New**: TableRegionDetector uses two-pass linear scan with cross-page header confirmation
-- **OCR Preprocessing**: Removed adaptive thresholding (binarization) from image_preprocessor.dart - clean PDFs need grayscale + contrast, not binary conversion. Binarization destroyed 92% of image data.
-- **Row Classifier**: Numeric content gate added - DATA rows must have at least one numeric value in quantity/price/amount columns (prevents classifying header/boilerplate as data)
-- **Post-Processing**: Validation module (post_process_validation.dart) validates item numbers (^\d+(\.\d+)?$) and units (57 known units) before processing
+- **PSM Mode**: Default PSM=6 (single block) produces garbage on table-heavy pages. Needs investigation for table-structured PDFs.
+- RowClassifier (Phase 1A pre-column, Phase 1B post-column) classifies rows into 6 types
+- TableRegionDetector uses two-pass linear scan with cross-page header confirmation
+- **OCR Preprocessing**: Removed binarization — clean PDFs need grayscale + contrast only. Binarization destroyed 92% of image data.
+- **Row Classifier**: Numeric content gate — DATA rows must have numeric values in qty/price/amount columns
+- **Post-Processing**: Validation validates item numbers (^\d+(\.\d+)?$) and units (57 known units)
 
 ### Logging System
 - DebugLogger: 9 categories in `Troubleshooting/Detailed App Wide Logs/session_YYYY-MM-DD_HH-MM-SS/`

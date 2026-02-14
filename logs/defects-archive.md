@@ -4,6 +4,33 @@ Historical defects moved from per-feature defect files. Reference only.
 
 ---
 
+## Archived from _defects-pdf.md (2026-02-14, Session 340)
+
+### [DATA] 2026-02-06: OCR Used on Digital PDFs Without Trying Native Text First
+**Pattern**: `importBidSchedule()` always renders PDF to images and runs Tesseract OCR, even on digital PDFs with extractable native text.
+**Prevention**: Always try native text extraction first, fall back to OCR only when `needsOcr()` returns true
+**Ref**: @lib/features/pdf/services/pdf_import_service.dart:694
+**Archive note**: Superseded by OCR-only pipeline decision — native text extraction abandoned due to CMap corruption across PDFs.
+
+## Archived from _defects-pdf.md (2026-02-14, Session 338)
+
+### [DATA] 2026-02-06: Adaptive Thresholding Destroys Clean PDF Images
+**Pattern**: Unconditional binarization converts 300 DPI grayscale to binary, destroying 92% of image data
+**Prevention**: Only apply binarization to noisy scans/photos; clean PDF renders need grayscale + contrast only
+**Ref**: @lib/features/pdf/services/ocr/image_preprocessor.dart:152-177
+
+### [DATA] 2026-02-04: Substring Keyword Matching Causes False Positives
+**Pattern**: Using `String.contains()` for keyword matching allows substring false positives
+**Prevention**: Use word-boundary matching (RegExp `\bKEYWORD\b`) for single-word patterns
+**Ref**: @lib/features/pdf/services/table_extraction/table_locator.dart:299
+
+### [DATA] 2026-02-04: else-if Chain Blocks Multi-Category Keyword Matching
+**Pattern**: Using `else if` chain in keyword matching prevents independent elements from matching different categories
+**Prevention**: Use independent `if` + `continue` pattern
+**Ref**: @lib/features/pdf/services/table_extraction/header_column_detector.dart:228
+
+---
+
 ### [DATA] 2026-02-08: Per-Page Column Detection Hardcodes Empty Header Elements — FIXED (Session 321)
 **Pattern**: `_detectColumnsPerPage()` passes `headerRowElements: <OcrElement>[]` for every page, so continuation pages never get header-based column detection — always falling to 0% confidence fallback.
 **Prevention**: When adding per-page processing loops, verify inputs aren't hardcoded empty. Extract header elements per-page using repeated header Y positions.

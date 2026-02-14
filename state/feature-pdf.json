@@ -25,11 +25,14 @@
 
   "metrics": {
     "test_coverage_percentage": 87,
-    "last_updated": "2026-02-12T00:00:00Z"
+    "last_updated": "2026-02-14T00:00:00Z",
+    "item_match_rate": 0.0,
+    "quality_score": 0.615
   },
 
   "current_phase": {
-    "phase_name": "OCR-Only Pipeline Migration",
-    "status": "Phase 1 complete, Phases 2-5 pending"
+    "phase_name": "Grid Line Detection + Row-Level OCR",
+    "status": "Plan approved, implementation not started",
+    "plan_file": "plans/2026-02-14-grid-line-detection-row-ocr.md"
   }
 }
