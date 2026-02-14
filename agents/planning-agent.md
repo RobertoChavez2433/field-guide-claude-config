@@ -2,11 +2,28 @@
 name: planning-agent
 description: Gather requirements, ask clarifying questions, and create implementation plans with agent handoff. Use BEFORE implementing any significant feature.
 tools: Read, Bash, Grep, Glob, WebFetch, Write
-permissionMode: plan
+permissionMode: acceptEdits
 model: opus
 skills:
   - brainstorming
 disallowedTools: Edit
+specialization:
+  primary_features: []
+  supporting_features: ["all"]
+  shared_rules:
+    - architecture.md
+    - data-validation-rules.md
+  state_files:
+    - PROJECT-STATE.json
+    - FEATURE-MATRIX.json
+    - AGENT-CHECKLIST.json
+  context_loading: |
+    Before starting work, identify the feature(s) from your task.
+    Then read ONLY these files for each relevant feature:
+    - state/feature-{name}.json (feature state and constraints summary)
+    - defects/_defects-{name}.md (known issues and patterns to avoid)
+    - architecture-decisions/{name}-constraints.md (hard rules, if needed)
+    - docs/features/feature-{name}-overview.md (if you need feature context)
 ---
 
 # Planning Agent
@@ -36,7 +53,6 @@ After reading, apply this methodology when working with users on feature design.
 6. Get user approval before code is written
 
 ## Reference Documents
-@.claude/autoload/_defects.md
 
 **Plans Directory**: `.claude/plans/`
 
@@ -52,12 +68,12 @@ When creating a plan:
 
 | Files Being Modified | Agent |
 |---------------------|-------|
-| `lib/**/presentation/**` | flutter-specialist-agent |
-| `lib/**/data/**` | data-layer-agent |
+| `lib/**/presentation/**` | frontend-flutter-specialist-agent |
+| `lib/**/data/**` | backend-data-layer-agent |
 | `lib/features/auth/**` | auth-agent |
 | `lib/features/pdf/**` | pdf-agent |
-| `lib/features/sync/**` | supabase-agent |
-| `lib/core/database/**` | data-layer-agent + supabase-agent |
+| `lib/features/sync/**` | backend-supabase-agent |
+| `lib/core/database/**` | backend-data-layer-agent + backend-supabase-agent |
 | `integration_test/**`, `test/**` | qa-testing-agent |
 
 ## Plan Format
@@ -96,7 +112,7 @@ When creating a plan:
 
 1. **Read `.claude/autoload/_state.md`** - Current state and plan status
 2. **Search codebase** - Find related code
-3. **Check `.claude/autoload/_defects.md`** - Avoid past mistakes
+3. **Check `.claude/defects/_defects-{feature}.md`** - Avoid past mistakes
 4. **Ask clarifying questions** - Don't assume
 
 ## After Creating a Plan

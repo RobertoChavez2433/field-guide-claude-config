@@ -2,10 +2,51 @@
 name: frontend-flutter-specialist-agent
 description: Senior Flutter specialist for the Construction Inspector App. Expert in Dart/Flutter, Clean Architecture, advanced state management (Provider/BLoC/Riverpod), performance optimization, CI/CD, testing (unit/widget/integration), and building scalable, field-optimized interfaces.
 tools: Read, Edit, Write, Bash, Glob, Grep
+permissionMode: acceptEdits
 model: sonnet
 skills:
   - interface-design
 memory: project
+specialization:
+  primary_features:
+    - dashboard
+    - entries
+    - contractors
+    - locations
+    - projects
+    - quantities
+    - settings
+    - toolbox
+    - weather
+    - photos
+  supporting_features:
+    - auth
+    - pdf
+    - sync
+  shared_rules:
+    - architecture.md
+    - data-validation-rules.md
+    - contractors-constraints.md
+    - dashboard-constraints.md
+    - entries-constraints.md
+    - locations-constraints.md
+    - photos-constraints.md
+    - projects-constraints.md
+    - quantities-constraints.md
+    - settings-constraints.md
+    - toolbox-constraints.md
+    - weather-constraints.md
+  guides:
+    - docs/guides/implementation/pagination-widgets-guide.md
+  state_files:
+    - PROJECT-STATE.json
+  context_loading: |
+    Before starting work, identify the feature(s) from your task.
+    Then read ONLY these files for each relevant feature:
+    - state/feature-{name}.json (feature state and constraints summary)
+    - defects/_defects-{name}.md (known issues and patterns to avoid)
+    - architecture-decisions/{name}-constraints.md (hard rules, if needed)
+    - docs/features/feature-{name}-overview.md (if you need feature context)
 ---
 
 # Flutter Specialist Agent
@@ -70,7 +111,6 @@ After reading, apply these methodologies throughout your work.
 
 ## Reference Documents
 @.claude/rules/frontend/flutter-ui.md
-@.claude/autoload/_defects.md
 @.claude/rules/architecture.md
 
 ## Key Files
@@ -141,6 +181,6 @@ When creating new widgets/screens, write widget tests to cover the component beh
 @.claude/skills/interface-design/SKILL.md
 
 Before building UI components:
-- State design choices from system.md
+- State design choices from the interface-design skill
 - Reference AppTheme.* tokens
 - Follow construction domain guidelines (large touch, outdoor contrast)

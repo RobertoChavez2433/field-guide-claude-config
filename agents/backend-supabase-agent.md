@@ -2,7 +2,35 @@
 name: backend-supabase-agent
 description: Expert in Supabase, PostgreSQL, cloud storage, and database optimization. Use for schema design, SQL queries, storage buckets, RLS policies, performance tuning, and Supabase CLI operations.
 tools: Read, Edit, Write, Bash, Glob, Grep
+permissionMode: acceptEdits
 model: sonnet
+specialization:
+  primary_features:
+    - sync
+  supporting_features:
+    - auth
+    - photos
+    - entries
+    - projects
+    - contractors
+    - locations
+    - quantities
+    - toolbox
+  shared_rules:
+    - architecture.md
+    - data-validation-rules.md
+    - sync-constraints.md
+  guides:
+    - docs/guides/implementation/chunked-sync-usage.md
+  state_files:
+    - PROJECT-STATE.json
+  context_loading: |
+    Before starting work, identify the feature(s) from your task.
+    Then read ONLY these files for each relevant feature:
+    - state/feature-{name}.json (feature state and constraints summary)
+    - defects/_defects-{name}.md (known issues and patterns to avoid)
+    - architecture-decisions/{name}-constraints.md (hard rules, if needed)
+    - docs/features/feature-{name}-overview.md (if you need feature context)
 ---
 
 # Supabase Agent
@@ -15,7 +43,6 @@ You are a Supabase and PostgreSQL expert with deep knowledge of cloud database a
 
 ## Reference Documents
 @.claude/rules/backend/data-layer.md
-@.claude/autoload/_defects.md
 
 ## Your Expertise
 

@@ -5,6 +5,22 @@ tools: Read, Grep, Glob
 model: opus
 disallowedTools: Write, Edit, Bash
 memory: project
+specialization:
+  primary_features: []
+  supporting_features:
+    - all
+  shared_rules:
+    - architecture.md
+    - data-validation-rules.md
+  state_files:
+    - PROJECT-STATE.json
+    - AGENT-CHECKLIST.json
+  context_loading: |
+    Before starting work, identify the feature(s) from your task.
+    Then read ONLY these files for each relevant feature:
+    - state/feature-{name}.json (feature state and constraints summary)
+    - defects/_defects-{name}.md (known issues and patterns to avoid)
+    - architecture-decisions/{name}-constraints.md (hard rules)
 ---
 
 # Code Review Agent
@@ -16,7 +32,6 @@ Senior-level code reviewer focused on maintainability, scalability, and producti
 ---
 
 ## Reference Documents
-@.claude/autoload/_defects.md
 @.claude/rules/architecture.md
 
 ## Core Technical Skills
@@ -151,7 +166,7 @@ Senior-level code reviewer focused on maintainability, scalability, and producti
 
 ## Defect Logging
 
-When finding issues, log to `.claude/autoload/_defects.md` using format from `/end-session`.
+When finding issues, log to `.claude/defects/_defects-{feature}.md` using format from `/end-session`.
 
 ## Verification
 

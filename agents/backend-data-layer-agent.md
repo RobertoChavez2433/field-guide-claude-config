@@ -2,7 +2,45 @@
 name: backend-data-layer-agent
 description: Design and implement data models, repositories, and datasources. Use for database schema, data access patterns, domain logic, and provider state management.
 tools: Read, Edit, Write, Bash, Glob, Grep
+permissionMode: acceptEdits
 model: sonnet
+specialization:
+  primary_features:
+    - contractors
+    - entries
+    - locations
+    - projects
+    - quantities
+    - photos
+    - toolbox
+    - weather
+    - settings
+  supporting_features:
+    - auth
+    - pdf
+    - sync
+    - dashboard
+  shared_rules:
+    - architecture.md
+    - data-validation-rules.md
+    - contractors-constraints.md
+    - entries-constraints.md
+    - locations-constraints.md
+    - photos-constraints.md
+    - projects-constraints.md
+    - quantities-constraints.md
+    - settings-constraints.md
+    - toolbox-constraints.md
+    - weather-constraints.md
+  state_files:
+    - PROJECT-STATE.json
+  context_loading: |
+    Before starting work, identify the feature(s) from your task.
+    Then read ONLY these files for each relevant feature:
+    - state/feature-{name}.json (feature state and constraints summary)
+    - defects/_defects-{name}.md (known issues and patterns to avoid)
+    - architecture-decisions/{name}-constraints.md (hard rules, if needed)
+    - docs/features/feature-{name}-overview.md (if you need feature context)
 ---
 
 # Data Layer Agent
@@ -15,7 +53,6 @@ You are an expert in data architecture for Flutter apps, specializing in clean a
 
 ## Reference Documents
 @.claude/rules/backend/data-layer.md
-@.claude/autoload/_defects.md
 @.claude/rules/architecture.md
 
 ## Project Context
@@ -38,8 +75,6 @@ lib/
 │           ├── providers/    # State management
 │           ├── screens/      # Full pages
 │           └── widgets/      # Reusable components
-├── data/              # LEGACY: Backward-compatible barrel re-exports
-├── presentation/      # LEGACY: Backward-compatible barrel re-exports
 └── services/          # Cross-cutting services
 ```
 
@@ -49,7 +84,7 @@ lib/
 2. Implement repositories in `lib/features/*/data/repositories/`
 3. Create datasources in `lib/features/*/data/datasources/`
 4. Define providers in `lib/features/*/presentation/providers/`
-5. Update barrel exports (feature `data.dart`, `presentation.dart`, legacy `models.dart`)
+5. Update barrel exports (feature `data.dart`, `presentation.dart`)
 
 ## Database Schema (20+ Tables)
 
@@ -117,7 +152,6 @@ Reference: `lib/core/database/database_service.dart`, `lib/core/database/schema/
 | Feature datasources | `lib/features/*/data/datasources/` |
 | Feature repositories | `lib/features/*/data/repositories/` |
 | Feature providers | `lib/features/*/presentation/providers/` |
-| Legacy barrels | `lib/data/`, `lib/presentation/` (backward-compat) |
 | Main providers | `lib/main.dart` (MultiProvider setup) |
 
 ## Testing

@@ -2,10 +2,32 @@
 name: pdf-agent
 description: Comprehensive PDF expert for template filling, OCR extraction, and template creation. Use for field mapping, data extraction from photos, creating new templates, and PDF debugging.
 tools: Read, Edit, Write, Bash, Glob, Grep
+permissionMode: acceptEdits
 model: sonnet
 skills:
   - pdf-processing
 memory: project
+specialization:
+  primary_features:
+    - pdf
+  supporting_features:
+    - photos
+    - entries
+  shared_rules:
+    - architecture.md
+    - data-validation-rules.md
+    - pdf/pdf-generation.md
+    - pdf-v2-constraints.md
+  state_files:
+    - PROJECT-STATE.json
+  prd: prds/pdf-extraction-v2-prd-2.0.md
+  context_loading: |
+    Before starting work, identify the feature(s) from your task.
+    Then read ONLY these files for each relevant feature:
+    - state/feature-{name}.json (feature state and constraints summary)
+    - defects/_defects-{name}.md (known issues and patterns to avoid)
+    - architecture-decisions/{name}-constraints.md (hard rules, if needed)
+    - docs/features/feature-{name}-overview.md (if you need feature context)
 ---
 
 # PDF Agent
@@ -47,8 +69,8 @@ This Flutter app generates IDR (Inspector Daily Report) PDFs using template fill
 | File | Purpose |
 |------|---------|
 | `lib/features/pdf/services/pdf_service.dart` | PDF generation, field mapping, debug tools |
-| `lib/features/pdf/services/parsers/` | OCR text parsers (row state machine, column layout, etc.) |
-| `lib/features/pdf/data/models/` | PDF data models (parsed_bid_item, parsed_measurement_spec) |
+| `lib/features/pdf/services/extraction/` | V2 extraction pipeline (stages, models, shared) |
+| `lib/features/pdf/data/models/` | PDF data models (parsed_bid_item) |
 | `assets/templates/idr_template.pdf` | Current IDR template |
 | `assets/templates/` | All PDF templates |
 | `Troubleshooting/IDR Test Exports/` | Test output directory |
@@ -56,7 +78,6 @@ This Flutter app generates IDR (Inspector Daily Report) PDFs using template fill
 
 ## Reference Documents
 @.claude/rules/pdf/pdf-generation.md
-@.claude/autoload/_defects.md
 
 ---
 
@@ -128,11 +149,6 @@ _setField(form, 'hhhhhhhhhhhwerwer', signature); // Signature
 2. Generate debug PDF to see actual field positions
 3. Compare debug output to expected visual layout
 4. Update mapping constants in `lib/features/pdf/services/pdf_service.dart`
-
----
-
-## OCR & Template Workflows
-@.claude/docs/pdf-workflows.md
 
 ---
 
