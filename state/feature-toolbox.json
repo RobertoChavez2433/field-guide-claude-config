@@ -1,0 +1,30 @@
+{
+  "id": "toolbox",
+  "name": "Inspector Toolbox",
+  "status": "stable",
+  "description": "Dynamic form builder with auto-fill engine, calculation history, and todo tracking for inspector utilities",
+
+  "docs": {
+    "overview": "docs/features/feature-toolbox-overview.md",
+    "architecture": "docs/features/feature-toolbox-architecture.md",
+    "prd": "prds/toolbox-prd.md"
+  },
+
+  "constraints_file": "architecture-decisions/toolbox-constraints.md",
+  "constraints_summary": [
+    "All forms built via builder pattern (JSON schema -> widget rendering)",
+    "No hardcoding UI widgets in screens",
+    "Auto-fill engine: previously-entered values suggested",
+    "No conditional field logic in widgets (move to form definition)"
+  ],
+
+  "integration": {
+    "depends_on": ["auth", "pdf"],
+    "required_by": []
+  },
+
+  "metrics": {
+    "test_coverage_percentage": 55,
+    "last_updated": "2026-02-13T00:00:00Z"
+  }
+}

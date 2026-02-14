@@ -1,0 +1,269 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-02-13",
+  "description": "Maps agents to features and features to agents for the Construction Inspector App. Generated from agent definitions in .claude/agents/.",
+
+  "agents": [
+    {
+      "name": "planning-agent",
+      "description": "Gather requirements, ask clarifying questions, and create implementation plans with agent handoff. Use BEFORE implementing any significant feature.",
+      "phase": "PLAN",
+      "model": "opus",
+      "primary_features": [],
+      "supporting_features": ["all"],
+      "skills": ["brainstorming"],
+      "tools": ["Read", "Bash", "Grep", "Glob", "WebFetch", "Write"],
+      "disallowed_tools": ["Edit"],
+      "rules": ["rules/architecture.md", "architecture-decisions/data-validation-rules.md"],
+      "notes": "Cross-cutting orchestrator. Does not own any feature but coordinates work across all features. Produces plans in .claude/plans/ for handoff to specialized agents."
+    },
+    {
+      "name": "frontend-flutter-specialist-agent",
+      "description": "Senior Flutter specialist. Expert in Dart/Flutter, Clean Architecture, state management (Provider/BLoC/Riverpod), performance optimization, testing, and field-optimized interfaces.",
+      "phase": "IMPLEMENT",
+      "model": "sonnet",
+      "primary_features": ["dashboard", "entries", "contractors", "locations", "projects", "quantities", "settings", "toolbox", "weather", "photos"],
+      "supporting_features": ["auth", "pdf", "sync"],
+      "skills": ["interface-design"],
+      "tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
+      "disallowed_tools": [],
+      "rules": ["rules/architecture.md", "rules/frontend/flutter-ui.md", "architecture-decisions/data-validation-rules.md"],
+      "notes": "Owns all presentation layer work (lib/**/presentation/**). Primary agent for any feature that lacks a dedicated specialist, covering screens, widgets, and providers."
+    },
+    {
+      "name": "backend-data-layer-agent",
+      "description": "Design and implement data models, repositories, and datasources. Use for database schema, data access patterns, domain logic, and provider state management.",
+      "phase": "IMPLEMENT",
+      "model": "sonnet",
+      "primary_features": ["contractors", "entries", "locations", "projects", "quantities", "photos", "toolbox", "weather", "settings"],
+      "supporting_features": ["auth", "pdf", "sync", "dashboard"],
+      "skills": [],
+      "tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
+      "disallowed_tools": [],
+      "rules": ["rules/architecture.md", "rules/backend/data-layer.md", "architecture-decisions/data-validation-rules.md"],
+      "notes": "Owns all data layer work (lib/**/data/**) and database schema (lib/core/database/**). Manages models, repositories, datasources, and barrel exports for all features without a dedicated specialist."
+    },
+    {
+      "name": "backend-supabase-agent",
+      "description": "Expert in Supabase, PostgreSQL, cloud storage, and database optimization. Use for schema design, SQL queries, storage buckets, RLS policies, performance tuning, and Supabase CLI.",
+      "phase": "IMPLEMENT",
+      "model": "sonnet",
+      "primary_features": ["sync"],
+      "supporting_features": ["auth", "photos", "entries", "projects", "contractors", "locations", "quantities", "toolbox"],
+      "skills": [],
+      "tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
+      "disallowed_tools": [],
+      "rules": ["rules/architecture.md", "rules/backend/supabase-sql.md", "rules/sync/sync-patterns.md", "architecture-decisions/data-validation-rules.md", "architecture-decisions/sync-constraints.md"],
+      "notes": "Owns sync feature and all Supabase cloud infrastructure. Co-owns lib/core/database/** with data-layer-agent. Supporting role for any feature that syncs data to cloud."
+    },
+    {
+      "name": "auth-agent",
+      "description": "Handle Supabase authentication flows, session management, and security. Use for login, registration, password reset, deep linking, and auth state management.",
+      "phase": "IMPLEMENT",
+      "model": "sonnet",
+      "primary_features": ["auth"],
+      "supporting_features": [],
+      "skills": [],
+      "tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
+      "disallowed_tools": [],
+      "rules": ["rules/architecture.md", "rules/auth/supabase-auth.md", "architecture-decisions/auth-constraints.md", "architecture-decisions/data-validation-rules.md"],
+      "notes": "Narrow specialist. Owns only the auth feature (lib/features/auth/**). Handles sign in/up/out, password reset, deep links, session state, and token security."
+    },
+    {
+      "name": "pdf-agent",
+      "description": "Comprehensive PDF expert for template filling, OCR extraction, and template creation. Use for field mapping, data extraction from photos, creating new templates, and PDF debugging.",
+      "phase": "IMPLEMENT",
+      "model": "sonnet",
+      "primary_features": ["pdf"],
+      "supporting_features": ["photos", "entries"],
+      "skills": ["pdf-processing"],
+      "tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
+      "disallowed_tools": [],
+      "rules": ["rules/architecture.md", "rules/pdf/pdf-generation.md", "architecture-decisions/pdf-v2-constraints.md", "architecture-decisions/data-validation-rules.md"],
+      "notes": "Narrow specialist. Owns the pdf feature (lib/features/pdf/**). Handles IDR template filling, OCR extraction pipeline, template creation, and PDF debugging. Supporting role for photos (OCR from photos) and entries (data that populates reports)."
+    },
+    {
+      "name": "code-review-agent",
+      "description": "Senior code reviewer. Expert in architecture assessment, code quality, scalability, and constructive feedback. Implements KISS, DRY, YAGNI principles.",
+      "phase": "REVIEW",
+      "model": "opus",
+      "primary_features": [],
+      "supporting_features": ["all"],
+      "skills": [],
+      "tools": ["Read", "Grep", "Glob"],
+      "disallowed_tools": ["Write", "Edit", "Bash"],
+      "notes": "Read-only cross-cutting agent. Reviews code across all features but cannot modify files. Focuses on architecture, patterns, performance, maintainability, and security."
+    },
+    {
+      "name": "qa-testing-agent",
+      "description": "QA and debugging specialist. Expert in test case design, bug reporting, performance analysis, and comprehensive testing (unit/widget/integration).",
+      "phase": "TEST/VERIFY",
+      "model": "sonnet",
+      "primary_features": [],
+      "supporting_features": ["all"],
+      "skills": ["systematic-debugging"],
+      "tools": ["Bash", "Read", "Write", "Edit", "Grep", "Glob"],
+      "disallowed_tools": [],
+      "rules": ["rules/architecture.md", "rules/testing/patrol-testing.md", "architecture-decisions/data-validation-rules.md"],
+      "notes": "Cross-cutting testing agent. Owns test/** and integration_test/** directories. Tests all features but does not own any feature's source code. Uses systematic-debugging skill for root cause analysis."
+    }
+  ],
+
+  "features": [
+    {
+      "name": "auth",
+      "primary_agent": "auth-agent",
+      "supporting_agents": ["frontend-flutter-specialist-agent", "backend-data-layer-agent", "backend-supabase-agent"],
+      "shared_rules": ["rules/auth/supabase-auth.md", "architecture-decisions/auth-constraints.md"],
+      "notes": "Dedicated specialist. Auth-agent owns both data and presentation layers for this feature."
+    },
+    {
+      "name": "contractors",
+      "primary_agent": "frontend-flutter-specialist-agent",
+      "data_agent": "backend-data-layer-agent",
+      "supporting_agents": ["backend-supabase-agent"],
+      "shared_rules": [],
+      "notes": "Generic feature. Frontend specialist owns presentation, data-layer-agent owns data layer."
+    },
+    {
+      "name": "dashboard",
+      "primary_agent": "frontend-flutter-specialist-agent",
+      "data_agent": "backend-data-layer-agent",
+      "supporting_agents": [],
+      "shared_rules": [],
+      "notes": "Primarily a presentation-heavy feature. Aggregates data from entries, projects, quantities."
+    },
+    {
+      "name": "entries",
+      "primary_agent": "frontend-flutter-specialist-agent",
+      "data_agent": "backend-data-layer-agent",
+      "supporting_agents": ["backend-supabase-agent", "pdf-agent"],
+      "shared_rules": [],
+      "notes": "Core feature. Daily inspection entries. PDF-agent is supporting because entries populate IDR reports."
+    },
+    {
+      "name": "locations",
+      "primary_agent": "frontend-flutter-specialist-agent",
+      "data_agent": "backend-data-layer-agent",
+      "supporting_agents": ["backend-supabase-agent"],
+      "shared_rules": [],
+      "notes": "Generic feature. Work locations tied to projects."
+    },
+    {
+      "name": "pdf",
+      "primary_agent": "pdf-agent",
+      "supporting_agents": ["frontend-flutter-specialist-agent", "backend-data-layer-agent"],
+      "shared_rules": ["rules/pdf/pdf-generation.md", "architecture-decisions/pdf-v2-constraints.md"],
+      "notes": "Dedicated specialist. PDF-agent owns both extraction pipeline and generation. Frontend specialist supports preview/viewing screens."
+    },
+    {
+      "name": "photos",
+      "primary_agent": "frontend-flutter-specialist-agent",
+      "data_agent": "backend-data-layer-agent",
+      "supporting_agents": ["backend-supabase-agent", "pdf-agent"],
+      "shared_rules": [],
+      "notes": "Generic feature with cross-cutting concerns. Supabase-agent handles cloud storage. PDF-agent handles OCR from photo images."
+    },
+    {
+      "name": "projects",
+      "primary_agent": "frontend-flutter-specialist-agent",
+      "data_agent": "backend-data-layer-agent",
+      "supporting_agents": ["backend-supabase-agent"],
+      "shared_rules": [],
+      "notes": "Root entity. Parent of locations, contractors, entries, bid_items, personnel_types."
+    },
+    {
+      "name": "quantities",
+      "primary_agent": "frontend-flutter-specialist-agent",
+      "data_agent": "backend-data-layer-agent",
+      "supporting_agents": ["backend-supabase-agent"],
+      "shared_rules": [],
+      "notes": "Bid items and entry quantities. Ties entries to contract line items."
+    },
+    {
+      "name": "settings",
+      "primary_agent": "frontend-flutter-specialist-agent",
+      "data_agent": "backend-data-layer-agent",
+      "supporting_agents": [],
+      "shared_rules": [],
+      "notes": "App configuration. Primarily presentation-layer work."
+    },
+    {
+      "name": "sync",
+      "primary_agent": "backend-supabase-agent",
+      "supporting_agents": ["backend-data-layer-agent", "frontend-flutter-specialist-agent"],
+      "shared_rules": ["rules/sync/sync-patterns.md", "rules/backend/supabase-sql.md", "architecture-decisions/sync-constraints.md"],
+      "notes": "Dedicated specialist. Supabase-agent owns sync orchestrator. Data-layer-agent co-owns database layer. Frontend specialist handles sync UI indicators."
+    },
+    {
+      "name": "toolbox",
+      "primary_agent": "frontend-flutter-specialist-agent",
+      "data_agent": "backend-data-layer-agent",
+      "supporting_agents": ["backend-supabase-agent"],
+      "shared_rules": [],
+      "notes": "Inspector forms, todos, calculations. Generic feature with complex data schema (7 tables)."
+    },
+    {
+      "name": "weather",
+      "primary_agent": "frontend-flutter-specialist-agent",
+      "data_agent": "backend-data-layer-agent",
+      "supporting_agents": [],
+      "shared_rules": [],
+      "notes": "Weather data for daily entries. Relatively simple feature."
+    }
+  ],
+
+  "routing_rules": {
+    "description": "File-path-based routing for agent handoff, as defined in planning-agent.md",
+    "rules": [
+      { "pattern": "lib/**/presentation/**", "agent": "frontend-flutter-specialist-agent" },
+      { "pattern": "lib/**/data/**", "agent": "backend-data-layer-agent" },
+      { "pattern": "lib/features/auth/**", "agent": "auth-agent" },
+      { "pattern": "lib/features/pdf/**", "agent": "pdf-agent" },
+      { "pattern": "lib/features/sync/**", "agent": "backend-supabase-agent" },
+      { "pattern": "lib/core/database/**", "agents": ["backend-data-layer-agent", "backend-supabase-agent"] },
+      { "pattern": "test/**", "agent": "qa-testing-agent" },
+      { "pattern": "integration_test/**", "agent": "qa-testing-agent" }
+    ],
+    "priority_note": "Feature-specific agents (auth-agent, pdf-agent) take priority over generic layer agents (frontend, data-layer) when both patterns match."
+  },
+
+  "cross_cutting_agents": {
+    "description": "Agents that operate across all features rather than owning specific ones",
+    "agents": [
+      {
+        "name": "planning-agent",
+        "role": "Orchestrates all features during PLAN phase. Creates plans, assigns work to specialized agents."
+      },
+      {
+        "name": "code-review-agent",
+        "role": "Reviews all features during REVIEW phase. Read-only, cannot modify code."
+      },
+      {
+        "name": "qa-testing-agent",
+        "role": "Tests all features during TEST/VERIFY phase. Owns test directories, not feature source."
+      }
+    ]
+  },
+
+  "findings": {
+    "gaps": [
+      "9 of 13 features (contractors, dashboard, entries, locations, photos, projects, quantities, settings, toolbox, weather) have no dedicated specialist -- they share frontend-flutter-specialist-agent and backend-data-layer-agent as their primary agents split by layer.",
+      "The 'dashboard' feature has no data_agent supporting entry in the routing rules; it aggregates from multiple features, which could create ambiguity about who owns cross-feature queries.",
+      "No agent explicitly owns lib/core/ (router, theme, config) outside of database. Core infrastructure changes have no dedicated owner.",
+      "No agent explicitly owns lib/services/ (cross-cutting services like photo_service, image_service, permission_service).",
+      "No agent explicitly owns lib/shared/ (base classes, utilities, testing_keys)."
+    ],
+    "overlaps": [
+      "lib/core/database/** is co-owned by backend-data-layer-agent and backend-supabase-agent. Both must coordinate on schema changes.",
+      "For features with a dedicated specialist (auth, pdf, sync), the specialist owns BOTH data and presentation layers, potentially conflicting with the generic layer-based routing (frontend owns presentation, data-layer owns data).",
+      "The planning-agent handoff table routes lib/features/auth/** entirely to auth-agent, but the file-path routing also matches lib/**/presentation/** (frontend) and lib/**/data/** (data-layer). Feature-specific agents should take priority."
+    ],
+    "recommendations": [
+      "Consider adding an explicit priority order to routing rules: feature-specific agent > layer-specific agent > cross-cutting agent.",
+      "Consider assigning lib/core/ ownership to backend-data-layer-agent (for database/config) and frontend-flutter-specialist-agent (for router/theme).",
+      "Consider assigning lib/services/ ownership to backend-data-layer-agent since services are closer to data/infrastructure than presentation.",
+      "Consider assigning lib/shared/ ownership to code-review-agent for governance, with implementation delegated to whichever agent needs the change."
+    ]
+  }
+}

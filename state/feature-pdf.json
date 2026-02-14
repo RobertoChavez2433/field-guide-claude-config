@@ -1,0 +1,35 @@
+{
+  "id": "pdf",
+  "name": "PDF Extraction & Generation",
+  "status": "in_progress",
+  "description": "PDF template filling, OCR-based extraction, bid schedule parsing, IDR report generation",
+  
+  "docs": {
+    "overview": "docs/features/feature-pdf-overview.md",
+    "architecture": "docs/features/feature-pdf-architecture.md",
+    "prd": "prds/pdf-extraction-v2-prd-2.0.md"
+  },
+
+  "constraints_file": "architecture-decisions/pdf-v2-constraints.md",
+  "constraints_summary": [
+    "OCR-only routing (no hybrid native/OCR strategies)",
+    "No V1 imports in V2 extraction code",
+    "Binary routing: render -> preprocess -> OCR (no fallback to native)",
+    "No legacy compatibility flags or toggles"
+  ],
+
+  "integration": {
+    "depends_on": ["photos", "sync"],
+    "required_by": ["entries", "toolbox"]
+  },
+
+  "metrics": {
+    "test_coverage_percentage": 87,
+    "last_updated": "2026-02-12T00:00:00Z"
+  },
+
+  "current_phase": {
+    "phase_name": "OCR-Only Pipeline Migration",
+    "status": "Phase 1 complete, Phases 2-5 pending"
+  }
+}

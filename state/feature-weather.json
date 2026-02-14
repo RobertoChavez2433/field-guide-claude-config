@@ -1,0 +1,30 @@
+{
+  "id": "weather",
+  "name": "Weather & Environmental Data",
+  "status": "stable",
+  "description": "Placeholder weather service with stub data. Manual weather notes in entries. API integration deferred.",
+
+  "docs": {
+    "overview": "docs/features/feature-weather-overview.md",
+    "architecture": "docs/features/feature-weather-architecture.md",
+    "prd": "prds/weather-prd.md"
+  },
+
+  "constraints_file": "architecture-decisions/weather-constraints.md",
+  "constraints_summary": [
+    "No external weather API integration until explicitly scoped",
+    "Stub service returning mock data (placeholder)",
+    "Manual weather notes in entries (text field, optional)",
+    "No auto-fetching weather at entry creation"
+  ],
+
+  "integration": {
+    "depends_on": ["auth", "sync"],
+    "required_by": []
+  },
+
+  "metrics": {
+    "test_coverage_percentage": 72,
+    "last_updated": "2026-02-13T00:00:00Z"
+  }
+}

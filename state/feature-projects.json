@@ -1,0 +1,30 @@
+{
+  "id": "projects",
+  "name": "Project Management",
+  "status": "stable",
+  "description": "Root entity gating all features. Supports MDOT and LOCAL_AGENCY modes with project-scoped data isolation",
+
+  "docs": {
+    "overview": "docs/features/feature-projects-overview.md",
+    "architecture": "docs/features/feature-projects-architecture.md",
+    "prd": "prds/projects-prd.md"
+  },
+
+  "constraints_file": "architecture-decisions/projects-constraints.md",
+  "constraints_summary": [
+    "Root entity: all features scoped to project via project_id",
+    "No creating entries/photos/contractors/locations without parent project",
+    "Project mode (MDOT or LOCAL_AGENCY) set at creation, immutable",
+    "No feature queries spanning multiple projects"
+  ],
+
+  "integration": {
+    "depends_on": ["auth", "contractors", "sync"],
+    "required_by": ["dashboard", "entries", "quantities"]
+  },
+
+  "metrics": {
+    "test_coverage_percentage": 80,
+    "last_updated": "2026-02-13T00:00:00Z"
+  }
+}

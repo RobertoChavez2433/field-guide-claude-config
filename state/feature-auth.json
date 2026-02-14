@@ -1,0 +1,31 @@
+{
+  "id": "auth",
+  "name": "Authentication & Session Management",
+  "status": "stable",
+  "description": "Supabase auth with email/password sign-in, sign-up, password reset, deep linking, and session management",
+
+  "docs": {
+    "overview": "docs/features/feature-auth-overview.md",
+    "architecture": "docs/features/feature-auth-architecture.md",
+    "prd": "prds/auth-prd.md"
+  },
+
+  "constraints_file": "architecture-decisions/auth-constraints.md",
+  "constraints_summary": [
+    "Cache tokens in encrypted secure storage (NOT SharedPreferences)",
+    "No token refresh while offline",
+    "Session atomicity: sign-in success = token + user stored together",
+    "No sign-in attempts without network (graceful offline message)",
+    "Clear tokens on sign-out regardless of network state"
+  ],
+
+  "integration": {
+    "depends_on": ["sync"],
+    "required_by": ["entries", "photos", "contractors", "dashboard", "locations", "projects", "quantities", "settings", "toolbox", "weather"]
+  },
+
+  "metrics": {
+    "test_coverage_percentage": 88,
+    "last_updated": "2026-02-13T00:00:00Z"
+  }
+}

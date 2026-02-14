@@ -1,0 +1,199 @@
+{
+  "generated_at": "2026-02-13T00:00:00Z",
+  "app_name": "Construction Inspector App",
+  "total_features": 13,
+
+  "features": [
+    {
+      "name": "pdf",
+      "full_name": "PDF Extraction & Generation",
+      "status": "in_progress",
+      "docs": {
+        "overview": "docs/features/feature-pdf-overview.md",
+        "architecture": "docs/features/feature-pdf-architecture.md",
+        "prd": "prds/pdf-extraction-v2-prd-2.0.md"
+      },
+      "constraints": "architecture-decisions/pdf-v2-constraints.md",
+      "test_coverage": "87%",
+      "required_by": ["entries", "toolbox"],
+      "depends_on": ["photos", "sync"]
+    },
+
+    {
+      "name": "sync",
+      "full_name": "Sync Engine",
+      "status": "stable",
+      "docs": {
+        "overview": "docs/features/feature-sync-overview.md",
+        "architecture": "docs/features/feature-sync-architecture.md"
+      },
+      "constraints": "architecture-decisions/sync-constraints.md",
+      "test_coverage": "92%",
+      "required_by": ["auth", "entries", "photos", "projects", "quantities", "settings", "weather"],
+      "depends_on": []
+    },
+
+    {
+      "name": "auth",
+      "full_name": "Authentication & Session Management",
+      "status": "stable",
+      "docs": {
+        "overview": "docs/features/feature-auth-overview.md",
+        "architecture": "docs/features/feature-auth-architecture.md"
+      },
+      "constraints": "architecture-decisions/auth-constraints.md",
+      "test_coverage": "88%",
+      "required_by": ["entries", "photos", "contractors", "dashboard", "locations", "projects", "quantities", "settings", "toolbox", "weather"],
+      "depends_on": ["sync"]
+    },
+
+    {
+      "name": "entries",
+      "full_name": "Entry Management",
+      "status": "stable",
+      "docs": {
+        "overview": "docs/features/feature-entries-overview.md",
+        "architecture": "docs/features/feature-entries-architecture.md"
+      },
+      "constraints": "architecture-decisions/entries-constraints.md",
+      "test_coverage": "78%",
+      "required_by": ["dashboard", "pdf", "sync"],
+      "depends_on": ["auth", "photos", "locations", "sync"]
+    },
+
+    {
+      "name": "photos",
+      "full_name": "Photo Capture & Management",
+      "status": "stable",
+      "docs": {
+        "overview": "docs/features/feature-photos-overview.md",
+        "architecture": "docs/features/feature-photos-architecture.md"
+      },
+      "constraints": "architecture-decisions/photos-constraints.md",
+      "test_coverage": "82%",
+      "required_by": ["entries", "pdf", "sync"],
+      "depends_on": ["auth", "sync"]
+    },
+
+    {
+      "name": "contractors",
+      "full_name": "Contractor Management",
+      "status": "stable",
+      "docs": {
+        "overview": "docs/features/feature-contractors-overview.md",
+        "architecture": "docs/features/feature-contractors-architecture.md"
+      },
+      "constraints": "architecture-decisions/contractors-constraints.md",
+      "test_coverage": "75%",
+      "required_by": ["projects", "dashboard"],
+      "depends_on": ["auth", "sync"]
+    },
+
+    {
+      "name": "dashboard",
+      "full_name": "Dashboard & Overview",
+      "status": "stable",
+      "docs": {
+        "overview": "docs/features/feature-dashboard-overview.md",
+        "architecture": "docs/features/feature-dashboard-architecture.md"
+      },
+      "constraints": "architecture-decisions/dashboard-constraints.md",
+      "test_coverage": "65%",
+      "required_by": [],
+      "depends_on": ["auth", "entries", "projects", "contractors", "sync"]
+    },
+
+    {
+      "name": "locations",
+      "full_name": "Location & GPS Tagging",
+      "status": "stable",
+      "docs": {
+        "overview": "docs/features/feature-locations-overview.md",
+        "architecture": "docs/features/feature-locations-architecture.md"
+      },
+      "constraints": "architecture-decisions/locations-constraints.md",
+      "test_coverage": "70%",
+      "required_by": ["entries"],
+      "depends_on": ["auth", "sync"]
+    },
+
+    {
+      "name": "projects",
+      "full_name": "Project Management",
+      "status": "stable",
+      "docs": {
+        "overview": "docs/features/feature-projects-overview.md",
+        "architecture": "docs/features/feature-projects-architecture.md"
+      },
+      "constraints": "architecture-decisions/projects-constraints.md",
+      "test_coverage": "80%",
+      "required_by": ["dashboard", "entries", "quantities"],
+      "depends_on": ["auth", "contractors", "sync"]
+    },
+
+    {
+      "name": "quantities",
+      "full_name": "Quantity Tracking",
+      "status": "stable",
+      "docs": {
+        "overview": "docs/features/feature-quantities-overview.md",
+        "architecture": "docs/features/feature-quantities-architecture.md"
+      },
+      "constraints": "architecture-decisions/quantities-constraints.md",
+      "test_coverage": "76%",
+      "required_by": [],
+      "depends_on": ["auth", "projects", "entries", "sync"]
+    },
+
+    {
+      "name": "settings",
+      "full_name": "App Settings & Configuration",
+      "status": "stable",
+      "docs": {
+        "overview": "docs/features/feature-settings-overview.md",
+        "architecture": "docs/features/feature-settings-architecture.md"
+      },
+      "constraints": "architecture-decisions/settings-constraints.md",
+      "test_coverage": "60%",
+      "required_by": [],
+      "depends_on": ["auth", "sync"]
+    },
+
+    {
+      "name": "toolbox",
+      "full_name": "Inspector Toolbox",
+      "status": "stable",
+      "docs": {
+        "overview": "docs/features/feature-toolbox-overview.md",
+        "architecture": "docs/features/feature-toolbox-architecture.md"
+      },
+      "constraints": "architecture-decisions/toolbox-constraints.md",
+      "test_coverage": "55%",
+      "required_by": [],
+      "depends_on": ["auth", "pdf"]
+    },
+
+    {
+      "name": "weather",
+      "full_name": "Weather & Environmental Data",
+      "status": "stable",
+      "docs": {
+        "overview": "docs/features/feature-weather-overview.md",
+        "architecture": "docs/features/feature-weather-architecture.md"
+      },
+      "constraints": "architecture-decisions/weather-constraints.md",
+      "test_coverage": "72%",
+      "required_by": [],
+      "depends_on": ["auth", "sync"]
+    }
+  ],
+
+  "summary": {
+    "total_features": 13,
+    "stable": 12,
+    "in_progress": 1,
+    "needs_documentation": 0,
+    "needs_refactoring": 3,
+    "average_test_coverage": 76
+  }
+}

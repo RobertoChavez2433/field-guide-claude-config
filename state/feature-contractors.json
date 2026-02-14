@@ -1,0 +1,30 @@
+{
+  "id": "contractors",
+  "name": "Contractor Management",
+  "status": "stable",
+  "description": "Project-scoped contractor CRUD with prime/sub distinction and personnel tracking in entries",
+
+  "docs": {
+    "overview": "docs/features/feature-contractors-overview.md",
+    "architecture": "docs/features/feature-contractors-architecture.md",
+    "prd": "prds/contractors-prd.md"
+  },
+
+  "constraints_file": "architecture-decisions/contractors-constraints.md",
+  "constraints_summary": [
+    "Every contractor belongs to exactly one project (project_id immutable)",
+    "No contractor visible across multiple projects",
+    "Deleting project must cascade-delete all associated contractors",
+    "All contractor queries MUST filter by project_id"
+  ],
+
+  "integration": {
+    "depends_on": ["auth", "sync"],
+    "required_by": ["projects", "dashboard"]
+  },
+
+  "metrics": {
+    "test_coverage_percentage": 75,
+    "last_updated": "2026-02-13T00:00:00Z"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "dashboard",
+  "name": "Dashboard & Overview",
+  "status": "stable",
+  "description": "Read-only aggregator showing project stats, recent entries, and quick navigation to feature screens",
+
+  "docs": {
+    "overview": "docs/features/feature-dashboard-overview.md",
+    "architecture": "docs/features/feature-dashboard-architecture.md",
+    "prd": "prds/dashboard-prd.md"
+  },
+
+  "constraints_file": "architecture-decisions/dashboard-constraints.md",
+  "constraints_summary": [
+    "Read-only aggregator: no direct edits from dashboard",
+    "All edit actions navigate to dedicated feature screens",
+    "No dashboard-specific persistence (views are ephemeral, computed from source data)",
+    "No custom edit widgets on dashboard"
+  ],
+
+  "integration": {
+    "depends_on": ["auth", "entries", "projects", "contractors", "sync"],
+    "required_by": []
+  },
+
+  "metrics": {
+    "test_coverage_percentage": 65,
+    "last_updated": "2026-02-13T00:00:00Z"
+  }
+}

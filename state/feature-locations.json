@@ -1,0 +1,30 @@
+{
+  "id": "locations",
+  "name": "Location & GPS Tagging",
+  "status": "stable",
+  "description": "Project-scoped locations with optional GPS coordinates for entries and photos",
+
+  "docs": {
+    "overview": "docs/features/feature-locations-overview.md",
+    "architecture": "docs/features/feature-locations-architecture.md",
+    "prd": "prds/locations-prd.md"
+  },
+
+  "constraints_file": "architecture-decisions/locations-constraints.md",
+  "constraints_summary": [
+    "Every location belongs to exactly one project (project_id immutable)",
+    "No location visible across multiple projects",
+    "GPS coordinates optional (not required for location creation)",
+    "Deleting project must cascade-delete all associated locations"
+  ],
+
+  "integration": {
+    "depends_on": ["auth", "sync"],
+    "required_by": ["entries"]
+  },
+
+  "metrics": {
+    "test_coverage_percentage": 70,
+    "last_updated": "2026-02-13T00:00:00Z"
+  }
+}

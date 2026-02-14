@@ -1,0 +1,170 @@
+{
+  "generated_at": "2026-02-13T00:00:00Z",
+  "description": "Agent pre-flight validation, context loading, and post-work validation templates",
+
+  "pre_flight_validation": {
+    "description": "Run BEFORE spawning agents. If any check fails, abort and fix environment.",
+    "checks": [
+      {
+        "name": "write_permissions",
+        "command": "pwsh -Command \"dart pub get 2>&1\" | Select-String -Pattern 'error|Error' | Measure-Object | Select-Object -ExpandProperty Count",
+        "expected_output": "0",
+        "required": true,
+        "rationale": "Agents must be able to write files and manage dependencies"
+      },
+      {
+        "name": "test_runner",
+        "command": "pwsh -Command \"flutter test --version 2>&1\"",
+        "expected_output_contains": "Flutter",
+        "required": true,
+        "rationale": "Agents must be able to run tests to validate work"
+      },
+      {
+        "name": "analyzer",
+        "command": "dart analyze --version",
+        "expected_output_contains": "dart",
+        "required": true,
+        "rationale": "Agents must be able to run linter for code quality"
+      }
+    ]
+  },
+
+  "context_loading": {
+    "description": "Each agent auto-loads from frontmatter + manual task context. Do NOT skip this.",
+    "agent_frontmatter_template": {
+      "name": "[AGENT_NAME]",
+      "frontmatter": {
+        "rules": [
+          "rules/architecture.md (always)",
+          "rules/[feature]/[feature]-rules.md (if feature-specific work)",
+          "architecture-decisions/[feature]-constraints.md (if feature-specific work)",
+          "architecture-decisions/data-validation-rules.md (always)"
+        ],
+        "docs": [
+          "docs/features/feature-[feature]-overview.md (if feature-specific work)",
+          "docs/features/feature-[feature]-architecture.md (if feature-specific work)",
+          "plans/[relevant-prd].md (if PRD exists)"
+        ],
+        "state": [
+          "state/FEATURE-MATRIX.json (read-only, for feature status)",
+          "state/PROJECT-STATE.json (read-only, for blockers + priorities)"
+        ]
+      },
+      "example": {
+        "agent": "backend-data-layer-agent",
+        "when_working_on_pdf": {
+          "rules": [
+            "rules/architecture.md",
+            "rules/pdf/pdf-generation.md",
+            "architecture-decisions/pdf-v2-constraints.md",
+            "architecture-decisions/data-validation-rules.md"
+          ],
+          "docs": [
+            "docs/features/feature-pdf-overview.md",
+            "docs/features/feature-pdf-architecture.md",
+            "prds/pdf-extraction-v2-prd-2.0.md"
+          ]
+        }
+      }
+    }
+  },
+
+  "spawn_limits": {
+    "max_agents_per_wave": 3,
+    "max_parallel_agents": 3,
+    "max_waves_total": 2,
+    "requires_user_approval_if_exceeds": true,
+    "rationale": "Prevents context explosion, permission cascade failures, and output conflicts. Wave 1 = implementation, Wave 2 = integration review.",
+    "example_flow": {
+      "wave_1": ["Agent 1 (Task A)", "Agent 2 (Task B)", "Agent 3 (Task C)"],
+      "then_wave_2": ["code-review-agent (Integration review, cross-cutting validation)"]
+    }
+  },
+
+  "post_work_validation": {
+    "description": "Agent MUST run these after coding, before reporting completion. Iterate if failures.",
+    "agent_must_run": [
+      {
+        "check": "Unit tests for task",
+        "command": "pwsh -Command \"flutter test [task_test_file] --reporter=compact\"",
+        "acceptance_criteria": "100% tests passing (0 failures)",
+        "rationale": "Code must pass its own tests before integration"
+      },
+      {
+        "check": "Analyzer & linting",
+        "command": "dart analyze lib/features/[feature]/ --no-fatal-infos",
+        "acceptance_criteria": "0 errors, all warnings addressed",
+        "rationale": "Code must be analyzable and maintainable"
+      },
+      {
+        "check": "Feature-specific constraints",
+        "command": "Manual verification against architecture-decisions/[feature]-constraints.md",
+        "acceptance_criteria": "All feature-specific rules followed (e.g., no V1 imports if PDF)",
+        "rationale": "Code must respect feature architectural decisions"
+      },
+      {
+        "check": "Shared constraints",
+        "command": "Manual verification against architecture-decisions/data-validation-rules.md",
+        "acceptance_criteria": "User input validation, null safety, error handling all present",
+        "rationale": "Code must follow project-wide standards"
+      }
+    ],
+    "if_tests_fail": {
+      "agent_action": "Analyze failure, fix code, re-run tests",
+      "max_iterations": 5,
+      "if_still_failing": "Report blocker + exact failure reason to user"
+    }
+  },
+
+  "wave_2_integration_review": {
+    "agent": "code-review-agent",
+    "trigger": "After ALL Wave 1 agents complete",
+    "responsibilities": [
+      "Read list of modified files from Wave 1 agents",
+      "For each modified feature: load architecture-decisions/[feature]-constraints.md",
+      "Verify all feature-specific constraints are met",
+      "Run full test suite: pwsh -Command \"flutter test\"",
+      "Compare benchmark results to project targets",
+      "Run dart analyze across all modified files",
+      "Search for cross-cutting issues: hardcoded strings, enum inconsistencies, V1 imports",
+      "Report: tests passing?, benchmarks met?, coverage?, blockers?"
+    ],
+    "acceptance_criteria": [
+      "All tests passing",
+      "Benchmarks meet targets (or documented rationale)",
+      "Code coverage >= 85% for feature",
+      "Analyzer clean",
+      "No cross-cutting violations"
+    ],
+    "output_format": "Summary report with: feature, tests, benchmarks, coverage, fixes applied, ready-to-merge status"
+  },
+
+  "when_agent_cannot_complete": {
+    "blocker_report_format": {
+      "task_id": "[T?.?]",
+      "blocker_title": "[Clear title]",
+      "severity": "low|medium|high",
+      "description": "[Detailed description]",
+      "root_cause": "[Why it failed]",
+      "failed_attempts": "[What was tried]",
+      "recommendation": "[Suggested next step]",
+      "files_modified_before_failure": "[List of files changed]",
+      "example": {
+        "task_id": "T2.1",
+        "blocker_title": "Flutter OCR rendering platform binding timeout",
+        "severity": "medium",
+        "description": "Fixture generator cannot run OCR-only pipeline in headless test mode",
+        "root_cause": "Printing.raster() Stream API requires native platform channel, cannot be mocked",
+        "failed_attempts": [
+          "Attempted to mock Printing.raster()",
+          "Attempted to use fake Stream",
+          "Attempted to skip rendering in test mode"
+        ],
+        "recommendation": "Run fixture generation in integration_test harness instead (supports native channels)",
+        "files_modified_before_failure": [
+          "lib/features/pdf/services/extraction/stages/document_quality_profiler.dart"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "id": "settings",
+  "name": "App Settings & Configuration",
+  "status": "stable",
+  "description": "Device-local settings for theme, language, and notifications. No cloud sync.",
+
+  "docs": {
+    "overview": "docs/features/feature-settings-overview.md",
+    "architecture": "docs/features/feature-settings-architecture.md",
+    "prd": "prds/settings-prd.md"
+  },
+
+  "constraints_file": "architecture-decisions/settings-constraints.md",
+  "constraints_summary": [
+    "Settings stored locally only (SQLite + SharedPreferences)",
+    "No syncing settings to Supabase",
+    "Supported: theme (light/dark), language (en/es), notification_enabled",
+    "No storing sensitive data in settings feature"
+  ],
+
+  "integration": {
+    "depends_on": ["auth", "sync"],
+    "required_by": []
+  },
+
+  "metrics": {
+    "test_coverage_percentage": 60,
+    "last_updated": "2026-02-13T00:00:00Z"
+  }
+}

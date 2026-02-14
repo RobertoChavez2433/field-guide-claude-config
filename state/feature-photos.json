@@ -1,0 +1,31 @@
+{
+  "id": "photos",
+  "name": "Photo Capture & Management",
+  "status": "stable",
+  "description": "Offline photo capture to local storage with async Supabase sync and sync status tracking",
+
+  "docs": {
+    "overview": "docs/features/feature-photos-overview.md",
+    "architecture": "docs/features/feature-photos-architecture.md",
+    "prd": "prds/photos-prd.md"
+  },
+
+  "constraints_file": "architecture-decisions/photos-constraints.md",
+  "constraints_summary": [
+    "No requiring network to take photos",
+    "All photos captured to local device storage first",
+    "Photo metadata written to SQLite immediately",
+    "Sync job processes photos asynchronously to Supabase",
+    "No ambiguity about sync status (synced vs pending)"
+  ],
+
+  "integration": {
+    "depends_on": ["auth", "sync"],
+    "required_by": ["entries", "pdf", "sync"]
+  },
+
+  "metrics": {
+    "test_coverage_percentage": 82,
+    "last_updated": "2026-02-13T00:00:00Z"
+  }
+}

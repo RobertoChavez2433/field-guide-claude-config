@@ -1,0 +1,30 @@
+{
+  "id": "quantities",
+  "name": "Quantity Tracking",
+  "status": "stable",
+  "description": "Bid item tracking with PDF-imported estimated quantities and inspector-measured actual quantities",
+
+  "docs": {
+    "overview": "docs/features/feature-quantities-overview.md",
+    "architecture": "docs/features/feature-quantities-architecture.md",
+    "prd": "prds/quantities-prd.md"
+  },
+
+  "constraints_file": "architecture-decisions/quantities-constraints.md",
+  "constraints_summary": [
+    "No creating quantities without referencing a bid schedule item",
+    "Estimated quantity is readonly (sourced from PDF import)",
+    "Only actual_quantity editable by inspector",
+    "Project-scoped: no quantities visible across projects"
+  ],
+
+  "integration": {
+    "depends_on": ["auth", "projects", "entries", "sync"],
+    "required_by": []
+  },
+
+  "metrics": {
+    "test_coverage_percentage": 76,
+    "last_updated": "2026-02-13T00:00:00Z"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "metadata": {
+    "app_name": "Construction Inspector App",
+    "app_version": "1.2.3",
+    "description": "Cross-platform offline-first mobile/desktop app for construction inspectors",
+    "last_updated": "2026-02-14T00:00:00Z",
+    "session_notes": "Session 335: Ran 3 code-review agents on .claude/ directory. Fixed ~90+ broken refs, archived 10 stale files, renamed constraint files, deleted _defects.md redirect, fixed all agent/state/constraint paths. PDF V2 PRD flagged for rewrite (5 HIGH issues)."
+  },
+
+  "current_phase": {
+    "phase_name": "Phase 4: Cleanup, Reference Fixes, and Native Hooks",
+    "phase_status": "planned",
+    "phase_started": "2026-02-12T00:00:00Z",
+    "phase_1_completed": "2026-02-13T00:00:00Z",
+    "phase_2_expected_start": "2026-02-13T00:00:00Z",
+    "phase_2_expected_completion": "2026-02-16T00:00:00Z",
+    "progress_percentage": 90
+  },
+
+  "release_cycle": {
+    "last_release": "2026-02-01",
+    "last_release_version": "1.2.2",
+    "next_release_target": "2026-02-28",
+    "next_release_version": "1.3.0"
+  },
+
+  "active_blockers": [
+    {
+      "id": "BLOCK-001",
+      "title": "Flutter OCR rendering platform bindings timeout in headless integration tests",
+      "severity": "medium",
+      "owner": "qa-testing-agent",
+      "status": "investigating",
+      "discovered": "2026-02-11",
+      "notes": "Printing.raster() Stream API cannot be mocked in unit tests. Integration tests fail with timeout. Need to either: (1) use integration_test harness, (2) mock at lower level, or (3) skip OCR rendering tests in headless mode.",
+      "impact": "Delays OCR golden fixture regeneration and benchmark suite validation"
+    }
+  ],
+
+  "completed_phases": [
+    {
+      "phase": "Phase 0",
+      "title": "Documentation System Foundation",
+      "completed_date": "2026-02-12",
+      "deliverables": ["Directory structure", "State files", "Constraint skeleton", "FILING-SYSTEM.md"]
+    },
+    {
+      "phase": "Phase 1",
+      "title": "Feature Documentation + Constraints",
+      "completed_date": "2026-02-13",
+      "deliverables": ["26 feature docs (13 overviews + 13 architectures)", "13 constraint files", "PRD directory setup", "FEATURE-MATRIX.json updated"]
+    }
+  ],
+
+  "dependencies_at_risk": [
+    {
+      "package": "syncfusion_flutter_pdf",
+      "version": "23.1.36",
+      "risk_level": "medium",
+      "issue": "Deprecated APIs used for field mapping (Syncfusion migrating to new API surface)",
+      "action_needed": "Audit before next upgrade, test IDR template field mapping",
+      "target_date": "2026-03-01"
+    },
+    {
+      "package": "printing",
+      "version": "5.11.0",
+      "risk_level": "low",
+      "issue": "Platform channel timeout issues on some devices (GitHub issues open)",
+      "action_needed": "Monitor, patch if needed",
+      "target_date": null
+    }
+  ],
+
+  "team_context": {
+    "primary_owner": "user",
+    "contributors": ["Claude (AI assistant)"],
+    "work_style": "Orchestration-based (user defines plans, Claude executes with agents)"
+  }
+}

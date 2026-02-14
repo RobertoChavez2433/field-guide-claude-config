@@ -1,0 +1,30 @@
+{
+  "id": "entries",
+  "name": "Entry Management",
+  "status": "stable",
+  "description": "Daily inspection logs with offline-first writes, DRAFT/COMPLETE/SUBMITTED workflow, and photo/location/contractor attachments",
+
+  "docs": {
+    "overview": "docs/features/feature-entries-overview.md",
+    "architecture": "docs/features/feature-entries-architecture.md",
+    "prd": "prds/entries-prd.md"
+  },
+
+  "constraints_file": "architecture-decisions/entries-constraints.md",
+  "constraints_summary": [
+    "All entry writes succeed locally first (SQLite), queued for sync",
+    "Workflow states: DRAFT -> COMPLETE -> SUBMITTED (one-way transitions)",
+    "No requiring network connection to create/edit entries",
+    "No skipping workflow states"
+  ],
+
+  "integration": {
+    "depends_on": ["auth", "photos", "locations", "sync"],
+    "required_by": ["dashboard", "pdf", "sync"]
+  },
+
+  "metrics": {
+    "test_coverage_percentage": 78,
+    "last_updated": "2026-02-13T00:00:00Z"
+  }
+}
