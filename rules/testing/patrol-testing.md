@@ -2,7 +2,7 @@
 paths:
   - "integration_test/**/*.dart"
   - "test/**/*.dart"
-  - "lib/shared/testing_keys.dart"
+  - "lib/shared/testing_keys/testing_keys.dart"
 ---
 
 # E2E Testing Guide
@@ -35,7 +35,7 @@ integration_test/patrol/
 
 ## Widget Keys - TestingKeys Class
 
-**All widget keys are centralized in `lib/shared/testing_keys.dart`.**
+**All widget keys are centralized in `lib/shared/testing_keys/testing_keys.dart`.**
 
 ### Key Rules
 
@@ -47,7 +47,7 @@ integration_test/patrol/
 ### Adding New Keys
 
 ```dart
-// 1. Add to lib/shared/testing_keys.dart
+// 1. Add to lib/shared/testing_keys/testing_keys.dart
 class TestingKeys {
   static const myNewButton = Key('my_new_button');
 }
@@ -161,7 +161,7 @@ context.read<Provider>().doThing();
 
 ## Resources
 
-- TestingKeys: `lib/shared/testing_keys.dart`
+- TestingKeys: `lib/shared/testing_keys/testing_keys.dart`
 - UI Keys Reference: `integration_test/patrol/REQUIRED_UI_KEYS.md`
 - Golden Tests: `test/golden/README.md`
-- Defects to Avoid: `.claude/autoload/_defects.md`
+- Defects to Avoid: `.claude/defects/_defects-{feature}.md` (per-feature defect files)

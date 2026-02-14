@@ -1,16 +1,16 @@
 # Defects Integration
 
-How to use and update `.claude/autoload/_defects.md` during debugging.
+How to use and update per-feature defect files during debugging.
 
 ## Before Debugging
 
-**ALWAYS check `_defects.md` first.**
+**ALWAYS check the relevant feature's defect file first.**
 
 The bug you're looking at might be a known pattern.
 
 ### Check Process
 
-1. Read `.claude/autoload/_defects.md`
+1. Read `.claude/defects/_defects-{feature}.md` for the feature you're debugging
 2. Search for related categories:
    - `[ASYNC]` - Context safety, dispose issues
    - `[E2E]` - Patrol testing patterns
@@ -23,7 +23,7 @@ The bug you're looking at might be a known pattern.
 
 Debugging: "App crashes after saving entry"
 
-1. Open `_defects.md`
+1. Open `.claude/defects/_defects-entries.md`
 2. Search for "save", "async", "context"
 3. Find: `[ASYNC] 2026-01-21: Async Context Safety`
 4. Check: Does the crash happen after an `await`?
@@ -43,7 +43,7 @@ As you investigate, note patterns that match existing defects:
 
 ### New Pattern Discovery
 
-If you discover a pattern NOT in `_defects.md`:
+If you discover a pattern NOT in the feature's defect file:
 
 1. Document the pattern immediately (even before fixing)
 2. Use the standard format
@@ -51,11 +51,11 @@ If you discover a pattern NOT in `_defects.md`:
 
 ## After Fix
 
-**ALWAYS log new patterns to `_defects.md`.**
+**ALWAYS log new patterns to the relevant feature's defect file.**
 
 ### Adding New Defects
 
-Location: `.claude/autoload/_defects.md`
+Location: `.claude/defects/_defects-{feature}.md`
 
 Format:
 ```markdown
@@ -91,25 +91,24 @@ Format:
    └─> Document pattern immediately
 
 2. VERIFY fix works
-   └─> Add to _defects.md
+   └─> Add to .claude/defects/_defects-{feature}.md
 
 3. PREVENT in future
    └─> Reference in code reviews
    └─> Check before similar work
 
 4. ARCHIVE when limit reached
-   └─> Auto-moves to defects-archive.md
-   └─> Oldest defects archived first
+   └─> Oldest defects archived to .claude/logs/defects-archive.md
 ```
 
 ## Using Defects in Code Review
 
-When reviewing code, cross-reference `_defects.md`:
+When reviewing code, cross-reference the feature's defect file:
 
 ```markdown
 ## Code Review Notes
 
-Checked against known defects:
+Checked against known defects (_defects-entries.md):
 - [ASYNC] Async Context Safety: ✓ Mounted checks present
 - [E2E] TestingKeys Defined But Not Wired: ✓ Keys wired to widgets
 - [DATA] Unsafe Collection Access: ⚠️ Line 45 uses .first without check
@@ -117,22 +116,22 @@ Checked against known defects:
 
 ## Defects Limit
 
-`_defects.md` has a max of 15 active defects.
+Each feature defect file has a max of 5 active defects.
 
 When adding new defects:
-- If at 15, oldest is auto-archived to `defects-archive.md`
+- If at 5, oldest is auto-archived to `.claude/logs/defects-archive.md`
 - Keep most relevant/recent patterns active
 - Recurring patterns should stay active longer
 
 ## Quick Reference
 
 ```bash
-# View current defects
-cat .claude/autoload/_defects.md
+# View PDF defects
+Read .claude/defects/_defects-pdf.md
 
-# Search for async patterns
-grep -i "async" .claude/autoload/_defects.md
+# View all feature defect files
+Glob .claude/defects/_defects-*.md
 
-# Count active defects
-grep -c "^### \[" .claude/autoload/_defects.md
+# Search for async patterns across all features
+Grep "ASYNC" .claude/defects/
 ```

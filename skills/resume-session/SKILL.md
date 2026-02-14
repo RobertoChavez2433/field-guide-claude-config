@@ -1,65 +1,67 @@
 ---
 name: resume-session
-description: Resume session with minimal context load
+description: Fast session resume - load state, display summary, ready to work
 user-invocable: true
 disable-model-invocation: true
 ---
 
 # Resume Session
 
-Load HOT context only and prepare for work.
+Fast context load. No questions — just read state and display summary.
+
+**CRITICAL**: NO git commands anywhere in this skill.
 
 ## Actions
 
-### 1. Read HOT Memory Only
+### Step 1: Read HOT Context (2 files only)
 1. `.claude/memory/MEMORY.md` - Key learnings and patterns
-2. `.claude/autoload/_state.md` - Current state (max 5 sessions)
-3. `.claude/autoload/_defects.md` - Active patterns (max 7 defects)
+2. `.claude/autoload/_state.md` - Current state
 
 **DO NOT READ** (lazy load only when needed):
 - `.claude/logs/state-archive.md`
 - `.claude/logs/defects-archive.md`
-- `.claude/logs/session-log.md`
+- `.claude/logs/archive-index.md`
+- Any rules, docs, constraints, or state JSON files
 
-### 2. Check Git
-```bash
-git status && git log --oneline -3
+### Step 2: Display Summary
+
+Print this compact format:
+
 ```
-
-### 3. Present Context
-
-**Session Context Loaded**
-
 **Phase**: [From _state.md]
 **Status**: [From _state.md]
-
-**Last Session**: [Summary from _state.md]
+**Last Session**: [1-line summary from most recent session entry]
 
 **Next Tasks**:
-1. [From _state.md]
+1. [From _state.md "What Needs to Happen Next"]
 2. [...]
+3. [...]
 
-**Open Questions**: [From _state.md or "None"]
+Ready — what are we working on?
+```
 
-### 4. Ask
-"What would you like to focus on this session?"
+That's it. No questions. No context loading. The user's first message IS the intent.
 
-Do NOT start implementation until user confirms.
+### Step 3: Return Control
 
-## On-Demand References
-Read these only when relevant to the task:
-- Session history: `.claude/logs/state-archive.md`
-- Defect history: `.claude/logs/defects-archive.md`
-- Architecture patterns: `.claude/rules/architecture.md`
+Wait for the user to say what they want. Their message determines what happens next:
+- If they name a feature → agents load feature-specific context via their own frontmatter
+- If they ask about status → read `state/PROJECT-STATE.json` or `state/FEATURE-MATRIX.json`
+- If they want to debug → agents load defects and constraints as needed
 
-## Agent Reference
-| Domain | Agent |
-|--------|-------|
-| UI/Screens | `flutter-specialist-agent` |
-| Data/Models | `data-layer-agent` |
-| Cloud/Sync | `supabase-agent` |
-| Auth | `auth-agent` |
-| QA/Testing | `qa-testing-agent` |
-| Code Review | `code-review-agent` |
-| PDF | `pdf-agent` |
-| Planning | `planning-agent` |
+**Do NOT pre-load any feature context, rules, constraints, or docs.**
+
+## Context Loading Reference (for agents, not this skill)
+
+When agents are invoked, they load their own context per their frontmatter:
+- **Rules**: `rules/architecture.md`, feature-specific rules
+- **Constraints**: `architecture-decisions/{feature}-constraints.md`
+- **Docs**: `docs/features/feature-{name}-overview.md`, `feature-{name}-architecture.md`
+- **State**: `state/feature-{name}.json`, `state/PROJECT-STATE.json`
+- **Defects**: `defects/_defects-{name}.md`
+
+## Rules
+- **NO git commands** — not `git status`, not `git log`, not any git operation
+- **NO questions** — display summary and wait
+- **NO pre-loading** — agents handle their own context
+- Agent names must match actual filenames in `.claude/agents/`

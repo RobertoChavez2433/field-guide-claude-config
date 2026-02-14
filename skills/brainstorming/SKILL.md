@@ -29,7 +29,7 @@ Never overwhelm with a list of questions. Each message should advance understand
 **Goal**: Understand what the user actually wants before proposing anything.
 
 1. Read existing code/documentation relevant to the feature
-2. Check `.claude/autoload/_defects.md` for related past issues
+2. Check `.claude/defects/_defects-{feature}.md` for related past issues
 3. Ask 3-5 clarifying questions, ONE AT A TIME
 4. Use multiple choice when possible
 

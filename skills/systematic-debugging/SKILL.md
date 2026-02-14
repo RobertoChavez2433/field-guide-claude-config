@@ -16,10 +16,10 @@ user-invocable: true
 
 Every fix must be preceded by understanding WHY the bug exists. Guessing wastes time and creates new bugs.
 
-## Before Starting: Check _defects.md
+## Before Starting: Check Per-Feature Defects
 
 Before debugging ANY issue:
-1. Read `.claude/autoload/_defects.md`
+1. Read `.claude/defects/_defects-{feature}.md` for the relevant feature
 2. Search for matching pattern (ASYNC, E2E, FLUTTER, DATA, CONFIG)
 3. Apply known prevention strategies if pattern matches
 
@@ -94,12 +94,12 @@ Before debugging ANY issue:
 - You can't explain the root cause - Go back to Phase 1
 - The "fix" just suppresses symptoms - You haven't found root cause
 
-## After Fixing: Update _defects.md
+## After Fixing: Update Per-Feature Defects
 
 If you discovered a new pattern:
 1. Identify category: ASYNC, E2E, FLUTTER, DATA, CONFIG
 2. Write pattern, prevention, and reference
-3. Add to `.claude/autoload/_defects.md`
+3. Add to `.claude/defects/_defects-{feature}.md` for the relevant feature
 
 ## Pressure Test Scenarios
 

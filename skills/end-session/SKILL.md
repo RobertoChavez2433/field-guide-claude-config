@@ -9,119 +9,51 @@ disable-model-invocation: true
 
 Complete session with proper handoff and auto-archiving.
 
+**CRITICAL**: NO git commands anywhere in this skill. All analysis comes from conversation context.
+
 ## Actions
 
-### 1. Gather Summary
-Write Summary:
+### 1. Gather Summary (From Conversation Context)
+Review the current conversation and collect:
 - Main focus of session
 - Completed tasks
 - Decisions made
 - Next priorities
-- Mistakes made (for defects log)
+- Defects discovered (mistakes, anti-patterns, bugs found)
 
-### 2. Run Quality Checks
-```bash
-flutter analyze lib/ --no-fatal-infos
-```
+Do NOT run git commands. Use only what you observed during the session.
 
-**Check both repos:**
-```bash
-# App repo
-git status
-git diff --stat
+### 2. Update _state.md
+**File**: `.claude/autoload/_state.md`
 
-# Claude config repo
-cd .claude && git status && git diff --stat && cd ..
-```
-
-### 3. Update State Files
-
-**Update `.claude/autoload/_state.md`:**
-- Write compressed session summary (max 5 lines):
+Write compressed session summary (max 5 lines):
 ```markdown
 ### Session N (YYYY-MM-DD)
 **Work**: Brief 1-line summary
-**Commits**: app `abc1234`, config `def5678`
+**Decisions**: Key decisions made
+**Next**: Top 1-3 priorities
 ```
-- If >5 sessions exist, run rotation (see below)
 
-**Update `.claude/autoload/_defects.md`** (if mistakes were made):
-- Add new defect with category and date:
-```markdown
-### [CATEGORY] YYYY-MM-DD: Title
-**Pattern**: What to avoid
-**Prevention**: How to avoid
-```
-- If >7 defects exist, run rotation (see below)
-
-### 4. Session Rotation Logic
-
-**When _state.md has >5 sessions:**
+If >5 sessions exist, run rotation:
 1. Take oldest session
 2. Append to `.claude/logs/state-archive.md` under appropriate month header
 3. Remove from _state.md
 
-**When _defects.md has >7 defects:**
-1. Take oldest defect (from bottom of Active Patterns)
-2. Append to `.claude/logs/defects-archive.md` with archive date
-3. Remove from _defects.md
+### 3. Update Per-Feature Defect Files
+**Directory**: `.claude/defects/`
 
-### 5. Append to Session Log
-Append brief entry to `.claude/logs/session-log.md`:
-```markdown
-### YYYY-MM-DD (Session N)
-- [Summary of main work]
-```
-
-### 6. Commit Changes (Both Repos)
-
-**App Repository** (main project):
-```bash
-git add -A
-git commit -m "Session: [summary]"
-```
-
-**Claude Config Repository** (`.claude` folder):
-```bash
-cd .claude
-git add -A
-git commit -m "Session: [summary]"
-cd ..
-```
-
-**IMPORTANT**: Do NOT include "Co-Authored-By" in commit messages.
-
-### 7. Complete
-Present:
-- Session summary
-- App repo commit hash
-- Claude config repo commit hash
-- Next session: Run `/resume-session`
-
----
-
-## Defect Logging Instructions
-
-When you discover bugs, anti-patterns, or issues during testing or review, log them to `.claude/autoload/_defects.md`.
-
-### When to Log
-- Test failures caused by known anti-patterns
-- Async context issues (missing `mounted` check)
-- Dispose errors (async in dispose)
-- Recurring anti-patterns found during review
-- Architecture violations
-- Security vulnerabilities
-- Performance issues that caused problems
-
-### Defect Format (Required)
+For each feature where defects were discovered during this session:
+1. Open `.claude/defects/_defects-{feature}.md`
+2. Add new defect at the top of Active Patterns section:
 ```markdown
 ### [CATEGORY] YYYY-MM-DD: Brief Title
 **Pattern**: What to avoid (1 line)
 **Prevention**: How to avoid (1-2 lines)
 **Ref**: @path/to/file.dart (optional)
 ```
+3. If >5 defects in that file, move oldest to `.claude/logs/defects-archive.md`
 
-### Categories (Required)
+### Categories
 | Category | Use For |
 |----------|---------|
 | [ASYNC] | Context safety, dispose, mounted checks |
@@ -130,11 +62,33 @@ When you discover bugs, anti-patterns, or issues during testing or review, log t
 | [DATA] | Repository, collection, model patterns |
 | [CONFIG] | Supabase, credentials, environment |
 
-### How to Log
-1. Add new defects **at the top** of Active Patterns section
-2. Include category and date: `### [CAT] 2026-02-01: Title`
-3. If >7 defects, move oldest to archive before adding new
+### 4. Update JSON State Files
 
-### Archives
-- Active: `.claude/autoload/_defects.md`
-- Archive: `.claude/logs/defects-archive.md`
+**PROJECT-STATE.json** (`state/PROJECT-STATE.json`):
+- Update `session_notes` with brief session summary
+- Update `active_blockers` if blockers were resolved or discovered
+- Update `release_cycle` dates if milestones were hit
+- Do NOT duplicate session narrative here (that belongs in _state.md)
+
+**feature-{name}.json** (`state/feature-{name}.json`) — only for features touched this session:
+- Update `status` if feature status changed (e.g., stable -> in_progress)
+- Update `metrics.last_updated` timestamp
+- Update `constraints_summary` if constraints were added/changed
+- Update `current_phase` if feature has active development phase
+
+### 5. Display Summary
+Present:
+- Session summary (what was accomplished)
+- Features touched
+- Defects logged (if any)
+- Next priorities
+- Reminder: Run `/resume-session` to start next session
+
+---
+
+## Rules
+- **NO git commands** - not `git status`, not `git diff`, not `git add`, not `git commit`
+- All analysis from conversation context only
+- Zero user input required
+- Updates per-feature defect files in `.claude/defects/`
+- Defect tracking uses per-feature files in `.claude/defects/_defects-{feature}.md`

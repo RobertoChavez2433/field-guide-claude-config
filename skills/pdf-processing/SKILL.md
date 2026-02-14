@@ -74,13 +74,13 @@ python .claude/skills/pdf-processing/scripts/convert_pdf_to_images.py <pdf> <out
 ### IDR Template Location
 - Template: `assets/templates/idr_template.pdf`
 - Test exports: `Troubleshooting/IDR Test Exports/`
-- Reference forms: `Pre-development and brainstorming/Form Templates for export/`
+- Reference forms: `Pre-devolopment and brainstorming/Form Templates for export/`
 
 ### Existing Dart Field Mappings
 - `lib/features/pdf/services/pdf_service.dart:150-171` - `_contractorFieldMap`
 - `lib/features/pdf/services/pdf_service.dart:160-171` - `_equipmentFieldMap`
 
-### Parser Files (for comparison)
+### Key Files (for comparison)
 - `lib/features/pdf/services/pdf_import_service.dart` - Main import service
-- `lib/features/pdf/services/parsers/column_layout_parser.dart` - Primary parser
-- `lib/features/pdf/services/parsers/clumped_text_parser.dart` - Fallback parser
+- `lib/features/pdf/services/extraction/pipeline/extraction_pipeline.dart` - V2 extraction pipeline
+- `lib/features/pdf/services/extraction/stages/stages.dart` - V2 stage barrel exports
