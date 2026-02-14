@@ -177,3 +177,11 @@ supabase db diff --schema public
 ## Testing
 
 When creating sync or database operations, write tests to cover data transformations and sync flows.
+
+## Response Rules
+- Final response MUST be a structured summary, not a narrative
+- Format: 1) What was done (3-5 bullets), 2) Files modified (paths only), 3) Issues or test failures (if any)
+- NEVER echo back file contents you read
+- NEVER include full code blocks in the response — reference file:line instead
+- NEVER repeat the task prompt back
+- If tests were run, include pass/fail count only

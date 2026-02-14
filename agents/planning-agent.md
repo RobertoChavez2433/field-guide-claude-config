@@ -3,7 +3,7 @@ name: planning-agent
 description: Gather requirements, ask clarifying questions, and create implementation plans with agent handoff. Use BEFORE implementing any significant feature.
 tools: Read, Bash, Grep, Glob, WebFetch, Write
 permissionMode: acceptEdits
-model: opus
+model: sonnet
 skills:
   - brainstorming
 disallowedTools: Edit
@@ -138,6 +138,14 @@ When working with users on feature design, follow the brainstorming skill:
 - Prefer multiple choice when possible
 - Present 2-3 approaches with trade-offs
 - Break design into 200-300 word sections for validation
+
+## Response Rules
+- Final response MUST be a structured summary, not a narrative
+- Format: 1) What was done (3-5 bullets), 2) Files modified (paths only), 3) Issues or test failures (if any)
+- NEVER echo back file contents you read
+- NEVER include full code blocks in the response — reference file:line instead
+- NEVER repeat the task prompt back
+- If tests were run, include pass/fail count only
 
 ## Historical Reference
 - Past implementations: `.claude/logs/state-archive.md`

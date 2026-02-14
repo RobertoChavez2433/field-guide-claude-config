@@ -1,44 +1,43 @@
 # Session State
 
-**Last Updated**: 2026-02-14 | **Session**: 336
+**Last Updated**: 2026-02-14 | **Session**: 337
 
 ## Current Phase
-- **Phase**: OCR-Only Pipeline Migration + Phase 4 Cleanup
-- **Status**: Phase 4 Workstreams 1-2 COMPLETE. .claude/ repo committed & pushed. Workstream 3 (hooks) + OCR Phases 2-5 PENDING.
+- **Phase**: V2 Pipeline Code Quality + OCR Pipeline Migration
+- **Status**: V2 pipeline refactoring COMPLETE (28 findings, 7 phases). Phases 2-5 OCR migration PENDING.
 
 ## HOT CONTEXT — Resume Here
 
-### What Was Done This Session (336)
+### What Was Done This Session (337)
 
-#### Full .claude/ Reference Integrity Audit & Fix
-Ran 4 code-review agents (2 initial audit + 2 verification pass) to find and fix every broken reference in the `.claude/` directory.
+#### V2 Extraction Pipeline Refactoring (28 findings, 7 phases)
+Implemented full refactoring plan from code review `.claude/code-reviews/2026-02-14-v2-extraction-pipeline-review.md`.
 
-**42 broken references fixed across 28 files**:
-1. **10x stale `autoload/_defects.md`** refs in skills (systematic-debugging, brainstorming, end-session) and patrol-testing rule — replaced with per-feature defect paths
-2. **13x wrong archive paths** in all defect files — pointed to nonexistent per-feature archives, fixed to shared `defects-archive.md`
-3. **Rewrote `defects-integration.md`** entirely for per-feature defect system
-4. **Fixed relative paths** in `docs/INDEX.md`, `docs/features/README.md`, `docs/guides/README.md`
-5. **Fixed agent refs** — frontend agent `system.md` → interface-design skill, planning agent short names → full names
-6. **Fixed pdf-processing/SKILL.md** — misspelled directory, nonexistent parser files → current V2 pipeline files
-7. **Fixed resume-session/SKILL.md** — nonexistent `session-log.md` → `archive-index.md`
-8. **Updated agent memory** — qa-testing-agent legacy test dirs, pdf-agent deprecated stage refs
-9. **Updated CLAUDE.md** — added resume-session/end-session to skills table, fixed logs directory description
-10. **Fixed archive-index.md** session range, `_state.md` plan reference
+**Phase 1 - Bug Fixes**: Created `QualityThresholds` (single source of truth). Fixed `isValid` attempt-number bug, `_handleEmptyItems` wrong strategy bug, `PipelineConfig.==` missing `duplicateSplitOverrides`.
 
-**Committed in 5 logical groups and pushed to claude config repo.**
+**Phase 2 - Shared Utilities**: Created `ExtractionPatterns`, `MathUtils`, `HeaderKeywords` in `shared/`. Replaced duplicated patterns, median calcs, and keyword lists across 6 stage files.
+
+**Phase 3 - Pipeline Core**: Fixed `PipelineResult.toMap/fromMap` (added config/hash serialization, eliminated double Sidecar). Replaced mutable `Stopwatch` with `Duration?` in `PipelineContext`. Simplified exit condition. Fixed `ExtractionMetrics` stage matching and `expectedItemCount`.
+
+**Phase 4 - Major Dedup**: Created `TextQualityAnalyzer` mixin (~170 lines). Rewrote `DocumentQualityProfiler` using mixin (~200 lines removed). Fixed `PdfTextExtractor` allocation before loop. Deleted 3 dead stage files from `stages/`.
+
+**Phase 5 - Med/Low Fixes**: Garbled count computed once. `_mapColumnSemantics` uses `HeaderKeywords`. Replaced `firstWhere`+try/catch with `.firstOrNull`. Removed dead `_Gap.center`. Added `_computeXOverlapFromCoords`. Batch inserts for stage metrics.
+
+**Phase 6 - Test Cleanup**: Moved 4 dead test files to `test/.../deprecated/`. Extracted 13 mock classes to `helpers/mock_stages.dart`. Added `testDocumentProfile/PipelineContext/Sidecar` fixtures.
+
+**Phase 7 - Polish**: Added TODO comments for god class decomposition. Verified barrels. 0 analysis issues. 758 tests passing.
 
 ### What Needs to Happen Next
 
-**Phase 4 Remaining Work**:
-- Workstream 3: Wire 3 native Claude Code hooks — PENDING
+**Commit the V2 pipeline refactoring** — all changes are unstaged
 
-**PDF V2 PRD Rewrite** — Update to reflect OCR-only architecture
-
-**OCR Pipeline Phases 2-5** (after Phase 4):
+**OCR Pipeline Phases 2-5** (next priority):
 - Phase 2: Regenerate OCR golden fixtures
 - Phase 3: Rewrite golden test (3-layer)
 - Phase 4: Benchmark variant suite
 - Phase 5: Cleanup & verification
+
+**Phase 4 Remaining**: Workstream 3 (hooks) — lower priority
 
 ### Pipeline vs Ground Truth Scoreboard (Measured — Session 328)
 
@@ -56,6 +55,11 @@ Ran 4 code-review agents (2 initial audit + 2 verification pass) to find and fix
 | Complete items (6/6 fields) | 0 | 131 |
 
 ## Recent Sessions
+
+### Session 337 (2026-02-14)
+**Work**: Implemented full V2 extraction pipeline refactoring (28 findings, 7 phases). Created 6 new shared files, modified 30+ files, ~2,500 lines saved. Fixed 3 correctness bugs, eliminated ~500 lines of duplicated prod code, moved ~1,800 lines of dead tests.
+**Decisions**: `QualityThresholds` as single source of truth for score thresholds. `TextQualityAnalyzer` mixin for shared corruption detection. `Duration?` replaces mutable `Stopwatch` on `PipelineContext`. Shared mock stages for test reuse.
+**Next**: 1) Commit V2 refactoring 2) OCR Phases 2-5 3) Phase 4 workstream 3 (hooks)
 
 ### Session 336 (2026-02-14)
 **Work**: Full .claude/ reference integrity audit. Ran 4 code-review agents (2 audit + 2 verification). Fixed 42 broken refs across 28 files. Committed in 5 groups and pushed.
@@ -75,10 +79,6 @@ Ran 4 code-review agents (2 initial audit + 2 verification pass) to find and fix
 ### Session 333 (2026-02-13)
 **Work**: Tested `/resume-session` — removed 4-path intent questions (zero-question flow). Audited `.claude/` directory: found 16 broken refs, 9 orphans, 3 outdated items. Designed 3 native Claude Code hooks (post-edit analyzer, doc staleness, sub-agent pre-flight). Wrote Phase 4 implementation plan.
 **Decisions**: Zero-question resume (user's first message = intent). Native hooks over manual scripts. Blocking PostToolUse analyzer. Hook-enforced doc updates (no dedicated docs agent). No PreToolUse gates (V1 patterns moot).
-
-### Session 332 (2026-02-13)
-**Work**: Fixed 16 issues in `.claude/` directory config across 5 phases. Rewrote session skills (no git), fixed broken references, wired agent feature_docs, created 13 per-feature defect files, migrated existing defects.
-**Decisions**: Per-feature defects in `.claude/defects/`, overviews-only for multi-feature agents (token efficiency), original _defects.md kept as redirect.
 
 ## Active Plans
 
@@ -102,6 +102,7 @@ Ran 4 code-review agents (2 initial audit + 2 verification pass) to find and fix
 - R3: Column detection — HIGHEST PRIORITY after OCR migration
 
 ## Completed Plans (Recent)
+- V2 Extraction Pipeline Refactoring (28 findings) — COMPLETE (Session 337)
 - Documentation System Phases 0-3 — COMPLETE (Sessions 328-332)
 - OCR-Only Pipeline Migration Phase 1 — COMPLETE (Session 331)
 - Git History Restructuring — COMPLETE (Session 329)

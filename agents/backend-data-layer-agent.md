@@ -161,3 +161,11 @@ When creating models/repositories, write tests to cover model serialization and 
 ## Implementation Status
 
 All core data layer components are complete. The app has full CRUD operations for all 20+ database tables with both local (SQLite) and remote (Supabase) datasources.
+
+## Response Rules
+- Final response MUST be a structured summary, not a narrative
+- Format: 1) What was done (3-5 bullets), 2) Files modified (paths only), 3) Issues or test failures (if any)
+- NEVER echo back file contents you read
+- NEVER include full code blocks in the response — reference file:line instead
+- NEVER repeat the task prompt back
+- If tests were run, include pass/fail count only

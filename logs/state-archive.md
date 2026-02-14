@@ -4,6 +4,12 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ---
 
+### Session 332 (2026-02-13)
+**Work**: Fixed 16 issues in `.claude/` directory config across 5 phases. Rewrote session skills (no git), fixed broken references, wired agent feature_docs, created 13 per-feature defect files, migrated existing defects.
+**Decisions**: Per-feature defects in `.claude/defects/`, overviews-only for multi-feature agents (token efficiency), original _defects.md kept as redirect.
+
+---
+
 ### Session 330 (2026-02-12)
 **Work**: Enhanced CMap corruption detection in Stage 0 DocumentAnalyzer. Added mixed-case pattern detection + currency symbol validation. All 6 Springfield pages now route to OCR.
 

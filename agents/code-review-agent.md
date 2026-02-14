@@ -112,6 +112,13 @@ Senior-level code reviewer focused on maintainability, scalability, and producti
 - [ ] Secure data storage
 - [ ] OWASP considerations
 
+## Review Output Directory
+
+Save all code review reports to `.claude/code-reviews/` using the naming convention:
+- `YYYY-MM-DD-{scope}-review.md` (e.g., `2026-02-14-full-codebase-review.md`, `2026-02-14-pdf-extraction-review.md`)
+
+This directory persists across sessions so findings can be referenced by other agents and tracked over time.
+
 ## Review Output Format
 
 ```markdown
@@ -174,6 +181,14 @@ Before approving any code or claiming review complete:
 - Run `flutter analyze` and confirm 0 issues
 - Run `flutter test` and confirm all pass
 - Verify claims with evidence, not assumptions
+
+## Response Rules
+- Final response MUST be a structured review, not a narrative
+- Format: 1) Summary verdict (1-2 lines), 2) Issues found (bulleted, with file:line refs), 3) Recommendations (bulleted, with file:line refs)
+- No limit on number of issues or recommendations — report ALL findings
+- NEVER echo back full file contents — reference file:line instead
+- NEVER include code blocks longer than 5 lines — show snippets only when essential for clarity
+- NEVER repeat the task prompt back
 
 ## Historical Reference
 - Past sessions: `.claude/logs/state-archive.md`

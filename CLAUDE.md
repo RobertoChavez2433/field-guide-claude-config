@@ -83,6 +83,7 @@ Skills are loaded via `skills:` frontmatter in agent files. Claude auto-delegate
 | agent-memory/ | Agent-specific memory (auto-managed) |
 | defects/ | Per-feature defect tracking files |
 | logs/ | Archives (state, defects, archive-index) |
+| code-reviews/ | Code review reports (auto-saved by code-review-agent) |
 | hooks/ | Pre-flight and post-work validation scripts |
 
 ## Documentation System (Phase 0 - Active)
@@ -224,3 +225,19 @@ Screen -> Provider -> Repository -> SQLite (local) -> Supabase (sync)
 | Claude Config | https://github.com/RobertoChavez2433/field-guide-claude-config |
 
 `.claude/` is gitignored from app repo and tracked separately.
+
+## Context Efficiency
+
+Rules to minimize token waste across sessions:
+
+### Subagent Usage
+- **Prefer parallel Task calls** in a single message over `run_in_background`. Parallel calls already run concurrently without polling overhead.
+- When `run_in_background` is necessary, read output **exactly once** using `block=true` to wait for completion. Never poll with timeout then re-read.
+- **Never call TaskOutput more than once** for the same subagent.
+- Cap **Explore agents at 3 per session**. Use Glob/Grep/Read directly for targeted file searches.
+- Only spawn a subagent when the task genuinely requires 5+ tool calls. For simpler work, do it inline.
+
+### Context Hygiene
+- Don't echo back file contents already in context.
+- When summarizing subagent results to the user, keep it to 3-5 bullets. Don't paste the full agent output.
+- Prefer file:line references over pasting code blocks when discussing changes.
