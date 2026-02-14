@@ -2,9 +2,11 @@
 
 ## Patterns Discovered
 
-### PDF Test Suite Baseline (2026-02-07)
-- **Total PDF Tests**: 1373 tests passing across 64+ test files
+### PDF Test Suite Baseline (2026-02-08)
+- **Total PDF Tests**: 1431 tests passing across 65+ test files (+58 tests since 2026-02-07)
 - Test locations: `test/features/pdf/table_extraction/`, `test/features/pdf/services/ocr/`, `test/features/pdf/parsers/`, `test/features/pdf/integration/`
+- **Table Extraction Tests**: 704 tests
+- **PDF Services Tests**: 327 tests
 
 ### Skipped Tests Pattern
 TesseractInitializer tests skip when `eng.traineddata` asset not available in test environment. This is expected and acceptable - these tests would run in full integration/E2E scenarios.
@@ -25,10 +27,21 @@ After modifying native C++ code in `packages/flusseract/`, run `flutter clean &&
 
 ## Architectural Decisions
 
+### PR Verification Pattern (2026-02-08)
+When verifying multiple related PRs:
+1. Add model tests first (unit tests for new types like HeaderAnchor)
+2. Extend existing model tests for new fields (e.g., TableRegion.headerAnchors)
+3. Run incremental test suites (models → feature → services → full suite)
+4. Verify implementation by reading actual code changes (Grep for method names)
+5. Run full regression suite at end (all PDF tests: 1431 tests)
+
 ## Frequently Referenced Files
 
 ### Test Directories
-- `test/features/pdf/table_extraction/` - Core table extraction logic (614 tests)
-- `test/features/pdf/services/ocr/` - OCR engine and preprocessing (202 tests)
-- `test/features/pdf/parsers/` - Text parsing strategies
-- `test/features/pdf/integration/` - End-to-end extraction flows
+- `test/features/pdf/extraction/stages/` - V2 pipeline stage tests
+- `test/features/pdf/extraction/ocr/` - OCR engine and preprocessing tests
+- `test/features/pdf/extraction/models/` - Model serialization and validation tests
+- `test/features/pdf/extraction/contracts/` - Stage-to-stage contract tests
+- `test/features/pdf/extraction/pipeline/` - Pipeline orchestration tests
+- `test/features/pdf/extraction/integration/` - End-to-end extraction flows
+- `test/features/pdf/extraction/golden/` - Golden file tests

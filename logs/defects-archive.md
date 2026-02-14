@@ -1,6 +1,14 @@
 # Defects Archive
 
-Historical defects moved from defects.md or already fixed. Reference only.
+Historical defects moved from per-feature defect files. Reference only.
+
+---
+
+### [DATA] 2026-02-08: Per-Page Column Detection Hardcodes Empty Header Elements — FIXED (Session 321)
+**Pattern**: `_detectColumnsPerPage()` passes `headerRowElements: <OcrElement>[]` for every page, so continuation pages never get header-based column detection — always falling to 0% confidence fallback.
+**Prevention**: When adding per-page processing loops, verify inputs aren't hardcoded empty. Extract header elements per-page using repeated header Y positions.
+**Fix**: Added `_extractHeaderElementsForPage()` with 3-strategy layered approach + `globalHeaderElements` parameter. Replaced binary confidence comparison with structural scoring.
+**Ref**: @lib/features/pdf/services/table_extraction/table_extractor.dart:1237
 
 ---
 

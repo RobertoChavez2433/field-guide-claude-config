@@ -28,7 +28,10 @@
 - pdf-agent for PDF analysis; frontend-flutter-specialist-agent for Dart code changes
 - code-review-agent for verification; qa-testing-agent for testing
 - Agents sometimes revert each other's changes - verify file state after parallel agent runs
-- **Background agents often hit permission issues** - main thread has permissions, subagents may not
+- **FIXED (2026-02-11)**: All agents now have `permissionMode: acceptEdits` to prevent file-write failures
+- Global `~/.claude/settings.json` has `"defaultMode": "acceptEdits"` so built-in subagents inherit it
+- Known Claude Code Windows bugs: #4462, #7032, #5465 - subagent file writes may not persist
+- Context handoff: subagents start fresh - always pass full context in Task prompt or write to `.claude/plans/`
 
 ### Dart/Flutter Gotchas
 - Raw strings `r'...'` cannot contain single quotes - use `\x27` instead

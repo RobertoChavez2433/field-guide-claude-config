@@ -3,7 +3,7 @@
 Cross-platform mobile/desktop app for construction inspectors. Offline-first with cloud sync.
 
 ## Quick Reference
-@.claude/autoload/_defects.md
+<!-- Defects: per-feature files in .claude/defects/_defects-{feature}.md -->
 @.claude/rules/architecture.md
 
 ## Archives (On-Demand) DO NOT AUTO-LOAD THESE
@@ -63,18 +63,66 @@ lib/
 | `systematic-debugging` | Root cause analysis | qa-testing-agent |
 | `interface-design` | Design system | frontend-flutter-specialist |
 | `pdf-processing` | CLI PDF analysis/debugging | pdf-agent |
+| `resume-session` | Load HOT context on session start | User-invoked |
+| `end-session` | Session handoff with auto-archiving | User-invoked |
 
 Skills are loaded via `skills:` frontmatter in agent files. Claude auto-delegates to agents based on task description.
-
-## Hookify (Behavioral Guards)
-Hookify is a **plugin** (not a skill) that enforces project rules via pattern matching. Rules are defined in `.claude/hookify.*.local.md` files. See `.claude/plugins/hookify/` for the plugin and `writing-rules` skill.
 
 ## Session
 - `/resume-session` - Load HOT context only
 - `/end-session` - Save state with auto-archiving
 - State: `.claude/autoload/_state.md` (max 5 sessions)
-- Defects: `.claude/autoload/_defects.md` (max 7 defects)
+- Defects: Per-feature files in `.claude/defects/` (max 5 per feature)
 - Archives: `.claude/logs/state-archive.md`, `.claude/logs/defects-archive.md`
+
+## Directory Reference
+| Directory | Purpose |
+|-----------|---------|
+| plans/ | Implementation plans and design specs |
+| prds/ | Product Requirements Documents |
+| agent-memory/ | Agent-specific memory (auto-managed) |
+| defects/ | Per-feature defect tracking files |
+| logs/ | Archives (state, defects, archive-index) |
+| hooks/ | Pre-flight and post-work validation scripts |
+
+## Documentation System (Phase 0 - Active)
+
+### Structure
+- **`.claude/docs/`** — Feature overviews + architecture docs (lazy-loaded by agents)
+- **`.claude/architecture-decisions/`** — Feature-specific constraints + shared rules
+- **`.claude/state/`** — JSON state files for project tracking
+- **`.claude/hooks/`** — Pre-flight + post-work validation scripts
+
+### Agent Context Loading
+Agents use **pattern-based lazy loading** — they identify the feature(s) from their task prompt, then read only the relevant files:
+- `state/feature-{name}.json` — feature state, constraints summary, deps
+- `defects/_defects-{name}.md` — known issues and anti-patterns
+- `architecture-decisions/{name}-constraints.md` — hard rules (if needed)
+- `docs/features/feature-{name}-overview.md` — feature context (if needed)
+
+`PROJECT-STATE.json` is always loaded (project-level metadata).
+
+### State File Roles (No Overlap)
+- **`autoload/_state.md`** — Session narrative for Claude resume (session history, active plans, what's next)
+- **`state/PROJECT-STATE.json`** — Structured project metadata (release cycle, blockers, deps at risk) for hooks/scripts
+
+### State Files
+| File | Purpose | Loaded By |
+|------|---------|-----------|
+| `state/PROJECT-STATE.json` | Release cycle, blockers, deps at risk | All agents (always) |
+| `state/FEATURE-MATRIX.json` | All 13 features + doc/test/coverage status | planning-agent only |
+| `state/AGENT-CHECKLIST.json` | Pre-flight + post-work validation templates | qa, code-review, planning agents |
+| `state/AGENT-FEATURE-MAPPING.json` | Maps agents to primary/supporting features | Orchestrator routing |
+| `state/feature-{name}.json` | Per-feature state, constraints, deps, metrics | Agents (lazy-loaded per task) |
+
+### Constraint Files
+- **Shared**: `architecture-decisions/data-validation-rules.md` (applies to all features)
+- **Per-feature**: `architecture-decisions/[feature]-constraints.md` (feature-specific hard/soft rules)
+
+**Example**: `pdf-v2-constraints.md` defines:
+- ✗ No V1 imports in V2 code
+- ✗ OCR-only routing (no hybrid strategies)
+- ✗ No legacy compatibility flags
 
 ## Quick Reference Commands
 
@@ -87,8 +135,8 @@ Hookify is a **plugin** (not a skill) that enforces project rules via pattern ma
 
 ### Testing
 4. `pwsh -Command "flutter test"`                                              — All tests
-5. `pwsh -Command "flutter test test/features/pdf/table_extraction/"`          — PDF extraction tests
-6. `pwsh -Command "flutter test test/features/pdf/services/ocr/"`              — OCR tests
+5. `pwsh -Command "flutter test test/features/pdf/extraction/"`                — PDF extraction tests
+6. `pwsh -Command "flutter test test/features/pdf/"`                           — All PDF tests
 7. `pwsh -Command "flutter test <path/to/specific_test.dart>"`                 — Single test file
 8. `pwsh -Command "flutter test --dart-define=PDF_PARSER_DIAGNOSTICS=true"`    — Tests with diagnostics
 

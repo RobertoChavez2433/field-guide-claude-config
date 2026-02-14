@@ -4,7 +4,33 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ---
 
+### Session 330 (2026-02-12)
+**Work**: Enhanced CMap corruption detection in Stage 0 DocumentAnalyzer. Added mixed-case pattern detection + currency symbol validation. All 6 Springfield pages now route to OCR.
+
+---
+
 ## February 2026
+
+### Session 329 (2026-02-12)
+Git history restructuring — 10 clean commits pushed to main.
+
+### Session 328 (2026-02-12)
+R7 brainstorming. Ground truth verification (131 items, $7,882,926.73). 3-layer golden test architecture.
+
+### Session 327 (2026-02-11)
+R5+R6 implementation. 9 golden fixtures. Pipeline quality baseline.
+
+### Session 324 (2026-02-11)
+Phase 5 complete — Stages 4A-4E fully implemented, PostProcessorV2 rewritten standalone, pipeline orchestrator expanded 0-6, all legacy imports eliminated. 619 extraction tests pass.
+
+### Session 321 (2026-02-08)
+Implemented full 5-PR plan for robust two-line header detection + per-page column recovery. 1431 PDF tests pass, 704 table extraction, 0 regressions.
+
+### Session 320 (2026-02-08)
+Diagnosed jumbled Springfield data via pipeline dumps. Found 2 bugs: multi-line header + hardcoded empty header elements.
+
+### Session 319 (2026-02-08)
+Runtime Pipeline Dumper Integration — wired PipelineFileSink into PdfImportService. 689 table extraction tests pass. 22 dumper tests.
 
 ### Session 313 (2026-02-07)
 Implemented all 4 parts of OCR Empty Page + Encoding Corruption fix. RGBA→grayscale, fail-parse, force re-parse, thread encoding flag through 28 call sites. Commit: d808e01.
