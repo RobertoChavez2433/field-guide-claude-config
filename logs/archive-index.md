@@ -6,8 +6,8 @@
 | Session Range | Date Range | File | Line Numbers |
 |---------------|------------|------|--------------|
 | 193-241 | Jan 2026 | state-archive.md | Lines 8-95 |
-| 242-329 | Feb 1-11 2026 | state-archive.md | Lines 96+ |
-| 331-335 | Feb 12-13 2026 | autoload/_state.md | Active (current) |
+| 242-331 | Feb 1-12 2026 | state-archive.md | Lines 96+ |
+| 332-336 | Feb 12-14 2026 | autoload/_state.md | Active (current) |
 
 ## Defects
 Defect tracking uses per-feature files in `.claude/defects/`:

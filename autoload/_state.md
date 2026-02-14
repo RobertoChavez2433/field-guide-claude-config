@@ -1,38 +1,38 @@
 # Session State
 
-**Last Updated**: 2026-02-13 | **Session**: 335
+**Last Updated**: 2026-02-14 | **Session**: 336
 
 ## Current Phase
 - **Phase**: OCR-Only Pipeline Migration + Phase 4 Cleanup
-- **Status**: Phase 1 COMPLETE. Phase 4 Workstreams 1-2 COMPLETE (refs + orphans). Workstream 3 (hooks) + OCR Phases 2-5 PENDING. All changes UNCOMMITTED.
+- **Status**: Phase 4 Workstreams 1-2 COMPLETE. .claude/ repo committed & pushed. Workstream 3 (hooks) + OCR Phases 2-5 PENDING.
 
 ## HOT CONTEXT — Resume Here
 
-### What Was Done This Session (335)
+### What Was Done This Session (336)
 
-#### Comprehensive .claude/ Directory Audit & Cleanup
-Ran 3 parallel code-review agents: (1) file references & MD/JSON quality, (2) organization & auto-loading, (3) PRD correctness. Then fixed all findings across 11 tracked tasks.
+#### Full .claude/ Reference Integrity Audit & Fix
+Ran 4 code-review agents (2 initial audit + 2 verification pass) to find and fix every broken reference in the `.claude/` directory.
 
-**Fixes Applied**:
-1. **~90+ broken file path references fixed** — doc paths (`docs/feature-*` → `docs/features/feature-*`), PRD paths (`plans/` → `prds/`), testing_keys paths, constraint file renames
-2. **Deleted `autoload/_defects.md`** redirect stub + removed `@` references from all 8 agents (was wasting tokens every spawn)
-3. **Archived 10 stale files** — 6 root-level completed docs to `plans/completed/`, 2 completed plans, incident report to `logs/`, restructure summary
-4. **Renamed 3 files for consistency** — `auth-offline-behavior.md` → `auth-constraints.md`, `sync-conflict-strategy.md` → `sync-constraints.md`, `skill.md` → `SKILL.md`
-5. **Fixed agent files** — Removed nonexistent `parsers/`, `parsed_measurement_spec`, legacy barrel refs, wrong test paths
-6. **Fixed docs/features/README.md** — All 26 links were missing `feature-` prefix
-7. **Updated logs** — archive-index.md, README.md rewritten for per-feature defect system, archived FIXED defect from _defects-pdf.md
-8. **Fixed state JSONs** — `needs_documentation: 0`, phantom `"reports"` → `"toolbox"`, TASK-LIST.json refs removed
+**42 broken references fixed across 28 files**:
+1. **10x stale `autoload/_defects.md`** refs in skills (systematic-debugging, brainstorming, end-session) and patrol-testing rule — replaced with per-feature defect paths
+2. **13x wrong archive paths** in all defect files — pointed to nonexistent per-feature archives, fixed to shared `defects-archive.md`
+3. **Rewrote `defects-integration.md`** entirely for per-feature defect system
+4. **Fixed relative paths** in `docs/INDEX.md`, `docs/features/README.md`, `docs/guides/README.md`
+5. **Fixed agent refs** — frontend agent `system.md` → interface-design skill, planning agent short names → full names
+6. **Fixed pdf-processing/SKILL.md** — misspelled directory, nonexistent parser files → current V2 pipeline files
+7. **Fixed resume-session/SKILL.md** — nonexistent `session-log.md` → `archive-index.md`
+8. **Updated agent memory** — qa-testing-agent legacy test dirs, pdf-agent deprecated stage refs
+9. **Updated CLAUDE.md** — added resume-session/end-session to skills table, fixed logs directory description
+10. **Fixed archive-index.md** session range, `_state.md` plan reference
 
-**PRD Audit Result**: 12/13 PRDs are GOOD. PDF V2 PRD needs significant rewrite (5 HIGH issues — describes hybrid pipeline but codebase is OCR-only, wrong stage names, outdated file map, completed TODOs still marked pending).
+**Committed in 5 logical groups and pushed to claude config repo.**
 
 ### What Needs to Happen Next
-
-**DO NOT COMMIT YET** — User will commit after all phases complete.
 
 **Phase 4 Remaining Work**:
 - Workstream 3: Wire 3 native Claude Code hooks — PENDING
 
-**PDF V2 PRD Rewrite** — Update to reflect OCR-only architecture (Sections 1, 2, 4, 7, 12, 13)
+**PDF V2 PRD Rewrite** — Update to reflect OCR-only architecture
 
 **OCR Pipeline Phases 2-5** (after Phase 4):
 - Phase 2: Regenerate OCR golden fixtures
@@ -57,6 +57,11 @@ Ran 3 parallel code-review agents: (1) file references & MD/JSON quality, (2) or
 
 ## Recent Sessions
 
+### Session 336 (2026-02-14)
+**Work**: Full .claude/ reference integrity audit. Ran 4 code-review agents (2 audit + 2 verification). Fixed 42 broken refs across 28 files. Committed in 5 groups and pushed.
+**Decisions**: All defect files use shared `defects-archive.md` (no per-feature archives). Skills/rules fully updated for per-feature defect system. Agent memory updated for V2 pipeline.
+**Next**: 1) Phase 4 workstream 3 (hooks) 2) PDF V2 PRD rewrite 3) OCR pipeline Phases 2-5
+
 ### Session 335 (2026-02-13)
 **Work**: Ran 3 parallel code-review agents on `.claude/` directory. Fixed ~90+ broken refs, archived 10 stale files, renamed 3 constraint files, deleted _defects.md redirect, fixed all agent/state/constraint file paths. PDF V2 PRD flagged for rewrite.
 **Decisions**: Rename constraint files to `{feature}-constraints.md` convention. Archive completed plans immediately. Remove all stale redirect stubs.
@@ -74,9 +79,6 @@ Ran 3 parallel code-review agents: (1) file references & MD/JSON quality, (2) or
 ### Session 332 (2026-02-13)
 **Work**: Fixed 16 issues in `.claude/` directory config across 5 phases. Rewrote session skills (no git), fixed broken references, wired agent feature_docs, created 13 per-feature defect files, migrated existing defects.
 **Decisions**: Per-feature defects in `.claude/defects/`, overviews-only for multi-feature agents (token efficiency), original _defects.md kept as redirect.
-
-### Session 331 (2026-02-12)
-**Work**: OCR-only pipeline migration Phase 1. Designed & approved plan via brainstorming. Deprecated 3 native extraction files. Created `DocumentQualityProfiler` + `ElementValidator`. Refactored `ExtractionPipeline` (removed Stage 2A, fixed re-extraction loop). Updated all test mocks/imports. Zero analyze errors.
 
 ## Active Plans
 
@@ -103,13 +105,14 @@ Ran 3 parallel code-review agents: (1) file references & MD/JSON quality, (2) or
 - Documentation System Phases 0-3 — COMPLETE (Sessions 328-332)
 - OCR-Only Pipeline Migration Phase 1 — COMPLETE (Session 331)
 - Git History Restructuring — COMPLETE (Session 329)
-- Phase 4 Workstreams 1-2 — COMPLETE (Session 335)
+- Phase 4 Workstreams 1-2 — COMPLETE (Sessions 335-336)
+- .claude/ Reference Integrity Audit — COMPLETE (Session 336)
 
 ## Deferred Plans
 - **AASHTOWARE Integration**: `.claude/backlogged-plans/AASHTOWARE_Implementation_Plan.md`
 
 ## Reference
-- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-332)
+- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-331)
 - **Defects**: Per-feature files in `.claude/defects/_defects-{feature}.md`
 - **Branch**: `main`
 - **Springfield PDF**: `C:\Users\rseba\OneDrive\Desktop\864130 Springfield DWSRF Water System Improvements CTC [16-23] Pay Items.pdf`

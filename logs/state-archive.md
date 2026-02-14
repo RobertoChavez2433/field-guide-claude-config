@@ -92,6 +92,9 @@ Flusseract OCR Migration Phases 4-6: OCR quality safeguards (21 config tests), l
 ### Session 281 (2026-02-04)
 Windows OCR Accuracy Fix Phases 1-3: PNG format for all platforms, adaptive DPI, lightweight preprocessing. Code review 7.5/10.
 
+### Session 331 (2026-02-12)
+OCR-only pipeline migration Phase 1. Designed & approved plan via brainstorming. Deprecated 3 native extraction files. Created `DocumentQualityProfiler` + `ElementValidator`. Refactored `ExtractionPipeline` (removed Stage 2A, fixed re-extraction loop). Updated all test mocks/imports. Zero analyze errors.
+
 ### Session 282 (2026-02-04)
 Springfield PDF extraction debugging: Windows preprocessing skipped binarization. Full preprocessing on all platforms, no-item-number regex, TableLocator improvements (lowered kMinHeaderKeywords to 2, multi-row header detection).
 
