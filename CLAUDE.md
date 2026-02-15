@@ -226,6 +226,28 @@ Screen -> Provider -> Repository -> SQLite (local) -> Supabase (sync)
 
 `.claude/` is gitignored from app repo and tracked separately.
 
+## Audit System & Lint Suggestions
+
+**Active plan**: `.claude/plans/2026-02-15-audit-system-design.md`
+
+### Git Workflow (Feature Branch + PR)
+- Work on feature branches, never commit directly to main
+- Use `gh pr create` to open PRs, `gh pr merge --squash` to merge
+- Pre-commit hook at `tools/audit/pre-commit.sh` validates every commit
+- CI (`quality-gate.yml`) must pass before merging to main
+
+### Lint Rule Suggestions (Per-Session Check)
+Each session, after completing implementation work, check:
+1. Did we encounter a new anti-pattern or recurring issue during this session?
+2. Could it be caught by a grep pattern or custom lint rule?
+3. If yes, suggest it to the user: "I noticed [pattern]. Want to add this as a [grep check / custom lint rule]?"
+4. Reference: 68 existing checks in the audit system plan
+
+### Pre-Commit Hook
+- Location: `tools/audit/pre-commit.sh` (symlinked from `.git/hooks/pre-commit`)
+- Setup: Run `tools/audit/setup-hooks.sh` once after cloning
+- Bypass (WIP only): `git commit --no-verify` (CI will still catch issues)
+
 ## Context Efficiency
 
 Rules to minimize token waste across sessions:
