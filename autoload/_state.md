@@ -1,34 +1,42 @@
 # Session State
 
-**Last Updated**: 2026-02-14 | **Session**: 340
+**Last Updated**: 2026-02-15 | **Session**: 343
 
 ## Current Phase
 - **Phase**: Pipeline Accuracy Improvement — Grid Line Detection
-- **Status**: V2 pipeline complete but OCR produces garbage on table pages. Root cause identified: PSM=6 (single block) reads across table columns. Plan approved for grid line detection + row-level OCR.
+- **Status**: Phases 1-2 IMPLEMENTED + code reviewed. Phases 3-4 next.
 
 ## HOT CONTEXT — Resume Here
 
-### What Was Done This Session (340)
+### What Was Done This Session (343)
 
-#### Root Cause Diagnosis: OCR Garbage on Table Pages
-- Ran stage trace diagnostic + golden test: **0/131 items matched, $0 vs $7.88M**
-- Traced failure upstream through all stages. Found OCR output on pages 2-6 is unintelligible (`I hc J IAA HS AT IE:` instead of "Erosion Control, Silt Fence")
-- Reviewed actual PDF — text is perfectly clear, clean digital table with visible grid lines
-- **Root cause**: PSM=6 (single block) tells Tesseract to disable column detection, reads straight left-to-right across all 6 table columns, producing garbage
-- Page 1 partially works because it has boilerplate text above the table; pages 2-6 are pure table = complete failure
+#### Code Review of Phase 1 + Phase 2 Implementations
+- Launched 2 parallel code-review-agents — one per plan
+- Phase 1 (GridLineDetector): **No critical/major issues.** 3 suggestions, 4 minor nits. Plan completeness 100%.
+- Phase 2 (TextRecognizerV2 cell cropping): **2 major issues** (mock type safety), 4 suggestions. 18/19 tests (1 was update not new). Plan completeness ~95%.
 
-#### Designed Grid Line Detection Plan (Tier 2 approach)
-- Researched all 13 Tesseract PSM modes via agent — confirmed PSM 6 is terrible for tables
-- Designed 4-phase plan: GridLineDetector stage → row cropping + PSM 7 → column detection from grid lines
-- Plan saved to `.claude/plans/2026-02-14-grid-line-detection-row-ocr.md`
+#### Implemented 6 Fixes from Code Review
+1. Fixed `dynamic` → `OcrEngineV2`/`OcrConfigV2?` on `MockTextRecognizerV2`
+2. Fixed `dynamic` → `OcrConfigV2?` on `MockTesseractEngineV2` (both methods)
+3. Consolidated `_median()` to `MathUtils.median()` in `text_recognizer_v2.dart` + `stage_trace_diagnostic_test.dart`
+4. Pre-sorted horizontal lines once in `_recognizeWithCellCropping` (was sorted twice independently)
+5. Removed redundant `(position as num).toDouble()` cast in `grid_line_detector.dart`
+6. Added doc comment on `stageConfidence` semantics in `GridLineDetector`
+
+All 717 tests passed, 0 failures.
 
 ### What Needs to Happen Next
 
-**IMPLEMENT the grid line detection plan** (4 phases):
-1. **Phase 1**: GridLines model + GridLineDetector stage + unit tests
-2. **Phase 2**: TextRecognizerV2 row cropping (PSM 7 per row, PSM 4 fallback) + fix PSM 4 in config
-3. **Phase 3**: ColumnDetectorV2 Layer 0 (grid lines → high-confidence column boundaries)
-4. **Phase 4**: Pipeline wiring + fixture regeneration + golden test updates
+**IMPLEMENT Phase 3** — ColumnDetectorV2 grid line integration:
+- Feed grid vertical lines into column detection at 0.95 confidence
+- Plan not yet detailed — needs brainstorming
+
+**IMPLEMENT Phase 4** — Pipeline wiring + fixture regeneration:
+- Wire GridLineDetector into pipeline orchestrator
+- Regenerate Springfield fixtures
+- Validate accuracy improvement against ground truth
+
+Then **benchmark accuracy** against the scoreboard below.
 
 ### Pipeline vs Ground Truth Scoreboard (Fresh Baseline — Session 340)
 
@@ -45,6 +53,21 @@
 
 ## Recent Sessions
 
+### Session 343 (2026-02-15)
+**Work**: Code reviewed Phase 1 + Phase 2 implementations (2 parallel agents). Fixed 6 issues: mock type safety (dynamic→typed), DRY _median→MathUtils.median, pre-sort horizontal lines, remove redundant cast, add stageConfidence doc. 717 tests pass.
+**Decisions**: All mock overrides must use typed params (not dynamic). Shared MathUtils.median() is canonical median impl.
+**Next**: 1) Implement Phase 3 (ColumnDetectorV2 grid integration) 2) Implement Phase 4 (pipeline wiring + fixtures) 3) Benchmark accuracy
+
+### Session 342 (2026-02-14)
+**Work**: Brainstormed Phase 2 plan — cell-level cropping for TextRecognizerV2. Reviewed actual PDF, audited all 52 test files. Escalated from row to cell cropping for 100% accuracy. 10 design decisions, 19 new tests, 3 source files.
+**Decisions**: Cell-level crop (not row). PSM 7/6 adaptive. Grid-only OCR (drop boilerplate). No vertical line erasing. 2px padding. Sequential engine. PSM 4 fallback.
+**Next**: 1) Implement Phase 1 (GridLineDetector) 2) Implement Phase 2 (cell cropping) 3) Phases 3-4 (column integration + wiring)
+
+### Session 341 (2026-02-14)
+**Work**: Brainstormed Phase 1 implementation plan for GridLineDetector. Reviewed all stage patterns (models, tests, mocks, fixtures, diagnostics). Made 7 design decisions. Exported full plan with 17 tests, 9 files (3 new, 6 modified).
+**Decisions**: Plain name (no V2). compute() isolate. GridLines wrapper. toMap/fromMap included. 17 tests. All infrastructure in Phase 1. Fixture diagnostic only.
+**Next**: 1) Implement Phase 1 per plan 2) Continue Phases 2-4 3) Regenerate fixtures + validate accuracy
+
 ### Session 340 (2026-02-14)
 **Work**: Fresh baseline (0/131 match, $0). Root-caused OCR garbage to PSM=6 on table pages. Researched PSM modes. Designed grid line detection + row-level OCR plan (4 phases).
 **Decisions**: OCR-only (no native text — CMap corruption). Tier 2: grid line detection → row cropping → PSM 7. Grid vertical lines feed column detection at 0.95 confidence. PSM 4 fallback for non-grid pages.
@@ -55,23 +78,14 @@
 **Decisions**: Focus on pipeline accuracy improvement as primary goal.
 **Next**: 1) Fresh benchmark baseline 2) Diagnose and fix accuracy issues 3) R7 enhancements later
 
-### Session 338 (2026-02-14)
-**Work**: Code review cleanup — 3 parallel review agents found 21 issues. Executed 13-step plan: deleted deprecated dirs, fixed dead code, sentinel pattern for copyWith, epsilon doubles, import normalization, stage name migration, ResultConverter bug fix.
-**Decisions**: Skip models barrel cleanup (30+ file blast radius). Delete deprecated dirs entirely (git preserves history). Use StageNames constants everywhere (no substring matching).
-
-### Session 337 (2026-02-14)
-**Work**: Implemented full V2 extraction pipeline refactoring (28 findings, 7 phases). Created 6 new shared files, modified 30+ files, ~2,500 lines saved. Fixed 3 correctness bugs, eliminated ~500 lines of duplicated prod code, moved ~1,800 lines of dead tests.
-**Decisions**: `QualityThresholds` as single source of truth for score thresholds. `TextQualityAnalyzer` mixin for shared corruption detection. `Duration?` replaces mutable `Stopwatch` on `PipelineContext`. Shared mock stages for test reuse.
-
-### Session 336 (2026-02-14)
-**Work**: Full .claude/ reference integrity audit. Ran 4 code-review agents (2 audit + 2 verification). Fixed 42 broken refs across 28 files. Committed in 5 groups and pushed.
-
 ## Active Plans
 
 ### Grid Line Detection + Row-Level OCR (PRIMARY)
 - Plan: `.claude/plans/2026-02-14-grid-line-detection-row-ocr.md`
-- Phase 1: GridLines model + GridLineDetector — NOT STARTED
-- Phase 2: TextRecognizerV2 row cropping + PSM 7/4 — NOT STARTED
+- Phase 1: GridLines model + GridLineDetector — **IMPLEMENTED + CODE REVIEWED** (Session 343)
+  - Impl plan: `.claude/plans/2026-02-14-phase1-grid-line-detector-impl.md`
+- Phase 2: TextRecognizerV2 cell-level cropping + PSM 7/6/4 — **IMPLEMENTED + CODE REVIEWED** (Session 343)
+  - Impl plan: `.claude/plans/2026-02-14-phase2-text-recognizer-cell-cropping-impl.md`
 - Phase 3: ColumnDetectorV2 grid line integration — NOT STARTED
 - Phase 4: Pipeline wiring + fixture regeneration — NOT STARTED
 

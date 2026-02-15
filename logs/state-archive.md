@@ -6,6 +6,17 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 337 (2026-02-14)
+**Work**: Implemented full V2 extraction pipeline refactoring (28 findings, 7 phases). Created 6 new shared files, modified 30+ files, ~2,500 lines saved. Fixed 3 correctness bugs, eliminated ~500 lines of duplicated prod code, moved ~1,800 lines of dead tests.
+**Decisions**: `QualityThresholds` as single source of truth for score thresholds. `TextQualityAnalyzer` mixin for shared corruption detection. `Duration?` replaces mutable `Stopwatch` on `PipelineContext`. Shared mock stages for test reuse.
+
+### Session 338 (2026-02-14)
+**Work**: Code review cleanup — 3 parallel review agents found 21 issues. Executed 13-step plan: deleted deprecated dirs, fixed dead code, sentinel pattern for copyWith, epsilon doubles, import normalization, stage name migration, ResultConverter bug fix.
+**Decisions**: Skip models barrel cleanup (30+ file blast radius). Delete deprecated dirs entirely (git preserves history). Use StageNames constants everywhere (no substring matching).
+
+### Session 336 (2026-02-14)
+**Work**: Full .claude/ reference integrity audit. Ran 4 code-review agents (2 audit + 2 verification). Fixed 42 broken refs across 28 files. Committed in 5 groups and pushed.
+
 ### Session 335 (2026-02-13)
 **Work**: Ran 3 parallel code-review agents on `.claude/` directory. Fixed ~90+ broken refs, archived 10 stale files, renamed 3 constraint files, deleted _defects.md redirect, fixed all agent/state/constraint file paths.
 
