@@ -347,9 +347,11 @@ packages/field_guide_lints/
 2. Add exclusion entries for known exceptions
 3. Tune thresholds (file size, coverage %, complexity)
 4. Create contributing guide for adding new checks
-5. Update `.claude/CLAUDE.md` with new workflow commands
+5. **Full CLAUDE.md update** — Replace the temporary audit section added during brainstorming with final, accurate references (correct script paths, actual workflow names, final hook commands, updated Quick Reference Commands for the new git workflow)
 6. Final verification: full end-to-end test
 **Files**: ~5 modified
+
+> **NOTE**: The current CLAUDE.md audit section (added 2026-02-15) is a placeholder based on the design plan. It MUST be updated in Phase 5 to reflect the actual implementation — correct file paths, real workflow names, tested commands, and any changes made during Phases 1-4.
 
 ---
 
