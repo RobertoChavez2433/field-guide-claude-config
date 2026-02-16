@@ -6,6 +6,13 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 350 (2026-02-15)
+**Work**: Deep OCR brainstorming. Traced actual data through pipeline. Researched community practices, cross-platform OCR, cloud OCR pricing, opencv_dart, textify. Established 3-step escalation path.
+**Decisions**: Row-strip OCR first (zero deps). opencv_dart if needed. Cloud Vision as last resort.
+
+### Session 349 (2026-02-15)
+**Work**: Code review (3 fixes). Fixture regen revealed 0 regions. Brainstormed grid-aware region detection (Options B/C).
+
 ### Session 348 (2026-02-15)
 **Work**: Fixed column semantic mapping. Margin detection, anchor-relative inference, content validation. 324 tests pass.
 

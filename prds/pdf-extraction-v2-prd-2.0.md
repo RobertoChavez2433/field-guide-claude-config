@@ -1,6 +1,6 @@
 # PDF Extraction Pipeline V2 — PRD 2.0
 
-**Date**: 2026-02-11 (Updated 2026-02-14)
+**Date**: 2026-02-11 (Updated 2026-02-16)
 **Status**: Approved
 **Supersedes**: `2026-02-10-pdf-extraction-pipeline-redesign.md` (PRD 1.0)
 **Scope**: Complete specification of the V2 extraction pipeline as-built (OCR-only)
@@ -185,16 +185,45 @@ OUTPUT: PreprocessedPages {enhancedImages, statsBeforePreprocess, statsAfterPrep
 2. Contrast enhancement
 3. 8-bit conversion
 
+### Stage 2B-ii.5: Grid Line Detection
+**File**: `extraction/stages/grid_line_detector.dart`
+
+```
+INPUT:  PreprocessedPages
+OUTPUT: GridLines {pages{}, gridPages[], nonGridPages[]}
+```
+
+- **Algorithm**: Horizontal and vertical line detection on preprocessed images
+- **Output per page**: `GridLineResult { hasGrid, horizontalLines[], verticalLines[] }` (all values normalized 0.0-1.0)
+- **Used by**: Stage 2B-iii (row-strip OCR), Stage 4B (synthetic regions), Stage 4C (grid-aware columns)
+
 ### Stage 2B-iii: Text Recognition (OCR)
 **File**: `extraction/stages/text_recognizer_v2.dart`
 
 ```
-INPUT:  PreprocessedPages
+INPUT:  PreprocessedPages + RenderedPages + GridLines
 OUTPUT: OcrExtractionResult {elementsPerPage, confidencePerPage (median), methodPerPage}
 ```
 
-- **Algorithm**: Tesseract via TesseractEngineV2, word-level confidence, normalized coordinates
+- **Algorithm**: Dual-mode — grid pages use row-strip OCR, non-grid pages use full-page OCR (PSM 4)
 - **Confidence**: Median of word confidences per page (not mean — less sensitive to outliers)
+
+**Row-Strip OCR** (grid pages):
+1. `_computeRowStrips()` — Creates full-width strips between horizontal grid lines, bounded by leftmost/rightmost vertical lines
+2. Each strip is cropped via `img.copyCrop()`, then prepared by `CropUpscaler.prepareForOcr()`
+3. **PSM selection**: Row 0 → PSM 6 (header, multi-line), tall rows (>1.8x median) → PSM 6, others → PSM 7 (single line)
+4. Tesseract OCR on each strip, then coordinates mapped back to page-normalized space via `CoordinateNormalizer.fromCropRelative()`
+
+**CropUpscaler** (`shared/crop_upscaler.dart`):
+- Ensures OCR input is at least a minimum size for Tesseract accuracy
+- Adds padding, applies scale factor, records metrics (wasUpscaled, scaleFactor, usedFallback)
+- Fallback: returns original crop if upscaling fails
+
+**Diagnostic callback**: `onDiagnosticImage` captures 4 image types per grid page:
+- `page_N_rendered` — raw rendered page
+- `page_N_preprocessed` — after grayscale + contrast
+- `page_N_row_NN_strip_raw` — raw crop from preprocessed image
+- `page_N_row_NN_strip_ocr` — after CropUpscaler, exactly what Tesseract receives
 
 ### Stage 3: Element Validation
 **File**: `extraction/stages/element_validator.dart`
@@ -228,31 +257,44 @@ OUTPUT: ClassifiedRows {
 - **ALL rows preserved** — UNKNOWN is a valid classification, nothing is dropped
 
 ### Stage 4B: Table Region Detection
-**File**: `extraction/stages/region_detector_v2.dart`
+**File**: `extraction/stages/region_detector_v2.dart` + pipeline `_createSyntheticRegions()`
 
 ```
-INPUT:  ClassifiedRows
+INPUT:  ClassifiedRows + GridLines
 OUTPUT: DetectedRegions {regions[], excludedRows[] (with reasons, NOT deleted)}
 ```
 
-- **Algorithm**: Header scan, cross-page validation, multi-row header assembly
+- **Algorithm**: Dual-path — synthetic regions for grid pages, header-based detection for non-grid pages
 - **Total rows**: Serve as strong end-of-table signal
 - **Excluded rows preserved** in sidecar with reason
+
+**Synthetic Regions** (grid-line fallback):
+When grid lines are detected but no header rows exist (OCR garbling prevents keyword matching), the pipeline creates synthetic table regions:
+1. `_createSyntheticRegions()` in `extraction_pipeline.dart` processes each grid page
+2. Uses horizontal grid line bounds (first→last) as table Y extent
+3. Header band = space between first and second horizontal line
+4. Finds closest row to header band for `headerRowIndices`
+5. Tracks `syntheticPageIndices` and `syntheticRowIndices` to avoid double-processing
+
+**Merge strategy**: Synthetic + detector regions are merged and sorted by page/Y position. A data-loss check ensures `outputCount + excludedCount == inputCount` after merge.
 
 ### Stage 4C: Column Detection
 **File**: `extraction/stages/column_detector_v2.dart`
 
 ```
-INPUT:  DetectedRegions + UnifiedExtractionResult
+INPUT:  DetectedRegions + ClassifiedRows + UnifiedExtractionResult + GridLines
 OUTPUT: ColumnMap {columns[], method, confidence, perPageAdjustments}
 ```
 
 **Layered strategy** (see Section 9 for full detail):
+- **Layer 0**: Grid line column detection (NEW — uses vertical grid lines for column boundaries)
 - **Layer 1**: Header keyword detection (primary)
 - **Layer 2**: Text alignment clustering (IMPLEMENTED — `kTextAlignmentTolerance = 0.015`)
 - **Layer 2b**: Whitespace gap analysis (IMPLEMENTED — fallback)
 - **Layer 3**: Anchor-based correction (existing)
 - **Cross-validation**: Multiple agreeing strategies boost confidence by 0.1-0.2
+
+**Grid-aware per-page adjustments**: When grid lines differ between pages, `perPageAdjustments` stores page-specific column boundaries derived from that page's vertical grid lines.
 
 ### Stage 4D: Cell Extraction
 **File**: `extraction/stages/cell_extractor_v2.dart`
@@ -729,6 +771,64 @@ When multiple strategies agree, confidence is boosted by 0.1-0.2. The highest-co
 
 ---
 
+## 9b. Diagnostic Capture System
+
+### Purpose
+
+The pipeline processes images through 4 stages (rendering → preprocessing → cropping → upscaling) before Tesseract sees them. When OCR produces garbled text, we need to see exactly what each stage produced. The diagnostic capture system saves raw images at every stage — no overlays, no annotations. The existing JSON fixtures describe what the pipeline *read*; the images show what the pipeline *saw*.
+
+### `onDiagnosticImage` Callback
+
+```dart
+void Function(String name, Uint8List pngBytes)? onDiagnosticImage
+```
+
+Threaded through: `extract()` → `_runExtractionStages()` → `recognize()` → `_recognizeWithRowStrips()`
+
+When `null` (production), zero overhead via `?.` operator. Only active during fixture generation.
+
+### Image Capture Points
+
+| Capture Point | Name Pattern | Stage | What It Shows |
+|---|---|---|---|
+| After Stage 2B-i | `page_N_rendered` | Page Rendering | Raw PDF-to-PNG output |
+| After Stage 2B-ii | `page_N_preprocessed` | Preprocessing | After grayscale + contrast |
+| After `img.copyCrop()` | `page_N_row_NN_strip_raw` | Text Recognition | Raw strip crop from preprocessed image |
+| After `CropUpscaler` | `page_N_row_NN_strip_ocr` | Text Recognition | Exactly what Tesseract receives |
+
+### `onStageOutput` JSON Fixtures (4 new)
+
+| Stage | Fixture File | Data |
+|---|---|---|
+| 2B-i | `springfield_rendering_metadata.json` | Pages rendered, DPI, page dimensions |
+| 2B-ii | `springfield_preprocessing_stats.json` | Contrast before/after, fallback flags |
+| 2B-iii | `springfield_ocr_metrics.json` | Total elements, per-page counts, PSM stats |
+| 4A(1B) | `springfield_phase1b_refinement.json` | Refined row classifications |
+
+### Fixture Directory Structure
+
+```
+test/features/pdf/extraction/fixtures/
+├── springfield_*.json                    ← 14 JSON fixtures (10 original + 4 new)
+└── diagnostic_images/                    ← gitignored
+    ├── capture_manifest.json             ← index of all images
+    ├── page_0_rendered.png
+    ├── page_0_preprocessed.png
+    ├── page_0_row_00_strip_raw.png
+    ├── page_0_row_00_strip_ocr.png
+    ├── ...
+    └── page_5_row_NN_strip_ocr.png
+```
+
+### Developer Workflow
+
+1. Run fixture generator: `pwsh -Command "flutter test integration_test/generate_golden_fixtures_test.dart -d windows --dart-define=SPRINGFIELD_PDF=<path>"`
+2. Open `diagnostic_images/capture_manifest.json` for image index
+3. Open strip image + corresponding JSON fixture side by side
+4. Compare `page_1_row_00_strip_ocr.png` to `springfield_unified_elements.json` OCR text for that row
+
+---
+
 ## 10. Testing Strategy
 
 ### Three Tiers
@@ -756,19 +856,44 @@ All enforce the no-data-loss invariant: `outputCount + excludedCount == inputCou
 
 ### Per-Stage Golden Files (Springfield PDF)
 
-All 9 fixtures must be generated by running pipeline against Springfield PDF and validated against ground truth (131 items, total $7,882,926.73):
+All 14 fixtures must be generated by running pipeline against Springfield PDF and validated against ground truth (131 items, total $7,882,926.73):
 
 | Stage | Golden File | Status |
 |---|---|---|
 | Stage 0 | `springfield_document_profile.json` | GENERATED |
+| Stage 2B-i | `springfield_rendering_metadata.json` | GENERATED |
+| Stage 2B-ii | `springfield_preprocessing_stats.json` | GENERATED |
+| Stage 2B-iii | `springfield_ocr_metrics.json` | GENERATED |
 | Stage 3 | `springfield_unified_elements.json` | GENERATED |
+| Stage 2B.5 | `springfield_grid_lines.json` | GENERATED |
 | Stage 4A | `springfield_classified_rows.json` | GENERATED |
 | Stage 4B | `springfield_detected_regions.json` | GENERATED |
 | Stage 4C | `springfield_column_map.json` | GENERATED |
+| Stage 4A(1B) | `springfield_phase1b_refinement.json` | GENERATED |
 | Stage 4D | `springfield_cell_grid.json` | GENERATED |
 | Stage 4E | `springfield_parsed_items.json` | GENERATED |
 | Stage 5 | `springfield_processed_items.json` | GENERATED |
 | Stage 6 | `springfield_quality_report.json` | GENERATED |
+
+### Fixture Generation
+
+Run the integration test on Windows (requires native OCR plugins):
+```
+pwsh -Command "flutter test integration_test/generate_golden_fixtures_test.dart -d windows --dart-define=SPRINGFIELD_PDF=<path>"
+```
+
+This produces:
+- 14 JSON fixture files in `test/features/pdf/extraction/fixtures/`
+- ~580 diagnostic PNG images in `test/features/pdf/extraction/fixtures/diagnostic_images/` (gitignored)
+- `capture_manifest.json` listing all images with metadata
+
+### Stage Trace Diagnostic Test
+
+`test/features/pdf/extraction/golden/stage_trace_diagnostic_test.dart` — reads all fixtures and traces data through the pipeline:
+- Diagnostic image availability check (verifies manifest and files on disk)
+- Per-stage analysis (rendering metadata, preprocessing stats, OCR metrics, Phase 1B refinement)
+- Ground truth item tracing
+- Pipeline failure cascade summary
 
 ### Golden File Matcher
 
@@ -866,7 +991,8 @@ lib/features/pdf/services/extraction/
 │   ├── stage_names.dart             # Canonical StageNames constants
 │   ├── page_renderer_v2.dart        # Stage 2B-i
 │   ├── image_preprocessor_v2.dart   # Stage 2B-ii
-│   ├── text_recognizer_v2.dart      # Stage 2B-iii
+│   ├── grid_line_detector.dart      # Stage 2B-ii.5
+│   ├── text_recognizer_v2.dart      # Stage 2B-iii (row-strip OCR + CropUpscaler)
 │   ├── row_classifier_v2.dart       # Stage 4A + Phase 1B post-column refinement
 │   ├── region_detector_v2.dart      # Stage 4B
 │   ├── column_detector_v2.dart      # Stage 4C
@@ -888,6 +1014,7 @@ lib/features/pdf/services/extraction/
 │   ├── tesseract_pool_v2.dart
 │   └── concurrency_gate_v2.dart
 └── shared/
+    ├── crop_upscaler.dart           # CropUpscaler for OCR strip preparation
     ├── extraction_patterns.dart     # Regex patterns for extraction
     ├── field_format_validator.dart   # Field-level format validation
     ├── header_keywords.dart         # Column header keyword lists
@@ -903,7 +1030,7 @@ lib/features/pdf/services/extraction/
 ```
 test/features/pdf/extraction/
 ├── contracts/                       # 9 stage-to-stage contract tests
-├── fixtures/                        # Golden JSON fixtures (9 total)
+├── fixtures/                        # Golden JSON fixtures (14 total) + diagnostic_images/
 ├── golden/                          # Golden file matcher + regression tests
 ├── helpers/                         # Test factory utilities
 ├── integration/                     # Full pipeline + round-trip tests
