@@ -3,7 +3,7 @@
   "name": "PDF Extraction & Generation",
   "status": "in_progress",
   "description": "PDF template filling, OCR-based extraction, bid schedule parsing, IDR report generation",
-  
+
   "docs": {
     "overview": "docs/features/feature-pdf-overview.md",
     "architecture": "docs/features/feature-pdf-architecture.md",
@@ -25,16 +25,20 @@
 
   "metrics": {
     "test_coverage_percentage": 87,
-    "last_updated": "2026-02-15T00:00:00Z",
+    "last_updated": "2026-02-16T01:00:00Z",
     "item_match_rate": 0.0,
-    "quality_score": 0.615
+    "quality_score": 0.0,
+    "median_ocr_confidence": 0.364,
+    "upscaling_coverage": 0.419
   },
 
   "current_phase": {
-    "phase_name": "Grid Line Detection + Cell-Level OCR",
-    "status": "Phase 1 + Phase 2 IMPLEMENTED + code reviewed. Phase 3-4 next.",
+    "phase_name": "Grid-Aware Region Detection",
+    "status": "Brainstorming. Region detector ignores grid data. Options B (hybrid) and C (pipeline split) documented. Renderer confirmed 300 DPI.",
     "plan_file": "plans/2026-02-14-grid-line-detection-row-ocr.md",
+    "upscaling_plan": "plans/2026-02-15-cell-crop-upscaling.md",
     "phase1_impl_plan": "plans/2026-02-14-phase1-grid-line-detector-impl.md",
-    "phase2_impl_plan": "plans/2026-02-14-phase2-text-recognizer-cell-cropping-impl.md"
+    "phase2_impl_plan": "plans/2026-02-14-phase2-text-recognizer-cell-cropping-impl.md",
+    "phase3_impl_plan": "plans/2026-02-15-phase3-column-detector-grid-integration.md"
   }
 }

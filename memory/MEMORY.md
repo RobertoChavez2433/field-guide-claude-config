@@ -13,6 +13,7 @@
 - RowClassifier (Phase 1A pre-column, Phase 1B post-column) classifies rows into 6 types
 - TableRegionDetector uses two-pass linear scan with cross-page header confirmation
 - **OCR Preprocessing**: Removed binarization — clean PDFs need grayscale + contrast only. Binarization destroyed 92% of image data.
+- **CRITICAL: img.getLuminance() broken on 1-channel images** — returns only 0.299*r (g=0, b=0 on 1-channel). Use `pixel.r` directly for grayscale pixel reading. This caused grid detection to fail (every pixel appeared "dark").
 - **Row Classifier**: Numeric content gate — DATA rows must have numeric values in qty/price/amount columns
 - **Post-Processing**: Validation validates item numbers (^\d+(\.\d+)?$) and units (57 known units)
 

@@ -6,6 +6,53 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 348 (2026-02-15)
+**Work**: Fixed column semantic mapping. Margin detection, anchor-relative inference, content validation. 324 tests pass.
+
+### Session 347 (2026-02-15)
+**Work**: Verified cell crop upscaling complete. Upscaling insufficient for narrow columns.
+
+### Session 346 (2026-02-15)
+**Work**: Fixed getLuminance bug. Grid detection 0→6 pages. Luminance diagnostic test.
+
+### Session 345 (2026-02-15)
+**Work**: Grid line detection implementation. Phase 1+2 code reviewed and fixed.
+
+### Session 344 (2026-02-15)
+**Work**: Brainstormed Phase 3 plan (ColumnDetectorV2 grid integration). 7 sections, ~10 design decisions. Explored column detector (1,158 lines), reviewed all test/golden patterns. Identified page 1 grid misclassification root cause.
+**Decisions**: Option D (grid boundaries + keywords). Per-page independent. Diagnostic mode (both paths run). Anchor validation-only. Density filtering for page 1. Replace stub entirely.
+**Next**: 1) Implement Phase 3 (A: grid fix, B: Layer 0, C: goldens) 2) Implement Phase 4 (pipeline wiring) 3) Benchmark accuracy
+
+### Session 343 (2026-02-15)
+**Work**: Code reviewed Phase 1 + Phase 2 implementations (2 parallel agents). Fixed 6 issues: mock type safety (dynamic→typed), DRY _median→MathUtils.median, pre-sort horizontal lines, remove redundant cast, add stageConfidence doc. 717 tests pass.
+**Decisions**: All mock overrides must use typed params (not dynamic). Shared MathUtils.median() is canonical median impl.
+**Next**: 1) Implement Phase 3 (ColumnDetectorV2 grid integration) 2) Implement Phase 4 (pipeline wiring + fixtures) 3) Benchmark accuracy
+
+### Session 342 (2026-02-14)
+**Work**: Brainstormed Phase 2 plan — cell-level cropping for TextRecognizerV2. Reviewed actual PDF, audited all 52 test files. Escalated from row to cell cropping for 100% accuracy. 10 design decisions, 19 new tests, 3 source files.
+**Decisions**: Cell-level crop (not row). PSM 7/6 adaptive. Grid-only OCR (drop boilerplate). No vertical line erasing. 2px padding. Sequential engine. PSM 4 fallback.
+**Next**: 1) Implement Phase 1 (GridLineDetector) 2) Implement Phase 2 (cell cropping) 3) Phases 3-4 (column integration + wiring)
+
+---
+
+## February 2026
+
+### Session 341 (2026-02-14)
+**Work**: Brainstormed Phase 1 implementation plan for GridLineDetector. Reviewed all stage patterns (models, tests, mocks, fixtures, diagnostics). Made 7 design decisions. Exported full plan with 17 tests, 9 files (3 new, 6 modified).
+**Decisions**: Plain name (no V2). compute() isolate. GridLines wrapper. toMap/fromMap included. 17 tests. All infrastructure in Phase 1. Fixture diagnostic only.
+**Next**: 1) Implement Phase 1 per plan 2) Continue Phases 2-4 3) Regenerate fixtures + validate accuracy
+
+### Session 340 (2026-02-14)
+**Work**: Fresh baseline (0/131 match, $0). Root-caused OCR garbage to PSM=6 on table pages. Researched PSM modes. Designed grid line detection + row-level OCR plan (4 phases).
+**Decisions**: OCR-only (no native text — CMap corruption). Tier 2: grid line detection → row cropping → PSM 7. Grid vertical lines feed column detection at 0.95 confidence. PSM 4 fallback for non-grid pages.
+**Next**: 1) Implement grid line detection plan (phases 1-4) 2) Regenerate fixtures 3) Validate accuracy improvement
+
+## February 2026
+
+### Session 339 (2026-02-14)
+**Work**: Status audit — verified OCR migration Phases 2-4 already implemented, PRD R1-R6 mostly complete. Moved 3 completed plans. Updated state files.
+**Decisions**: Focus on pipeline accuracy improvement as primary goal.
+
 ### Session 337 (2026-02-14)
 **Work**: Implemented full V2 extraction pipeline refactoring (28 findings, 7 phases). Created 6 new shared files, modified 30+ files, ~2,500 lines saved. Fixed 3 correctness bugs, eliminated ~500 lines of duplicated prod code, moved ~1,800 lines of dead tests.
 **Decisions**: `QualityThresholds` as single source of truth for score thresholds. `TextQualityAnalyzer` mixin for shared corruption detection. `Duration?` replaces mutable `Stopwatch` on `PipelineContext`. Shared mock stages for test reuse.

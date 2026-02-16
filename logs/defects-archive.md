@@ -4,6 +4,36 @@ Historical defects moved from per-feature defect files. Reference only.
 
 ---
 
+## Archived from _defects-pdf.md (2026-02-15, Session 349)
+
+### [DATA] 2026-02-14: ResultConverter Uses Substring Matching Instead of StageNames Constants
+**Pattern**: `ResultConverter` checked `stageName.contains('page_renderer')` which didn't match the actual `StageNames.pageRendering` value (`page_rendering`). OCR detection silently broken for V2 pipeline.
+**Prevention**: Always use `StageNames.*` constants for stage name comparisons. Never use substring/contains matching on stage names.
+**Ref**: @lib/features/pdf/services/extraction/pipeline/result_converter.dart
+
+---
+
+## Archived from _defects-pdf.md (2026-02-15, Session 348)
+
+### [DATA] 2026-02-14: QualityReport.isValid Rejects Valid Attempt-Exhausted Reports
+**Pattern**: `isValid` used hardcoded score-to-status mapping without considering `reExtractionAttempts`. Score 0.55 at attempt 2 should be `partialResult` (not `reExtract`), but `isValid` always expected `reExtract` for 0.45-0.64 range.
+**Prevention**: Centralize threshold logic in `QualityThresholds.statusForScore()` — never duplicate score-to-status mapping inline.
+**Ref**: @lib/features/pdf/services/extraction/shared/quality_thresholds.dart
+
+### [DATA] 2026-02-14: Divergent Threshold Constants Across 4 Files
+**Pattern**: Score thresholds 0.85/0.65/0.45 were hardcoded independently in `quality_report.dart`, `quality_validator.dart`, `extraction_metrics.dart`, and pipeline exit logic. Changes to one file didn't propagate.
+**Prevention**: Use `QualityThresholds.*` constants as single source of truth for all threshold comparisons.
+**Ref**: @lib/features/pdf/services/extraction/shared/quality_thresholds.dart
+
+---
+
+## Archived from _defects-pdf.md (2026-02-15, Session 347)
+
+### [DATA] 2026-02-06: Empty Uint8List Passes Null Guards But Crashes img.decodeImage()
+**Pattern**: Native text path creates `Uint8List(0)` per page. Code checks `if (bytes == null)` but empty list is not null — `img.decodeImage()` throws RangeError on empty bytes instead of returning null.
+**Prevention**: Always check `bytes == null || bytes.isEmpty` before passing to image decoders
+**Ref**: @lib/features/pdf/services/table_extraction/cell_extractor.dart:761, :920
+
 ## Archived from _defects-pdf.md (2026-02-14, Session 340)
 
 ### [DATA] 2026-02-06: OCR Used on Digital PDFs Without Trying Native Text First
