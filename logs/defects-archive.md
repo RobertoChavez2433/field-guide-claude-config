@@ -4,6 +4,20 @@ Historical defects moved from per-feature defect files. Reference only.
 
 ---
 
+## Archived from _defects-pdf.md (2026-02-17, Session 362)
+
+### [CONFIG] 2026-02-14: PSM=6 (Single Block) Destroys Table OCR on Full Pages
+**Pattern**: Default `OcrConfigV2(psmMode: 6)` tells Tesseract to treat entire page as one text block, disabling column detection. On table-heavy pages, reads across all 6 columns producing garbage. Also `pageSegMode` getter missing `case 4`.
+**Prevention**: Use PSM 7 (singleLine) per cell crop for table pages. Use PSM 4 (singleColumn) for non-table pages.
+**Ref**: @lib/features/pdf/services/extraction/ocr/tesseract_config_v2.dart:75,84-98
+
+### [DATA] 2026-02-15: Region Detector Ignores Grid Line Data — 0 Regions on Grid Pages
+**Pattern**: `RegionDetectorV2.detect()` only accepts `ClassifiedRows` and requires `RowType.header` rows to create table regions. Cell-cropped OCR fragments header text so row classifier finds 0 headers → 0 regions → 0 items.
+**Prevention**: Region detection should use grid line data as primary signal. Grid pages with `hasGrid=true` should produce table regions regardless of header detection.
+**Ref**: @lib/features/pdf/services/extraction/stages/region_detector_v2.dart:41-43,80
+
+---
+
 ## Archived from _defects-pdf.md (2026-02-15, Session 349)
 
 ### [DATA] 2026-02-14: ResultConverter Uses Substring Matching Instead of StageNames Constants

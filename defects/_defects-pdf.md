@@ -5,6 +5,16 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [DATA] 2026-02-17: Anti-Aliased Grid Line Fringes Survive Crop Insets — 155 Pipe Artifacts
+**Pattern**: `(lineWidth/2).ceil()+1` crop inset only covers the "dark core" (pixels < 128) of grid lines. Anti-aliased fringes at ~130-170 pixel values extend 1-2px beyond measured width. CropUpscaler magnifies these fringes up to 4x. Tesseract reads them as `|` with high confidence (avg 0.88). 155 of 162 pipe elements match vertical grid line X positions (95.7%). These pipes map to text-semantic columns, blocking V3 price continuation detection (`textPopulated.isEmpty` fails).
+**Prevention**: Use adaptive whitespace-scan insets instead of formula-based: scan from grid line center until pixel.r >= 230 (true white), cap at 5px. Sample at 3 positions per edge, take max. Implement in `text_recognizer_v2.dart:348-367`.
+**Ref**: @lib/features/pdf/services/extraction/stages/text_recognizer_v2.dart:348-367
+
+### [DATA] 2026-02-16: CropUpscaler numChannels Mismatch Causes Red Background
+**Pattern**: `img.Image()` defaults to `numChannels: 3` (RGB). When input crop is 1-channel grayscale (from `convert(numChannels: 1)`), the `image` package reads `.g=0`, `.b=0` from 1-channel pixels, so white (255) becomes `(r=255,g=0,b=0)` = pure red. `compositeImage` with `a=255` replaces destination entirely. Every upscaled cell crop sent to Tesseract had red background.
+**Prevention**: Always match `numChannels` when creating canvas images for compositing. Test with 1-channel inputs, not just default 3-channel. Existing tests missed this because they used `img.Image(width:, height:)` which defaults to 3 channels.
+**Ref**: @lib/features/pdf/services/extraction/shared/crop_upscaler.dart:71
+
 ### [DATA] 2026-02-15: ColumnDef.copyWith Cannot Set headerText to Null
 **Pattern**: `copyWith(headerText: null)` uses `headerText ?? this.headerText`, so null is indistinguishable from "not provided". Validation that needs to revert a semantic to null silently keeps the old value.
 **Prevention**: Use sentinel pattern (`Object? headerText = _sentinel`) in copyWith for nullable fields. Test that `copyWith(headerText: null)` actually produces null.
@@ -19,15 +29,5 @@ Archive: .claude/logs/defects-archive.md
 **Pattern**: `img.getLuminance(pixel)` computes `0.299*r + 0.587*g + 0.114*b`. On 1-channel images (from `convert(numChannels: 1)`), `pixel.g=0` and `pixel.b=0`, so white pixel (255) returns luminance 76 — below 128 "dark" threshold. Every pixel appears dark.
 **Prevention**: Use `pixel.r` directly for single-channel images, not `getLuminance()`. Always verify pixel reading functions handle single-channel images from the `image` package.
 **Ref**: @lib/features/pdf/services/extraction/stages/grid_line_detector.dart:224-229
-
-### [CONFIG] 2026-02-14: PSM=6 (Single Block) Destroys Table OCR on Full Pages
-**Pattern**: Default `OcrConfigV2(psmMode: 6)` tells Tesseract to treat entire page as one text block, disabling column detection. On table-heavy pages (2-6 of Springfield), reads across all 6 columns producing garbage (`I hc J IAA HS AT IE:`). Also `pageSegMode` getter missing `case 4` — PSM 4 silently falls to default singleBlock.
-**Prevention**: Use PSM 7 (singleLine) per row crop for table pages. Use PSM 4 (singleColumn) for non-table pages. Add all PSM cases to the getter. Never use PSM 6 on table-structured content.
-**Ref**: @lib/features/pdf/services/extraction/ocr/tesseract_config_v2.dart:75,84-98
-
-### [DATA] 2026-02-15: Region Detector Ignores Grid Line Data — 0 Regions on Grid Pages
-**Pattern**: `RegionDetectorV2.detect()` only accepts `ClassifiedRows` and requires `RowType.header` rows to create table regions. Cell-cropped OCR fragments header text ("IB" instead of "Item No.") so row classifier finds 0 headers → 0 regions → 0 items. Grid detector already knows all 6 pages are tables but this data is never passed to the region detector.
-**Prevention**: Region detection should use grid line data as a primary signal for table presence. Grid pages with `hasGrid=true` should produce table regions regardless of header row detection. Design options in `plans/2026-02-15-grid-aware-region-detection-design.md`.
-**Ref**: @lib/features/pdf/services/extraction/stages/region_detector_v2.dart:41-43,80
 
 <!-- Add defects above this line -->
