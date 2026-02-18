@@ -6,6 +6,32 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 357 (2026-02-16)
+**Work**: Root cause analysis of 5 problems -> Problem A (red bg in CropUpscaler) is the single root cause. Fixed with `numChannels: resized.numChannels`. Regenerated fixtures. Pipeline: 137 parsed items, 87/131 GT matches (66%), quality 0.748.
+**Decisions**: Problem A fixed. B (DPI 300) is intentional. C (source_dpi) is metadata-only. D+E resolved by fixing A.
+**Next**: Row merging, item# OCR noise cleanup, row classification tuning.
+
+### Session 355 (2026-02-16)
+**Work**: Systematic debugging of stage trace. Root cause: PSM 7 on full-row strips can't handle grid lines.
+**Decisions**: Cell-level OCR is the fix.
+**Next**: Implement cell-level OCR (was already done)
+
+---
+
+## February 2026
+
+### Session 354 (2026-02-16)
+**Work**: Regenerated fixtures with ROW-STRIP code. 27 items, 26/131 GT matches (20%).
+**Decisions**: Row classifier is #1 blocker.
+
+### Session 353 (2026-02-16)
+**Work**: Implemented diagnostic image capture system. 14 JSON fixtures, onDiagnosticImage callback.
+**Decisions**: Raw images only. Images gitignored.
+
+### Session 352 (2026-02-15)
+**Work**: Traced pipeline failure cascade. 0 header rows → 0 regions → everything empty.
+**Decisions**: Synthetic regions is Priority 1.
+
 ### Session 350 (2026-02-15)
 **Work**: Deep OCR brainstorming. Traced actual data through pipeline. Researched community practices, cross-platform OCR, cloud OCR pricing, opencv_dart, textify. Established 3-step escalation path.
 **Decisions**: Row-strip OCR first (zero deps). opencv_dart if needed. Cloud Vision as last resort.

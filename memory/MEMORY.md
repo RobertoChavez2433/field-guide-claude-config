@@ -15,6 +15,7 @@
 - **OCR Preprocessing**: Removed binarization — clean PDFs need grayscale + contrast only. Binarization destroyed 92% of image data.
 - **Diagnostic Image Capture**: `onDiagnosticImage` callback in pipeline captures raw PNGs at 4 stages (rendered, preprocessed, strip_raw, strip_ocr). Plus 4 new JSON fixtures (rendering metadata, preprocessing stats, OCR metrics, Phase 1B refinement). Images saved to `test/features/pdf/extraction/fixtures/diagnostic_images/` (gitignored). Run fixture generator to populate.
 - **CRITICAL: img.getLuminance() broken on 1-channel images** — returns only 0.299*r (g=0, b=0 on 1-channel). Use `pixel.r` directly for grayscale pixel reading. This caused grid detection to fail (every pixel appeared "dark").
+- **CRITICAL: img.Image() defaults numChannels=3** — When creating canvas for compositing 1-channel crops, MUST pass `numChannels: crop.numChannels`. Otherwise white (255) reads as (r=255,g=0,b=0) = red. compositeImage alpha-blends with a=255, replacing destination entirely. This broke ALL cell OCR for sessions 342-356.
 - **Row Classifier**: Numeric content gate — DATA rows must have numeric values in qty/price/amount columns
 - **Post-Processing**: Validation validates item numbers (^\d+(\.\d+)?$) and units (57 known units)
 
