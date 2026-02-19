@@ -53,7 +53,7 @@
     "phase_name": "Strict-Gate Recovery After Drift Fix",
     "status": "Core drift/inset fix is implemented and strict scorecard gates are enabled. Current outputs miss 131/131 + 0 LOW/BUG targets and require upstream recovery.",
     "plan_file": "plans/2026-02-19-drift-offset-fix-and-dynamic-inset.md",
-    "brainstorming_file": "plans/2026-02-17-header-consolidation-stage.md",
+    "brainstorming_file": "plans/completed/2026-02-17-header-consolidation-stage.md",
     "escalation_path": "1) Regenerate fixtures with valid SPRINGFIELD_PDF define 2) Recover upstream row/amount extraction to 131/131 3) Eliminate LOW/BUG rows under strict scorecard 4) Re-run extraction and stage trace suites until green",
     "diagnostic_fixtures": 27,
     "diagnostic_images": "1656 PNGs (rendered=6, preprocessed=6, stage diagnostics/crops)",

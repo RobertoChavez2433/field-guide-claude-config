@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 379 (2026-02-19)
+**Work**: Root-cause confirmation for pipe artifacts tied to inset frame mismatch.
+
 ### Session 376 (2026-02-18)
 **Work**: Systematic debugging of bid_amount gap identified whitespace inset/cropping path as root cause candidate; fix attempts were reverted and blocker documented.
 
