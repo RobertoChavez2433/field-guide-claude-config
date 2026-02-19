@@ -22,7 +22,7 @@ lib/features/pdf/
 
 ### Template Location
 - Templates: `assets/templates/*.pdf`
-- Form definitions: `lib/features/pdf/data/services/form_field_mappings.dart`
+- Form field mappings are defined inline in `lib/features/pdf/services/pdf_service.dart`
 
 ## PDF Template Field Mapping
 

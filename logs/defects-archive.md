@@ -4,6 +4,34 @@ Historical defects moved from per-feature defect files. Reference only.
 
 ---
 
+## Archived from _defects-pdf.md (2026-02-19, Session 381)
+
+### [DATA] 2026-02-15: ColumnDef.copyWith Cannot Set headerText to Null
+**Pattern**: `copyWith(headerText: null)` uses `headerText ?? this.headerText`, so null is indistinguishable from "not provided". Validation that needs to revert a semantic to null silently keeps the old value.
+**Prevention**: Use sentinel pattern (`Object? headerText = _sentinel`) in copyWith for nullable fields. Test that `copyWith(headerText: null)` actually produces null.
+**Ref**: @lib/features/pdf/services/extraction/models/column_map.dart:28-40
+
+---
+
+## Archived from _defects-pdf.md (2026-02-18, Session 375)
+
+### [DATA] 2026-02-15: Blind Position Fallback Maps Margins as Data Columns
+**Pattern**: `_mapColumnSemantics` in row_parser used `standardOrder[i]` fallback when headerText is null, mapping narrow margin columns (5.3% width page-edge gutters) as 'itemNumber'. Grid creates 8 columns from 7 lines but 2 are margins.
+**Prevention**: Never use position-based semantic guessing. Column detector should provide all semantics via header OCR + anchor-relative inference + content validation. Row parser should skip null-header columns.
+**Ref**: @lib/features/pdf/services/extraction/stages/row_parser_v2.dart:400-418
+**Archive note**: Superseded by Row Parser V3 migration and V2 parser removal in Session 375.
+
+---
+
+## Archived from _defects-pdf.md (2026-02-18, Session 373)
+
+### [DATA] 2026-02-15: img.getLuminance() Fails on 1-Channel Images
+**Pattern**: `img.getLuminance(pixel)` computes `0.299*r + 0.587*g + 0.114*b`. On 1-channel images (from `convert(numChannels: 1)`), `pixel.g=0` and `pixel.b=0`, so white pixel (255) returns luminance 76 — below 128 "dark" threshold. Every pixel appears dark.
+**Prevention**: Use `pixel.r` directly for single-channel images, not `getLuminance()`. Always verify pixel reading functions handle single-channel images from the `image` package.
+**Ref**: @lib/features/pdf/services/extraction/stages/grid_line_detector.dart:224-229
+
+---
+
 ## Archived from _defects-pdf.md (2026-02-17, Session 362)
 
 ### [CONFIG] 2026-02-14: PSM=6 (Single Block) Destroys Table OCR on Full Pages

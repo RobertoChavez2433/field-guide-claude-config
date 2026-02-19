@@ -52,9 +52,19 @@
       "mcp__plugin_context7_context7__resolve-library-id",
       "Write",
       "Edit",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "mcp__dart-mcp__analyze_files",
+      "Bash(pwsh.exe -NoProfile -File \"C:\\\\Users\\\\rseba\\\\Projects\\\\Field Guide App\\\\tools\\\\analyze_classified_rows.ps1\":*)",
+      "WebFetch(domain:docs.opencv.org)"
     ]
   },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "dart-mcp"
+  ],
   "spinnerTipsEnabled": true,
   "prefersReducedMotion": true
 }

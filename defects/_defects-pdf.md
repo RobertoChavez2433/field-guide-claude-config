@@ -5,29 +5,43 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
-### [DATA] 2026-02-17: Anti-Aliased Grid Line Fringes Survive Crop Insets — 155 Pipe Artifacts
-**Pattern**: `(lineWidth/2).ceil()+1` crop inset only covers the "dark core" (pixels < 128) of grid lines. Anti-aliased fringes at ~130-170 pixel values extend 1-2px beyond measured width. CropUpscaler magnifies these fringes up to 4x. Tesseract reads them as `|` with high confidence (avg 0.88). 155 of 162 pipe elements match vertical grid line X positions (95.7%). These pipes map to text-semantic columns, blocking V3 price continuation detection (`textPopulated.isEmpty` fails).
-**Prevention**: Use adaptive whitespace-scan insets instead of formula-based: scan from grid line center until pixel.r >= 230 (true white), cap at 5px. Sample at 3 positions per edge, take max. Implement in `text_recognizer_v2.dart:348-367`.
-**Ref**: @lib/features/pdf/services/extraction/stages/text_recognizer_v2.dart:348-367
+### [QUALITY] 2026-02-19: Permissive Scorecard Assertions Can Hide Real Extraction Regressions
+**Pattern**: Stage trace scorecard assertions allowed degraded outputs (`parsed>=126`, `withAmount>=122`, `bugCount<=2`) to pass, creating false-green confidence while pipeline quality remained below target.
+**Prevention**: Keep strict gates aligned to target outcomes (`parsed>=131`, `withAmount>=131`, `bugCount==0`, `lowCount==0`) and treat failures as upstream blockers instead of relaxing assertions.
+**Ref**: @test/features/pdf/extraction/golden/stage_trace_diagnostic_test.dart:3900-3905
+
+### [QUALITY] 2026-02-18: RowParserV3 Stage Confidence Can Mask High Skip Rates
+**Pattern**: `RowParserV3` computes `StageReport.stageConfidence` from confidences of emitted items, while excluded/skipped rows do not reduce that value. A run can report high stage confidence even when many input rows are skipped.
+**Prevention**: Include skip/exclusion ratio as a penalty term in stage confidence, or raise warning severity / fail guard when `excludedCount / inputCount` exceeds threshold.
+**Ref**: @lib/features/pdf/services/extraction/stages/row_parser_v3.dart:241-279
+
+### [DATA] 2026-02-18: Relaxed/Rescue PriceContinuation Gates Can Misclassify Rows When Item-Number Semantic Is Missing
+**Pattern**: Mixed text+price rows can be incorrectly promoted to `priceContinuation` if `itemNumber` semantic is absent from `columnMap` (or unset per-page). In that case `hasItemNumber` is always false, so continuation gates may absorb legitimate base rows into prior items.
+**Prevention**: Require `zones.itemNumberColumn != null` before relaxed mixed-text price-continuation gate and boilerplate rescue sweep are allowed. Add explicit test coverage for missing-item-semantic behavior.
+**Ref**: @lib/features/pdf/services/extraction/stages/row_classifier_v3.dart:284,376
+
+### [DATA] 2026-02-19: _correctEdgePosForLineDrift Returns Inset in Wrong Coordinate Frame
+**Status**: FIXED (Session 381). Drift correction removed, baselineInset updated. Pipe artifacts: 0.
+**Ref**: @lib/features/pdf/services/extraction/stages/text_recognizer_v2.dart:708-756
+
+### [RESOLVED] 2026-02-19: Tesseract Produced Garbage for Items 64, 74, 75, 77 — Grid Line Fringe + baselineInset Floor
+**Status**: FIXED (Session 383). All 4 items recovered. 131/131 GT matched, 0 bogus.
+**Root cause (confirmed)**: Two-layer failure:
+1. `_scanRefinedInsetAtProbe` had `plannedDepth = w+aa+3 = 6` for width-2 horizontal lines on page 3. Anti-aliased fringe extended exactly 6 dark pixels → scan returned null → fell back to `baselineInset = 3` (insufficient to clear fringe).
+2. Line 745 used `baselineInset` as a FLOOR on all scan results, overriding dynamic measurements.
+3. Residual fringe pixels, after 2.3x upscaling, became a prominent dark bar. PSM 7 read the bar as "al"/"ot"/"re"/"or" instead of the actual digits above.
+**Fix**: Increased `plannedDepth` to `w+aa+5`. Removed `baselineInset` floor (line 745). Scan results now trusted.
+**Ref**: @lib/features/pdf/services/extraction/stages/text_recognizer_v2.dart:724-744
+
+### [DATA] 2026-02-19: Items 29, 113 bid_amount — Text Touches Grid Line Fringe Zone
+**Pattern**: Right vertical lines on pages 1, 4 are width=5 (thickest in document). Bid amount text ($7,026.00, $2,000.00) physically extends into the grid line fringe zone. No pixel-threshold inset can distinguish fringe from content. Diagnostic images show last `0` half-cut.
+**Prevention**: OpenCV morphological line removal (`adaptiveThreshold` + `morphologyEx(MORPH_OPEN)`) can erase grid lines by shape without touching adjacent text.
+**Status**: Open. Pre-existing (items were empty/null in committed HEAD). OpenCV integration planned for next session.
+**Ref**: Diagnostic images `page_1_row_24_col_5_*.png`, `page_4_row_27_col_5_*.png`
 
 ### [DATA] 2026-02-16: CropUpscaler numChannels Mismatch Causes Red Background
 **Pattern**: `img.Image()` defaults to `numChannels: 3` (RGB). When input crop is 1-channel grayscale (from `convert(numChannels: 1)`), the `image` package reads `.g=0`, `.b=0` from 1-channel pixels, so white (255) becomes `(r=255,g=0,b=0)` = pure red. `compositeImage` with `a=255` replaces destination entirely. Every upscaled cell crop sent to Tesseract had red background.
 **Prevention**: Always match `numChannels` when creating canvas images for compositing. Test with 1-channel inputs, not just default 3-channel. Existing tests missed this because they used `img.Image(width:, height:)` which defaults to 3 channels.
 **Ref**: @lib/features/pdf/services/extraction/shared/crop_upscaler.dart:71
-
-### [DATA] 2026-02-15: ColumnDef.copyWith Cannot Set headerText to Null
-**Pattern**: `copyWith(headerText: null)` uses `headerText ?? this.headerText`, so null is indistinguishable from "not provided". Validation that needs to revert a semantic to null silently keeps the old value.
-**Prevention**: Use sentinel pattern (`Object? headerText = _sentinel`) in copyWith for nullable fields. Test that `copyWith(headerText: null)` actually produces null.
-**Ref**: @lib/features/pdf/services/extraction/models/column_map.dart:28-40
-
-### [DATA] 2026-02-15: Blind Position Fallback Maps Margins as Data Columns
-**Pattern**: `_mapColumnSemantics` in row_parser used `standardOrder[i]` fallback when headerText is null, mapping narrow margin columns (5.3% width page-edge gutters) as 'itemNumber'. Grid creates 8 columns from 7 lines but 2 are margins.
-**Prevention**: Never use position-based semantic guessing. Column detector should provide all semantics via header OCR + anchor-relative inference + content validation. Row parser should skip null-header columns.
-**Ref**: @lib/features/pdf/services/extraction/stages/row_parser_v2.dart:400-418
-
-### [DATA] 2026-02-15: img.getLuminance() Fails on 1-Channel Images
-**Pattern**: `img.getLuminance(pixel)` computes `0.299*r + 0.587*g + 0.114*b`. On 1-channel images (from `convert(numChannels: 1)`), `pixel.g=0` and `pixel.b=0`, so white pixel (255) returns luminance 76 — below 128 "dark" threshold. Every pixel appears dark.
-**Prevention**: Use `pixel.r` directly for single-channel images, not `getLuminance()`. Always verify pixel reading functions handle single-channel images from the `image` package.
-**Ref**: @lib/features/pdf/services/extraction/stages/grid_line_detector.dart:224-229
 
 <!-- Add defects above this line -->

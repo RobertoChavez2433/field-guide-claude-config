@@ -63,6 +63,7 @@ lib/
 | `systematic-debugging` | Root cause analysis | qa-testing-agent |
 | `interface-design` | Design system | frontend-flutter-specialist |
 | `pdf-processing` | CLI PDF analysis/debugging | pdf-agent |
+| `dispatching-parallel-agents` | Coordinate parallel agents, prevent revert conflicts | planning-agent |
 | `resume-session` | Load HOT context on session start | User-invoked |
 | `end-session` | Session handoff with auto-archiving | User-invoked |
 
@@ -228,12 +229,12 @@ Screen -> Provider -> Repository -> SQLite (local) -> Supabase (sync)
 
 ## Audit System & Lint Suggestions
 
-**Active plan**: `.claude/plans/2026-02-15-audit-system-design.md`
+**Backlogged plan**: `.claude/backlogged-plans/2026-02-15-audit-system-design.md`
 
 ### Git Workflow (Feature Branch + PR)
 - Work on feature branches, never commit directly to main
 - Use `gh pr create` to open PRs, `gh pr merge --squash` to merge
-- Pre-commit hook at `tools/audit/pre-commit.sh` validates every commit
+- Pre-commit hook at `tools/audit/pre-commit.sh` validates every commit (not yet implemented)
 - CI (`quality-gate.yml`) must pass before merging to main
 
 ### Lint Rule Suggestions (Per-Session Check)
@@ -244,9 +245,28 @@ Each session, after completing implementation work, check:
 4. Reference: 68 existing checks in the audit system plan
 
 ### Pre-Commit Hook
-- Location: `tools/audit/pre-commit.sh` (symlinked from `.git/hooks/pre-commit`)
-- Setup: Run `tools/audit/setup-hooks.sh` once after cloning
+- Location: `tools/audit/pre-commit.sh` (symlinked from `.git/hooks/pre-commit`) **(not yet implemented)**
+- Setup: Run `tools/audit/setup-hooks.sh` once after cloning **(not yet implemented)**
+- Hook scripts do not yet exist on disk. Run `tools/audit/setup-hooks.sh` once they are created.
 - Bypass (WIP only): `git commit --no-verify` (CI will still catch issues)
+
+## Reporting Preferences
+
+### Pipeline Scorecard & GT Trace Display
+When the user asks to see the scorecard or ground truth trace items, ALWAYS present them in **markdown table format**:
+- **Scorecard**: Table with columns `| # | Stage | Metric | Expected | Actual | % | Status |`. Bold the rows with LOW or BUG status.
+- **GT Item Traces**: Table with columns `| Item# | Layer | Description | Unit | Qty | Price | Amount |`. Each GT item gets 4 rows (Ground Truth, Cell Grid 4D, Parsed 4E, Processed 5).
+- **Bogus Items**: Table with columns `| Item# | Description | Unit | Qty | Price | Amount | Fields |`.
+- Never dump raw test output. Always format into tables.
+
+### CRITICAL: Regenerate Fixtures Before Scorecard/Stage Trace Work
+**ALWAYS regenerate Springfield fixtures before running the stage trace diagnostic test or presenting scorecard results.** Stale fixtures from older code versions produce misleading results and waste significant debugging time. The regeneration command is:
+```
+pwsh -Command "flutter test integration_test/generate_golden_fixtures_test.dart -d windows --dart-define='SPRINGFIELD_PDF=C:\Users\rseba\OneDrive\Desktop\864130 Springfield DWSRF Water System Improvements CTC [16-23] Pay Items.pdf'"
+```
+- If any pipeline code has changed since last fixture generation, fixtures MUST be regenerated first
+- Do NOT analyze scorecard failures against stale fixtures — regenerate, THEN diagnose
+- Fixture regeneration takes ~2-3 minutes; skipping it can waste hours of debugging
 
 ## Context Efficiency
 

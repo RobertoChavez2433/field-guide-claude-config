@@ -14,6 +14,12 @@
 - TableRegionDetector uses two-pass linear scan with cross-page header confirmation
 - **OCR Preprocessing**: Removed binarization — clean PDFs need grayscale + contrast only. Binarization destroyed 92% of image data.
 - **Diagnostic Image Capture**: `onDiagnosticImage` callback in pipeline captures raw PNGs at 4 stages (rendered, preprocessed, strip_raw, strip_ocr). Plus 4 new JSON fixtures (rendering metadata, preprocessing stats, OCR metrics, Phase 1B refinement). Images saved to `test/features/pdf/extraction/fixtures/diagnostic_images/` (gitignored). Run fixture generator to populate.
+- **Current baseline (2026-02-19, Session 383)**: Scorecard `54 OK / 1 LOW / 0 BUG`, quality `0.977`, parsed `131/131`, GT matched `131/131`, bid_amount `129/131`.
+- **Grid line positions are accurate to <1px** — `grid_line_detector.dart` reports line CENTER (midpoint of dark pixel run). Cell boundaries placed at line centers. `edgePos = floor(center * imageWidth)`. Max structural drift < 1px (floor rounding only).
+- **Drift correction REMOVED** (Session 380-383): `_correctEdgePosForLineDrift` caused 35 pipe artifacts. Now scan directly from edgePos.
+- **Inset algorithm** (Session 383): `_computeLineInset` uses `plannedDepth = w+aa+5`, `baselineInset = ceil(w/2)+ceil(w*0.25)+1`. REMOVED the `baselineInset` floor — scan p75 result is trusted directly. This fixed 4 missing items (ghost OCR from thin-line fringe).
+- **Pixel-threshold scanning limit**: When text physically touches grid line fringe (items 29, 113 bid_amount), no threshold can distinguish them. Need OpenCV morphological line removal.
+- **OpenCV candidate**: `opencv_dart` v2.2.1+3 — FFI-based, Windows/Android/iOS, Dart 3.10+. Morphological `MORPH_OPEN` with directional kernels detects lines by shape. `adaptiveThreshold` handles AA natively.
 - **CRITICAL: img.getLuminance() broken on 1-channel images** — returns only 0.299*r (g=0, b=0 on 1-channel). Use `pixel.r` directly for grayscale pixel reading. This caused grid detection to fail (every pixel appeared "dark").
 - **CRITICAL: img.Image() defaults numChannels=3** — When creating canvas for compositing 1-channel crops, MUST pass `numChannels: crop.numChannels`. Otherwise white (255) reads as (r=255,g=0,b=0) = red. compositeImage alpha-blends with a=255, replacing destination entirely. This broke ALL cell OCR for sessions 342-356.
 - **Row Classifier**: Numeric content gate — DATA rows must have numeric values in qty/price/amount columns

@@ -21,6 +21,7 @@ Never overwhelm with a list of questions. Each message should advance understand
 2. **Multiple choice > open-ended** - Reduces cognitive load, surfaces options
 3. **Incremental validation** - Break designs into digestible sections
 4. **Document decisions** - Export to `.claude/plans/` for handoff
+5. **YAGNI** - Ruthlessly remove unnecessary features during design. Don't design for hypothetical requirements.
 
 ## Three Phases
 

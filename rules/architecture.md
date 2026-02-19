@@ -150,8 +150,6 @@ Reference: `lib/features/photos/data/models/photo.dart:1-65`
 
 Group related exports in a single file for cleaner imports.
 
-Reference: `lib/data/models/models.dart` (legacy barrel export for backward compatibility).
-
 ## Enum Handling
 
 Enums serialized/deserialized using `.name` and `.values.byName()`:

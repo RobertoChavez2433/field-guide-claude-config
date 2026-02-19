@@ -1,122 +1,119 @@
 # Session State
 
-**Last Updated**: 2026-02-17 | **Session**: 363
+**Last Updated**: 2026-02-19 | **Session**: 383
 
 ## Current Phase
-- **Phase**: Pipeline Architecture — Row Merger Header Fix + Remaining Quality Gaps
-- **Status**: Two major fixes landed (adaptive whitespace-scan insets + grid margin fix). Scorecard improved from 31/5/12 to 38/8/2. BLOCKER: row merger doesn't merge consecutive header rows.
+- **Phase**: Pipeline Quality - OpenCV Integration Planning
+- **Status**: Inset algorithm improved (131/131 items, 0 BUG). Remaining gap: 2 bid_amounts need OpenCV morphological line removal. 8 test expectations need updating.
 
-## HOT CONTEXT — Resume Here
+## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (363)
+### What Was Done This Session (383)
 
-#### 1. Implemented Adaptive Whitespace-Scan Insets (RC1 Fix)
-- Added `_scanWhitespaceInset` static method to `TextRecognizerV2` (`text_recognizer_v2.dart:582-632`)
-- Scans from grid line edge inward until pixel.r >= 230, samples at 3 positions (25/50/75%), takes max, caps at 5px
-- Replaced formula-based `(lineWidth/2).ceil()+1` insets at lines 348-367
-- **Impact**: Boilerplate rows dropped from 134 → 21. Data rows hit 131 (target). Price continuation jumped from 29 → 114.
+#### 1. Root Cause Investigation — 4 Missing Items (64, 74, 75, 77)
+- Dispatched 5 parallel agents to trace the full pipeline upstream.
+- **Root cause chain (confirmed)**: Anti-aliased grid line fringe pixels survive the inset algorithm → PSM 7 reads the fringe as garbage ("al", "ot", "re", "or") → rows misclassified as `priceContinuation` → row merger absorbs them into preceding items → 4 items lost, 3 bogus items created.
+- Page 3 has width-2 horizontal lines. The `_scanRefinedInsetAtProbe` had `plannedDepth = w+aa+3 = 6` which exactly matched the anti-aliased dark extent → scan returned null → fell back to `baselineInset = 3` (insufficient).
+- Additionally, line 745 used `baselineInset` as a FLOOR on all scan results, overriding dynamic measurements.
 
-#### 2. Fixed Grid Line Detector Page Margin Filter
-- Changed `kPageMargin` from 0.05 → 0.01 in `grid_line_detector.dart:21`
-- The top horizontal line of the header row on pages 1-5 sits at Y≈0.044, which was filtered out by the 0.05 margin
-- Updated test at `stage_2b_grid_line_detector_test.dart:233-246` to use 0.005/0.01 thresholds
-- **Impact**: Headers now detected on all 6 pages (17 raw header rows across 6 pages)
+#### 2. Inset Algorithm Fix (2 code changes)
+- `plannedDepth`: `w + aa + 3` → `w + aa + 5` (scan has room to find line end for thin lines)
+- Removed `baselineInset` floor on line 745: scan results are now trusted, not overridden
+- `baselineInset` kept at `+1` (conservative fallback for when scan returns null)
 
-#### 3. Updated Golden Test Expectations
-- `springfield_golden_test.dart:163`: quality baseline updated from `closeTo(0.794, 0.02)` → `closeTo(0.902, 0.02)`, status from `reviewFlagged` → `autoAccept`
+#### 3. Results After Fix
+- **131/131 items parsed** (was 127), **131/131 GT matched** (was 124), **0 bogus** (was 3)
+- **Checksum PASS** (was FAIL), **0 BUG** (was 2), quality **0.977** (was 0.916)
+- **54 OK / 1 LOW / 0 BUG** (was 48 OK / 5 LOW / 2 BUG)
+- bid_amount: 129/131 (was 124) — 2 remaining are pre-existing
 
-#### 4. Investigated Row Merger — Found BLOCKER
-- Row merger (`row_merger.dart:53-57`) passes header rows through individually — no merging of consecutive headers
-- Pages 1-5 have 3 header rows each (row grouper splits multi-line header "Item\nNo." into 3 physical rows)
-- Result: 17 merged header rows instead of 6 (one logical header per page)
-- All other row types merge correctly: data✓, priceContinuation✓, descContinuation✓, boilerplate✓, total✓
+#### 4. Pre-existing bid_amount Gap (Items 29, 113)
+- Diagnostic images show `$7,026.00` and `$2,000.00` with last `0` half-cut at right crop edge
+- Right vertical lines on pages 1, 4 are width=5 (thickest in document)
+- Text physically extends into the grid line fringe zone — no inset value can distinguish fringe from content
+- **This is a fundamental limit of pixel-threshold scanning** — confirmed pre-existing (items were empty/null in committed HEAD too)
 
-#### 5. Upstream Classifier Issue Noted
-- ~7 rows on page 1 containing price data (`$334.00`, `$500.00`, `$3,513.00`) classified as boilerplate instead of priceContinuation
-- Part of the remaining 21 boilerplate rows — likely RC2 remnants (row grouping splits)
+#### 5. OpenCV Research
+- `opencv_dart` v2.2.1+3 is the recommended package — FFI-based, Windows/Android/iOS, Dart 3.10+ compatible
+- **Morphological line removal** would solve both the fringe issue and the over-cropping issue:
+  - `adaptiveThreshold` handles anti-aliasing natively (local neighborhoods, not fixed threshold)
+  - `morphologyEx(MORPH_OPEN)` with directional kernels detects lines by SHAPE, not position
+  - Can remove grid lines without touching adjacent text
+- Would replace ~200 lines of inset scanning with ~20 lines of OpenCV calls
+- Performance: ~500ms for full document (vs ~5s current Dart pixel scanning)
+- Binary size: +15-30MB (mitigated by selective module inclusion)
+
+#### 6. Test Status
+- 848 pass, 8 fail in extraction suite
+- 6 failures: `whitespace_inset_test.dart` — test expectations for old algorithm behavior (need updating)
+- 1 failure: scorecard strict gate (1 LOW for quality status label "autoAccept" vs "acceptable")
+- 1 failure: golden baseline (needs fixture regeneration)
 
 ### What Needs to Happen Next
 
-1. **BLOCKER: Merge consecutive header rows** in `row_merger.dart` — when consecutive header rows are on the same page, merge elements into one logical header row. Expected: 17 → 6 headers.
-2. **Regenerate fixtures** after merger fix, re-run scorecard
-3. **Investigate 21 remaining boilerplate rows** — some contain valid price data misclassified by the classifier (RC2: row grouping splits multi-line cells)
-4. **Address Stage 14 Cell Extraction split rows BUG** — header content appearing as orphaned split artifacts
-5. **Close the $609K checksum gap** (7.74%) — unit_price OCR gaps on ~28 items
+1. **Plan OpenCV integration** — design the `GridLineRemover` stage using `opencv_dart` morphological operations
+2. **Update 6 whitespace_inset_test expectations** to match new algorithm (no baselineInset floor, increased plannedDepth)
+3. **Update scorecard Quality Status expectation** from "acceptable" to "autoAccept" (or fix upstream)
+4. **Update golden baseline** test
+5. Consider whether to keep or simplify the inset algorithm once OpenCV handles line removal
 
 ## Blockers
 
-### BLOCKER: Row Merger Does Not Merge Consecutive Headers
-- **File**: `row_merger.dart:53-57`
-- **Problem**: `case RowType.header` passes through individually, never merges consecutive headers on same page
-- **Impact**: 17 header rows instead of 6, inflated merged row count, partial column names in cell extraction
-- **Fix**: Check if previous merged row is also header on same page → append elements instead of creating new row
-- **Scope**: Only headers affected. Data/continuation/boilerplate/total all work correctly.
+### BLOCKER-5: 2 Pre-existing bid_amount Gaps (Items 29, 113) — REDUCED
+**Impact**: 129/131 bid_amount. $9,026 delta. Items have text physically touching grid line fringe zone.
+**Root cause**: Pixel-threshold scanning cannot distinguish grid line fringe from adjacent text content.
+**Fix**: OpenCV morphological line removal (planned for next session).
+**Status**: Open. Reduced from 7 missing items to 2.
+
+### BLOCKER-6: Global Test Suite Has Unrelated Existing Failures
+**Impact**: Full-repo flutter test remains non-green outside extraction scope.
+**Status**: Pre-existing/unrelated.
+
+### BLOCKER-7: Fixture Generator Requires SPRINGFIELD_PDF Runtime Define
+**Impact**: Fixtures must be regenerated manually via dart-define.
+**Status**: Mitigated.
+
+### BLOCKER-8: 8 Extraction Test Expectations Stale
+**Impact**: 6 whitespace_inset_tests + 1 golden baseline + 1 scorecard gate need updating for new algorithm.
+**Status**: Open. Quick fix — test expectation updates only, no code changes.
 
 ## Recent Sessions
 
-### Session 363 (2026-02-17)
-**Work**: Implemented adaptive whitespace-scan insets (RC1 fix). Fixed grid line detector kPageMargin 0.05→0.01 (unblocked per-page header detection). Audited row merger — found header merging blocker. Updated golden test expectations.
-**Scorecard**: 38 OK / 8 LOW / 2 BUG (was 31/5/12). Quality 0.903. 130 items extracted.
-**Decisions**: Per-page header detection works. Label propagation not needed (grid_line method gets 36/36 labels independently). Row merger header fix is next blocker.
-**Next**: 1) Fix header merging in row_merger.dart 2) Regenerate fixtures 3) Investigate remaining 21 boilerplate rows.
+### Session 383 (2026-02-19)
+**Work**: Root-caused 4 missing items to anti-aliased grid line fringe + baselineInset floor. Fixed with 2 code changes. Recovered 131/131 items, 0 BUG. Investigated remaining 2 bid_amounts — pre-existing, need OpenCV. Researched opencv_dart package.
+**Decisions**: OpenCV morphological line removal is the path forward for the last 2 bid_amounts. Keep inset fix. Next session: plan OpenCV integration.
+**Scorecard**: 54 OK / 1 LOW / 0 BUG (was 48/5/2).
 
-### Session 362 (2026-02-17)
-**Work**: Full root cause analysis of row classifier boilerplate problem. 3 parallel agents researched V3 logic, fixture data, upstream stages. Found RC1: anti-aliased grid line bleed (155/162 pipes at grid line positions). Designed adaptive whitespace-scan inset fix. Verified gray header fill is not a concern via diagnostic images.
-**Decisions**: RC1 (pipe artifacts from anti-aliased grid line fringes) is the #1 upstream fix. Implement adaptive whitespace-scan insets in text_recognizer_v2.dart. Cap at 5px, sample 3 positions per edge.
-**Next**: 1) Implement whitespace-scan insets 2) Regenerate fixtures 3) Address RC2/RC3 if needed.
+### Session 382 (2026-02-19)
+**Work**: Deep investigation of 7 missing GT items. Discovered mystery: Tesseract produces garbage for 4 cells despite clear diagnostic images.
+**Next**: Debug OCR-to-element mapping path.
 
-### Session 361 (2026-02-17)
-**Work**: Regenerated fixtures. Ran stage trace + golden tests (all pass). Scorecard: 31 OK/5 LOW/12 BUG. Identified first upstream BUG at Stage 08 price continuation (47%).
-**Decisions**: Debug row_classifier_v3.dart price continuation logic next. Upstream-first approach.
-**Next**: Fix price continuation detection in V3 classifier, fix header detection (2/6 pages).
+### Session 381 (2026-02-19)
+**Work**: Implemented drift-offset plan, tightened scorecard thresholds.
 
-### Session 360 (2026-02-16)
-**Work**: Ran scorecard (22 OK/4 LOW/22 BUG). Brainstormed Row Classifier V3 + Column Label fix. Wrote detailed 24-step implementation plan.
-**Decisions**: Rewrite classifier (V3), template label propagation, disable anchor correction for grid pages, add row merger stage.
-**Next**: Implement plan Phase 1-4.
+### Session 380 (2026-02-19)
+**Work**: Rigorous multi-agent investigation proved drift-correction frame mismatch.
 
-### Session 359 (2026-02-16)
-**Work**: Regenerated fixtures (+4.6% quality, +18 GT matches). Full pipeline diagnostic. Added scorecard test to stage trace. Identified 2 upstream bugs: 4A row classification and 4C column labels.
-**Decisions**: Fix upstream stages to 100% before moving downstream.
-**Next**: Fix 4A row classification, 4C column labels, row merging.
+### Session 379 (2026-02-19)
+**Work**: Root-cause confirmation for pipe artifacts tied to inset frame mismatch.
 
 ## Active Plans
 
-### Row Merger Header Fix (BLOCKER — NEXT)
-- Merge consecutive header rows on same page in `row_merger.dart`
-- Expected: 17 → 6 merged header rows
+### OpenCV Integration for Grid Line Removal (NEXT SESSION)
+- Package: `opencv_dart` v2.2.1+3 (pub.dev)
+- Approach: `adaptiveThreshold` + `morphologyEx(MORPH_OPEN)` with directional kernels + `dilate` for fringe
+- New stage: `GridLineRemover` between ImagePreprocessor and TextRecognizer
+- Would eliminate need for `_scanWhitespaceInset`, `_computeLineInset`, `_scanRefinedInsetAtProbe` (~200 lines)
+- Research saved in agent output files
 
-### Remaining Boilerplate Investigation (AFTER BLOCKER)
-- 21 boilerplate rows remain, ~7 contain valid price data
-- RC2 (row grouping splits) is likely cause
-- May need classifier adjustment or row grouping fix
-
-### Cell-Level OCR Quality Tuning (IN PROGRESS)
-- Adaptive whitespace-scan insets DONE (Session 363)
-- Grid margin fix DONE (Session 363)
-- Scorecard: 38 OK / 8 LOW / 2 BUG
-
-### Phase 4: Cleanup — Workstream 3 PENDING
-- Plan: `.claude/plans/2026-02-13-phase-4-cleanup-and-hooks.md`
-
-### PRD 2.0 — R7 NOT STARTED
-- PRD: `.claude/prds/pdf-extraction-v2-prd-2.0.md`
-
-## Completed Plans (Recent)
-- Adaptive Whitespace-Scan Insets (Session 363 — RC1 fix)
-- Grid Line Detector Margin Fix (Session 363 — kPageMargin 0.05→0.01)
-- CropUpscaler Red Background Fix (Session 357)
-- Cell-Level OCR Implementation (Session 355)
-- Diagnostic Image Capture + Fixture Regen (Sessions 353-354)
-- Grid Line Detection + Row-Level OCR (Sessions 343-347)
-- OCR-Only Pipeline Migration (Sessions 331-338)
-
-## Deferred Plans
-- **AASHTOWARE Integration**: `.claude/backlogged-plans/AASHTOWARE_Implementation_Plan.md`
+### Scorecard Threshold Alignment
+- Ref: test/features/pdf/extraction/golden/stage_trace_diagnostic_test.dart
+- Status: Strict gates in place. 1 LOW remaining (quality status label).
 
 ## Reference
-- **Archive**: `.claude/logs/state-archive.md` (Sessions 193-362)
-- **Defects**: Per-feature files in `.claude/defects/_defects-{feature}.md`
-- **Branch**: `main`
-- **Springfield PDF**: `C:\Users\rseba\OneDrive\Desktop\864130 Springfield DWSRF Water System Improvements CTC [16-23] Pay Items.pdf`
-- **Ground Truth**: `test/features/pdf/extraction/fixtures/springfield_ground_truth_items.json` (131 items, $7,882,926.73, verified)
+- **Archive**: .claude/logs/state-archive.md (Sessions 193-376)
+- **Defects**: .claude/defects/_defects-pdf.md
+- **Ground Truth**: test/features/pdf/extraction/fixtures/springfield_ground_truth_items.json (131 items)
+- **Current scorecard**: 54 OK / 1 LOW / 0 BUG, parsed 131, bid_amount 129, quality 0.977.
+- **Code changes**: `text_recognizer_v2.dart` lines 724-725 (plannedDepth, baselineInset) and line 744 (removed floor)
+- **OpenCV research**: Agent output in temp files (summarized in session notes above)

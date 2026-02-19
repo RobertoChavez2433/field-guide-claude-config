@@ -6,6 +6,47 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 376 (2026-02-18)
+**Work**: Systematic debugging of bid_amount gap identified whitespace inset/cropping path as root cause candidate; fix attempts were reverted and blocker documented.
+
+### Session 375 (2026-02-18)
+**Work**: Implemented full Row Parser V3 plan, regenerated fixtures, removed V2 parser, and ran review/fix loops.
+**Results**: Stage trace 54 OK / 1 LOW / 0 BUG, quality 0.977, extraction suite passing.
+
+### Session 374 (2026-02-18)
+**Work**: Unblocked fixture regen, validated 15-item recovery, traced remaining gap root causes, planned Row Parser V3 rewrite.
+
+### Session 373 (2026-02-18)
+**Work**: Implemented 3-fix 15-item recovery plan and hardening tests.
+
+### Session 372 (2026-02-18)
+**Work**: Systematic debugging of upstream misclassification; created 3-fix plan.
+
+### Session 370 (2026-02-18)
+**Work**: Revised blocker impact. 9 uncategorized items traced to boilerplate misclassification. Created fix-and-observe plan.
+
+### Session 369 (2026-02-18)
+**Work**: Root cause reconciliation. A1 benign, A2 is the problem. Simpler single fix chosen.
+
+### Session 368 (2026-02-18)
+**Work**: 3 parallel agents confirmed ROOT CAUSE: scan starts at grid line center, only sees half width.
+
+### Session 366 (2026-02-18)
+**Work**: Regenerated fixtures. Scorecard: 41 OK / 8 LOW / 1 BUG.
+
+### Session 365 (2026-02-18)
+**Work**: Header Consolidation stage implementation. Suite green (+837).
+
+### Session 360 (2026-02-16)
+**Work**: Ran scorecard (22 OK / 4 LOW / 22 BUG). Brainstormed Row Classifier V3 + Column Label fix and wrote detailed implementation plan.
+**Decisions**: Rewrite classifier path (V3), improve column semantics, and prioritize upstream fixes before downstream tuning.
+**Next**: Implement planned classifier/label remediation and regenerate fixtures.
+
+### Session 359 (2026-02-16)
+**Work**: Regenerated fixtures (+4.6% quality, +18 GT matches). Full pipeline diagnostic. Added scorecard test to stage trace. Identified 2 upstream bugs: 4A row classification and 4C column labels.
+**Decisions**: Fix upstream stages to 100% before moving downstream.
+**Next**: Fix 4A row classification, 4C column labels, row merging.
+
 ### Session 357 (2026-02-16)
 **Work**: Root cause analysis of 5 problems -> Problem A (red bg in CropUpscaler) is the single root cause. Fixed with `numChannels: resized.numChannels`. Regenerated fixtures. Pipeline: 137 parsed items, 87/131 GT matches (66%), quality 0.748.
 **Decisions**: Problem A fixed. B (DPI 300) is intentional. C (source_dpi) is metadata-only. D+E resolved by fixing A.
@@ -401,3 +442,4 @@ Phases 0-4: Observability, clustering, header detection, structural keywords, de
 
 ### Entry Wizard Enhancements - COMPLETE (Sessions 193-197)
 3 PRs + code review: Test Results removal, Quantity calculation, Start New Form button.
+

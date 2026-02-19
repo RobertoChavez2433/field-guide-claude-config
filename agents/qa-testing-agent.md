@@ -140,10 +140,10 @@ test/
 
 integration_test/
 ├── patrol/
-│   ├── e2e_tests/             # Full E2E flows (in test_bundle.dart)
-│   ├── isolated/              # Standalone tests (NOT in test_bundle.dart)
+│   ├── e2e_tests/             # Full E2E flows (in test_config.dart)
+│   ├── isolated/              # Standalone tests (NOT in test_config.dart)
 │   └── helpers/               # Navigation, auth, patrol test helpers
-└── test_bundle.dart           # Patrol test registration
+└── test_config.dart           # Patrol test registration
 ```
 
 ## Bug Report Template

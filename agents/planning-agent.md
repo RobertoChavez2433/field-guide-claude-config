@@ -6,6 +6,7 @@ permissionMode: acceptEdits
 model: sonnet
 skills:
   - brainstorming
+  - dispatching-parallel-agents
 disallowedTools: Edit
 specialization:
   primary_features: []

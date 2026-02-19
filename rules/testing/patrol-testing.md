@@ -26,10 +26,10 @@ patrol test --verbose
 ### Test Structure
 ```
 integration_test/patrol/
-├── e2e_tests/              # Full E2E flows registered in test_bundle.dart
-├── isolated/               # Standalone tests NOT in test_bundle.dart
+├── e2e_tests/              # Full E2E flows registered in test_config.dart
+├── isolated/               # Standalone tests NOT in test_config.dart
 ├── helpers/                # Shared test utilities
-├── test_bundle.dart        # Test registration for Patrol
+├── test_config.dart        # Test registration for Patrol
 └── REQUIRED_UI_KEYS.md     # Widget key reference
 ```
 
@@ -81,7 +81,7 @@ See `integration_test/patrol/REQUIRED_UI_KEYS.md` for complete list:
 
 ## Test Bundle Registration
 
-To include a test in the bundle, add import and group() call to `test_bundle.dart`:
+To include a test in the bundle, add import and group() call to `test_config.dart`:
 
 ```dart
 // Add import

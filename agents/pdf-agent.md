@@ -20,7 +20,6 @@ specialization:
     - pdf-v2-constraints.md
   state_files:
     - PROJECT-STATE.json
-  prd: prds/pdf-extraction-v2-prd-2.0.md
   context_loading: |
     Before starting work, identify the feature(s) from your task.
     Then read ONLY these files for each relevant feature:
