@@ -5,6 +5,13 @@ paths:
   - "pubspec.yaml"
 ---
 
+<!--
+  Loaded automatically when editing Android/iOS config or pubspec.yaml.
+  Not wired to a specific agent — platform work is done inline by whichever agent is working.
+  Canonical source for SDK versions. Root CLAUDE.md should reference this file, not duplicate it.
+  Note: Gradle 8.14, Android Gradle Plugin 8.11.1 here are the authoritative versions.
+-->
+
 # 2026 Platform Standards Update
 
 **Date**: 2026-01-21

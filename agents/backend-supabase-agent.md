@@ -20,6 +20,8 @@ specialization:
     - architecture.md
     - data-validation-rules.md
     - sync-constraints.md
+    - backend/supabase-sql.md
+    - sync/sync-patterns.md
   guides:
     - docs/guides/implementation/chunked-sync-usage.md
   state_files:
@@ -43,6 +45,8 @@ You are a Supabase and PostgreSQL expert with deep knowledge of cloud database a
 
 ## Reference Documents
 @.claude/rules/backend/data-layer.md
+@.claude/rules/backend/supabase-sql.md
+@.claude/rules/sync/sync-patterns.md
 
 ## Your Expertise
 
@@ -151,15 +155,7 @@ Configure buckets, policies, file organization, cleanup orphaned files.
 
 ## Error Handling
 
-### Common Errors
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `PGRST205` | Table not found | Check table name spelling, run migration |
-| `23503` | FK violation | Ensure parent record exists first |
-| `23505` | Unique violation | Check for duplicate IDs |
-| `42501` | RLS policy denied | Check policies or use service role |
-| `42P01` | Undefined table | Run pending migrations |
+<!-- Common Errors table: see rules/backend/supabase-sql.md -->
 
 ### Debug Commands
 

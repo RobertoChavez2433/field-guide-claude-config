@@ -57,54 +57,13 @@ You are a Supabase authentication specialist for the Construction Inspector App.
 4. Secure token storage
 5. Error handling with user-friendly messages
 
-## Auth Flow Patterns
+## Auth Patterns
+See `@.claude/rules/auth/supabase-auth.md` for full AuthService and AuthProvider patterns.
 
-### Sign In
-```dart
-Future<void> signIn(String email, String password) async {
-  _isLoading = true;
-  _error = null;
-  notifyListeners();
-
-  try {
-    await _authService.signIn(email, password);
-    // Auth state listener handles navigation
-  } on AuthException catch (e) {
-    _error = _parseAuthError(e.message);
-  } catch (e) {
-    _error = 'An unexpected error occurred';
-  }
-
-  _isLoading = false;
-  notifyListeners();
-}
-```
-
-### Sign Up
-```dart
-Future<void> signUp(String email, String password) async {
-  try {
-    final response = await _authService.signUp(email, password);
-    if (response.user?.emailConfirmedAt == null) {
-      _message = 'Check your email to verify your account';
-    }
-  } on AuthException catch (e) {
-    _error = _parseAuthError(e.message);
-  }
-}
-```
-
-### Password Reset
-```dart
-Future<void> resetPassword(String email) async {
-  try {
-    await _authService.resetPassword(email);
-    _message = 'Check your email for reset instructions';
-  } on AuthException catch (e) {
-    _error = _parseAuthError(e.message);
-  }
-}
-```
+Key entry points:
+- `AuthService.signIn()` / `.signUp()` / `.signOut()` / `.resetPassword()`
+- `AuthProvider` — stream listener, `isAuthenticated` getter
+- Deep link callback: `com.fvconstruction.construction_inspector://login-callback`
 
 ## Deep Linking Setup
 

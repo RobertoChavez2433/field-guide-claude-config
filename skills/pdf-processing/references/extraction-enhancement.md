@@ -1,162 +1,77 @@
-# PDF Extraction Enhancement Guide
+# PDF Extraction Enhancement Reference (V2)
 
-How Python tools can improve the app's PDF import capabilities beyond debugging.
+Current extraction is fully OCR-based (no native text hybrid). All pages are rasterized and processed through Tesseract.
 
-## Current Dart Parser Limitations
+## V2 Pipeline at a Glance
 
-### Parser Cascade (lib/features/pdf/services/)
-1. **Column Layout Parser** - Best for structured bid schedules
-2. **Clumped Text Parser** - Fallback for irregular layouts
-3. **Regex Fallback** - Last resort pattern matching
+| Stage | Class | Purpose |
+|-------|-------|---------|
+| 0 | `DocumentQualityProfiler` | Per-page quality profiling (scan vs native, char count) |
+| 2B-i | `PageRendererV2` | Rasterize to PNG — adaptive DPI (≤10 pg→300, 11-25→250, >25→200) |
+| 2B-ii | `ImagePreprocessorV2` | Grayscale + adaptive contrast (no binarization) |
+| 2B-ii.5 | `GridLineDetector` | Detect table grid lines (normalized 0.0-1.0) |
+| 2B-ii.6 | `GridLineRemover` | OpenCV inpainting to erase grid lines (grid pages only) |
+| 2B-iii | `TextRecognizerV2` | Cell-level OCR (grid) or full-page PSM 4 (non-grid) |
+| 3 | `ElementValidator` | Coordinate normalization + element filtering |
+| 4A | `RowClassifierV3` | Row classification (two-phase: pre- and post-column) |
+| 4B | `RegionDetectorV2` | Table region detection |
+| 4C | `ColumnDetectorV2` | Column boundary detection |
+| 4D | `CellExtractorV2` | Assign OCR elements to cells |
+| 4D.5 | `NumericInterpreter` | Parse numeric/currency values |
+| 4E | `RowParserV3` | Map cells → ParsedBidItem fields |
+| 4E.5 | `FieldConfidenceScorer` | Per-field confidence (weighted geometric mean) |
+| 5 | `PostProcessorV2` | Normalization, deduplication, math backsolve |
+| 6 | `QualityValidator` | Quality gate; triggers re-extraction loop if below threshold |
 
-### Quality Gates
-- 70% valid entries required
-- 60% confidence threshold
-- Scanned PDF detection exists but extraction fails gracefully
-
-### Gap: No OCR Support
-Scanned PDFs are detected but only warn the user - no extraction occurs.
+Re-extraction loop: up to 2 retries at 400 DPI (PSM 3 then PSM 6). Best result by `overallScore` kept.
 
 ---
 
-## How Python Tools Help
+## Key Enhancement Techniques
 
-### Debugging (Current Use)
+### Adaptive DPI
+`PageRendererV2` selects render DPI based on page count to balance quality vs memory:
+- ≤10 pages → 300 DPI
+- 11-25 pages → 250 DPI
+- >25 pages → 200 DPI
+- Re-extraction retries always use 400 DPI
+
+### Grid Line Removal
+`GridLineRemover` (package: `opencv_dart` v2.2.1+3) runs only on pages flagged by `GridLineDetector`. Uses morphological open to isolate horizontal/vertical lines, then `cv.INPAINT_TELEA` (radius=2) to erase them. This prevents grid pixels from corrupting OCR reads on cell edges.
+
+### Cell-Level Cropping + CropUpscaler
+On grid pages, `TextRecognizerV2` crops each cell individually before passing to Tesseract. `CropUpscaler` targets an effective 600 DPI output using cubic interpolation with 10px padding, capped at 2000px. This avoids running a huge full-page raster through PSM 7.
+
+### Per-Cell PSM Selection (`_determineRowPsm`)
+- Row 0 (header) → PSM 6 (uniform block)
+- Tall rows (>1.8× median height) → PSM 6
+- All other data rows → PSM 7 (single line)
+
+### Re-OCR Fallback on Numeric Columns
+For columns 3, 4, 5 (qty/price/amount), if all elements have confidence < 0.50 AND no digit characters exist, `TextRecognizerV2` re-runs the cell with PSM 8 + numeric whitelist (`$0123456789,. -`). This addresses right-aligned currency values that PSM 7 mis-segments.
+
+---
+
+## Python Debugging Tools (Dev Only)
+
+These scripts are for development analysis, not runtime use:
+
 | Tool | Purpose |
 |------|---------|
-| `check_fillable_fields.py` | Determine PDF type |
-| `extract_form_field_info.py` | Get field metadata |
-| `convert_pdf_to_images.py` | Visual analysis |
-| `check_bounding_boxes.py` | Verify positions |
+| `check_fillable_fields.py` | Determine PDF type (fillable vs scanned) |
+| `extract_form_field_info.py` | Get field metadata for IDR template mapping |
+| `convert_pdf_to_images.py` | Visual analysis of rasterized pages |
+| `check_bounding_boxes.py` | Verify OCR element positions |
 
-### Extraction Improvement (Future Use)
-| Tool | Enhancement |
-|------|-------------|
-| `pdfplumber` | Better table extraction than Syncfusion |
-| `convert_pdf_to_images.py` | OCR preprocessing pipeline |
-| Pre-analysis scripts | Determine optimal parsing strategy |
-
----
-
-## Pre-Processing Workflow (Future)
-
-```
-Problematic PDF
-      |
-      v
-Python Pre-Analysis
-      |
-      +-- Table detection (pdfplumber)
-      +-- Layout analysis
-      +-- OCR if needed (future)
-      |
-      v
-Structured JSON
-      |
-      v
-Dart Parser (high confidence)
-```
-
-### Example: Bid Schedule Pre-Processing
-
-```python
-import pdfplumber
-
-def preprocess_bid_schedule(pdf_path):
-    """Extract structured data from bid schedule PDF."""
-    with pdfplumber.open(pdf_path) as pdf:
-        all_items = []
-        for page in pdf.pages:
-            # Extract tables
-            tables = page.extract_tables()
-            for table in tables:
-                for row in table:
-                    if is_bid_item(row):
-                        all_items.append({
-                            'item_number': row[0],
-                            'description': row[1],
-                            'quantity': parse_quantity(row[2]),
-                            'unit': row[3],
-                            'unit_price': parse_price(row[4])
-                        })
-    return all_items
-```
-
----
-
-## Comparison: Python vs Dart Extraction
-
-| Aspect | Python (pdfplumber) | Dart (Syncfusion) |
-|--------|---------------------|-------------------|
-| Table detection | Excellent | Good |
-| Text extraction | Better accuracy | Faster |
-| OCR support | Via Tesseract | None |
-| Runtime use | Development only | Production |
-| Integration | Pre-processing | Direct |
-
-### When to Use Python Pre-Processing
-
-1. **PDF fails all Dart parsers** - Analyze why, potentially pre-extract
-2. **Low confidence results** - Python can provide ground truth
-3. **New PDF format** - Analyze structure before writing Dart parser
-4. **OCR needed** - Python + Tesseract for scanned documents
-
----
-
-## OCR Integration (Future Consideration)
-
-### Option 1: Python Pre-Processing (Recommended)
-```
-Scanned PDF -> Python OCR -> JSON -> Dart import
-```
-- Pros: Best OCR accuracy, flexible
-- Cons: Requires Python runtime
-
-### Option 2: Flutter Google ML Kit
-```
-Scanned PDF -> Images -> ML Kit OCR -> Text -> Dart parser
-```
-- Pros: Native, no external deps
-- Cons: Less accurate for tables
-
-### Option 3: Cloud OCR (Google Vision)
-```
-Scanned PDF -> Upload -> Cloud OCR -> JSON
-```
-- Pros: Best accuracy
-- Cons: Requires internet, cost
+Use Python tools when:
+- A PDF fails extraction and you need to understand why (layout, encoding, scanned)
+- Verifying ground truth for OCR confidence debugging
+- Pre-analyzing a new bid schedule format before updating Dart pipeline code
 
 ---
 
 ## Integration Points
 
-### Dart Code Locations
-- `lib/features/pdf/services/pdf_import_service.dart` - Main entry
-- `lib/features/pdf/services/parsers/` - Parser implementations
-- `lib/features/pdf/models/` - Data models
-
-### Adding Pre-Processing Support
-
-```dart
-// pdf_import_service.dart
-
-Future<BidScheduleResult> importBidSchedule(File pdfFile) async {
-  // Check if pre-processed JSON exists
-  final jsonFile = File('${pdfFile.path}.preprocessed.json');
-  if (await jsonFile.exists()) {
-    return _importFromPreprocessedJson(jsonFile);
-  }
-
-  // Fall back to direct parsing
-  return _parseDirectly(pdfFile);
-}
-```
-
----
-
-## Recommended Workflow
-
-1. **First Attempt**: Dart parser cascade (fast, works for 80% of PDFs)
-2. **On Failure**: Python analysis to understand why
-3. **If Fixable**: Update Dart parser based on Python insights
-4. **If Complex**: Python pre-processing for that specific PDF type
+- Main entry: `lib/features/pdf/services/pdf_import_service.dart`
+- Stage barrel: `lib/features/pdf/services/extraction/stages/stages.dart`
+- Pipeline orchestrator: `lib/features/pdf/services/extraction/pipeline/extraction_pipeline.dart`

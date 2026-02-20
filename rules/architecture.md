@@ -163,3 +163,20 @@ type: ContractorType.values.byName(map['type'] as String)
 ```
 
 Reference: `lib/features/contractors/data/models/contractor.dart:47-53`
+
+## Key Packages
+
+| Package | Purpose |
+|---------|---------|
+| `provider` | State management (ChangeNotifier) |
+| `go_router` | Navigation (shell routes, deep links) |
+| `supabase_flutter` | Backend / Auth |
+| `sqflite` | Local SQLite storage |
+| `syncfusion_flutter_pdf` | PDF generation (template filling) |
+| `pdfx` | PDF rendering to images |
+| `printing` | PDF preview / rasterization (Windows primary path) |
+| `flusseract` | Tesseract OCR via native binding (`packages/flusseract/`) |
+| `syncfusion_flutter_pdfviewer` | PDF viewing / rendering |
+| `image` | Image preprocessing (grayscale, contrast) |
+| `opencv_dart` | Grid line removal via inpainting |
+| `xml` | HOCR parsing |

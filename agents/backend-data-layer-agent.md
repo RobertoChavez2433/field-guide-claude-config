@@ -23,6 +23,7 @@ specialization:
   shared_rules:
     - architecture.md
     - data-validation-rules.md
+    - database/schema-patterns.md
     - contractors-constraints.md
     - entries-constraints.md
     - locations-constraints.md
@@ -53,6 +54,7 @@ You are an expert in data architecture for Flutter apps, specializing in clean a
 
 ## Reference Documents
 @.claude/rules/backend/data-layer.md
+@.claude/rules/database/schema-patterns.md
 @.claude/rules/architecture.md
 
 ## Project Context

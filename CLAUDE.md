@@ -4,7 +4,6 @@ Cross-platform mobile/desktop app for construction inspectors. Offline-first wit
 
 ## Quick Reference
 <!-- Defects: per-feature files in .claude/defects/_defects-{feature}.md -->
-@.claude/rules/architecture.md
 
 ## Archives (On-Demand) DO NOT AUTO-LOAD THESE
 - `.claude/logs/state-archive.md`
@@ -86,45 +85,14 @@ Skills are loaded via `skills:` frontmatter in agent files. Claude auto-delegate
 | logs/ | Archives (state, defects, archive-index) |
 | code-reviews/ | Code review reports (auto-saved by code-review-agent) |
 | hooks/ | Pre-flight and post-work validation scripts |
+| test-results/ | Marionette UI test findings per journey run |
 
-## Documentation System (Phase 0 - Active)
-
-### Structure
-- **`.claude/docs/`** — Feature overviews + architecture docs (lazy-loaded by agents)
-- **`.claude/architecture-decisions/`** — Feature-specific constraints + shared rules
-- **`.claude/state/`** — JSON state files for project tracking
-- **`.claude/hooks/`** — Pre-flight + post-work validation scripts
-
-### Agent Context Loading
-Agents use **pattern-based lazy loading** — they identify the feature(s) from their task prompt, then read only the relevant files:
-- `state/feature-{name}.json` — feature state, constraints summary, deps
-- `defects/_defects-{name}.md` — known issues and anti-patterns
-- `architecture-decisions/{name}-constraints.md` — hard rules (if needed)
-- `docs/features/feature-{name}-overview.md` — feature context (if needed)
-
-`PROJECT-STATE.json` is always loaded (project-level metadata).
-
-### State File Roles (No Overlap)
-- **`autoload/_state.md`** — Session narrative for Claude resume (session history, active plans, what's next)
-- **`state/PROJECT-STATE.json`** — Structured project metadata (release cycle, blockers, deps at risk) for hooks/scripts
-
-### State Files
-| File | Purpose | Loaded By |
-|------|---------|-----------|
-| `state/PROJECT-STATE.json` | Release cycle, blockers, deps at risk | All agents (always) |
-| `state/FEATURE-MATRIX.json` | All 13 features + doc/test/coverage status | planning-agent only |
-| `state/AGENT-CHECKLIST.json` | Pre-flight + post-work validation templates | qa, code-review, planning agents |
-| `state/AGENT-FEATURE-MAPPING.json` | Maps agents to primary/supporting features | Orchestrator routing |
-| `state/feature-{name}.json` | Per-feature state, constraints, deps, metrics | Agents (lazy-loaded per task) |
-
-### Constraint Files
-- **Shared**: `architecture-decisions/data-validation-rules.md` (applies to all features)
-- **Per-feature**: `architecture-decisions/[feature]-constraints.md` (feature-specific hard/soft rules)
-
-**Example**: `pdf-v2-constraints.md` defines:
-- ✗ No V1 imports in V2 code
-- ✗ OCR-only routing (no hybrid strategies)
-- ✗ No legacy compatibility flags
+## Documentation System
+`.claude/docs/` — Feature overviews + architecture docs (lazy-loaded by agents)
+`.claude/architecture-decisions/` — Feature-specific constraints + shared rules
+`.claude/state/` — JSON state files for project tracking
+`.claude/hooks/` — Pre-flight + post-work validation scripts
+Agents load feature docs on demand; see `state/feature-{name}.json` per feature.
 
 ## Quick Reference Commands
 
@@ -137,23 +105,19 @@ Agents use **pattern-based lazy loading** — they identify the feature(s) from 
 
 ### Testing
 4. `pwsh -Command "flutter test"`                                              — All tests
-5. `pwsh -Command "flutter test test/features/pdf/extraction/"`                — PDF extraction tests
-6. `pwsh -Command "flutter test test/features/pdf/"`                           — All PDF tests
-7. `pwsh -Command "flutter test <path/to/specific_test.dart>"`                 — Single test file
-8. `pwsh -Command "flutter test --dart-define=PDF_PARSER_DIAGNOSTICS=true"`    — Tests with diagnostics
 
-### Process Management
-9. `pwsh -Command "Stop-Process -Name 'construction_inspector' -Force -ErrorAction SilentlyContinue; Stop-Process -Name 'dart' -Force -ErrorAction SilentlyContinue"`
+### Process Management (SAFE — preserves MCP servers)
+5. `pwsh -Command "Stop-Process -Name 'construction_inspector' -Force -ErrorAction SilentlyContinue"`  — Kill app ONLY
 
 ### Dependencies & Diagnostics
-10. `pwsh -Command "flutter pub get"`       — Get dependencies
-11. `pwsh -Command "flutter pub upgrade"`   — Upgrade dependencies
-12. `pwsh -Command "flutter analyze"`       — Static analysis
-13. `pwsh -Command "flutter doctor"`        — Environment diagnostics
+6. `pwsh -Command "flutter pub get"`       — Get dependencies
+7. `pwsh -Command "flutter pub upgrade"`   — Upgrade dependencies
+8. `pwsh -Command "flutter analyze"`       — Static analysis
+9. `pwsh -Command "flutter doctor"`        — Environment diagnostics
 
 ### Git
-14. `git log --oneline -10`                 — Recent commits
-15. `git diff --stat`                       — Change summary
+10. `git log --oneline -10`                 — Recent commits
+11. `git diff --stat`                       — Change summary
 
 ### Common Mistakes (from 577+ errors across 30+ sessions)
 - NEVER run flutter/dart directly in Git Bash — ALWAYS use `pwsh -Command "..."`
@@ -161,21 +125,7 @@ Agents use **pattern-based lazy loading** — they identify the feature(s) from 
 - ALWAYS use `-ErrorAction SilentlyContinue` on Stop-Process
 - ALWAYS set `timeout: 600000` on `flutter run` commands (default 120s is too short)
 - ALWAYS quote paths with spaces: `"C:\Users\rseba\Projects\Field Guide App"`
-
-## Key Packages
-| Package | Purpose |
-|---------|---------|
-| provider | State management |
-| go_router | Navigation |
-| supabase_flutter | Backend/Auth |
-| sqflite | Local storage |
-| syncfusion_flutter_pdf | PDF generation |
-| pdfx | PDF rendering to images |
-| printing | PDF preview/rasterization |
-| flusseract | Tesseract OCR (`packages/flusseract/`) |
-| syncfusion_flutter_pdfviewer | PDF viewing/rendering |
-| image | Image preprocessing |
-| xml | HOCR parsing |
+- **NEVER run `Stop-Process -Name 'dart'`** — this kills MCP servers (dart-mcp, marionette_mcp), not just the app. Only kill `construction_inspector`.
 
 ## Development Tools
 | Tool | Location | Purpose |
@@ -188,36 +138,8 @@ Agents use **pattern-based lazy loading** — they identify the feature(s) from 
 Screen -> Provider -> Repository -> SQLite (local) -> Supabase (sync)
 ```
 
-## Platform Requirements (2026 Standards)
-
-### Android
-| Component | Version | Notes |
-|-----------|---------|-------|
-| compileSdk | 36 | Android 16 - Latest stable |
-| targetSdk | 36 | Required for Play Store |
-| minSdk | 24 | Android 7.0 - Drops devices older than 7 years |
-| Gradle | 8.13 | Latest stable |
-| Kotlin | 2.2.20 | Latest stable |
-| Java | 17 | LTS version |
-
-### iOS
-| Component | Version | Notes |
-|-----------|---------|-------|
-| Minimum iOS | 15.0 | Drops iOS 13/14 for better performance |
-| Xcode | 15.0+ | Required for iOS 15+ support |
-
-### Test Configuration
-| Setting | Value | Purpose |
-|---------|-------|---------|
-| Test Orchestrator | 1.6.1 | Proper test isolation |
-| JVM Heap (Tests) | 12G | Prevents OOM in long test runs |
-| Max Tests Per Batch | 5 | Memory resets between batches |
-| Patrol | 4.1.0 | Native automation |
-
-### Key Config Files
-- `android/app/build.gradle.kts` - SDK versions, test options
-- `android/gradle.properties` - JVM heap, Gradle settings
-- `ios/Runner.xcodeproj/project.pbxproj` - iOS deployment target
+## Platform Requirements
+See `.claude/rules/platform-standards.md` for Android SDK (compileSdk 36/targetSdk 36/minSdk 24/Gradle 8.14/AGP 8.11.1), iOS 15.0+, and test config (Orchestrator 1.6.1 / JVM 12G / Patrol 4.1.0).
 
 ## Repositories
 | Repo | URL |
@@ -249,24 +171,6 @@ Each session, after completing implementation work, check:
 - Setup: Run `tools/audit/setup-hooks.sh` once after cloning **(not yet implemented)**
 - Hook scripts do not yet exist on disk. Run `tools/audit/setup-hooks.sh` once they are created.
 - Bypass (WIP only): `git commit --no-verify` (CI will still catch issues)
-
-## Reporting Preferences
-
-### Pipeline Scorecard & GT Trace Display
-When the user asks to see the scorecard or ground truth trace items, ALWAYS present them in **markdown table format**:
-- **Scorecard**: Table with columns `| # | Stage | Metric | Expected | Actual | % | Status |`. Bold the rows with LOW or BUG status.
-- **GT Item Traces**: Table with columns `| Item# | Layer | Description | Unit | Qty | Price | Amount |`. Each GT item gets 4 rows (Ground Truth, Cell Grid 4D, Parsed 4E, Processed 5).
-- **Bogus Items**: Table with columns `| Item# | Description | Unit | Qty | Price | Amount | Fields |`.
-- Never dump raw test output. Always format into tables.
-
-### CRITICAL: Regenerate Fixtures Before Scorecard/Stage Trace Work
-**ALWAYS regenerate Springfield fixtures before running the stage trace diagnostic test or presenting scorecard results.** Stale fixtures from older code versions produce misleading results and waste significant debugging time. The regeneration command is:
-```
-pwsh -Command "flutter test integration_test/generate_golden_fixtures_test.dart -d windows --dart-define='SPRINGFIELD_PDF=C:\Users\rseba\OneDrive\Desktop\864130 Springfield DWSRF Water System Improvements CTC [16-23] Pay Items.pdf'"
-```
-- If any pipeline code has changed since last fixture generation, fixtures MUST be regenerated first
-- Do NOT analyze scorecard failures against stale fixtures — regenerate, THEN diagnose
-- Fixture regeneration takes ~2-3 minutes; skipping it can waste hours of debugging
 
 ## Context Efficiency
 

@@ -8,22 +8,7 @@ paths:
 ## Quick Reference
 
 ### Key Files
-```
-lib/core/database/
-├── database_service.dart   # Main DB class (version tracking)
-├── seed_data_service.dart  # Sample data seeding
-├── seed_data_loader.dart   # Load seed JSON
-└── schema/                 # Modular table definitions
-    ├── schema.dart            # Barrel export
-    ├── core_tables.dart       # projects, locations
-    ├── contractor_tables.dart # contractors, equipment
-    ├── entry_tables.dart      # daily_entries, entry_*
-    ├── personnel_tables.dart  # personnel_types, entry_personnel
-    ├── quantity_tables.dart   # bid_items, entry_quantities
-    ├── photo_tables.dart      # photos
-    ├── toolbox_tables.dart    # toolbox talks
-    └── sync_tables.dart       # sync metadata
-```
+See `rules/backend/data-layer.md` for the full schema file tree. This file focuses on schema patterns and migration conventions.
 
 ### Current Version
 See `database_service.dart` for current version (increment for migrations).

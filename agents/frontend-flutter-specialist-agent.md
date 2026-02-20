@@ -148,11 +148,7 @@ After reading, apply these methodologies throughout your work.
 
 ## Responsive Design
 
-| Device | Width |
-|--------|-------|
-| Mobile | < 600px |
-| Tablet | 600-1200px |
-| Desktop | > 1200px |
+Responsive breakpoints: see `rules/frontend/flutter-ui.md` (Mobile < 600px, Tablet 600-1200px, Desktop > 1200px).
 
 ## Widget Catalog
 

@@ -120,26 +120,7 @@ debugPrint('INFO: $message');  // Development only
 - [ ] Manual testing on target device
 ```
 
-## Detailed UI Patterns (from architecture.md)
-
-### Screen Structure (Detailed)
-
-Standard screen template from `lib/features/entries/presentation/screens/home_screen.dart`:
-
-1. `StatefulWidget` for screens with local state
-2. `initState()` for initialization
-3. `dispose()` for cleanup
-4. Private `_build*()` methods for UI sections
-5. Private action methods (e.g., `_createNewEntry()`)
-
-### Card-Based Lists (Detailed)
-
-List items rendered as tappable cards with:
-- Leading icon/avatar
-- Title and subtitle
-- Trailing status indicator or action button
-
-Reference: `lib/features/projects/presentation/screens/project_list_screen.dart:35-85`
+## Detailed UI Patterns
 
 ### Split View / Master-Detail Pattern
 

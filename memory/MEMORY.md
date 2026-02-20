@@ -47,6 +47,24 @@
 - Known Claude Code Windows bugs: #4462, #7032, #5465 - subagent file writes may not persist
 - Context handoff: subagents start fresh - always pass full context in Task prompt or write to `.claude/plans/`
 
+### Marionette MCP Setup
+- `marionette_flutter: ^0.3.0` in **dependencies** (Flutter binding, runs in app)
+- `marionette_mcp: ^0.3.0` in **dev_dependencies** AND globally activated (v0.3.0)
+- `.mcp.json` config: Use absolute path to global binary (`C:\Users\rseba\AppData\Local\Pub\Cache\bin\marionette_mcp.bat`). `dart run marionette_mcp` fails because Claude Code's CWD isn't always the project root.
+- **Marionette tools**: connect, disconnect, get_interactive_elements, tap, enter_text, scroll_to, get_logs, take_screenshots, hot_reload
+- **Workflow**: Launch app first → get VM Service URI → call `connect` with URI → then use interaction tools
+- **MarionetteBinding crash fix**: Guard with `Platform.environment.containsKey('FLUTTER_TEST')` to prevent binding conflict during `flutter test` (GitHub issue #33)
+- Restart Claude Code after `.mcp.json` changes.
+- **CRITICAL (Session 402)**: NEVER run `Stop-Process -Name 'dart'` — kills MCP servers. Only kill `construction_inspector`. Both MCP servers survive app crashes; just relaunch app and reconnect.
+- **VM Service fragility**: WebSocket drops during heavy rendering, GC pauses, rapid operations. Flutter platform issue, not Marionette-specific. No auto-reconnect in v0.3.0.
+- **Log file**: `.claude/logs/marionette-mcp.log` (configured in `.mcp.json` args)
+
+### Dart MCP (dart mcp-server) Setup
+- `connect_dart_tooling_daemon` is the GATEWAY to all runtime tools (flutter_driver, get_widget_tree, screenshots, hot_reload, etc.). NEVER exclude it if you need app interaction.
+- Only safe to exclude: `get_active_location` (IDE-only), `create_project` (not needed)
+- `get_widget_tree` essential for discovering widget finders before flutter_driver commands
+- After `launch_app`, call `connect_dart_tooling_daemon` with the DTD URI before any driver commands
+
 ### Dart/Flutter Gotchas
 - Raw strings `r'...'` cannot contain single quotes - use `\x27` instead
 - Pre-existing test failure: table_locator_test "rejects section heading" (expects Y=1700, gets 1610)
