@@ -22,7 +22,9 @@
     "Crop upscaling is DPI-target based (`kTargetDpi=600`) and uses effective DPI metadata per crop",
     "Crop OCR sourceDpi is derived from effective DPI when provided; invalid DPI metadata is sanitized before OCR",
     "Scorecard includes observability rows B1-B6 plus GridLineRemover/orphan coverage with hardened ratio thresholds",
-    "Interpretation pattern classification uses centralized `InterpretationPatterns` sets for standard vs correction logic"
+    "Interpretation pattern classification uses centralized `InterpretationPatterns` sets for standard vs correction logic",
+    "Math backsolve repairs unitPrice from bidAmount/quantity when OCR corrupts price and backsolve is exact within $0.02",
+    "Zero-conf sentinel replaces 0.0 OCR confidence with 0.50 neutral prior when cell has valid parsed text"
   ],
   "integration": {
     "depends_on": [
@@ -52,11 +54,11 @@
     "null_unit_price_count": 0,
     "null_bid_amount_count": 0,
     "pipe_artifact_count": 0,
-    "notes": "Session 392: Implemented scorecard hardening plan with agents. Added InterpretationPatterns utility, hardened 15 previously-silent metrics, added 4 new scorecard rows, and updated stage ordering. Stage trace and extraction suites are green (+850); scorecard reports 63 OK / 2 LOW / 0 BUG across 66 metrics."
+    "notes": "Session 394: 100% extraction achieved. Math backsolve fixes items 100/121, zero-conf sentinel, 6 new metrics. 72 metrics (68 OK/3 LOW/0 BUG), quality 0.993, 131/131 GT match, 850/850 tests green. Code reviewed and committed."
   },
   "current_phase": {
-    "phase_name": "Scorecard Hardening Validation",
-    "status": "Implementation complete. Extraction tests green. Cross-fixture validation of hardened thresholds pending.",
+    "phase_name": "100% Extraction Complete",
+    "status": "All phases implemented and validated. 131/131 GT match. Cross-fixture validation of hardened thresholds pending on non-Springfield PDFs.",
     "plan_file": "plans/2026-02-19-harden-scorecard-metrics.md",
     "brainstorming_file": "plans/completed/2026-02-17-header-consolidation-stage.md",
     "escalation_path": "1) Regenerate fixtures with valid SPRINGFIELD_PDF define 2) Confirm item #100 reads $110.00 at cell OCR level 3) Confirm Stage 4E unit_price 131/131 pre-post-processing 4) Re-run extraction and stage trace suites until green",

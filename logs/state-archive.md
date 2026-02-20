@@ -6,6 +6,10 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 389 (2026-02-19)
+**Work**: Brainstorming session. Decided on DPI-target approach (targetDpi=600). Audited stage trace for silent failures (7 found). Designed 5 observability metrics.
+**Next**: Implement DPI-target upscaling.
+
 ### Session 387 (2026-02-19)
 **Work**: Implemented low-confidence numeric re-OCR fallback + whitelist leakage fix. Added 8 tests. Extraction green (+855).
 
