@@ -6,6 +6,33 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 400 (2026-02-20)
+**Work**: Dual code review, resolved BLOCKER-11, fixed 5 bugs, verified tests green.
+
+### Session 399 (2026-02-20)
+**Work**: Implemented full M&P extraction/enrichment flow. Code reviewed and bug-fixed.
+**Plan**: `.claude/plans/2026-02-20-mp-extraction-service.md`
+
+### Session 397 (2026-02-19)
+**Work**: Started executing Marionette UI test journeys. Completed Journey 1 and partial Journey 2. Found 4 issues (P1-P4). Marionette crashed during PDF import.
+**Findings**: `.claude/test-results/2026-02-19-marionette-findings.md`
+
+### Session 396 (2026-02-19)
+**Work**: Brainstormed and designed comprehensive Marionette UI test suite. 8 user journeys, ~340 steps.
+
+### Session 394 (2026-02-19)
+**Work**: Implemented 100% extraction plan (math backsolve + zero-conf sentinel + scorecard hardening). 5 commits pushed.
+**Scorecard**: 72 metrics: 68 OK / 3 LOW / 0 BUG. Quality 0.993. 131/131 GT match. 850/850 tests green.
+
+### Session 391 (2026-02-19)
+**Work**: Regenerated fixtures. Ran scorecard (56 OK/2 LOW/1 BUG). Dispatched 3 agents to audit all 62 metrics. Found 12 silently passing, 7 missing coverage, 1 metric bug (B1). Wrote comprehensive hardening plan covering dynamic pattern classification, 15 threshold tightenings, and 4 new metrics.
+**Scorecard**: 56 OK / 2 LOW / 1 BUG. Quality 0.990. 131/131 items, $7,882,926.73 exact.
+**Next**: Implement `.claude/plans/2026-02-19-harden-scorecard-metrics.md`.
+
+### Session 390 (2026-02-19)
+**Work**: Implemented DPI-target upscaling + observability end-to-end using agents. Completed A1-A4 and B1-B5.
+**Next**: Regenerate fixtures, validate scorecard baseline.
+
 ### Session 389 (2026-02-19)
 **Work**: Brainstorming session. Decided on DPI-target approach (targetDpi=600). Audited stage trace for silent failures (7 found). Designed 5 observability metrics.
 **Next**: Implement DPI-target upscaling.

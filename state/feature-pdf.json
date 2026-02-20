@@ -24,7 +24,9 @@
     "Scorecard includes observability rows B1-B6 plus GridLineRemover/orphan coverage with hardened ratio thresholds",
     "Interpretation pattern classification uses centralized `InterpretationPatterns` sets for standard vs correction logic",
     "Math backsolve repairs unitPrice from bidAmount/quantity when OCR corrupts price and backsolve is exact within $0.02",
-    "Zero-conf sentinel replaces 0.0 OCR confidence with 0.50 neutral prior when cell has valid parsed text"
+    "Zero-conf sentinel replaces 0.0 OCR confidence with 0.50 neutral prior when cell has valid parsed text",
+    "M&P enrichment path is independent from extraction pipeline and uses per-page quality-gated native-first text with OCR fallback",
+    "M&P parser uses metadata-driven two-point anchor: regex `Item\\s+(\\d+)\\.` + bid item number whitelist. Case-sensitive, period-required."
   ],
   "integration": {
     "depends_on": [
@@ -38,7 +40,7 @@
   },
   "metrics": {
     "test_coverage_percentage": 87,
-    "last_updated": "2026-02-19T00:00:00Z",
+    "last_updated": "2026-02-20T00:00:00Z",
     "item_match_rate": 1.0,
     "quality_score": 0.993,
     "median_ocr_confidence": 0.95,
@@ -54,12 +56,12 @@
     "null_unit_price_count": 0,
     "null_bid_amount_count": 0,
     "pipe_artifact_count": 0,
-    "notes": "Session 394: 100% extraction achieved. Math backsolve fixes items 100/121, zero-conf sentinel, 6 new metrics. 72 metrics (68 OK/3 LOW/0 BUG), quality 0.993, 131/131 GT match, 850/850 tests green. Code reviewed and committed."
+    "notes": "Session 406: Full body GT validated. Scorecard expanded to 20 metrics (added Body exact_matches + junk_free). 131/131 exact body matches, 131/131 junk-free. All 4 scorecard tests green. BLOCKER-12 fully resolved."
   },
   "current_phase": {
-    "phase_name": "100% Extraction Complete",
-    "status": "All phases implemented and validated. 131/131 GT match. Cross-fixture validation of hardened thresholds pending on non-Springfield PDFs.",
-    "plan_file": "plans/2026-02-19-harden-scorecard-metrics.md",
+    "phase_name": "M&P Extraction/Enrichment Delivery",
+    "status": "Complete. Parser rewritten, fixtures regenerated, GT bodies validated, scorecard 20/20 green (Session 406).",
+    "plan_file": "plans/2026-02-20-mp-extraction-service.md",
     "brainstorming_file": "plans/completed/2026-02-17-header-consolidation-stage.md",
     "escalation_path": "1) Regenerate fixtures with valid SPRINGFIELD_PDF define 2) Confirm item #100 reads $110.00 at cell OCR level 3) Confirm Stage 4E unit_price 131/131 pre-post-processing 4) Re-run extraction and stage trace suites until green",
     "diagnostic_fixtures": 28,
