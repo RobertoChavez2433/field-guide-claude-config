@@ -2,6 +2,15 @@
 
 ## Patterns Discovered
 
+### PSM7 Fails on Right-Aligned Currency in Wide Cell (Item #100 "$110.00" -> "Si")
+Root cause confirmed: Tesseract PSM7 (single line) fails when text is right-aligned in a wide crop with 60%+ blank whitespace on the left. The crop (354x92px) is correct and readable, but PSM7 word segmentation breaks "$110.00" into two nonsense fragments "Si" (conf=0.46) + "logo" (conf=0.31). Neighbors $83.25 and $26.55 in the same column read correctly with PSM7 (possibly because they have shorter text that positions differently, or because "1" in "$110" triggers a different LSTM path).
+
+- Cell bounds: page 4, row 14 (H14=0.4319 to H15=0.4595), col 4 (V4=0.6581 to V5=0.7963)
+- Crop: 354x92px (no upscaling, exceeds kMinCropWidth=300 and kMinCropHeight=40)
+- PSM7 used (not row 0, not tall row)
+- Text "$110.00" starts at ~60% from cell left (right-aligned, 213px of blank leading space)
+- Fix direction: column-aware numeric whitelist "$0123456789,. -" for qty/price/amount columns prevents letter outputs
+
 ### Garbage OCR in Item-Number Column (Page 3 Springfield — Items 64, 74, 75, 77)
 Root cause confirmed: TextRecognizerV2 produces per-individual-cell crops (one per grid row × column).
 For grid row bands that contain NO item number (because the item number was on the previous row or the band is a price/desc continuation), the item-number column crop contains only horizontal grid line pixels. Tesseract reads those dark pixels as garbage text (`al`, `ot`, `re`, `or`).

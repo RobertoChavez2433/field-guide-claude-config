@@ -2,18 +2,16 @@
 
 ## Patterns Discovered
 
-### PDF Test Suite Baseline (2026-02-19, post v3 pipeline refactor)
-- **Total PDF Tests**: 876 passed, 1 failed (`stage_trace_diagnostic_test.dart: Pipeline Scorecard`)
-- The 1 failure: aspirational assertions `expect(bugCount, equals(0))` + `expect(lowCount, equals(0))` added in working copy but pipeline hasn't reached zero-BUG/LOW status yet
-- **Pipeline scorecard**: 48 OK | 5 LOW | 2 BUG (57 metrics) for Springfield
-  - BUG 1: Stage 18 Row Parsing — Bogus items: expected 0, actual 3
-  - BUG 2: Stage 26 Quality Validation — Checksum: FAIL (cascade from 3 bogus + 7 missing items = 4.58% total delta)
-  - LOW items: GT matched 124/131 (95%), w/ unit_price 124, w/ bid_amount 124, Post-Processing 124, Quality Status=autoAccept
+### PDF Test Suite Baseline (2026-02-19, post grid_line_remover addition + stage_2b rewrite)
+- **Total PDF Tests**: 855 passed, 0 failed (extraction suite only — does not include golden tests)
+- **Golden tests**: 76/76 pass, Pipeline Scorecard: **55 OK | 0 LOW | 0 BUG** (57 metrics) — CLEAN!
+- **Quality score**: Springfield overall_score = ~0.977 (was 0.916), QualityStatus.autoAccept
+- The aspirational 0-BUG/0-LOW assertions in `stage_trace_diagnostic_test.dart` now PASS
+- **Changes in this baseline**: Added `grid_line_remover.dart` (Stage 2B-ii.6, OpenCV morphology + inpaint), removed `whitespace_inset_test.dart` (old inset scan methods removed), `text_recognizer_v2.dart` rewritten with cell-level OCR (PSM routing, low-confidence re-OCR, crop upscaling), added `opencv_dart: ^2.2.1+3` dependency, fixtures regenerated
 - **Known flutter_tester.exe lock issue**: Multiple flutter_tester.exe processes linger after test runs and lock `build/native_assets/windows/sqlite3.x64.windows.dll`. Run `taskkill /F /IM flutter_tester.exe` to unblock before next test run.
-- New untracked files now running: `field_confidence_scorer_test.dart`, `header_consolidator_test.dart`, `numeric_interpreter_test.dart`, `whitespace_inset_test.dart`
-- New production files: `field_confidence_scorer.dart`, `numeric_interpreter.dart`, `row_parser_v3.dart`, `header_consolidator.dart`, `interpretation_rule.dart`, `interpreted_value.dart`, `rules/` directory
 - Test locations now: `test/features/pdf/extraction/` (contracts, golden, integration, models, ocr, pipeline, stages)
 - 1 expected skip: Springfield PDF integration test (requires `--dart-define=SPRINGFIELD_PDF` path)
+- Production files: `field_confidence_scorer.dart`, `numeric_interpreter.dart`, `row_parser_v3.dart`, `header_consolidator.dart`, `grid_line_remover.dart` + `interpretation_rule.dart`, `interpreted_value.dart`, `rules/` directory
 
 ### Skipped Tests Pattern
 TesseractInitializer tests skip when `eng.traineddata` asset not available in test environment. This is expected and acceptable - these tests would run in full integration/E2E scenarios.

@@ -6,6 +6,18 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 387 (2026-02-19)
+**Work**: Implemented low-confidence numeric re-OCR fallback + whitelist leakage fix. Added 8 tests. Extraction green (+855).
+
+### Session 385 (2026-02-19)
+**Work**: Implemented OpenCV grid line removal. Removed legacy inset logic. Extraction green (+847).
+
+### Session 382 (2026-02-19)
+**Work**: Deep investigation of 7 missing GT items.
+
+### Session 380 (2026-02-19)
+**Work**: Rigorous multi-agent investigation proved drift-correction frame mismatch.
+
 ### Session 379 (2026-02-19)
 **Work**: Root-cause confirmation for pipe artifacts tied to inset frame mismatch.
 

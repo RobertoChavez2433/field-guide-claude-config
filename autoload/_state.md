@@ -1,102 +1,102 @@
 # Session State
 
-**Last Updated**: 2026-02-19 | **Session**: 384
+**Last Updated**: 2026-02-19 | **Session**: 393
 
 ## Current Phase
-- **Phase**: Pipeline Quality - OpenCV Integration
-- **Status**: Design plan complete. Next: fix 8 stale tests (PR #1), then implement GridLineRemover with opencv_dart (PR #2). Target: 131/131 bid_amount (100% accuracy).
+- **Phase**: Pipeline Quality - 100% Extraction Completion
+- **Status**: Plan designed, ready for implementation.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (384)
+### What Was Done This Session (393)
 
-#### 1. OpenCV Integration Design (Brainstorming Session)
-- Dispatched 3 parallel research agents: current inset code analysis, opencv_dart API research, pipeline stage mapping.
-- 4th agent researched community best practices (Camelot, Tabula, img2table, Multi-Type-TD-TSR, Leptonica).
-- **Community consensus**: Full-page line removal BEFORE cell cropping. Every major production pipeline does this. No per-cell removal in production.
+#### 1. Regenerated Fixtures + Full Scorecard
+- Regenerated Springfield fixtures from live PDF (131 items, quality 0.990, $7,882,926.73 exact).
+- Ran stage trace diagnostic: **63 OK / 2 LOW / 0 BUG (66 metrics)**.
+- Confirmed pipeline baseline is stable from Session 392.
 
-#### 2. Design Decisions Made
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| Line removal scope | Full page before cell cropping | Community consensus; line continuity needed for morphological detection |
-| Removal technique | Inpainting (Telea algorithm) | Reconstructs text strokes where lines intersect (items 29/113) |
-| Legacy code handling | Delete ~304 lines immediately | Clean break; no feature flags or dead code |
-| Implementation sequence | Fix stale tests first → OpenCV PR | Green baseline before major changes |
-| Stage output | Full diagnostic capture | Same pattern as all other stages |
+#### 2. Deep OCR Error Census (2 Parallel Agents)
+- Agent 1 investigated all OCR errors across fixtures — found 5 root cause groups:
+  - **Group A (VALUE ERRORS)**: Items 100, 121 — spaced digit corruption (`$1 19.00`, `$1 £0`). Only 2 GT mismatches.
+  - **Group B (benign)**: 8 european_periods occurrences — all parse correctly.
+  - **Group C (confidence bug)**: Items 12, 38, 73 — OCR conf 0.0 with correct text. Drags B2 LOW.
+  - **Group D**: 6 items below 0.80 confidence (2 value errors + 4 phantom zero-conf).
+  - **Group E**: Items 121, 123 — description corruption on page 5 (left-crop artifact).
+- Agent 2 audited scorecard coverage — found 9 coverage gaps, 3 threshold bugs, recommended 10 new metrics.
 
-#### 3. Plan Exported
-- Full design doc: `.claude/plans/2026-02-19-opencv-grid-line-removal-design.md`
-- 4 implementation phases across 2 PRs
-- opencv_dart v2.2.1+3 confirmed compatible (Flutter 3.38.9 / Dart 3.10.8)
-- New stage: GridLineRemover (2B-ii.6) between GridLineDetector and TextRecognizerV2
+#### 3. Designed 100% Extraction Plan
+- Wrote comprehensive implementation plan: `.claude/plans/2026-02-19-100pct-extraction-pipeline-fixes.md`
+- 4 phases: Math Backsolve (fixes both value errors) → Zero-Conf Sentinel (clears B2 LOW) → Scorecard Hardening (3 fixes + 6 new metrics) → Space-Collapse (deferred)
+- Key insight: bidAmount ÷ quantity gives exact GT for both error items. Pipeline already has math validation — just needs to repair instead of warn.
 
 ### What Needs to Happen Next
 
-1. **Phase 1 (PR #1)**: Fix 8 stale test expectations — 6 whitespace_inset_tests + 1 golden baseline + 1 scorecard gate
-2. **Phase 2 (PR #2)**: Add opencv_dart, implement GridLineRemover, integrate into pipeline, delete inset code
-3. **Phase 3**: Update all tests, regenerate Springfield fixtures
-4. **Phase 4**: Validate 131/131 bid_amount — items 29 & 113 via inpainting
+1. **Implement Phase 1**: Math backsolve in `post_processor_v2.dart` (lines 705-718) + `kAdjMathBacksolve` constant.
+2. **Implement Phase 2**: Zero-conf sentinel in `field_confidence_scorer.dart` (~line 292).
+3. **Implement Phase 3**: Scorecard threshold fixes (C-1, C-2, C-3) + 6 new metrics in `stage_trace_diagnostic_test.dart`.
+4. **Validate**: Regenerate fixtures → run stage trace → verify 131/131 GT match, 0 BUG, <=1 LOW.
+5. **Run extraction suite**: Confirm ~850+ tests green.
 
 ## Blockers
 
-### BLOCKER-5: 2 Pre-existing bid_amount Gaps (Items 29, 113) — DESIGN COMPLETE
-**Impact**: 129/131 bid_amount. $9,026 delta.
-**Root cause**: Text physically touching grid line fringe zone — pixel-threshold scanning limit.
-**Fix**: OpenCV morphological line removal + Telea inpainting. Design plan ready.
-**Status**: Design complete. Implementation next session.
-
 ### BLOCKER-6: Global Test Suite Has Unrelated Existing Failures
-**Impact**: Full-repo flutter test remains non-green outside extraction scope.
+**Impact**: Full-repo `flutter test` remains non-green outside extraction scope.
 **Status**: Pre-existing/unrelated.
 
 ### BLOCKER-7: Fixture Generator Requires SPRINGFIELD_PDF Runtime Define
-**Impact**: Fixtures must be regenerated manually via dart-define.
-**Status**: Mitigated.
-
-### BLOCKER-8: 8 Extraction Test Expectations Stale
-**Impact**: 6 whitespace_inset_tests + 1 golden baseline + 1 scorecard gate.
-**Status**: Open. Phase 1 priority — fix before OpenCV work.
+**Impact**: Fixture regeneration/strict diagnostics require `--dart-define=SPRINGFIELD_PDF=...`.
+**Status**: Open.
 
 ## Recent Sessions
 
-### Session 384 (2026-02-19)
-**Work**: Brainstorming session — designed OpenCV grid line removal integration. 4 research agents gathered context. Community consensus: full-page removal before cell cropping. Plan exported.
-**Decisions**: Inpainting (Telea), delete inset code, fix tests first then OpenCV PR.
-**Next**: Phase 1 — fix 8 stale tests. Then Phase 2 — implement GridLineRemover.
+### Session 393 (2026-02-19)
+**Work**: Regenerated fixtures, ran full scorecard (63 OK/2 LOW/0 BUG). Deep OCR error census with 2 parallel agents: found 2 value errors (items 100, 121), 3 phantom zero-conf cells, 9 coverage gaps, 3 threshold bugs. Designed comprehensive 4-phase plan for 100% extraction.
+**Scorecard**: 63 OK / 2 LOW / 0 BUG (66 metrics). Quality 0.990. 131/131 items, $7,882,926.73 exact.
+**Next**: Implement `.claude/plans/2026-02-19-100pct-extraction-pipeline-fixes.md`.
 
-### Session 383 (2026-02-19)
-**Work**: Root-caused 4 missing items to anti-aliased grid line fringe + baselineInset floor. Fixed with 2 code changes. Recovered 131/131 items, 0 BUG. Investigated remaining 2 bid_amounts — pre-existing, need OpenCV. Researched opencv_dart package.
-**Decisions**: OpenCV morphological line removal is the path forward for the last 2 bid_amounts. Keep inset fix. Next session: plan OpenCV integration.
-**Scorecard**: 54 OK / 1 LOW / 0 BUG (was 48/5/2).
+### Session 392 (2026-02-19)
+**Work**: Implemented scorecard hardening plan with implementation agents, including dynamic pattern classification utility, 15 threshold tightenings, 4 new scorecard rows, and stage order update. Ran test and review loops to completion.
+**Scorecard**: 63 OK / 2 LOW / 0 BUG (66 metrics).
+**Tests**: Stage trace and extraction suite green (`+850`).
+**Next**: Validate hardened gates on non-Springfield fixtures.
 
-### Session 382 (2026-02-19)
-**Work**: Deep investigation of 7 missing GT items. Discovered mystery: Tesseract produces garbage for 4 cells despite clear diagnostic images.
-**Next**: Debug OCR-to-element mapping path.
+### Session 391 (2026-02-19)
+**Work**: Regenerated fixtures. Ran scorecard (56 OK/2 LOW/1 BUG). Dispatched 3 agents to audit all 62 metrics. Found 12 silently passing, 7 missing coverage, 1 metric bug (B1). Wrote comprehensive hardening plan covering dynamic pattern classification, 15 threshold tightenings, and 4 new metrics.
+**Scorecard**: 56 OK / 2 LOW / 1 BUG. Quality 0.990. 131/131 items, $7,882,926.73 exact.
+**Next**: Implement `.claude/plans/2026-02-19-harden-scorecard-metrics.md`.
 
-### Session 381 (2026-02-19)
-**Work**: Implemented drift-offset plan, tightened scorecard thresholds.
+### Session 390 (2026-02-19)
+**Work**: Implemented DPI-target upscaling + observability end-to-end using agents. Completed A1-A4 and B1-B5.
+**Next**: Regenerate fixtures, validate scorecard baseline.
 
-### Session 380 (2026-02-19)
-**Work**: Rigorous multi-agent investigation proved drift-correction frame mismatch.
+### Session 389 (2026-02-19)
+**Work**: Brainstorming session. Decided on DPI-target approach (targetDpi=600). Audited stage trace for silent failures (7 found). Designed 5 observability metrics.
+**Next**: Implement DPI-target upscaling.
 
 ## Active Plans
 
-### OpenCV Integration for Grid Line Removal — DESIGN COMPLETE
-- **Plan file**: `.claude/plans/2026-02-19-opencv-grid-line-removal-design.md`
-- Package: `opencv_dart` v2.2.1+3 (core + imgproc + imgcodecs + photo)
-- Algorithm: adaptiveThreshold → morphologyEx(MORPH_OPEN) → inpaint(TELEA)
-- New stage: `GridLineRemover` (2B-ii.6) between GridLineDetector and TextRecognizerV2
-- Deletes ~304 lines of inset scanning code from TextRecognizerV2
-- 4 phases, 2 PRs. Phase 1: fix stale tests. Phase 2: implement + validate.
+### 100% Extraction Pipeline Fixes — READY TO IMPLEMENT
+- **Plan file**: `.claude/plans/2026-02-19-100pct-extraction-pipeline-fixes.md`
+- Phase 1: Math backsolve (fixes items 100, 121)
+- Phase 2: Zero-conf sentinel (clears B2 LOW)
+- Phase 3: Scorecard hardening (3 fixes + 6 new metrics)
+- Phase 4: Space-collapse (deferred)
 
-### Scorecard Threshold Alignment
-- Ref: test/features/pdf/extraction/golden/stage_trace_diagnostic_test.dart
-- Status: Strict gates in place. 1 LOW remaining (quality status label). Included in Phase 1 test fixes.
+### Harden Scorecard Metrics — IMPLEMENTED, VALIDATED
+- **Plan file**: `.claude/plans/2026-02-19-harden-scorecard-metrics.md`
+
+### DPI-Target Upscaling + Observability — IMPLEMENTED, VALIDATED
+- **Plan file**: `.claude/plans/2026-02-19-dpi-target-upscaling-and-observability.md`
+
+### Low-Confidence Re-OCR Fallback — IMPLEMENTED
+- **Plan file**: `.claude/plans/2026-02-19-low-confidence-reocr-fallback.md`
+
+### OpenCV Integration for Grid Line Removal — COMPLETE
+- **Plan file**: `.claude/plans/2026-02-19-opencv-grid-line-removal-design.md`
 
 ## Reference
-- **Archive**: .claude/logs/state-archive.md (Sessions 193-379)
-- **Defects**: .claude/defects/_defects-pdf.md
-- **Ground Truth**: test/features/pdf/extraction/fixtures/springfield_ground_truth_items.json (131 items)
-- **Current scorecard**: 54 OK / 1 LOW / 0 BUG, parsed 131, bid_amount 129, quality 0.977.
-- **Design plan**: .claude/plans/2026-02-19-opencv-grid-line-removal-design.md
-- **Code changes (Session 383)**: `text_recognizer_v2.dart` lines 724-725 (plannedDepth, baselineInset) and line 744 (removed floor)
+- **Archive**: `.claude/logs/state-archive.md` (historical sessions)
+- **Defects**: `.claude/defects/_defects-pdf.md`
+- **Ground Truth**: `test/features/pdf/extraction/fixtures/springfield_ground_truth_items.json` (131 items)
+- **100% extraction plan**: `.claude/plans/2026-02-19-100pct-extraction-pipeline-fixes.md`
+- **Current extraction test status**: `flutter test test/features/pdf/extraction/` passing (`+850`)

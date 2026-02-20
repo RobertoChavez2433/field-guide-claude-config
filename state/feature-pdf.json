@@ -17,7 +17,12 @@
     "Header consolidation stage (4A.1) runs after provisional and final classification",
     "Relaxed/rescue priceContinuation gates require item-number semantic to prevent false-positive row merges",
     "Row parsing stack is V3-only (NumericInterpreter -> RowParserV3 -> FieldConfidenceScorer)",
-    "Width-driven dynamic insets must preserve crop interior safety bounds before OCR"
+    "Grid line removal runs before cell OCR (GridLineRemover in Stage 2B-ii.6) with per-page fallback when removal fails",
+    "Low-confidence numeric-cell re-OCR fallback retries with PSM8 + numeric whitelist and replaces only when retry output contains digits",
+    "Crop upscaling is DPI-target based (`kTargetDpi=600`) and uses effective DPI metadata per crop",
+    "Crop OCR sourceDpi is derived from effective DPI when provided; invalid DPI metadata is sanitized before OCR",
+    "Scorecard includes observability rows B1-B6 plus GridLineRemover/orphan coverage with hardened ratio thresholds",
+    "Interpretation pattern classification uses centralized `InterpretationPatterns` sets for standard vs correction logic"
   ],
   "integration": {
     "depends_on": [
@@ -32,36 +37,35 @@
   "metrics": {
     "test_coverage_percentage": 87,
     "last_updated": "2026-02-19T00:00:00Z",
-    "item_match_rate": 0.931,
-    "quality_score": 0.916,
+    "item_match_rate": 1.0,
+    "quality_score": 0.993,
     "median_ocr_confidence": 0.95,
     "upscaling_coverage": 1.0,
-    "gt_item_matches": "122/131 parsed-item matches under strict scorecard tracing",
-    "items_extracted": 126,
-    "items_processed": 126,
-    "items_with_price": 122,
-    "items_with_amount": 122,
-    "bogus_items": 4,
-    "computed_total": 7502457.03,
+    "gt_item_matches": "131/131 parsed-item matches under strict scorecard tracing",
+    "items_extracted": 131,
+    "items_processed": 131,
+    "items_with_price": 131,
+    "items_with_amount": 131,
+    "bogus_items": 0,
+    "computed_total": 7882926.73,
     "expected_total": 7882926.73,
-    "null_unit_price_count": 4,
-    "null_bid_amount_count": 9,
+    "null_unit_price_count": 0,
+    "null_bid_amount_count": 0,
     "pipe_artifact_count": 0,
-    "notes": "Session 381: Drift correction removed and baseline inset formula corrected to ceil(w/2)+ceil(w*0.25)+1. Strict scorecard assertions are now enforced (131/131, 0 LOW/BUG targets) and currently fail at 48 OK / 5 LOW / 2 BUG with parsed=126 and with_amount=122."
+    "notes": "Session 392: Implemented scorecard hardening plan with agents. Added InterpretationPatterns utility, hardened 15 previously-silent metrics, added 4 new scorecard rows, and updated stage ordering. Stage trace and extraction suites are green (+850); scorecard reports 63 OK / 2 LOW / 0 BUG across 66 metrics."
   },
   "current_phase": {
-    "phase_name": "Strict-Gate Recovery After Drift Fix",
-    "status": "Core drift/inset fix is implemented and strict scorecard gates are enabled. Current outputs miss 131/131 + 0 LOW/BUG targets and require upstream recovery.",
-    "plan_file": "plans/2026-02-19-drift-offset-fix-and-dynamic-inset.md",
+    "phase_name": "Scorecard Hardening Validation",
+    "status": "Implementation complete. Extraction tests green. Cross-fixture validation of hardened thresholds pending.",
+    "plan_file": "plans/2026-02-19-harden-scorecard-metrics.md",
     "brainstorming_file": "plans/completed/2026-02-17-header-consolidation-stage.md",
-    "escalation_path": "1) Regenerate fixtures with valid SPRINGFIELD_PDF define 2) Recover upstream row/amount extraction to 131/131 3) Eliminate LOW/BUG rows under strict scorecard 4) Re-run extraction and stage trace suites until green",
-    "diagnostic_fixtures": 27,
-    "diagnostic_images": "1656 PNGs (rendered=6, preprocessed=6, stage diagnostics/crops)",
+    "escalation_path": "1) Regenerate fixtures with valid SPRINGFIELD_PDF define 2) Confirm item #100 reads $110.00 at cell OCR level 3) Confirm Stage 4E unit_price 131/131 pre-post-processing 4) Re-run extraction and stage trace suites until green",
+    "diagnostic_fixtures": 28,
+    "diagnostic_images": "1668 PNGs (rendered=6, preprocessed=6, stage diagnostics/crops)",
     "remaining_problems": [
-      "Parsed items remain 126/131 under strict scorecard assertions",
-      "Bid amount completeness remains 122/131 under strict scorecard assertions",
-      "Scorecard remains 48 OK / 5 LOW / 2 BUG",
-      "Fixture generation run skips without SPRINGFIELD_PDF dart-define"
+      "Need validation of new scorecard thresholds and B-series coverage on non-Springfield PDFs",
+      "Need monitoring to ensure LOW signals (B1/B2) remain stable quality indicators under fixture drift",
+      "Need optional direct parseHocr-focused test coverage to reduce integration-only parser risk"
     ]
   }
 }
