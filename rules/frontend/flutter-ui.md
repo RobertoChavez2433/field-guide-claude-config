@@ -157,7 +157,7 @@ Multi-step forms use Flutter's `Stepper` widget with:
 - Custom controls builder for navigation buttons
 - Form state preserved across steps
 
-Reference: `lib/features/entries/presentation/screens/entry_wizard_screen.dart:80-95`
+Reference: `lib/features/entries/presentation/screens/entry_editor_screen.dart:80-95`
 
 ### Theming Pattern
 

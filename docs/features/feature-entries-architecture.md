@@ -295,8 +295,7 @@ lib/features/entries/
 │   │   ├── screens.dart
 │   │   ├── home_screen.dart
 │   │   ├── entries_list_screen.dart
-│   │   ├── report_screen.dart
-│   │   └── entry_wizard_screen.dart
+│   │   └── entry_editor_screen.dart          # Unified create + edit screen
 │   │
 │   ├── widgets/
 │   │   ├── widgets.dart

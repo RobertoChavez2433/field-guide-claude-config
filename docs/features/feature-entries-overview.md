@@ -29,8 +29,11 @@ The Entries feature enables construction inspectors to create and manage daily j
 | `lib/features/entries/data/repositories/daily_entry_repository.dart` | CRUD operations for entries |
 | `lib/features/entries/presentation/providers/daily_entry_provider.dart` | Entry state management |
 | `lib/features/entries/presentation/screens/home_screen.dart` | Calendar and entry list view |
-| `lib/features/entries/presentation/screens/report_screen.dart` | Entry details and editing |
-| `lib/features/entries/presentation/screens/entry_wizard_screen.dart` | Multi-step entry creation |
+| `lib/features/entries/presentation/screens/entry_editor_screen.dart` | Unified entry creation and editing |
+| `lib/features/entries/presentation/controllers/entry_editing_controller.dart` | Text field editing state |
+| `lib/features/entries/presentation/controllers/contractor_editing_controller.dart` | Contractor/personnel editing state |
+| `lib/features/entries/presentation/controllers/photo_attachment_manager.dart` | Photo attachment state |
+| `lib/features/entries/presentation/controllers/form_attachment_manager.dart` | Form attachment state |
 
 ## Data Sources
 
