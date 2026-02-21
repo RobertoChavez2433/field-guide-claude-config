@@ -1,25 +1,30 @@
 # Session State
 
-**Last Updated**: 2026-02-22 | **Session**: 414
+**Last Updated**: 2026-02-22 | **Session**: 415
 
 ## Current Phase
-- **Phase**: 0582B Form Redesign — Full teardown + rebuild
-- **Status**: Phase 1 teardown complete. Route persistence bug fixed. Phase 2+ implementation pending.
+- **Phase**: 0582B Form Redesign — Code review cleanup complete
+- **Status**: Full teardown + rebuild done. Code review fixes applied. All pushed to both repos.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (414)
+### What Was Done This Session (415)
 
-1. **Route persistence/restoration fix**: Implemented three-layer defense against stale route restoration.
-   - **Layer 1 (allowlist)**: `_isRestorableRoute()` in `main.dart` — only 12 static routes are persisted; dynamic-ID routes are never saved.
-   - **Layer 2 (error recovery)**: `form_fill_screen.dart` — "Form response not found" now shows icon + message + "Go Back" button using `safeGoBack`.
-   - **Layer 3 (Driver skip)**: `main.dart` — `FLUTTER_DRIVER` env skips route restoration so tests always start at `/`.
-2. **`clearLastRoute()` API**: Added to `preferences_service.dart` for programmatic route reset.
-3. All changes pass `flutter analyze` with zero issues.
+1. **Dual code review** (2 agents in parallel): data layer + presentation layer
+2. **Bug fix**: `dry_density` → `moisture_percent` field mapping (wrong input to calculator)
+3. **Dead code removal (~1,800+ lines)**:
+   - 5 services: AutoFillEngine, AutoFillContextBuilder, DensityCalculatorService, FormCalculationService, FormParsingService
+   - 12 orphaned widgets: form_fields_tab, form_preview_tab, form_fields_config, dynamic_form_field, quick_entry_section, density_grouped_entry_section, table_rows_section, weight_20_10_section, parsing_preview, form_test_history_card, auto_fill_indicator, form_status_card
+   - 1 model: TemplateValidationResult
+   - 1 dep: flutter_secure_storage
+4. **DRY/KISS fixes**: `emptyTestRow()` factory, `ToolboxTestingKeys` constants, theme colors, removed dead `onPrev` button
+5. **Broken ref fixes**: RowClassifierV2 → V3 in docs/tests, deleted orphaned V2 test
+6. **5 logical commits + push both repos**
 
 ### What Was NOT Done
-- Manual testing of the route restoration fix (needs app launch + kill/restart cycle)
-- Phase 2+ of 0582B redesign (data layer completion, shared widgets, UX polish)
+- Review suggestions #6 (FormResponse dual-column `form_type`/`form_id` simplification) — medium risk, defer to migration timing
+- Review suggestions #8 (audit `inspector_forms` table legacy columns) — needs full column usage audit
+- Review suggestion #12 (extract inline DB migrations to functions) — cosmetic, low priority
 
 ## Blockers
 
@@ -32,6 +37,12 @@
 **Status**: Open.
 
 ## Recent Sessions
+
+### Session 415 (2026-02-22)
+**Work**: Dual code review of working tree (data layer + presentation), implemented all critical/DRY/KISS fixes, broke into 5 logical commits, pushed both repos.
+**Commits**: `6655b33` refactor(toolbox): remove legacy systems | `4af2e9c` feat(toolbox): code-first 0582B | `1fc89e4` chore(deps): remove flutter_secure_storage | `0a33e98` fix(pdf): V2→V3 refs | `68f9781` fix(core): route restore safety
+**Decisions**: Delete dead code aggressively (YAGNI). Use `Theme.of(context).colorScheme` over hardcoded colors. Centralize test row keys in calculator.
+**Next**: Phase 2+ of 0582B redesign (UX polish, edge cases, additional form types). Consider FormResponse dual-column cleanup.
 
 ### Session 414 (2026-02-22)
 **Work**: Fixed route persistence system — allowlist filter (only static routes saved), error recovery UI on FormFillScreen, Flutter Driver skip. Added `clearLastRoute()` to PreferencesService.
@@ -53,31 +64,20 @@
 **Decisions**: Full teardown both forms. Generic DB (header_data + response_data). Row-at-a-time entry. Live calcs with visual cue. 6-phase implementation plan.
 **Next**: Start Phase 1 (teardown of current form system). Plan: `.claude/plans/2026-02-20-0582b-form-redesign.md`
 
-### Session 410 (2026-02-20)
-**Work**: Added Flutter Driver infrastructure (driver_main.dart, flutter_driver dep). Discovered Driver can't interact with dialog overlays on Windows. Added FLUTTER_DRIVER env guard. Rewrote CLAUDE.md dart-mcp docs with limitations table.
-**Decisions**: Guard all dialogs with `FLUTTER_DRIVER` env check. Don't retry timed-out driver commands — diagnose and work around.
-**Next**: Audit all dialogs for FLUTTER_DRIVER guards. Walk through 0582b form.
-
 ## Active Plans
+
+### 0582B Form Redesign — IN PROGRESS (Phases 1-2 complete, code reviewed)
+- **Plan**: `.claude/plans/2026-02-20-0582b-form-redesign.md`
+- **Status**: Teardown + code-first rebuild complete. Code review applied. Phases 3-6 pending (UX polish, edge cases, additional forms).
+- **Phases**: 6 total (teardown → data layer → shared widgets → form screen → PDF export → polish)
 
 ### M&P Parser Rewrite — COMPLETE (BLOCKER-12 RESOLVED)
 - **Plan**: `.claude/plans/2026-02-20-mp-parser-anchor-rewrite.md`
 - **Status**: Complete. 131/131 parsed, matched, body-validated. 20/20 scorecard metrics OK.
 
-### M&P Extraction Service — COMPLETE, VALIDATED
-- **Plan file**: `.claude/plans/2026-02-20-mp-extraction-service.md`
-
-### 0582B Form Redesign — IN PROGRESS
-- **Plan**: `.claude/plans/2026-02-20-0582b-form-redesign.md`
-- **Status**: Implementation in progress. Guardrails and Phase 1 teardown complete; Phase 2+ buildout pending.
-- **Phases**: 6 total (teardown → data layer → shared widgets → form screen → PDF export → polish)
-
 ### UI Journeys — COMPLETE (14 issues found)
 - **14 issues total**: 3 High (P15, P49, P50), 5 Medium, 4 Low, 2 Infra
 - Findings: `.claude/test-results/2026-02-19-marionette-findings.md`
-
-### 100% Extraction Pipeline Fixes — IMPLEMENTED, VALIDATED
-- **Plan file**: `.claude/plans/2026-02-19-100pct-extraction-pipeline-fixes.md`
 
 ## Reference
 - **M&P Parser Rewrite Plan**: `.claude/plans/2026-02-20-mp-parser-anchor-rewrite.md`
