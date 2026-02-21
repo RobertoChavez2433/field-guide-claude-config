@@ -1,111 +1,96 @@
 # Session State
 
-**Last Updated**: 2026-02-21 | **Session**: 422
+**Last Updated**: 2026-02-21 | **Session**: 429
 
 ## Current Phase
-- **Phase**: PDF extraction pipeline refactor implementation and stabilization
-- **Status**: Plan implementation complete for scoped PDF work; PDF test suite green. Full repo test suite still has unrelated pre-existing failures outside PDF scope.
+- **Phase**: Toolbox feature split implementation and stabilization
+- **Status**: Complete. Calculator, Todos, Gallery, and Forms extracted to independent features; toolbox reduced to shell-only.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (422)
+### What Was Done This Session (429)
 
-1. Executed `.claude/plans/2026-02-20-pdf-pipeline-refactor-plan.md` end-to-end with parallel implementation agents.
-2. Completed Phase 0 quick wins:
-   - Deleted dead `RowClassifierV2`
-   - Fixed PostProcessor dedupe `firstWhere` crash path
-   - Extracted shared default column ratios (`pipeline_constants.dart`)
-3. Completed major decompositions:
-   - `PostProcessorV2` split into `ValueNormalizer`, `RowSplitter`, `ConsistencyChecker`, `ItemDeduplicator`
-   - `ColumnDetectorV2` split into `GridLineColumnDetector`, `HeaderDetector`, `TextAlignmentDetector`, `WhitespaceGapDetector`, `AnchorCorrector`
-4. Completed remaining architecture extractions:
-   - `SyntheticRegionBuilder` from `ExtractionPipeline`
-   - `CropOcrStats` extraction from `TextRecognizerV2`
-   - Shared `OcrTextExtractor` and M&P integration
-5. Completed trace/export and fixture wiring updates:
-   - `stages.dart` barrel exports
-   - `stage_trace_diagnostic_test.dart` optional fixture loading + assertions
-   - New per-layer fixture files added for Stage 4C sub-components
-6. Completed decision-gated items:
-   - P-08 implemented (`columnsForPage` moved to `ColumnMap`)
-   - P-12 implemented (data-driven artifact-cleaning rules)
-   - P-07 and P-09 intentionally skipped per gate criteria (no low-risk extraction value)
-7. Ran agent-led review and fixed one discovered regression:
-   - Restored granular M&P OCR progress events (`rendering`, `preprocessing`, `ocr`) after shared extractor refactor.
-8. Stabilized additional non-PDF tests discovered in full-suite loop:
-   - DB schema version assertion updated to v22 test expectation
-   - `DebugLogger` test binding/plugin channel setup fixed for test environment
-   - Auth test mock fixed to retain a single GoTrue client instance
+1. Fully implemented `.claude/plans/2026-02-20-toolbox-feature-split-plan.md` using parallel implementation agents plus integration/stabilization agents.
+2. Extracted feature stacks into new directories:
+   - `lib/features/calculator/`
+   - `lib/features/todos/`
+   - `lib/features/gallery/`
+   - `lib/features/forms/`
+3. Rewired `main.dart`, `app_router.dart`, and cross-feature imports (entries/pdf/sync/shared + tests) to split features.
+4. Reduced `lib/features/toolbox/` to shell-only:
+   - `lib/features/toolbox/toolbox.dart`
+   - `lib/features/toolbox/presentation/screens/toolbox_home_screen.dart`
+5. Ran review loop with explorer agents, addressed findings, and verified second-pass review closure.
+6. Validation status:
+   - `flutter test`: full suite passed.
+   - Migration-scoped `flutter analyze`: clean.
+   - Full-workspace `flutter analyze`: still reports pre-existing non-migration diagnostics.
 
-### Verification Summary
-
-- ✅ `flutter test test/features/pdf/` passed (full PDF scope green).
-- ✅ Key targeted suites for refactor components passed (contracts, stages, extraction pipeline, M&P tests).
-- ❌ `flutter test` (full repo) still failing with pre-existing unrelated failures, including:
-  - `test/features/sync/presentation/providers/sync_provider_test.dart` (`type 'Null' is not a subtype of type 'DatabaseService'` in test mock setup).
+### Key Decisions Made (Session 429)
+- Execute Phases 1-3 in parallel agents; run Forms/integration as dependent Phase 4.
+- Preserve dirty-worktree user changes and layer split implementation on top (no destructive cleanup).
+- Treat analyzer failure outside migration scope as pre-existing; require clean analyze for migration-touched scope.
+- Add targeted widget coverage for new `EntryFormCard` quick actions.
 
 ### What Needs to Happen Next Session
 
-1. Decide whether to include non-PDF full-suite fixes in this effort or isolate them to a dedicated sync/test-harness cleanup task.
-2. Add focused unit tests for new extracted components to reduce regression risk:
-   - `SyntheticRegionBuilder`
-   - grid-line/anchor/consistency sub-components
-   - `OcrTextExtractor`
-3. Tighten stage trace assertions for new sub-component payloads (especially anchor correction payload quality checks).
+1. Decide whether to run and document dart-mcp smoke journeys for calculator/todos/gallery/forms split verification.
+2. Triage and clean pre-existing full-repo analyzer diagnostics if full-workspace green is required.
+3. Optionally clean temporary scratch file observed in workspace (`tmp_test_switch.dart`) if not needed.
 
 ## Blockers
 
-### BLOCKER-9: Global Test Suite Has Unrelated Existing Failures
-**Impact**: Full-repo `flutter test` is not green despite PDF scope being green.
-**Evidence**: `test/features/sync/presentation/providers/sync_provider_test.dart` fails immediately due to null `DatabaseService` in mock setup.
-**Status**: OPEN (pre-existing/unrelated to PDF refactor scope).
-
 ### BLOCKER-10: Fixture Generator Requires SPRINGFIELD_PDF Runtime Define
-**Impact**: Fixture regeneration/strict diagnostics require `--dart-define=SPRINGFIELD_MP_PDF=...`.
-**Status**: OPEN.
+**Status**: OPEN (PDF scope only).
 
 ## Recent Sessions
 
-### Session 422 (2026-02-21)
-**Work**: Implemented PDF pipeline refactor plan via multiple agents (P-01..P-13 scoped items), completed code-review loop, and fixed discovered M&P progress regression.
-**Results**: PDF scope tests green; full repo still has unrelated failing tests.
-**Next**: Decide whether to address unrelated sync/global test failures now or keep scope limited to PDF follow-up hardening tests.
+### Session 429 (2026-02-21)
+**Work**: Fully implemented toolbox split plan with implementation + review agents. Moved calculator/todos/gallery/forms into independent feature folders and converted toolbox to launcher shell only. Added targeted EntryFormCard tests and fixed stale forms doc path.
+**Results**: Full `flutter test` passed; migration-scope analyze clean; second review pass closed with no findings.
+**Next**: Optional dart-mcp smoke journey verification + broader analyzer debt cleanup.
 
-### Session 421 (2026-02-21)
-**Work**: Brainstormed Gaussian model + harness design. Obtained MDOT calculator app. Collected 14 ground truth data points. Proved both parabolic and Gaussian models fail (alpha varies 10x). Wrote research document.
-**Breakthroughs**: MDOT calculator = T-99 oracle. Constant alpha impossible. Need published equation.
-**Next**: Research AASHTO/ASTM one-point equation, then implement and validate.
+### Session 428 (2026-02-21)
+**Work**: Resolved all 6 open harness design questions. Confirmed dart-mcp launch_app lacks --dart-define. Pivoted to config file approach. Wrote 6-phase implementation plan.
+**Decisions**: Config file selection, lib/test_harness.dart entry point, universal mock superset, stub GoRouter, start 0582B + design universal.
+**Next**: Implement harness (Phases 1-6).
 
-### Session 420 (2026-02-21)
-**Work**: Chart digitization Python prototyping + validation. Built 3 scripts: polynomial fitting, sensitivity analysis, 15-point validation suite. Identified alpha calibration as the key accuracy bottleneck.
-**Results**: 10/15 validation pass. Gold examples perfect. T-99 far-from-optimum tests fail due to alpha overcorrection.
-**Next**: Resolve alpha problem, finalize parameters, create master UI+chart implementation plan.
+### Session 427 (2026-02-21)
+**Work**: Brainstormed universal dart-mcp widget test harness. Made 5 design decisions. Wrote design document with architecture concept, open questions, and success criteria.
+**Decisions**: Compile-time flag selection, test-only entry point, production code untouched, in-memory mock strategy.
+**Next**: Continue brainstorming open questions, then implement harness.
 
-### Session 419 (2026-02-21)
-**Work**: One-Point Chart Digitization brainstorm. Downloaded MDOT charts, extracted 24 boundary data points, tested physics models, designed hybrid algorithm (polynomial + parabolic + iterative solver).
-**Decisions**: Hybrid equation approach, polynomial boundary fit, k=alpha*MDD per chart, iterative solver.
-**Next**: Python prototype to fit/verify equations, then continue 0582B UI Phase 1.
+### Session 426 (2026-02-21)
+**Work**: Fully implemented 0582B redesign plan (all 6 phases) via implementation agents, including calculator/data-model/schema migration, new quick-entry/viewer screens, PDF mapping/polish, and daily entry integration.
+**Results**: Agent review loop completed with one high-severity bug fixed; full suite stabilized to `flutter test` => `+2364 -0`.
+**Next**: Targeted UX validation + legacy-response migration/backfill decision.
 
-### Session 418 (2026-02-21)
-**Work**: Full brainstorm of 0582B UI redesign. Read actual MDOT form + Density Manual. Designed three-view architecture (daily entry -> quick test entry -> form viewer). Full domain research. Wrote implementation plan.
-**Decisions**: Three-view arch, 3 field groups per test, chart digitization deferred, manual max density entry for V1.
-**Next**: Implement Phase 1 (data model expansion), then Phase 2 (quick test entry screen).
+### Session 425 (2026-02-21)
+**Work**: Brainstormed project-based multi-tenant architecture. 11 design decisions. Wrote comprehensive PRD (13 sections, 8 implementation phases). Explored current codebase architecture.
+**Decisions**: Company-based access, 4 roles, admin approves users, 4-layer sync guarantee, progressive profiles, daily auto-sync.
+**Next**: Decide priority (architecture vs 0582B), then start Phase 1 of chosen track.
 
 ## Active Plans
 
-### PDF Extraction Pipeline Refactor — IMPLEMENTED (Session 422)
-- **Plan**: `.claude/plans/2026-02-20-pdf-pipeline-refactor-plan.md`
-- **Status**: Implementation complete for scoped items; follow-up test hardening remains.
-- **Next**: Add focused sub-component unit tests and tighten trace assertions.
+### Toolbox Feature Split — IMPLEMENTED
+- **Plan**: `.claude/plans/2026-02-20-toolbox-feature-split-plan.md`
+- **Execution checklist**: `.codex/plans/2026-02-21-toolbox-feature-split-implementation-checklist.md`
+- **Status**: Implemented and validated this session.
 
-### Chart Digitization Research — IN PROGRESS
-- **Research doc**: `tools/chart-digitization-research.md`
-- **Ground truth**: 14 data points from MDOT calculator
-- **Status**: BLOCKED on unknown published correction equation.
+### Universal dart-mcp Widget Test Harness — DESIGN COMPLETE
+- **Design doc**: `.claude/plans/rosy-launching-dongarra.md`
+- **Status**: All 8 decisions resolved. 6-phase implementation plan ready.
+- **Scope**: `lib/test_harness.dart` entry point, config file selection, universal mocked providers, start with 0582B screens
+
+### Project-Based Architecture — PRD COMPLETE
+- **PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
+- **Brainstorming doc**: `.claude/plans/2026-02-21-project-based-architecture.md`
+- **Status**: Full PRD complete. 8 implementation phases. Ready to start.
 
 ## Reference
-- **PDF Refactor Plan**: `.claude/plans/2026-02-20-pdf-pipeline-refactor-plan.md`
-- **Chart Digitization Research**: `tools/chart-digitization-research.md`
-- **0582B UI Redesign Plan**: `.claude/plans/2026-02-21-0582b-ui-redesign.md`
+- **Toolbox Split Plan**: `.claude/plans/2026-02-20-toolbox-feature-split-plan.md`
+- **Toolbox Split Checklist**: `.codex/plans/2026-02-21-toolbox-feature-split-implementation-checklist.md`
+- **Widget Test Harness Design**: `.claude/plans/rosy-launching-dongarra.md`
+- **Project-Based Architecture PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
 - **Archive**: `.claude/logs/state-archive.md`
-- **Defects**: `.claude/defects/_defects-pdf.md`, `.claude/defects/_defects-sync.md`
+- **Defects**: `.claude/defects/_defects-toolbox.md`, `.claude/defects/_defects-pdf.md`, `.claude/defects/_defects-sync.md`

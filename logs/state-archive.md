@@ -6,6 +6,29 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 424 (2026-02-21)
+**Work**: Brainstormed 0582B UI redesign. Made 8 design decisions. Wrote comprehensive plan v2 with integrated OnePointCalculator, 3 quick-entry screens, 6 implementation phases.
+**Decisions**: Michigan Cone only, auto-compute MDD/OMC, 3 entry screens, per-proctor 20/10 weights, proctor chip bar.
+**Next**: Implement Phase 1 (OnePointCalculator + Data Model).
+
+### Session 423 (2026-02-21)
+**Work**: Reverse-engineered MDOT Construction Density APK. Decoded exact algorithm for both T-99 (27-row table) and Cone (21-row table) charts.
+**Breakthroughs**: Algorithm is piecewise linear interpolation + polynomial, NOT physics. Verified 14/14 exact match.
+**Next**: Plan 0582B UI redesign (done in 424).
+
+### Session 422 (2026-02-21)
+**Work**: Implemented PDF pipeline refactor plan via multiple agents (P-01..P-13), completed code-review loop, fixed M&P progress regression.
+**Results**: PDF scope tests green; saturation-line model ~85% S_opt discovered.
+**Next**: Reverse-engineer calculator (done in 423).
+
+### Session 421 (2026-02-21)
+**Work**: Brainstormed Gaussian model + harness design. Obtained MDOT calculator app. Collected 14 ground truth data points.
+**Next**: Research published equation (superseded by APK decompilation).
+
+### Session 419 (2026-02-21)
+**Work**: One-Point Chart Digitization brainstorm. Extracted boundary data, designed hybrid algorithm.
+**Next**: Python prototype (done in 420).
+
 ### Session 417 (2026-02-21)
 **Work**: Full 6-phase entries refactor. Extracted controllers/widgets/section islands and PdfDataBuilder. Applied critical code-review fixes.
 **Next**: Wire PdfDataBuilder, adopt overlay in HomeScreen, continue 0582B form work.

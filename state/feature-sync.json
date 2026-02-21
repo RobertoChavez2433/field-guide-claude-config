@@ -1,7 +1,7 @@
 {
   "id": "sync",
   "name": "Sync Engine",
-  "status": "attention_needed",
+  "status": "stable",
   "description": "Bidirectional offline-first sync between SQLite and Supabase with last-write-wins conflict resolution",
   "docs": {
     "overview": "docs/features/feature-sync-overview.md",
@@ -31,6 +31,6 @@
   },
   "metrics": {
     "test_coverage_percentage": 92,
-    "last_updated": "2026-02-21T23:59:00Z"
+    "last_updated": "2026-02-21T23:59:59Z"
   }
 }

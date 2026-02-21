@@ -1,8 +1,8 @@
 {
   "id": "toolbox",
   "name": "Inspector Toolbox",
-  "status": "in_progress",
-  "description": "Inspector forms and utilities; 0582B redesign is in progress with legacy Phase 1 teardown completed and Phase 2+ implementation pending",
+  "status": "stable",
+  "description": "Toolbox is now a shell/launcher feature after split; calculator, todos, gallery, and forms moved into independent feature directories.",
 
   "docs": {
     "overview": "docs/features/feature-toolbox-overview.md",
@@ -20,7 +20,7 @@
     "All interactive widgets require ValueKey for dart-mcp testability"
   ],
 
-  "current_phase": "0582B Form Redesign — Phase 1 teardown complete; Phase 2+ data/model and UX implementation in progress",
+  "current_phase": "Toolbox Feature Split — implemented and validated (Session 429)",
 
   "integration": {
     "depends_on": ["auth", "pdf"],
@@ -29,6 +29,6 @@
 
   "metrics": {
     "test_coverage_percentage": 0,
-    "last_updated": "2026-02-22T00:00:00Z"
+    "last_updated": "2026-02-21T23:59:59Z"
   }
 }

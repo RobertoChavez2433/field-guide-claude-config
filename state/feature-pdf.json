@@ -40,7 +40,7 @@
   },
   "metrics": {
     "test_coverage_percentage": 87,
-    "last_updated": "2026-02-21T23:59:00Z",
+    "last_updated": "2026-02-21T23:59:59Z",
     "item_match_rate": 1.0,
     "quality_score": 0.993,
     "median_ocr_confidence": 0.95,

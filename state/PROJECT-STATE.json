@@ -3,16 +3,16 @@
     "app_name": "Construction Inspector App",
     "app_version": "1.2.3",
     "description": "Cross-platform offline-first mobile/desktop app for construction inspectors",
-    "last_updated": "2026-02-21T23:59:00Z",
-    "session_notes": "Session 422: Implemented PDF pipeline refactor plan via agents (P-01..P-13 scoped items), completed review/fix loop, restored M&P progress stage callbacks, and validated PDF test scope green. Full repo still blocked by unrelated sync provider test failures."
+    "last_updated": "2026-02-21T23:59:59Z",
+    "session_notes": "Session 429: Fully implemented toolbox feature split plan via implementation/review agents. Extracted calculator/todos/gallery/forms into independent features, reduced toolbox to shell-only, rewired imports/routes, added EntryFormCard tests, and completed stabilization loop (full flutter test green; migration-scope analyze clean)."
   },
   "current_phase": {
-    "phase_name": "PDF Pipeline Refactor Follow-through + 0582B parallel track",
+    "phase_name": "Toolbox split complete; widget test harness implementation pending",
     "phase_status": "in_progress",
-    "phase_started": "2026-02-20T00:00:00Z",
-    "phase_2_expected_start": "2026-02-13T00:00:00Z",
-    "phase_2_expected_completion": "2026-02-22T00:00:00Z",
-    "progress_percentage": 68
+    "phase_started": "2026-02-21T00:00:00Z",
+    "phase_2_expected_start": "2026-02-21T00:00:00Z",
+    "phase_2_expected_completion": "2026-02-28T00:00:00Z",
+    "progress_percentage": 15
   },
   "release_cycle": {
     "last_release": "2026-02-01",
@@ -36,10 +36,11 @@
       "title": "Global flutter test suite has unrelated pre-existing failures",
       "severity": "low",
       "owner": "user",
-      "status": "open",
+      "status": "resolved",
       "discovered": "2026-02-18",
-      "notes": "Extraction/PDF-focused work is green, but full repo still includes pre-existing non-PDF failures. Example: sync provider tests fail with null DatabaseService in mock setup.",
-      "impact": "Prevents full-repo green baseline in same session."
+      "resolved": "2026-02-21",
+      "notes": "Resolved during Session 426 test-fix loop. Sync provider harness and golden comparator pathing were corrected; full suite reached green.",
+      "impact": "Resolved — no longer blocks full-repo green baseline."
     },
     {
       "id": "BLOCK-010",
@@ -67,10 +68,11 @@
       "title": "SyncProvider test harness mismatch (null DatabaseService in mock construction)",
       "severity": "medium",
       "owner": "user",
-      "status": "open",
+      "status": "resolved",
       "discovered": "2026-02-21",
-      "notes": "sync_provider_test.dart fails at mock construction due to non-null DatabaseService expectation.",
-      "impact": "Keeps full flutter test suite non-green outside PDF scope."
+      "resolved": "2026-02-21",
+      "notes": "Resolved in Session 426 by updating sync-provider test doubles and DB setup to satisfy SyncService constructor contracts.",
+      "impact": "Resolved — sync provider suite now passes."
     }
   ],
   "brainstorm_backlog": [

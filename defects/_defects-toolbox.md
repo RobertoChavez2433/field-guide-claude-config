@@ -5,6 +5,11 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [DATA] 2026-02-21: Legacy 0582B responses can fail new required-field submit/export gates
+**Pattern**: New 0582B validation requires expanded header fields (`control_section_id`, `route_street`, `gauge_number`, `cert_number`, `phone`, `construction_eng`) plus non-empty test/proctor rows. Legacy responses with partial headers may fail submit/export until fields are manually completed.
+**Prevention**: Add backfill/migration strategy for legacy response headers or a guided completion step in form viewer before transition actions.
+**Ref**: @lib/features/toolbox/data/repositories/form_response_repository.dart:354, @lib/features/toolbox/presentation/screens/form_viewer_screen.dart:74
+
 ### [FLUTTER] 2026-02-22: Stale route restoration traps user on dead-end screen
 **Pattern**: Saving ALL route changes to SharedPreferences (including dynamic-ID routes like `/form/:responseId`) causes app to restore to a screen whose entity no longer exists, with no back button or error recovery.
 **Prevention**: Use an allowlist of static routes for persistence. Always add error recovery UI (icon + message + "Go Back" button via `safeGoBack`) to screens that load entities by ID.

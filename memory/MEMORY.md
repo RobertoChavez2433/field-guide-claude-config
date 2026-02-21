@@ -62,17 +62,20 @@
 - Use `screenshot` command for visual state — returns image directly.
 - Widget tree can be 250K+ chars — use screenshot or parse saved file with python/jq, don't read raw.
 
-### One-Point Chart Digitization
-- **Research doc**: `tools/chart-digitization-research.md` — comprehensive reference with all data, models, findings
-- **MDOT "Construction Density" calculator** (Android app by MDOT) = ground truth oracle for T-99 chart
-- Calculator is T-99 ONLY — does not implement Cone chart
-- 14 exact ground truth data points collected (screenshots in `C:\Users\rseba\OneDrive\Desktop\Density App Outputs\`)
-- **Constant alpha is IMPOSSIBLE** — back-calculated alpha varies 10x (0.00037 to 0.00383) across data
-- Both parabolic AND Gaussian models fail with constant alpha — same 10x variation
-- Real correction is sublinear (effective exponent ~0.88), much gentler than quadratic
-- Hand-extracted boundary data from chart PDFs is LESS accurate than calculator data — use calculator data
-- **Next step**: Research published AASHTO/ASTM one-point equation (T-272, D698, D1557)
-- Python prototypes: `tools/one_point_prototype.py`, `tools/one_point_prototype_v2.py`, `tools/one_point_validation.py`
+### One-Point Chart Digitization — ALGORITHM DECODED (Session 423)
+- **Research doc**: `tools/chart-digitization-research.md`
+- **Decoded algorithm**: `tools/mdot-apk/decoded_algorithm.md` — exact tables + polynomials
+- **MDOT "Construction Density" APK**: `com.JacobArmour.ConstructionDensity` (Xamarin/C#), extracted via ADB
+- **Algorithm**: Piecewise linear lookup table interpolation, NOT physics equations
+  - T-99: 27 family curves (straight lines in moisture vs wetDensity_kg/m3 space) + rational polynomial for OMC
+  - Cone: 21 family curves + cubic polynomial for OMC
+  - Internal units: kg/m^3 (factor = 16.0184633796014)
+  - Find bracketing curves → linear interpolate boundaryDD → convert to pcf
+- **Verified 14/14 ground truth**: max error 0.08 pcf MDD, 0.06% OMC
+- Calculator DOES implement Cone chart (discovered during decompilation, contrary to earlier belief)
+- All previous model research (parabolic, Gaussian, saturation-line) is SUPERSEDED
+- **APK decompilation technique**: XABA blob → XALZ (LZ4-compressed) → .NET DLLs → IL bytecode disassembly
+- Python prototypes (OBSOLETE): `tools/one_point_prototype.py`, `tools/one_point_prototype_v2.py`, `tools/one_point_validation.py`
 
 ### Dart/Flutter Gotchas
 - Raw strings `r'...'` cannot contain single quotes - use `\x27` instead
