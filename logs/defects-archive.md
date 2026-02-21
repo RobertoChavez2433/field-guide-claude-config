@@ -4,6 +4,34 @@ Historical defects moved from per-feature defect files. Reference only.
 
 ---
 
+## Archived from _defects-quantities.md (2026-02-21)
+
+### [RESOLVED] 2026-02-20: DuplicateStrategy switch fallthrough in importBatch
+**Status**: FIXED (Session 399).
+**Pattern**: `importBatch` duplicate handling switch lacked explicit `break`s, causing fallthrough and incorrect duplicate behavior paths.
+**Prevention**: Require explicit `break` in duplicate strategy switch and include strategy-path tests for skip/replace/error.
+**Ref**: @lib/features/quantities/presentation/providers/bid_item_provider.dart:187
+
+### [RESOLVED] 2026-02-20: M&P enrichment no-op when provider project context is unset
+**Status**: FIXED (Session 399).
+**Pattern**: `enrichWithMeasurementPayment` returned early when `currentProjectId` was null, causing silent no-op in valid M&P apply flows.
+**Prevention**: Resolve matched bid items by id via repository fallback, track touched project ids, and reload/notify safely even without preset provider context.
+**Ref**: @lib/features/quantities/presentation/providers/bid_item_provider.dart:293
+
+---
+
+## Archived from _defects-sync.md (2026-02-21)
+
+### [TEST] 2026-02-21: SyncProvider Test Mock Construction Fails with Null DatabaseService
+**Status**: RESOLVED in Session 426.
+**Symptom**: `test/features/sync/presentation/providers/sync_provider_test.dart` fails before assertions with `type 'Null' is not a subtype of type 'DatabaseService'`, followed by `LateInitializationError` on `syncProvider`.
+**Root Cause (observed)**: Test `MockSyncService` instantiation path is incompatible with current `SyncService` constructor expectations for `DatabaseService`.
+**Impact**: Previously caused sync provider suite failures and contributed to non-green full-repo runs.
+**Prevention/Fix Direction**: Keep test doubles aligned with non-null constructor contract and initialize test DB/FFI in setup.
+**Ref**: @test/features/sync/presentation/providers/sync_provider_test.dart:7,99
+
+---
+
 ## Archived from _defects-pdf.md (2026-02-20, Session 403)
 
 ### [DATA] 2026-02-16: CropUpscaler numChannels Mismatch Causes Red Background

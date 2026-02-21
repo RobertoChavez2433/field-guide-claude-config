@@ -1,54 +1,47 @@
 # Session State
 
-**Last Updated**: 2026-02-21 | **Session**: 430
+**Last Updated**: 2026-02-21 | **Session**: 432
 
 ## Current Phase
-- **Phase**: Code quality review and cleanup after toolbox feature split
-- **Status**: Complete. All changes committed and pushed on `refactor/toolbox-feature-split` branch.
+- **Phase**: Widget test harness implementation and validation
+- **Status**: Implemented end-to-end with agent review loop and green test suite.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (430)
+### What Was Done This Session (432)
 
-1. Ran 3 parallel code review agents across:
-   - Modified lib/ source files (25 files across 8 features)
-   - Modified test files (25+ test files)
-   - New feature directories (calculator, forms, gallery, todos)
-2. Implemented all actionable findings:
-   - **Bug fix**: Gallery midnight hour=0 displayed "0" instead of "12"
-   - **DRY**: Extracted `roundTo2()` → `shared/utils/math_utils.dart` (was in both calculators)
-   - **DRY**: Extracted `isSameDay/startOfDay/endOfDay` → `shared/utils/date_utils.dart` (was in gallery_provider + test)
-   - **DRY**: Added `InspectorForm.is0582B` getter, replaced 3 inline magic string checks
-   - **Cleanup**: Removed `FormAttachmentManager.refreshForms` alias + empty `dispose`
-   - **Cleanup**: Removed `PdfService` debug template field enumeration prints
-   - **Tests**: Deleted 19 trivial self-referencing tests, empty `Sort menu` group, deduplicated test date helpers
-3. Ran second round of 3 review agents — verified all changes, addressed 3 additional items found
-4. Deleted ~15MB unnecessary files: `tools/mdot-apk/{base.apk, disassemble.py, extracted/}`, `tmp_test_switch.dart`
-5. Created 3 commits on `refactor/toolbox-feature-split` branch and pushed
-6. Pushed claude config repo
+1. Fully implemented `.claude/plans/rosy-launching-dongarra.md` with implementation agents.
+2. Added in-memory test DB path in `DatabaseService` (`forTesting()` + `initInMemory()`).
+3. Added harness runtime + support modules:
+   - `lib/test_harness.dart`
+   - `lib/test_harness/screen_registry.dart`
+   - `lib/test_harness/harness_providers.dart`
+   - `lib/test_harness/harness_seed_data.dart`
+   - `lib/test_harness/stub_router.dart`
+   - `lib/test_harness/stub_services.dart`
+   - `harness_config.json`
+4. Added 0582B interaction keys in `TestingKeys` and wired keys through:
+   - `proctor_entry_screen.dart`
+   - `quick_test_entry_screen.dart`
+   - `weights_entry_screen.dart`
+   - `form_viewer_screen.dart`
+   - `form_fill_screen.dart`
+5. Updated harness docs in `.claude/CLAUDE.md` and `.claude/rules/testing/patrol-testing.md`.
+6. Ran review-agent loop, fixed findings (router exception fallback + seed idempotency), revalidated.
+7. Validation complete: `flutter analyze` (changed scope) clean, `flutter test` full suite green.
+8. Wrote validation artifact: `.claude/test-results/2026-02-21-widget-harness-validation.md`.
 
-### Commits Made
-- `7cbc812` refactor(toolbox): split monolithic toolbox into calculator, forms, gallery, todos features (112 files)
-- `bfd19df` fix: midnight hour bug, extract shared utils, remove dead code (6 files)
-- `7eced8a` docs: add one-point calculator research and mdot algorithm reference (5 files)
-
-### Key Decisions Made (Session 430)
-- Excluded `date_utils.dart` from barrel export to avoid `isSameDay` clash with `table_calendar` package
-- Used `as date_utils` prefix import pattern where needed
-- Left `FormPdfService._isMdot0582bForm` as-is (broader check than `is0582B`, includes path/type matching)
-- Kept `SyncService` DRY refactor as future work (15 identical pull methods, 14 push blocks)
+### Key Decisions Made (Session 432)
+- Harness support kept under `lib/test_harness/` (not `test/harness/`) for compile-safe imports from `lib/test_harness.dart`.
+- Stub router exception path now lands on explicit harness error route to avoid recursion loops.
+- Seed routines were hardened to delete/replace fixed IDs before insert to support repeat harness runs.
+- Kept two known exclusions in registry: PDF import preview screens requiring complex `state.extra` objects.
 
 ### What Needs to Happen Next Session
 
-1. **Merge PR**: `refactor/toolbox-feature-split` branch is pushed, needs PR creation and merge
-2. **Move test files**: Tests still under `test/features/toolbox/` should move to match new feature dirs
-3. **Future refactors tracked from review** (not blocking):
-   - SyncService: 15 identical `_pullXxx` → single `_pullTable(String)`, 14 `_pushBaseData` blocks → loop
-   - `FormPdfService` decomposition (1,281 lines)
-   - `EntryEditorScreen` decomposition (1,223 lines) — extract `_EditableSafetyCard`
-   - Move `FormAttachment` class from pdf/services to forms/data/models
-   - Barrel export consistency across new features
-   - Adopt `ModelTestSuite` in 5 model test files
+1. **Manual MCP harness pass**: run `launch_app(target: "lib/test_harness.dart")` flows for all 0582B screens (screenshot/tap/enter_text verification).
+2. **Create/merge PR**: package Session 432 harness work and pending toolbox branch work for review.
+3. **Optional hardening**: add a small smoke test for `harness_config.json` unknown-screen fallback and seed re-run behavior.
 
 ## Blockers
 
@@ -56,6 +49,16 @@
 **Status**: OPEN (PDF scope only).
 
 ## Recent Sessions
+
+### Session 432 (2026-02-21)
+**Work**: Fully implemented widget test harness plan via implementation/review agents. Added in-memory DB testing path, harness runtime, registry/providers/seeding/stubs, 0582B keys, docs, and validation artifact.
+**Results**: Review findings resolved; `flutter analyze` (changed files) clean; full `flutter test` passed (`+2343 -0`).
+**Next**: Manual MCP interaction sweep on harness screens and PR creation/merge.
+
+### Session 431 (2026-02-21)
+**Work**: Brainstormed widget test harness implementation readiness. Audited codebase, found 6 gaps in original plan. Revised design doc with in-memory SQLite approach, two-tier seeding, onException router, 26-screen registry.
+**Decisions**: Real stack over mocks, explicit registry, DatabaseService.forTesting(), two-tier seeding, onException stub router.
+**Next**: Merge toolbox PR, implement harness Phases 0-1.
 
 ### Session 430 (2026-02-21)
 **Work**: Code quality review (6 agents total — 3 first round, 3 second round). Fixed midnight bug, extracted shared utils (roundTo2, date helpers), added InspectorForm.is0582B, removed dead code, deleted 19 trivial tests, cleaned up ~15MB of unnecessary APK files. Created 3 commits on feature branch.
@@ -72,36 +75,25 @@
 **Decisions**: Config file selection, lib/test_harness.dart entry point, universal mock superset, stub GoRouter, start 0582B + design universal.
 **Next**: Implement harness (Phases 1-6).
 
-### Session 427 (2026-02-21)
-**Work**: Brainstormed universal dart-mcp widget test harness. Made 5 design decisions. Wrote design document with architecture concept, open questions, and success criteria.
-**Decisions**: Compile-time flag selection, test-only entry point, production code untouched, in-memory mock strategy.
-**Next**: Continue brainstorming open questions, then implement harness.
-
-### Session 426 (2026-02-21)
-**Work**: Fully implemented 0582B redesign plan (all 6 phases) via implementation agents, including calculator/data-model/schema migration, new quick-entry/viewer screens, PDF mapping/polish, and daily entry integration.
-**Results**: Agent review loop completed with one high-severity bug fixed; full suite stabilized to `flutter test` => `+2364 -0`.
-**Next**: Targeted UX validation + legacy-response migration/backfill decision.
-
 ## Active Plans
+
+### Universal dart-mcp Widget Test Harness — IMPLEMENTED (Session 432)
+- **Design doc**: `.claude/plans/rosy-launching-dongarra.md`
+- **Status**: Phases 0-6 implemented and validated.
+- **Validation artifact**: `.claude/test-results/2026-02-21-widget-harness-validation.md`
 
 ### Toolbox Feature Split — COMMITTED, NEEDS PR
 - **Branch**: `refactor/toolbox-feature-split` (pushed to origin)
 - **Commits**: 3 (split, fixes, docs)
 - **Status**: Ready for PR creation and merge.
 
-### Universal dart-mcp Widget Test Harness — DESIGN COMPLETE
-- **Design doc**: `.claude/plans/rosy-launching-dongarra.md`
-- **Status**: All 8 decisions resolved. 6-phase implementation plan ready.
-- **Scope**: `lib/test_harness.dart` entry point, config file selection, universal mocked providers, start with 0582B screens
-
 ### Project-Based Architecture — PRD COMPLETE
 - **PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
-- **Brainstorming doc**: `.claude/plans/2026-02-21-project-based-architecture.md`
-- **Status**: Full PRD complete. 8 implementation phases. Ready to start.
+- **Status**: Full PRD complete. 8 implementation phases. Ready to start. (Brainstorming doc was merged into the PRD.)
 
 ## Reference
-- **Toolbox Split Plan**: `.claude/plans/completed/2026-02-20-toolbox-feature-split-plan.md`
 - **Widget Test Harness Design**: `.claude/plans/rosy-launching-dongarra.md`
+- **Harness Validation Report**: `.claude/test-results/2026-02-21-widget-harness-validation.md`
 - **Project-Based Architecture PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
 - **Archive**: `.claude/logs/state-archive.md`
 - **Defects**: `.claude/defects/_defects-toolbox.md`, `.claude/defects/_defects-pdf.md`, `.claude/defects/_defects-sync.md`

@@ -118,13 +118,13 @@ Parses cell grid rows into structured bid items. Works with interpretation pipel
 - `lib/features/pdf/services/extraction/models/interpreted_value.dart` — result of interpretation
 - `lib/features/pdf/services/extraction/rules/` — directory of interpretation rule configs
 
-## Current Baseline (2026-02-19, post v3 pipeline)
+## Current Baseline (2026-02-21, post v3 pipeline)
 
-- **Scorecard**: `51 OK / 4 LOW / 0 BUG`
-- **Quality**: `0.970`
+- **Scorecard**: `68 OK / 3 LOW / 0 BUG`
+- **Quality**: `0.993`
 - **Parsed**: `131/131`
-- **GT matched**: `124/131` (95%)
-- **bid_amount**: `124/131`
+- **GT matched**: `131/131` (100%)
+- **bid_amount**: `131/131`
 
 ## Frequently Referenced Files
 

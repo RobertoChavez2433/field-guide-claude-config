@@ -1,13 +1,12 @@
 # Archive Navigation Index
 
-**Last Updated**: 2026-02-14
+**Last Updated**: 2026-02-21
 
 ## State Archive
 | Session Range | Date Range | File | Line Numbers |
 |---------------|------------|------|--------------|
-| 193-241 | Jan 2026 | state-archive.md | Lines 8-95 |
-| 242-331 | Feb 1-12 2026 | state-archive.md | Lines 96+ |
-| 332-336 | Feb 12-14 2026 | autoload/_state.md | Active (current) |
+| 193-426 | Jan 10 - Feb 21 2026 | state-archive.md | Lines 8+ |
+| 427-431 | Feb 21 2026 | autoload/_state.md | Active (current) |
 
 ## Defects
 Defect tracking uses per-feature files in `.claude/defects/`:
