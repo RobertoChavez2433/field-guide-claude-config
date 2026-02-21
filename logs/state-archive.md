@@ -6,6 +6,14 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 417 (2026-02-21)
+**Work**: Full 6-phase entries refactor. Extracted controllers/widgets/section islands and PdfDataBuilder. Applied critical code-review fixes.
+**Next**: Wire PdfDataBuilder, adopt overlay in HomeScreen, continue 0582B form work.
+
+### Session 414 (2026-02-22)
+**Work**: Fixed route persistence system — allowlist filter, error recovery UI on FormFillScreen.
+**Next**: Continue 0582B redesign.
+
 ### Session 413 (2026-02-21)
 **Work**: Completed Phase 1 teardown for legacy form-import/registry artifacts.
 **Next**: Continue 0582B redesign.

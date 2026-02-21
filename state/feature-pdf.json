@@ -40,7 +40,7 @@
   },
   "metrics": {
     "test_coverage_percentage": 87,
-    "last_updated": "2026-02-20T00:00:00Z",
+    "last_updated": "2026-02-21T23:59:00Z",
     "item_match_rate": 1.0,
     "quality_score": 0.993,
     "median_ocr_confidence": 0.95,
@@ -56,12 +56,12 @@
     "null_unit_price_count": 0,
     "null_bid_amount_count": 0,
     "pipe_artifact_count": 0,
-    "notes": "Session 406: Full body GT validated. Scorecard expanded to 20 metrics (added Body exact_matches + junk_free). 131/131 exact body matches, 131/131 junk-free. All 4 scorecard tests green. BLOCKER-12 fully resolved."
+    "notes": "Session 422: Executed PDF pipeline refactor plan with major stage decompositions, synthetic region/OCR extractor extractions, and fixture wiring updates. PDF feature test scope is green; follow-up targeted unit-test hardening remains."
   },
   "current_phase": {
-    "phase_name": "M&P Extraction/Enrichment Delivery",
-    "status": "Complete. Parser rewritten, fixtures regenerated, GT bodies validated, scorecard 20/20 green (Session 406).",
-    "plan_file": "plans/2026-02-20-mp-extraction-service.md",
+    "phase_name": "PDF Pipeline Refactor Plan (2026-02-20)",
+    "status": "Implemented; stabilization/hardening in progress.",
+    "plan_file": "plans/2026-02-20-pdf-pipeline-refactor-plan.md",
     "brainstorming_file": "plans/completed/2026-02-17-header-consolidation-stage.md",
     "escalation_path": "1) Regenerate fixtures with valid SPRINGFIELD_PDF define 2) Confirm item #100 reads $110.00 at cell OCR level 3) Confirm Stage 4E unit_price 131/131 pre-post-processing 4) Re-run extraction and stage trace suites until green",
     "diagnostic_fixtures": 28,

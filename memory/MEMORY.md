@@ -62,6 +62,18 @@
 - Use `screenshot` command for visual state — returns image directly.
 - Widget tree can be 250K+ chars — use screenshot or parse saved file with python/jq, don't read raw.
 
+### One-Point Chart Digitization
+- **Research doc**: `tools/chart-digitization-research.md` — comprehensive reference with all data, models, findings
+- **MDOT "Construction Density" calculator** (Android app by MDOT) = ground truth oracle for T-99 chart
+- Calculator is T-99 ONLY — does not implement Cone chart
+- 14 exact ground truth data points collected (screenshots in `C:\Users\rseba\OneDrive\Desktop\Density App Outputs\`)
+- **Constant alpha is IMPOSSIBLE** — back-calculated alpha varies 10x (0.00037 to 0.00383) across data
+- Both parabolic AND Gaussian models fail with constant alpha — same 10x variation
+- Real correction is sublinear (effective exponent ~0.88), much gentler than quadratic
+- Hand-extracted boundary data from chart PDFs is LESS accurate than calculator data — use calculator data
+- **Next step**: Research published AASHTO/ASTM one-point equation (T-272, D698, D1557)
+- Python prototypes: `tools/one_point_prototype.py`, `tools/one_point_prototype_v2.py`, `tools/one_point_validation.py`
+
 ### Dart/Flutter Gotchas
 - Raw strings `r'...'` cannot contain single quotes - use `\x27` instead
 - Pre-existing test failure: table_locator_test "rejects section heading" (expects Y=1700, gets 1610)

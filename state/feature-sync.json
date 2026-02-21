@@ -1,31 +1,36 @@
 {
   "id": "sync",
   "name": "Sync Engine",
-  "status": "stable",
+  "status": "attention_needed",
   "description": "Bidirectional offline-first sync between SQLite and Supabase with last-write-wins conflict resolution",
-
   "docs": {
     "overview": "docs/features/feature-sync-overview.md",
     "architecture": "docs/features/feature-sync-architecture.md",
     "prd": "prds/sync-prd.md"
   },
-
   "constraints_file": "architecture-decisions/sync-constraints.md",
   "constraints_summary": [
     "Last-write-wins conflict resolution ONLY (no merge attempts)",
     "Bidirectional sync (push and pull in same cycle)",
     "Validate checksum (SHA256) on all synced records",
     "All-or-nothing per feature (no partial sync)",
-    "Max 3 retry attempts per operation"
+    "Max 3 retry attempts per operation",
+    "SyncProvider test doubles must satisfy non-null SyncService constructor dependencies"
   ],
-
   "integration": {
     "depends_on": [],
-    "required_by": ["auth", "entries", "photos", "projects", "quantities", "settings", "weather"]
+    "required_by": [
+      "auth",
+      "entries",
+      "photos",
+      "projects",
+      "quantities",
+      "settings",
+      "weather"
+    ]
   },
-
   "metrics": {
     "test_coverage_percentage": 92,
-    "last_updated": "2026-02-13T00:00:00Z"
+    "last_updated": "2026-02-21T23:59:00Z"
   }
 }
