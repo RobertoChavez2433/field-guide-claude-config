@@ -6,6 +6,11 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 426 (2026-02-21)
+**Work**: Fully implemented 0582B redesign plan (all 6 phases) via implementation agents, including calculator/data-model/schema migration, new quick-entry/viewer screens, PDF mapping/polish, and daily entry integration.
+**Results**: Agent review loop completed with one high-severity bug fixed; full suite stabilized to `flutter test` => `+2364 -0`.
+**Next**: Targeted UX validation + legacy-response migration/backfill decision.
+
 ### Session 424 (2026-02-21)
 **Work**: Brainstormed 0582B UI redesign. Made 8 design decisions. Wrote comprehensive plan v2 with integrated OnePointCalculator, 3 quick-entry screens, 6 implementation phases.
 **Decisions**: Michigan Cone only, auto-compute MDD/OMC, 3 entry screens, per-proctor 20/10 weights, proctor chip bar.
@@ -565,3 +570,8 @@ Phases 0-4: Observability, clustering, header detection, structural keywords, de
 ### Entry Wizard Enhancements - COMPLETE (Sessions 193-197)
 3 PRs + code review: Test Results removal, Quantity calculation, Start New Form button.
 
+
+### Session 427 (2026-02-21)
+**Work**: Brainstormed universal dart-mcp widget test harness. Made 5 design decisions. Wrote design document with architecture concept, open questions, and success criteria.
+**Decisions**: Compile-time flag selection, test-only entry point, production code untouched, in-memory mock strategy.
+**Next**: Continue brainstorming open questions, then implement harness.

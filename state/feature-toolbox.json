@@ -3,13 +3,11 @@
   "name": "Inspector Toolbox",
   "status": "stable",
   "description": "Toolbox is now a shell/launcher feature after split; calculator, todos, gallery, and forms moved into independent feature directories.",
-
   "docs": {
     "overview": "docs/features/feature-toolbox-overview.md",
     "architecture": "docs/features/feature-toolbox-architecture.md",
     "prd": "prds/toolbox-prd.md"
   },
-
   "constraints_file": "architecture-decisions/toolbox-constraints.md",
   "constraints_summary": [
     "Code-first: each form is a Dart class (not JSON schema driven)",
@@ -19,14 +17,14 @@
     "On-demand PDF preview (no live Syncfusion viewer)",
     "All interactive widgets require ValueKey for dart-mcp testability"
   ],
-
-  "current_phase": "Toolbox Feature Split — implemented and validated (Session 429)",
-
+  "current_phase": "Toolbox split complete; widget harness implemented/validated (Session 432)",
   "integration": {
-    "depends_on": ["auth", "pdf"],
+    "depends_on": [
+      "auth",
+      "pdf"
+    ],
     "required_by": []
   },
-
   "metrics": {
     "test_coverage_percentage": 0,
     "last_updated": "2026-02-21T23:59:59Z"

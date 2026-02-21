@@ -1,35 +1,58 @@
 # Toolbox PRD
 
 ## Purpose
-Toolbox is the inspector's multi-tool -- a collection of utilities that reduce manual paperwork and field calculations. It bundles form filling, task management, construction calculators, and a photo gallery into a single feature, replacing the clipboard, calculator, and sticky notes that inspectors traditionally carry.
+Toolbox is a navigation hub that gives inspectors quick access to four independent utility features: Forms, Calculator, Gallery, and Todos. It replaces the clipboard, calculator, and sticky notes that inspectors traditionally carry. The toolbox itself is a lightweight shell -- all business logic, data, and screens live in the individual features it delegates to.
 
-## Core Capabilities
-- **Inspector Forms**: Fill PDF-based inspection forms (e.g., MDOT 0582B) with smart text parsing, field auto-fill from project context, and carry-forward of last-used values. Import custom PDF templates with automatic field discovery.
-- **Todo Lists**: Project-scoped and entry-scoped task tracking with priority levels (low/normal/high), due dates, completion status, and overdue detection.
-- **Construction Calculator**: HMA tonnage, concrete cubic yards, area (SF), volume (CF), and linear (LF) calculations with append-only history and notes. Density calculator for material testing.
-- **Photo Gallery**: Browse and manage project photos with metadata.
-- **Form Field Registry**: Single source of truth mapping PDF field names to semantic names, enabling auto-fill across different form templates. Supports field aliases for cross-form compatibility.
+## Architecture
+Toolbox is **not** a full feature with data/domain layers. It consists of exactly two files:
+- `lib/features/toolbox/toolbox.dart` -- barrel export
+- `lib/features/toolbox/presentation/screens/toolbox_home_screen.dart` -- a 2x2 grid of navigation tiles
+
+Each tile pushes a named route (`forms`, `calculator`, `gallery`, `todos`) via go_router. The four target features are fully independent modules under `lib/features/`.
+
+## Sub-Features
+
+### Forms (`lib/features/forms/`, ~30 files)
+Fill PDF-based inspection forms (e.g., MDOT 0582B) with smart text parsing, field auto-fill from project context, and carry-forward of last-used values. Import custom PDF templates with automatic field discovery. Includes specialized entry screens for Proctor, Quick Test, and Weights data. Supports PDF preview and export.
+
+### Calculator (`lib/features/calculator/`, 7 files)
+Construction calculators for HMA tonnage, concrete cubic yards, area (SF), volume (CF), linear (LF), and density. Append-only calculation history with optional notes and project/entry linkage.
+
+### Gallery (`lib/features/gallery/`, 3 files)
+Photo gallery viewer with date-range filtering (today, this week, this month, custom), entry-based filtering, and sorting. Presentation-only feature that reads from the `photos` feature's repository -- no data layer of its own.
+
+### Todos (`lib/features/todos/`, 6 files)
+Project-scoped and entry-scoped task tracking with priority levels (low/normal/high), due dates, completion status, and overdue detection. Tasks can be created standalone or linked to a daily entry.
 
 ## Data Model
-- Primary entities (7 SQLite tables):
-  - `inspector_forms`: Form templates with field definitions, parsing keywords, table row config, template bytes
-  - `form_responses`: Filled form data with JSON response_data, status (open/complete), linked to entry and project
-  - `todo_items`: Tasks with priority, due_date, is_completed, project/entry linkage
-  - `calculation_history`: Append-only calculation records with calc_type, input_data (JSON), result_data (JSON)
-  - `form_field_registry`: Field definitions with semantic_name, pdf_field_name, auto_fill_source, category, sort_order
-  - `field_semantic_aliases`: Maps alias strings to canonical semantic_name for cross-form field matching
-  - `form_field_cache`: Stores last-used values per project/semantic_name for carry-forward auto-fill
-- Sync: Sync to Cloud (forms, responses, todos, calculation history all have remote datasources)
+Tables are defined in `lib/core/database/schema/toolbox_tables.dart` but are logically owned by their respective features:
+
+| Table | Owning Feature | Purpose |
+|-------|---------------|---------|
+| `inspector_forms` | forms | Form templates with field definitions, parsing config, template bytes |
+| `form_responses` | forms | Filled form data with JSON response_data, status, entry/project linkage |
+| `todo_items` | todos | Tasks with priority, due_date, is_completed, project/entry linkage |
+| `calculation_history` | calculator | Append-only calculation records with calc_type, input/result JSON |
+
+Gallery has no tables -- it reads from the `photos` table owned by the photos feature.
+
+Sync: forms, todos, and calculator all have remote datasources for cloud sync.
 
 ## User Flow
-Inspectors access the Toolbox from the bottom navigation bar. The home screen shows quick-access tiles: Forms, Todos, Calculator, and Gallery. For forms, inspectors select a template, fill fields (auto-populated where possible), preview the rendered PDF, and save. Todos can be created from the todo screen or inline from a daily entry. Calculator results can be optionally linked to an entry or project.
+1. Inspector taps the Toolbox icon in the bottom navigation bar.
+2. `ToolboxHomeScreen` displays a 2x2 grid with four tiles: Forms, Calculator, Gallery, and To-Do's.
+3. Tapping a tile pushes the corresponding named route, navigating into that feature's own screen stack.
+4. Each feature manages its own navigation, state, and data independently -- the toolbox has no further involvement after the initial push.
 
 ## Offline Behavior
-Fully functional offline. All form templates, responses, todos, and calculations are stored locally in SQLite. PDF template bytes are cached in the `inspector_forms` table for offline rendering. Form auto-fill pulls from the local `form_field_cache`. Imported PDF templates are stored as BLOBs. All changes queue for sync when connectivity returns.
+Each sub-feature is fully functional offline. Form templates, responses, todos, and calculations are stored locally in SQLite. PDF template bytes are cached as BLOBs in `inspector_forms` for offline rendering. All changes queue for sync when connectivity returns. The toolbox hub itself has no offline concerns (it is stateless).
 
 ## Dependencies
-- Features: projects (form/todo/calc scoping), entries (form response and todo linkage), photos (gallery), pdf (form PDF rendering)
-- Packages: `uuid`, `sqflite`, `provider`, `syncfusion_flutter_pdf` (form PDF generation), `syncfusion_flutter_pdfviewer` (template preview)
+- **Toolbox hub**: `go_router` (navigation), `AppTheme` (styling), `TestingKeys` (testability)
+- **Forms**: projects, entries (scoping/linkage), pdf (rendering), `syncfusion_flutter_pdf`, `syncfusion_flutter_pdfviewer`
+- **Calculator**: projects, entries (optional linkage), `uuid`
+- **Gallery**: photos (photo data), entries (entry filter), no own data dependencies
+- **Todos**: projects, entries (scoping/linkage), `uuid`
 
 ## Owner Agent
-backend-data-layer-agent (models, repositories, services), frontend-flutter-specialist-agent (screens, widgets, providers)
+frontend-flutter-specialist-agent (toolbox hub screen), backend-data-layer-agent + frontend-flutter-specialist-agent (sub-features)
