@@ -14,8 +14,9 @@ Cross-platform mobile/desktop app for construction inspectors. Offline-first wit
 lib/
 ├── core/        # Router, theme, config, database
 ├── shared/      # Base classes, utilities
-├── features/    # 13 features: auth, contractors, dashboard, entries, locations,
-│                # pdf, photos, projects, quantities, settings, sync, toolbox, weather
+├── features/    # 17 features: auth, calculator, contractors, dashboard, entries, forms,
+│                # gallery, locations, pdf, photos, projects, quantities, settings, sync,
+│                # todos, toolbox (hub for calculator/forms/gallery/todos), weather
 └── services/    # Cross-cutting (photo, image, permission)
 ```
 
@@ -233,6 +234,38 @@ pwsh -Command "Set-Location 'C:\Users\rseba\Projects\Field Guide App'; flutter p
 - After app crash: just call `launch_app` again — MCP servers survive
 - Findings: `.claude/test-results/YYYY-MM-DD-ui-test-findings.md`
 - **If a driver command times out, DON'T retry the same command** — diagnose why (overlay? missing key? wrong finder?)
+
+## Widget Test Harness (Isolated Screen Testing)
+
+Purpose: render one screen at a time with real providers backed by in-memory SQLite for faster, lower-load UI testing than full-app launch.
+
+### Launch Sequence (harness config + entry point)
+1. Write `harness_config.json` at project root with target screen + optional data.
+2. `mcp__dart-mcp__launch_app(root: "C:\Users\rseba\Projects\Field Guide App", device: "windows", target: "lib/test_harness.dart")`
+3. `mcp__dart-mcp__connect_dart_tooling_daemon(uri: <dtdUri>)`
+4. Use `flutter_driver` commands (`screenshot`, `tap`, `enter_text`, `get_text`, `waitFor`) against the rendered screen.
+
+### `harness_config.json` Format
+```json
+{
+  "screen": "ProctorEntryScreen",
+  "data": {
+    "responseId": "test-response-001"
+  }
+}
+```
+- `screen`: registry key from harness screen registry.
+- `data`: optional per-screen constructor/seed inputs.
+
+### Available Screens
+- Screens are defined in the harness registry file (single source of truth): `lib/test_harness/screen_registry.dart`.
+- Current scope includes 0582B forms screens plus standalone app screens supported by the harness provider stack.
+
+### Add a New Screen to Harness
+1. Add a registry entry in `lib/test_harness/screen_registry.dart` (`'ScreenName': (data) => Screen(...)`).
+2. Add `ValueKey` coverage for interactive elements in the screen widget.
+3. Add/update keys in `lib/shared/testing_keys/testing_keys.dart`.
+4. If the screen needs extra context, extend harness seeding (`harness_config.json` `data` + seed helper) before launch.
 
 ## Context Efficiency
 
