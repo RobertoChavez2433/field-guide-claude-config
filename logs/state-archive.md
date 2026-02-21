@@ -6,6 +6,11 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 428 (2026-02-21)
+**Work**: Resolved all 6 open harness design questions. Confirmed dart-mcp launch_app lacks --dart-define. Pivoted to config file approach. Wrote 6-phase implementation plan.
+**Decisions**: Config file selection, lib/test_harness.dart entry point, universal mock superset, stub GoRouter, start 0582B + design universal.
+**Next**: Implement harness (Phases 1-6).
+
 ### Session 426 (2026-02-21)
 **Work**: Fully implemented 0582B redesign plan (all 6 phases) via implementation agents, including calculator/data-model/schema migration, new quick-entry/viewer screens, PDF mapping/polish, and daily entry integration.
 **Results**: Agent review loop completed with one high-severity bug fixed; full suite stabilized to `flutter test` => `+2364 -0`.

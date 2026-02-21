@@ -1,47 +1,40 @@
 # Session State
 
-**Last Updated**: 2026-02-21 | **Session**: 432
+**Last Updated**: 2026-02-21 | **Session**: 433
 
 ## Current Phase
-- **Phase**: Widget test harness implementation and validation
-- **Status**: Implemented end-to-end with agent review loop and green test suite.
+- **Phase**: Full project audit and cleanup complete
+- **Status**: All files committed and pushed. Zero analyze issues, all 2,343 tests passing.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (432)
+### What Was Done This Session (433)
 
-1. Fully implemented `.claude/plans/rosy-launching-dongarra.md` with implementation agents.
-2. Added in-memory test DB path in `DatabaseService` (`forTesting()` + `initInMemory()`).
-3. Added harness runtime + support modules:
-   - `lib/test_harness.dart`
-   - `lib/test_harness/screen_registry.dart`
-   - `lib/test_harness/harness_providers.dart`
-   - `lib/test_harness/harness_seed_data.dart`
-   - `lib/test_harness/stub_router.dart`
-   - `lib/test_harness/stub_services.dart`
-   - `harness_config.json`
-4. Added 0582B interaction keys in `TestingKeys` and wired keys through:
-   - `proctor_entry_screen.dart`
-   - `quick_test_entry_screen.dart`
-   - `weights_entry_screen.dart`
-   - `form_viewer_screen.dart`
-   - `form_fill_screen.dart`
-5. Updated harness docs in `.claude/CLAUDE.md` and `.claude/rules/testing/patrol-testing.md`.
-6. Ran review-agent loop, fixed findings (router exception fallback + seed idempotency), revalidated.
-7. Validation complete: `flutter analyze` (changed scope) clean, `flutter test` full suite green.
-8. Wrote validation artifact: `.claude/test-results/2026-02-21-widget-harness-validation.md`.
+1. **Full project directory audit** using 5 parallel Explore agents across root files, lib/, test/tools, .claude/, and config/platform dirs.
+2. **Massive cleanup** via 12+ parallel agents across 6 phases:
+   - Recovered ~5GB disk (deleted 4.8GB vcpkg clone, 83K+ junk files)
+   - Deleted 30+ stray root files (logs, tmp, prototypes)
+   - Removed 41 one-off PDF debug scripts from tools/
+   - Removed vestigial web/ platform, dead service barrels (services.dart, sync/sync.dart)
+   - Deleted .tmp/, tooling/, test/tooling/, .cursor/
+3. **Structural fixes**: moved weather_helpers to entries feature (layering fix), reorganized 21 test files from toolbox/ to calculator/forms/todos/gallery/.
+4. **Fixed 106 flutter analyze issues → 0**: deprecated grid→rows, unused vars, deprecated APIs, doc comments, unnecessary imports.
+5. **Updated docs**: CLAUDE.md (13→17 features), DEVELOPER_DOCS.md (comprehensive rewrite), toolbox-prd.md (hub architecture), patrol-testing.md (dart-mcp, stage trace, 4-tier strategy).
+6. **CI update**: added 4 missing tests to e2e workflow matrix (10→14).
+7. **Committed**: 8 app repo commits + 3 .claude repo commits, both pushed.
 
-### Key Decisions Made (Session 432)
-- Harness support kept under `lib/test_harness/` (not `test/harness/`) for compile-safe imports from `lib/test_harness.dart`.
-- Stub router exception path now lands on explicit harness error route to avoid recursion loops.
-- Seed routines were hardened to delete/replace fixed IDs before insert to support repeat harness runs.
-- Kept two known exclusions in registry: PDF import preview screens requiring complex `state.extra` objects.
+### Key Decisions Made (Session 433)
+- web/ deleted — never an active platform target.
+- patrol-testing.md is THE canonical testing reference — updated, not deleted.
+- e2e-test-setup.md deleted — new testing structure coming.
+- CellGrid.grid deprecated getter fully removed, all call sites migrated to .rows.
+- services.dart barrel deleted (zero importers confirmed).
 
 ### What Needs to Happen Next Session
 
-1. **Manual MCP harness pass**: run `launch_app(target: "lib/test_harness.dart")` flows for all 0582B screens (screenshot/tap/enter_text verification).
-2. **Create/merge PR**: package Session 432 harness work and pending toolbox branch work for review.
-3. **Optional hardening**: add a small smoke test for `harness_config.json` unknown-screen fallback and seed re-run behavior.
+1. **Manual MCP harness pass**: run widget test harness flows for 0582B screens.
+2. **Update rules/architecture.md**: still references "13 feature modules" — needs 17.
+3. **Continue widget test harness**: manual validation + optional smoke tests.
 
 ## Blockers
 
@@ -49,6 +42,11 @@
 **Status**: OPEN (PDF scope only).
 
 ## Recent Sessions
+
+### Session 433 (2026-02-21)
+**Work**: Full project directory audit and cleanup. 5 Explore agents audited root/lib/test/tools/.claude/config dirs. 12+ agents executed cleanup across 6 phases. Recovered ~5GB, deleted 83K+ files, fixed 106 analyze issues→0, reorganized tests, updated all docs.
+**Results**: `flutter analyze` 0 issues; `flutter test` +2343 all passed; 8 app commits + 3 .claude commits pushed.
+**Next**: Manual MCP harness pass, update rules/architecture.md feature count.
 
 ### Session 432 (2026-02-21)
 **Work**: Fully implemented widget test harness plan via implementation/review agents. Added in-memory DB testing path, harness runtime, registry/providers/seeding/stubs, 0582B keys, docs, and validation artifact.
@@ -70,11 +68,6 @@
 **Results**: Full `flutter test` passed; migration-scope analyze clean; second review pass closed with no findings.
 **Next**: Code quality review and cleanup.
 
-### Session 428 (2026-02-21)
-**Work**: Resolved all 6 open harness design questions. Confirmed dart-mcp launch_app lacks --dart-define. Pivoted to config file approach. Wrote 6-phase implementation plan.
-**Decisions**: Config file selection, lib/test_harness.dart entry point, universal mock superset, stub GoRouter, start 0582B + design universal.
-**Next**: Implement harness (Phases 1-6).
-
 ## Active Plans
 
 ### Universal dart-mcp Widget Test Harness — IMPLEMENTED (Session 432)
@@ -82,10 +75,8 @@
 - **Status**: Phases 0-6 implemented and validated.
 - **Validation artifact**: `.claude/test-results/2026-02-21-widget-harness-validation.md`
 
-### Toolbox Feature Split — COMMITTED, NEEDS PR
-- **Branch**: `refactor/toolbox-feature-split` (pushed to origin)
-- **Commits**: 3 (split, fixes, docs)
-- **Status**: Ready for PR creation and merge.
+### Toolbox Feature Split — MERGED TO MAIN
+- **Status**: All work merged to main (commits dfb9d15 through d3607f5). Test dirs reorganized in Session 433.
 
 ### Project-Based Architecture — PRD COMPLETE
 - **PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
