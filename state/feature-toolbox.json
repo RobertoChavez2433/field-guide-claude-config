@@ -1,8 +1,8 @@
 {
   "id": "toolbox",
   "name": "Inspector Toolbox",
-  "status": "stable",
-  "description": "Dynamic form builder with auto-fill engine, calculation history, and todo tracking for inspector utilities",
+  "status": "in_progress",
+  "description": "Inspector forms and utilities; 0582B redesign is in progress with legacy Phase 1 teardown completed and Phase 2+ implementation pending",
 
   "docs": {
     "overview": "docs/features/feature-toolbox-overview.md",
@@ -12,11 +12,15 @@
 
   "constraints_file": "architecture-decisions/toolbox-constraints.md",
   "constraints_summary": [
-    "All forms built via builder pattern (JSON schema -> widget rendering)",
-    "No hardcoding UI widgets in screens",
-    "Auto-fill engine: previously-entered values suggested",
-    "No conditional field logic in widgets (move to form definition)"
+    "Code-first: each form is a Dart class (not JSON schema driven)",
+    "Shared utility layer: auto-fill, PDF export, SmartInputBar, header widgets",
+    "Form-specific layout and calculations in dedicated Dart classes",
+    "Generic DB: header_data + response_data JSON columns, form_type discriminator",
+    "On-demand PDF preview (no live Syncfusion viewer)",
+    "All interactive widgets require ValueKey for dart-mcp testability"
   ],
+
+  "current_phase": "0582B Form Redesign — Phase 1 teardown complete; Phase 2+ data/model and UX implementation in progress",
 
   "integration": {
     "depends_on": ["auth", "pdf"],
@@ -24,7 +28,7 @@
   },
 
   "metrics": {
-    "test_coverage_percentage": 55,
-    "last_updated": "2026-02-13T00:00:00Z"
+    "test_coverage_percentage": 0,
+    "last_updated": "2026-02-22T00:00:00Z"
   }
 }

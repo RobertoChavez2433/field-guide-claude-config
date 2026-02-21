@@ -1,31 +1,27 @@
 # Session State
 
-**Last Updated**: 2026-02-20 | **Session**: 406
+**Last Updated**: 2026-02-22 | **Session**: 414
 
 ## Current Phase
-- **Phase**: M&P Ground Truth + Body Validation — COMPLETE
-- **Status**: Full body GT generated, scorecard expanded to 20 metrics, 131/131 body exact matches, 131/131 junk-free. All 4 scorecard tests green.
+- **Phase**: 0582B Form Redesign — Full teardown + rebuild
+- **Status**: Phase 1 teardown complete. Route persistence bug fixed. Phase 2+ implementation pending.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (406)
+### What Was Done This Session (414)
 
-#### 1. Strengthened M&P Ground Truth + Stage Capture
-- **Fixture generator** (`generate_mp_fixtures_test.dart`): Replaced `body_excerpt` (120-char truncation) with `body` (full text). Added `raw_body_tail` (last 150 chars of uncleaned segment). Added `mp_ground_truth_bodies.json` fixture (131 items with full expected body).
-- **Scorecard** (`mp_stage_trace_diagnostic_test.dart`): Added 2 new Body metrics (`exact_matches`, `junk_free`). Added "Body Accuracy Report" section. Added "Body Text Accuracy" test group with 2 tests (exact match + junk pattern detection). Updated GT traces to use `body` instead of `body_excerpt`.
-- **Fixtures regenerated**: All 7 fixtures generated (including new `mp_ground_truth_bodies.json` at 49KB).
+1. **Route persistence/restoration fix**: Implemented three-layer defense against stale route restoration.
+   - **Layer 1 (allowlist)**: `_isRestorableRoute()` in `main.dart` — only 12 static routes are persisted; dynamic-ID routes are never saved.
+   - **Layer 2 (error recovery)**: `form_fill_screen.dart` — "Form response not found" now shows icon + message + "Go Back" button using `safeGoBack`.
+   - **Layer 3 (Driver skip)**: `main.dart` — `FLUTTER_DRIVER` env skips route restoration so tests always start at `/`.
+2. **`clearLastRoute()` API**: Added to `preferences_service.dart` for programmatic route reset.
+3. All changes pass `flutter analyze` with zero issues.
 
-#### 2. Scorecard Results — 20/20 OK
-- Body exact_matches: 131/131 (100%)
-- Body junk_free: 131/131 (100%)
-- All 20 metrics OK, 0 BUG/HIGH, 0 LOW/OVER/SLOW
-- Header stripping confirmed working (items 115, 128, 131 clean)
+### What Was NOT Done
+- Manual testing of the route restoration fix (needs app launch + kill/restart cycle)
+- Phase 2+ of 0582B redesign (data layer completion, shared widgets, UX polish)
 
 ## Blockers
-
-### BLOCKER-12: M&P Parser Regex Finds Only 4 of 131 Items
-**Impact**: M&P extraction was non-functional.
-**Status**: RESOLVED (Session 405-406). Anchor algorithm implemented, fixtures regenerated, scorecard 20/20 green.
 
 ### BLOCKER-6: Global Test Suite Has Unrelated Existing Failures
 **Impact**: Full-repo `flutter test` remains non-green outside extraction scope.
@@ -35,51 +31,50 @@
 **Impact**: Fixture regeneration/strict diagnostics require `--dart-define=SPRINGFIELD_MP_PDF=...`.
 **Status**: Open.
 
-### BLOCKER-8: Marionette MCP Disconnects During Heavy Rendering
-**Impact**: Cannot reliably automate full UI journeys through Marionette.
-**Status**: Mitigated with hybrid testing approach.
-
 ## Recent Sessions
 
-### Session 406 (2026-02-20)
-**Work**: Strengthened M&P ground truth with full body text. Added `mp_ground_truth_bodies.json` fixture, `raw_body_tail` stage capture, 2 body accuracy metrics. Scorecard expanded to 20 metrics, all OK. BLOCKER-12 fully resolved.
-**Decisions**: Full body (no truncation) in fixtures. Raw tail captured by re-running anchor detection in generator. Junk patterns: page headers + section markers.
-**Next**: Verify bodies against native PDF text (plan step 3). Consider non-Springfield PDF validation.
+### Session 414 (2026-02-22)
+**Work**: Fixed route persistence system — allowlist filter (only static routes saved), error recovery UI on FormFillScreen, Flutter Driver skip. Added `clearLastRoute()` to PreferencesService.
+**Decisions**: Allowlist > denylist for route saving (new routes default to "not saved"). Error UI follows existing `report_screen.dart` pattern using `safeGoBack`.
+**Next**: Manual testing of route fix. Continue Phases 2-6 of 0582B redesign.
 
-### Session 405 (2026-02-20)
-**Work**: Implemented M&P parser anchor rewrite (BLOCKER-12). Rewrote `_parseEntries()` with metadata-driven two-point anchor. Updated 5 test files. Code reviewed (1 critical fix applied). 25/25 tests green, 0 analysis issues.
-**Decisions**: Safety-net merge threshold 30 chars. Case-sensitive regex. Fixture generator normalizes item numbers inline.
-**Next**: Regenerate M&P fixtures, run scorecard to verify 131/131.
+### Session 413 (2026-02-21)
+**Work**: Completed remaining Phase 1 teardown for legacy form-import/registry artifacts. Removed legacy services/tests/assets, updated DB migration cleanup, and aligned template references to `mdot_0582b_form.pdf`.
+**Decisions**: Keep teardown deterministic by deleting residual legacy paths and references rather than leaving compatibility shims.
+**Next**: Continue Phases 2-6 of 0582B redesign (data-model completion, widget architecture, preview/export polish, edge-case flows).
 
-### Session 404 (2026-02-20)
-**Work**: Researched community best practices for anchor-based PDF parsing. Brainstormed metadata-driven two-point anchor. Wrote implementation plan.
-**Decisions**: Two-point anchor (regex + known bid item numbers). Safety net for short segments. Record return type.
-**Plan**: `.claude/plans/2026-02-20-mp-parser-anchor-rewrite.md`
+### Session 412 (2026-02-21)
+**Work**: Started implementation from 0582B redesign plan. Added export preview gating + preview invalidation on edits, updated leave flow (`Discard` + `Leave & Save`), stabilized DB tests, and ran review/test loops.
+**Decisions**: Keep targeted, non-destructive progress while preserving existing architecture; defer major teardown/model migration to next slice.
+**Next**: Implement Phase 1 teardown and Phase 2 schema/model migration with tests.
 
-### Session 403 (2026-02-20)
-**Work**: Built M&P testing harness (fixture generator + 14-metric scorecard + GT traces). Diagnosed "4 items" bug.
-**Decisions**: Parser rewrite needed — anchor-based, not regex-line-start.
+### Session 411 (2026-02-20)
+**Work**: Brainstorming session — full review of current form system, designed 0582B form redesign. Editable form widget + SmartInputBar + on-demand PDF preview + code-first modularity.
+**Decisions**: Full teardown both forms. Generic DB (header_data + response_data). Row-at-a-time entry. Live calcs with visual cue. 6-phase implementation plan.
+**Next**: Start Phase 1 (teardown of current form system). Plan: `.claude/plans/2026-02-20-0582b-form-redesign.md`
 
-### Session 402 (2026-02-20)
-**Work**: Discovered `Stop-Process -Name 'dart'` kills MCP servers. Decided hybrid testing approach.
-
-### Session 401 (2026-02-20)
-**Work**: Attempted M&P E2E test. Fixed Marionette MCP infra.
+### Session 410 (2026-02-20)
+**Work**: Added Flutter Driver infrastructure (driver_main.dart, flutter_driver dep). Discovered Driver can't interact with dialog overlays on Windows. Added FLUTTER_DRIVER env guard. Rewrote CLAUDE.md dart-mcp docs with limitations table.
+**Decisions**: Guard all dialogs with `FLUTTER_DRIVER` env check. Don't retry timed-out driver commands — diagnose and work around.
+**Next**: Audit all dialogs for FLUTTER_DRIVER guards. Walk through 0582b form.
 
 ## Active Plans
 
 ### M&P Parser Rewrite — COMPLETE (BLOCKER-12 RESOLVED)
 - **Plan**: `.claude/plans/2026-02-20-mp-parser-anchor-rewrite.md`
-- **Algorithm**: Metadata-driven two-point anchor (regex + bid item number whitelist)
 - **Status**: Complete. 131/131 parsed, matched, body-validated. 20/20 scorecard metrics OK.
 
 ### M&P Extraction Service — COMPLETE, VALIDATED
 - **Plan file**: `.claude/plans/2026-02-20-mp-extraction-service.md`
-- Core implementation complete, parser rewritten, GT bodies validated, scorecard green
 
-### Testing Strategy — DECIDED, READY TO EXECUTE
-- Audit existing 21 Patrol E2E tests + 6 isolated tests
-- Run suite, report pass/fail per test
+### 0582B Form Redesign — IN PROGRESS
+- **Plan**: `.claude/plans/2026-02-20-0582b-form-redesign.md`
+- **Status**: Implementation in progress. Guardrails and Phase 1 teardown complete; Phase 2+ buildout pending.
+- **Phases**: 6 total (teardown → data layer → shared widgets → form screen → PDF export → polish)
+
+### UI Journeys — COMPLETE (14 issues found)
+- **14 issues total**: 3 High (P15, P49, P50), 5 Medium, 4 Low, 2 Infra
+- Findings: `.claude/test-results/2026-02-19-marionette-findings.md`
 
 ### 100% Extraction Pipeline Fixes — IMPLEMENTED, VALIDATED
 - **Plan file**: `.claude/plans/2026-02-19-100pct-extraction-pipeline-fixes.md`

@@ -4,6 +4,7 @@
 
 ### Build Tips
 - Build folder lock: kill dart.exe and construction_inspector.exe, wait 5s, then delete build/
+- **cmake install fails if `build/native_assets/windows/` missing** — always `mkdir -p` before building after a clean
 
 ### PDF Extraction Pipeline
 - **OCR-ONLY pipeline** — Native text extraction is OFF. CMap corruption across PDFs made native extraction unreliable. 2 weeks spent decoding corruption, scrapped. DO NOT suggest native/hybrid extraction.
@@ -47,23 +48,19 @@
 - Known Claude Code Windows bugs: #4462, #7032, #5465 - subagent file writes may not persist
 - Context handoff: subagents start fresh - always pass full context in Task prompt or write to `.claude/plans/`
 
-### Marionette MCP Setup
-- `marionette_flutter: ^0.3.0` in **dependencies** (Flutter binding, runs in app)
-- `marionette_mcp: ^0.3.0` in **dev_dependencies** AND globally activated (v0.3.0)
-- `.mcp.json` config: Use absolute path to global binary (`C:\Users\rseba\AppData\Local\Pub\Cache\bin\marionette_mcp.bat`). `dart run marionette_mcp` fails because Claude Code's CWD isn't always the project root.
-- **Marionette tools**: connect, disconnect, get_interactive_elements, tap, enter_text, scroll_to, get_logs, take_screenshots, hot_reload
-- **Workflow**: Launch app first → get VM Service URI → call `connect` with URI → then use interaction tools
-- **MarionetteBinding crash fix**: Guard with `Platform.environment.containsKey('FLUTTER_TEST')` to prevent binding conflict during `flutter test` (GitHub issue #33)
+### Dart MCP + Flutter Driver Setup
+- **Marionette REMOVED (Session 409)**: Replaced entirely by dart-mcp + flutter_driver.
+- `lib/driver_main.dart` exists — ALWAYS launch with `target: "lib/driver_main.dart"` for driver commands
+- `flutter_driver` is a dev dependency in pubspec.yaml
 - Restart Claude Code after `.mcp.json` changes.
-- **CRITICAL (Session 402)**: NEVER run `Stop-Process -Name 'dart'` — kills MCP servers. Only kill `construction_inspector`. Both MCP servers survive app crashes; just relaunch app and reconnect.
-- **VM Service fragility**: WebSocket drops during heavy rendering, GC pauses, rapid operations. Flutter platform issue, not Marionette-specific. No auto-reconnect in v0.3.0.
-- **Log file**: `.claude/logs/marionette-mcp.log` (configured in `.mcp.json` args)
-
-### Dart MCP (dart mcp-server) Setup
-- `connect_dart_tooling_daemon` is the GATEWAY to all runtime tools (flutter_driver, get_widget_tree, screenshots, hot_reload, etc.). NEVER exclude it if you need app interaction.
-- Only safe to exclude: `get_active_location` (IDE-only), `create_project` (not needed)
-- `get_widget_tree` essential for discovering widget finders before flutter_driver commands
-- After `launch_app`, call `connect_dart_tooling_daemon` with the DTD URI before any driver commands
+- **CRITICAL**: NEVER run `Stop-Process -Name 'dart'` — kills MCP servers. Only kill `construction_inspector`.
+- `connect_dart_tooling_daemon` is the GATEWAY to all runtime tools. NEVER exclude it.
+- **Flutter Driver CANNOT interact with dialog overlays** (AlertDialog, BottomSheet, showDialog). Dialogs must be guarded with `const bool.fromEnvironment('FLUTTER_DRIVER')` to auto-skip.
+- **Don't pass `timeout` param** to flutter_driver commands — causes type cast error in dart-mcp.
+- **Nested finders (Descendant/Ancestor) don't work** — JSON serialization bug. Use ByValueKey/ByText instead.
+- **If a driver command times out, DON'T retry** — diagnose (overlay? missing key?) and work around.
+- Use `screenshot` command for visual state — returns image directly.
+- Widget tree can be 250K+ chars — use screenshot or parse saved file with python/jq, don't read raw.
 
 ### Dart/Flutter Gotchas
 - Raw strings `r'...'` cannot contain single quotes - use `\x27` instead

@@ -6,6 +6,40 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 409 (2026-02-20)
+**Work**: Diagnosed Marionette root cause (empty render tree on Windows). Removed Marionette entirely. Migrated to dart-mcp only. Verified widget tree works. Added `native_assets/windows` build fix to docs.
+**Decisions**: dart-mcp replaces Marionette permanently. No third-party UI automation packages.
+**Next**: Walk through 0582b form via dart-mcp.
+
+### Session 408 (2026-02-20)
+**Work**: Completed Marionette Journeys 6-8. Inline editing (activities, contractors work; temp broken). Quantities screen had 2 High bugs (search + sort). Archive/unarchive, PDF export, calendar views passed.
+**Decisions**: Log search/sort as High priority. Temp edit needs investigation.
+**Next**: Fix P50 (numeric sort), fix P49 (search filter), fix P34 (temp inline save), fix P15 (Gallery/To-Do's missing).
+
+### Session 407 (2026-02-20)
+**Work**: Marionette UI testing — completed Journeys 3-5, started Journey 6. Standardized MCP launch procedure in CLAUDE.md. Found 9 new issues (P5-P30).
+**Decisions**: Use `dart-mcp launch_app` (not `flutter run` via bash).
+**Next**: Continue Journey 6 (inline editing), then Journeys 7 and 8.
+
+### Session 406 (2026-02-20)
+**Work**: Strengthened M&P ground truth with full body text. Scorecard 20/20 OK. BLOCKER-12 fully resolved.
+**Decisions**: Full body (no truncation) in fixtures.
+**Next**: Verify bodies against native PDF text.
+
+### Session 404 (2026-02-20)
+**Work**: Researched anchor-based PDF parsing. Brainstormed metadata-driven two-point anchor. Wrote plan.
+**Decisions**: Two-point anchor (regex + known bid item numbers).
+**Plan**: `.claude/plans/2026-02-20-mp-parser-anchor-rewrite.md`
+
+### Session 403 (2026-02-20)
+**Work**: Built M&P testing harness (fixture generator + 14-metric scorecard + GT traces). Diagnosed "4 items" bug.
+
+### Session 402 (2026-02-20)
+**Work**: Discovered `Stop-Process -Name 'dart'` kills MCP servers. Decided hybrid testing approach.
+
+### Session 401 (2026-02-20)
+**Work**: Attempted M&P E2E test. Fixed Marionette MCP infra.
+
 ### Session 400 (2026-02-20)
 **Work**: Dual code review, resolved BLOCKER-11, fixed 5 bugs, verified tests green.
 
@@ -205,6 +239,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 ---
 
 ## February 2026
+
+### Session 405 (2026-02-20)
+Implemented M&P parser anchor rewrite (BLOCKER-12). 25/25 tests green, 0 analysis issues.
 
 ### Session 329 (2026-02-12)
 Git history restructuring — 10 clean commits pushed to main.
