@@ -6,6 +6,14 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 413 (2026-02-21)
+**Work**: Completed Phase 1 teardown for legacy form-import/registry artifacts.
+**Next**: Continue 0582B redesign.
+
+### Session 412 (2026-02-21)
+**Work**: Started implementation from 0582B redesign plan. Added export preview gating + preview invalidation on edits, updated leave flow.
+**Next**: Phase 1 teardown and Phase 2 schema/model migration.
+
 ### Session 409 (2026-02-20)
 **Work**: Diagnosed Marionette root cause (empty render tree on Windows). Removed Marionette entirely. Migrated to dart-mcp only. Verified widget tree works. Added `native_assets/windows` build fix to docs.
 **Decisions**: dart-mcp replaces Marionette permanently. No third-party UI automation packages.
