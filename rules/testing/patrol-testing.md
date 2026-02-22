@@ -4,6 +4,9 @@ paths:
   - "test/**/*.dart"
   - "lib/shared/testing_keys/testing_keys.dart"
   - "lib/shared/testing_keys/quantities_keys.dart"
+  - "lib/test_harness/**/*.dart"
+  - "lib/test_harness.dart"
+  - "lib/driver_main.dart"
 ---
 
 # Testing Guide
@@ -246,6 +249,35 @@ Purpose: render one screen at a time with real providers backed by in-memory SQL
 2. Add `ValueKey` coverage for interactive elements in the screen widget
 3. Add/update keys in `lib/shared/testing_keys/testing_keys.dart`
 4. If the screen needs extra context, extend harness seeding via `harness_config.json` `data`
+
+### Flow Mode (Multi-Screen Journey Testing)
+
+Wires up real GoRouter routes so screens navigate naturally without relaunching the app per screen.
+
+#### Flow `harness_config.json` Format
+```json
+{
+  "flow": "0582b-forms",
+  "startAt": "/forms",
+  "data": {
+    "responseId": "harness-response-001"
+  }
+}
+```
+- `flow`: key into `lib/test_harness/flow_registry.dart` (triggers flow mode instead of single-screen mode).
+- `startAt`: optional initial route path (defaults to flow's `defaultInitialLocation`).
+- `data`: shared seed data, same as single-screen mode.
+
+#### Available Flows
+| Flow Key | Start | Screens |
+|----------|-------|---------|
+| `0582b-forms` | `/forms` | FormsListScreen, FormViewerScreen, QuickTestEntryScreen, ProctorEntryScreen, WeightsEntryScreen, ToolboxHomeScreen |
+
+#### Add a New Flow
+1. Add a `FlowDefinition` entry in `lib/test_harness/flow_registry.dart`.
+2. Copy needed `GoRoute` entries from `app_router.dart` (without auth redirects/shell routes).
+3. Include fallback routes used by `safeGoBack` in the flow's screens.
+4. List seed screen names in `seedScreens`.
 
 ---
 

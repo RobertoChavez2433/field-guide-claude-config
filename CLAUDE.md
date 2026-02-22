@@ -40,7 +40,7 @@ lib/
 | `rules/pdf/pdf-generation.md` | lib/features/pdf/** |
 | `rules/sync/sync-patterns.md` | lib/features/sync/** |
 | `rules/database/schema-patterns.md` | lib/core/database/** |
-| `rules/testing/patrol-testing.md` | integration_test/**, test/** |
+| `rules/testing/patrol-testing.md` | integration_test/**, test/**, lib/test_harness/**, lib/driver_main.dart |
 
 ## Agents
 | Agent | Use For | Phase |
@@ -173,99 +173,22 @@ Each session, after completing implementation work, check:
 - Hook scripts do not yet exist on disk. Run `tools/audit/setup-hooks.sh` once they are created.
 - Bypass (WIP only): `git commit --no-verify` (CI will still catch issues)
 
-## UI Testing via dart-mcp (Standardized Procedure)
+## Testing
 
-Uses dart-mcp MCP server + Flutter Driver extension for app interaction.
+All testing details (dart-mcp, widget harness, flow harness, Patrol E2E, PDF stage trace, widget keys, MCP stability rules) live in:
+- **`rules/testing/patrol-testing.md`** — Auto-loads when touching `test/**`, `integration_test/**`, `lib/test_harness/**`, `lib/driver_main.dart`, or testing keys files
+- **`docs/guides/testing/e2e-test-setup.md`** — Device setup, CI/CD, troubleshooting (loaded by agents on demand)
 
-### Prerequisites (already set up)
-- `flutter_driver` is a dev dependency in `pubspec.yaml`
-- `lib/driver_main.dart` — entry point that calls `enableFlutterDriverExtension()` before `app.main()`
-- Dialogs guarded with `const bool.fromEnvironment('FLUTTER_DRIVER')` to auto-skip (Driver can't interact with overlays)
-
-### Launch Sequence (3 calls)
-```
-1. mcp__dart-mcp__launch_app(root: "C:\Users\rseba\Projects\Field Guide App", device: "windows", target: "lib/driver_main.dart")
-   → Returns { dtdUri, pid }
-2. mcp__dart-mcp__connect_dart_tooling_daemon(uri: <dtdUri>)
-3. mcp__dart-mcp__get_widget_tree(summaryOnly: true) — verify app state
-```
-
-### Interacting with the App
-- **Use `flutter_driver` commands**: `tap`, `enter_text`, `get_text`, `scroll`, `screenshot`, `waitFor`
-- **Find widgets by**: `ByValueKey` (preferred), `ByText`, `ByType`, `BySemanticsLabel`
-- **Screenshots**: `flutter_driver` `screenshot` command returns the image directly — use this, not VM service HTTP
-- **Always `get_widget_tree` first** to discover keys/text before attempting taps
-
-### Flutter Driver Limitations (CRITICAL — do NOT retry, work around)
-| Limitation | Workaround |
-|------------|------------|
-| **Can't find widgets in dialog overlays** (AlertDialog, BottomSheet, showDialog) | Guard dialogs with `FLUTTER_DRIVER` env check to auto-skip in driver mode |
-| **`timeout` int param causes type cast error** in dart-mcp | Don't pass `timeout` parameter to flutter_driver commands |
-| **Nested finders (Descendant/Ancestor) fail** — JSON serialization bug in dart-mcp | Use `ByValueKey` or `ByText` instead. Add `ValueKey` to widgets if needed |
-| **Widget tree can be 250K+ chars** — overflows tool output | Use `screenshot` for visual state. Parse tree with python/jq, don't read raw JSON |
-| **`waitFor`/`tap` timeout = driver can't find widget** | Don't retry the same finder. Check if widget is in an overlay or use a different finder type |
-
-### Widget Tree Parsing (when screenshot isn't enough)
-When `get_widget_tree` output is saved to file, extract text/keys efficiently:
-```python
-# Extract labeled widgets from saved widget tree JSON
-python -c "import sys,json; [extract logic]" < tree.txt
-```
-Or use `Grep` on the saved file for `textPreview` or `keyValueString`.
-
-### Adding Testability to Widgets
-When flutter_driver can't find a widget, add a `ValueKey` in source code and `hot_reload`:
-```dart
-TextButton(key: const ValueKey('my_button'), ...)
-```
-Keys MUST be added to widgets BEFORE they render — hot reload won't update already-built dialogs.
-
-### If Build Fails (PDB lock / stale build / native_assets)
-```
-pwsh -Command "Stop-Process -Name 'construction_inspector' -Force -ErrorAction SilentlyContinue; Start-Sleep 2; Remove-Item -Recurse -Force 'C:\Users\rseba\Projects\Field Guide App\build' -ErrorAction SilentlyContinue"
-mkdir -p "C:/Users/rseba/Projects/Field Guide App/build/native_assets/windows"
-pwsh -Command "Set-Location 'C:\Users\rseba\Projects\Field Guide App'; flutter pub get; flutter build windows --debug"
-```
-**CRITICAL**: Always create `build/native_assets/windows` before building — cmake install fails without it.
-
-### Rules
-- **NEVER** `Stop-Process -Name 'dart'` — kills MCP servers
-- **ONLY** `Stop-Process -Name 'construction_inspector'` to kill app
-- After app crash: just call `launch_app` again — MCP servers survive
-- Findings: `.claude/test-results/YYYY-MM-DD-ui-test-findings.md`
-- **If a driver command times out, DON'T retry the same command** — diagnose why (overlay? missing key? wrong finder?)
-
-## Widget Test Harness (Isolated Screen Testing)
-
-Purpose: render one screen at a time with real providers backed by in-memory SQLite for faster, lower-load UI testing than full-app launch.
-
-### Launch Sequence (harness config + entry point)
-1. Write `harness_config.json` at project root with target screen + optional data.
-2. `mcp__dart-mcp__launch_app(root: "C:\Users\rseba\Projects\Field Guide App", device: "windows", target: "lib/test_harness.dart")`
-3. `mcp__dart-mcp__connect_dart_tooling_daemon(uri: <dtdUri>)`
-4. Use `flutter_driver` commands (`screenshot`, `tap`, `enter_text`, `get_text`, `waitFor`) against the rendered screen.
-
-### `harness_config.json` Format
-```json
-{
-  "screen": "ProctorEntryScreen",
-  "data": {
-    "responseId": "test-response-001"
-  }
-}
-```
-- `screen`: registry key from harness screen registry.
-- `data`: optional per-screen constructor/seed inputs.
-
-### Available Screens
-- Screens are defined in the harness registry file (single source of truth): `lib/test_harness/screen_registry.dart`.
-- Current scope includes 0582B forms screens plus standalone app screens supported by the harness provider stack.
-
-### Add a New Screen to Harness
-1. Add a registry entry in `lib/test_harness/screen_registry.dart` (`'ScreenName': (data) => Screen(...)`).
-2. Add `ValueKey` coverage for interactive elements in the screen widget.
-3. Add/update keys in `lib/shared/testing_keys/testing_keys.dart`.
-4. If the screen needs extra context, extend harness seeding (`harness_config.json` `data` + seed helper) before launch.
+Key entry points:
+| Target | Entry Point |
+|--------|-------------|
+| Full app (dart-mcp) | `lib/driver_main.dart` |
+| Single screen harness | `lib/test_harness.dart` + `harness_config.json` |
+| Flow harness (multi-screen) | `lib/test_harness.dart` + `harness_config.json` with `"flow"` key |
+| Unit tests | `pwsh -Command "flutter test"` |
+| Screen registry | `lib/test_harness/screen_registry.dart` |
+| Flow registry | `lib/test_harness/flow_registry.dart` |
+| Widget keys | `lib/shared/testing_keys/testing_keys.dart` |
 
 ## Context Efficiency
 
