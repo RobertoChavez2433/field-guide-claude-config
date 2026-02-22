@@ -6,6 +6,11 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 429 (2026-02-21)
+**Work**: Fully implemented toolbox split plan with implementation + review agents. Moved calculator/todos/gallery/forms into independent feature folders and converted toolbox to launcher shell only. Added targeted EntryFormCard tests and fixed stale forms doc path.
+**Results**: Full `flutter test` passed; migration-scope analyze clean; second review pass closed with no findings.
+**Next**: Code quality review and cleanup.
+
 ### Session 428 (2026-02-21)
 **Work**: Resolved all 6 open harness design questions. Confirmed dart-mcp launch_app lacks --dart-define. Pivoted to config file approach. Wrote 6-phase implementation plan.
 **Decisions**: Config file selection, lib/test_harness.dart entry point, universal mock superset, stub GoRouter, start 0582B + design universal.
