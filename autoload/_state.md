@@ -1,34 +1,26 @@
 # Session State
 
-**Last Updated**: 2026-02-22 | **Session**: 441
+**Last Updated**: 2026-02-22 | **Session**: 448
 
 ## Current Phase
-- **Phase**: 0582B accordion dashboard — implementation complete, validated, and reviewed
-- **Status**: Full plan executed with new hub screen, legacy form entry screens removed, review fixes applied, and full test/analyze green.
+- **Phase**: Project-Based Multi-Tenant Architecture — Plan Finalized, Ready for Phase 1
+- **Status**: 5 rounds of adversarial review (144 total findings) fully integrated as native plan content. Plan is 1,974 lines, clean unified document. Ready to implement Phase 1.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (441)
+### What Was Done This Session (448)
 
-1. **Executed 0582B implementation plan with agents** — built and wired `MdotHubScreen` accordion dashboard from `.claude/plans/2026-02-21-0582b-hub-screen-design.md`
-2. **Replaced legacy flow** — added 9 new hub widgets/files and removed 10 legacy screen/widget files (`form_fill_screen.dart`, proctor/test/weights entry screens, and old form table/header/cell widgets)
-3. **Routing and keying updates** — switched `/form/:responseId` to `MdotHubScreen`, removed obsolete sub-routes, and added full hub testing-key surface in `toolbox_keys.dart` + `testing_keys.dart`
-4. **Validation loop complete** — ran `flutter analyze` and full `flutter test` to green (`+2342: All tests passed`)
-5. **Review/fix cycle complete** — fixed two behavior issues found by review agents:
-   - Header confirmation no longer inferred from autofill; explicit confirm required
-   - Quick Test pill status now shows entering while user is on next in-progress test
-
-### Key Decisions (Session 441)
-- **Plan fidelity first** — implemented the approved 7-phase hub plan directly instead of incremental reuse of old form screens
-- **Agent loop policy** — implementation -> QA loop -> review loop remained mandatory until analyze/tests passed and review findings were resolved
-- **Header integrity rule** — autofill is data only; confirmation state is explicit user intent
+1. **Ran Round 5 adversarial review** — 6-agent review (3 parts × 2 agents each) produced 91 findings (13 CRITICAL, 23 HIGH, 31 MEDIUM, 24 LOW) across security + continuity.
+2. **Inlined all 106 unique finding IDs** into the plan with R5-* tags. Verification agent caught 2 missing (SEC-P2-M1, SEC-P3-C2) — fixed manually.
+3. **Absorbed all annotations as native plan content** — 2 parallel agents integrated R5 tags into the plan as if it was always written that way (SQL code blocks updated, instructions woven in, 12 missing risks added to Risk Register, 5 new decisions added).
+4. **Verification audit passed** — 0 R5 tags remain, 15/15 critical spot-checks present, 24 risk register rows, all 9 phases intact, 1,974 lines of clean markdown.
 
 ### What Needs to Happen Next Session
 
-1. **Fix BUG-1**: FormsListScreen race condition (from Session 435)
-2. **Fix MINOR-2 + MINOR-3** from Session 435
-3. **Update rules/architecture.md**: still references "13 feature modules" — needs 17
-4. **Run targeted MCP/manual UX pass** on the new 0582B hub flow
+1. **Update catch-up migration SQL** — add `personnel_types`, `entry_personnel_counts`, `entry_equipment` columns + `calculation_history.updated_at` before deploying
+2. **Create empty `supabase/seed.sql`**
+3. **Start Phase 1 implementation** — plan is ready, Roberto's UUID is substituted
+4. **Still pending from 443**: Run `flutter test`, fix BUG-1/MINOR-2/MINOR-3, commit weight card changes
 
 ## Blockers
 
@@ -37,38 +29,48 @@
 
 ## Recent Sessions
 
-### Session 441 (2026-02-22)
-**Work**: Implemented full 0582B accordion dashboard plan via implementation agents. Added `MdotHubScreen` + 8 support widgets, removed 10 legacy form entry files, updated router and testing keys, and completed analyze/test/review loops.
-**Results**: `flutter analyze` clean and full `flutter test` green (`+2342`). Review findings fixed (header confirmation gating, quick-test pill status behavior).
-**Next**: Fix BUG-1/MINOR-2/MINOR-3 in forms; run targeted MCP UX pass on hub screen.
+### Session 448 (2026-02-22)
+**Work**: Round 5 adversarial review (91 findings, 106 unique IDs). All inlined into plan, then absorbed as native content — zero annotation tags remain. Plan is 1,974 lines, clean and unified.
+**Key Additions**: 5 new decisions (AuthProvider pre-construction, BEFORE INSERT trigger, deleteAll guard, WAL mode, ProxyProvider pattern). 12 missing risks added to Risk Register. CHECK constraints, last-admin guards, HMAC note, storage path restructure all woven into SQL/instructions.
+**Next**: Update catch-up SQL, create seed.sql, start Phase 1 implementation.
 
-### Session 440 (2026-02-22)
-**Work**: Dead code cleanup via prunekit. 7 parallel agent tasks: deleted 6 dead files (time_provider, pagination_controls, query_mixins, form_response_status_helper, interpretation_patterns, sync_orchestrator), removed 3 dead PDF methods + StringUtils extension block, stripped 47 color/theme constants. 0 new analyzer errors.
-**Decisions**: AppTerminology/FieldFormatter/StringUtils are false positives (active). Prunekit methods ~80% FP — always verify. Types/variables are reliable.
-**Next**: Build 0582B Phase 1 (scaffold + FormAccordion + StatusPillBar). Fix BUG-1.
+### Session 447 (2026-02-22)
+**Work**: Integrated 12 Round-4 review findings (security + continuity) into plan. Replaced Roberto's UUID placeholder. Integrated all 40 remaining appendix findings (8 HIGH, 9 MED, 3 LOW) inline. Deleted ~250-line review appendix. Plan is now self-contained at 1736 lines.
+**Key Changes**: `create_company` + 4 admin RPCs + REVOKE statements. `user_fcm_tokens` separate table. `cancel_own_pending_request` DELETE policy. Removed `insert_own_profile`. Passive JWT expiry (no `admin.signOut()`). Dart storage path validation. `entry_contractors` + `entry_personnel_counts` as new sync targets.
+**Next**: Update catch-up SQL, create seed.sql, start Phase 1 implementation.
 
-### Session 439 (2026-02-22)
-**Work**: Brainstormed 0582B design plan into detailed 7-phase implementation plan. 3 Explore agents gathered codebase context. 4 architectural decisions made via structured questioning. Full widget hierarchy, state design, provider wiring, file plan, acceptance criteria, and testing keys specified.
-**Decisions**: Inline everything (delete 4 old screens). Single StatefulWidget hub. Custom FormAccordion (no ExpansionTile). Auto-advance after SEND. Multi-test stays expanded.
-**Next**: Build Phase 1 (scaffold + accordion + pill bar), then Phases 2-7.
+### Session 446 (2026-02-22)
+**Work**: Brainstormed + resolved all 14 original CRITICALs with user. Integrated fixes into plan. Launched 2nd adversarial review (security + continuity). Resolved 7 security findings (privilege escalation, storage RLS, wildcard injection, admin approval flow) and 20 continuity findings (missing tables, wrong file paths, sync provider migration, router routes). All fixes integrated into plan.
+**Key Decisions**: SECURITY DEFINER RPCs for company search + admin approval (not direct table access). Storage bucket RLS with company_id in path + signed URLs. Users can never see other company names. insert_own_profile locked to safe defaults. 3 providers (InspectorForm, Calculator, Todo) added to SyncOrchestrator migration scope.
+**Next**: Update catch-up migration SQL, create seed.sql, get Roberto's UUID, start Phase 1.
 
-### Session 438 (2026-02-22)
-**Work**: Prototyped 0582B hub screen via html-sync + Playwright. Created 3 design alternatives (Tabbed, Stepper, Accordion). Option C (Accordion Dashboard) selected and refined. Built full 5-step flow mockup + side-by-side comparison vs current. Updated design plan.
-**Decisions**: Option C accordion chosen. One section expanded at a time. Summary tiles on collapsed sections. Status pill bar. All buttons "SEND TO FORM". 48dp touch targets. Completion banner with + New Test / Preview PDF.
-**Next**: Build accordion dashboard. Fix 3 bugs from Session 435.
+### Session 445 (2026-02-22)
+**Work**: Adversarial architecture review of multi-tenant plan. Explore agent gathered full codebase context (database schema, sync service, auth, router, models, main.dart). Code-review agent produced 40 findings. Claude independently verified. All findings appended to plan file.
+**Key Findings**: RLS viewer policies broken (PostgreSQL OR-semantics), pending users locked out of own profile, company search blocked for new users, Roberto's profile row won't exist, SQLite migration unsafe, 5 tables missing columns, fresh-install schemas incomplete, sync heuristic incompatible with RLS.
+**Next**: Brainstorm fixes for CRITICALs, amend plan, then start Phase 1.
 
-### Session 437 (2026-02-21)
-**Work**: Brainstormed 0582B hub screen design. Reviewed MCP token cost model. Created card-based hub design plan replacing FormFillScreen with 4 always-visible cards (header, quick test, proctor, weights).
-**Decisions**: Hub replaces FormFillScreen. All fields visible. Header collapses after confirm. Grouped field layout. Last-sent compact summary + edit.
-**Next**: Build hub screen starting with header card. Fix 3 bugs from Session 435.
+### Session 444 (2026-02-22)
+**Work**: Brainstormed multi-tenant architecture plan. Audited Supabase (severely behind). Set up Supabase CLI. Wrote + deployed 3 catch-up migrations. Planning agent produced 102-file implementation plan across 8 phases.
+**Decisions**: Fleis and Vandenbrink as company, 3 roles, sequential phases, sync-on-close with debounce, full Firebase/FCM.
+**Next**: Start Phase 1 (Supabase foundation + Dart models + SQLite v24), get Roberto's auth UUID.
 
 
 ## Active Plans
 
-### 0582B Accordion Dashboard — IMPLEMENTED + VALIDATED (Session 441)
+### Project-Based Multi-Tenant Architecture — PLAN FINALIZED, READY FOR PHASE 1 (Session 448)
+- **PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
+- **Implementation plan**: `.claude/plans/2026-02-22-project-based-architecture-plan.md`
+- **Round 5 review**: `.claude/code-reviews/2026-02-22-architecture-plan-adversarial-review.md`
+- **Status**: 5 rounds of adversarial review (144 findings total). All integrated as native plan content. 18 decisions, 24 risks, 1,974 lines. Ready for implementation.
+- **Supabase CLI**: Linked to `vsqvkxvvmnnhdajtgblj`. 3 migrations applied.
+- **Catch-up migration**: `supabase/migrations/20260222000000_catchup_v23.sql` — needs 4 columns added before deploy
+- **Pre-Phase 1 checklist**: (1) Update catch-up SQL, (2) Create seed.sql
+
+### 0582B Accordion Dashboard — IMPLEMENTED + WEIGHTS CARDS REDESIGNED (Session 443)
 - **Plan**: `.claude/plans/2026-02-21-0582b-hub-screen-design.md`
-- **Status**: All 7 phases built. Hub route/live flow active. Analyze/test green after review fixes.
-- **Scope delivered**: 9 new files, 10 legacy file deletions, router + barrel + testing key updates
+- **Redesign plan**: `.claude/plans/2026-02-22-0582b-proctor-2010-redesign.md`
+- **Status**: All phases built. Weights gate + compact card UI + convergence auto-select. Analyze clean.
+- **Pending**: Run flutter test, commit changes.
 
 ### UI Prototyping Toolkit — CONFIGURED (Session 436)
 - **MCP servers**: `playwright` (vision) + `html-sync` (hot reload) in `.mcp.json`
@@ -78,21 +80,16 @@
 ### Universal dart-mcp Widget Test Harness — IMPLEMENTED (Session 432)
 - **Design doc**: `.claude/plans/rosy-launching-dongarra.md`
 - **Status**: Phases 0-6 implemented and validated.
-- **Validation artifact**: `.claude/test-results/2026-02-21-widget-harness-validation.md`
 
 ### Toolbox Feature Split — MERGED TO MAIN
-- **Status**: All work merged to main (commits dfb9d15 through d3607f5). Test dirs reorganized in Session 433.
-
-### Project-Based Architecture — PRD COMPLETE
-- **PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
-- **Status**: Full PRD complete. 8 implementation phases. Ready to start. (Brainstorming doc was merged into the PRD.)
 
 ## Reference
+- **Multi-Tenant Implementation Plan**: `.claude/plans/2026-02-22-project-based-architecture-plan.md`
+- **Multi-Tenant PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
+- **Round 5 Review**: `.claude/code-reviews/2026-02-22-architecture-plan-adversarial-review.md`
 - **0582B Hub Screen Plan**: `.claude/plans/2026-02-21-0582b-hub-screen-design.md`
+- **0582B Proctor 20/10 Redesign**: `.claude/plans/2026-02-22-0582b-proctor-2010-redesign.md`
 - **UI Prototyping Guide**: `.claude/docs/guides/ui-prototyping-workflow.md`
 - **Widget Test Harness Design**: `.claude/plans/rosy-launching-dongarra.md`
-- **Harness Validation Report**: `.claude/test-results/2026-02-21-widget-harness-validation.md`
-- **0582B Flow Harness Test**: `.claude/test-results/2026-02-21-0582b-flow-harness-test.md`
-- **Project-Based Architecture PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
 - **Archive**: `.claude/logs/state-archive.md`
 - **Defects**: `.claude/defects/_defects-toolbox.md`, `.claude/defects/_defects-pdf.md`, `.claude/defects/_defects-sync.md`, `.claude/defects/_defects-forms.md`

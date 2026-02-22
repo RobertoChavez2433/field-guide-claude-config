@@ -6,6 +6,33 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 443 (2026-02-22)
+**Work**: Redesigned 20/10 weights as compact 80px inline cards. Convergence-aware display (dim past first Δ≤10g). Auto-select converged reading for calc. Overflow "Add Reading" button when all 5 filled without convergence. Harness fixes for MdotHubScreen.
+**Results**: `flutter analyze` clean. Validated via dart-mcp (2-reading, 5-reading, 6-reading overflow scenarios).
+**Next**: Run flutter test, fix BUG-1/MINOR-2/MINOR-3, commit changes.
+
+### Session 442 (2026-02-22)
+**Work**: Fixed 20/10 weights flow — added `_weightsConfirmed` gate so calc only fires after user confirms weights are done. Fields lock after confirmation, "Edit Weights" to unlock. Max readings 15→5. 4 files changed.
+**Results**: `flutter analyze` clean, `flutter test` +2341 all passed.
+**Next**: Fix BUG-1/MINOR-2/MINOR-3 in forms; hot reload + UX pass on hub with weights gate.
+
+### Session 439 (2026-02-22)
+**Work**: Brainstormed 0582B design plan into detailed 7-phase implementation plan. 3 Explore agents gathered codebase context. 4 architectural decisions made via structured questioning. Full widget hierarchy, state design, provider wiring, file plan, acceptance criteria, and testing keys specified.
+**Decisions**: Inline everything (delete 4 old screens). Single StatefulWidget hub. Custom FormAccordion (no ExpansionTile). Auto-advance after SEND. Multi-test stays expanded.
+**Next**: Build Phase 1 (scaffold + accordion + pill bar), then Phases 2-7.
+
+## February 2026
+
+### Session 438 (2026-02-22)
+**Work**: Prototyped 0582B hub screen via html-sync + Playwright. Created 3 design alternatives (Tabbed, Stepper, Accordion). Option C (Accordion Dashboard) selected and refined. Built full 5-step flow mockup + side-by-side comparison vs current. Updated design plan.
+**Decisions**: Option C accordion chosen. One section expanded at a time. Summary tiles on collapsed sections. Status pill bar. All buttons "SEND TO FORM". 48dp touch targets. Completion banner with + New Test / Preview PDF.
+**Next**: Build accordion dashboard. Fix 3 bugs from Session 435.
+
+### Session 437 (2026-02-21)
+**Work**: Brainstormed 0582B hub screen design. Reviewed MCP token cost model. Created card-based hub design plan replacing FormFillScreen with 4 always-visible cards (header, quick test, proctor, weights).
+**Decisions**: Hub replaces FormFillScreen. All fields visible. Header collapses after confirm. Grouped field layout. Last-sent compact summary + edit.
+**Next**: Build hub screen starting with header card. Fix 3 bugs from Session 435.
+
 ### Session 436 (2026-02-21)
 **Work**: Set up UI prototyping toolkit. Researched browser-control MCP servers, configured Playwright + HTML Sync, created Beer CSS workflow guide, rules, updated CLAUDE.md + memory.
 **Decisions**: Playwright (vision mode) + HTML Sync Server + Beer CSS v4 for rapid browser mockups. Mockups decoupled from Flutter code.

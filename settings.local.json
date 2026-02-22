@@ -73,7 +73,9 @@
       "mcp__dart-mcp__launch_app",
       "mcp__dart-mcp__get_app_logs",
       "mcp__dart-mcp__connect_dart_tooling_daemon",
-      "mcp__plugin_context7_context7__query-docs"
+      "mcp__plugin_context7_context7__query-docs",
+      "mcp__html-sync__create_page",
+      "mcp__html-sync__update_page"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -1,5 +1,17 @@
 # Forms Feature Defects
 
+## BUG-4: 20/10 weights calc fired on every keystroke with no confirmation gate
+**Status**: RESOLVED | **Severity**: High | **Found**: Session 442 | **Resolved**: Session 442
+**Location**: `lib/features/forms/presentation/screens/mdot_hub_screen.dart:294`
+**Symptom**: Entering first 20/10 reading immediately triggered MDD/OMC calculation. Second reading changed calc mid-entry, producing out-of-bounds one-point results.
+**Root Cause**: Plan's "No gate" decision was wrong. `_recalcProctor()` used `_finalWeightAsDouble` unconditionally — no confirmation step before weight fed into calc chain.
+**Fix**: Added `_weightsConfirmed` boolean. Calc passes `null` for `wetSoilMoldG` until user taps "Confirm Weights". Fields lock after confirmation. SEND requires confirmation.
+
+### [FLUTTER] 2026-02-22: Plan decisions can contradict real-world workflow
+**Pattern**: Brainstorming plans may decide "no gate needed" but actual field inspectors need explicit confirmation steps.
+**Prevention**: For multi-step data entry flows, always validate plan decisions against real inspector workflow before implementing. Ask user if unclear.
+**Ref**: `.claude/plans/2026-02-22-0582b-proctor-2010-redesign.md` line 33
+
 ## BUG-2: Header confirmation inferred from autofill state in hub flow
 **Status**: RESOLVED | **Severity**: High | **Found**: Session 441 | **Resolved**: Session 441
 **Location**: `lib/features/forms/presentation/screens/mdot_hub_screen.dart:148`
