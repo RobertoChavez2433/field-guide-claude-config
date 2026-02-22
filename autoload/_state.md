@@ -1,32 +1,34 @@
 # Session State
 
-**Last Updated**: 2026-02-21 | **Session**: 435
+**Last Updated**: 2026-02-21 | **Session**: 436
 
 ## Current Phase
-- **Phase**: 0582B flow harness tested; 3 issues documented
-- **Status**: All screens pass end-to-end. No code changes (test-only session).
+- **Phase**: UI prototyping toolkit setup complete; ready for design iteration
+- **Status**: Playwright + HTML Sync MCP servers configured, docs written, packages cached. Restart required.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (435)
+### What Was Done This Session (436)
 
-1. **Full 0582B flow harness test** with `{"flow": "0582b-forms"}` config via dart-mcp + flutter_driver:
-   - Tested all 5 screens: FormsListScreen, FormViewerScreen, ProctorEntryScreen, QuickTestEntryScreen, WeightsEntryScreen
-   - Verified full round-trip: Proctor → Test → Weights → Save, all data persists back to viewer
-   - Tested live calculations (one-point algorithm, % compaction, 20/10 delta pass/fail)
-   - Tested SmartInputBar field navigation (next/prev/done)
-   - Tested validation (out-of-range proctor warning, disabled save buttons)
-2. **Found 3 issues** (1 bug, 2 minor) — filed in `.claude/defects/_defects-forms.md`:
-   - **BUG-1**: FormsListScreen race condition — saved responses never load (ProjectProvider async timing)
-   - **MINOR-2**: Header auto-fill partially empty in harness (missing seed data)
-   - **MINOR-3**: Empty station shows label text instead of "--" in test viewer
-3. **Test report**: `.claude/test-results/2026-02-21-0582b-flow-harness-test.md`
+1. **UI Prototyping Toolkit Setup** — researched and configured browser-based rapid mockup workflow:
+   - Added `playwright` MCP (@playwright/mcp with --caps vision) for screenshots + device emulation
+   - Added `html-sync` MCP (mcp-html-sync-server) for live hot-reload HTML pages
+   - Both npm packages pre-cached and verified working
+2. **Documentation created**:
+   - `.claude/docs/guides/ui-prototyping-workflow.md` — full guide with Beer CSS boilerplate, 30+ Flutter→CSS component mapping, device sizes, session workflow patterns
+   - `.claude/rules/frontend/ui-prototyping.md` — auto-loading rules for mockups/
+   - Updated CLAUDE.md with prototyping section + rules table entry
+   - Updated project memory with toolkit reference
+3. **Decision**: Beer CSS v4 (Material Design 3) for mockups — closest to Flutter Material widgets, CDN-only, no build step
 
 ### What Needs to Happen Next Session
 
-1. **Fix BUG-1**: FormsListScreen race condition — watch ProjectProvider for selectedProject changes.
-2. **Update rules/architecture.md**: still references "13 feature modules" — needs 17.
-3. **Project-based architecture**: PRD complete, ready to start Phase 1.
+1. **Restart Claude Code** to load new MCP servers (playwright + html-sync).
+2. **Smoke test prototyping loop** — create page, open URL, screenshot, iterate, verify full workflow.
+3. **Prototype 0582B form redesign** — iterate on visual design before writing Flutter code.
+4. **Fix BUG-1**: FormsListScreen race condition (from Session 435).
+5. **Fix MINOR-2 + MINOR-3** from Session 435.
+6. **Update rules/architecture.md**: still references "13 feature modules" — needs 17.
 
 ## Blockers
 
@@ -34,6 +36,11 @@
 **Status**: OPEN (PDF scope only).
 
 ## Recent Sessions
+
+### Session 436 (2026-02-21)
+**Work**: Set up UI prototyping toolkit. Researched browser-control MCP servers, configured Playwright + HTML Sync, created Beer CSS workflow guide, rules, updated CLAUDE.md + memory.
+**Decisions**: Playwright (vision mode) + HTML Sync Server + Beer CSS v4 for rapid browser mockups. Mockups decoupled from Flutter code.
+**Next**: Restart CC, smoke test prototyping loop, prototype 0582B form, fix 3 bugs from Session 435.
 
 ### Session 435 (2026-02-21)
 **Work**: Full 0582B flow harness test (5 screens) via dart-mcp + flutter_driver. Verified proctor entry, quick test, weights entry, form save. Found 3 issues (1 race condition bug, 2 minor).
@@ -55,12 +62,12 @@
 **Results**: Review findings resolved; `flutter analyze` (changed files) clean; full `flutter test` passed (`+2343 -0`).
 **Next**: Manual MCP interaction sweep on harness screens and PR creation/merge.
 
-### Session 431 (2026-02-21)
-**Work**: Brainstormed widget test harness implementation readiness. Audited codebase, found 6 gaps in original plan. Revised design doc with in-memory SQLite approach, two-tier seeding, onException router, 26-screen registry.
-**Decisions**: Real stack over mocks, explicit registry, DatabaseService.forTesting(), two-tier seeding, onException stub router.
-**Next**: Merge toolbox PR, implement harness Phases 0-1.
-
 ## Active Plans
+
+### UI Prototyping Toolkit — CONFIGURED (Session 436)
+- **MCP servers**: `playwright` (vision) + `html-sync` (hot reload) in `.mcp.json`
+- **Workflow guide**: `.claude/docs/guides/ui-prototyping-workflow.md`
+- **Status**: Configured + packages cached. Needs restart + smoke test.
 
 ### Universal dart-mcp Widget Test Harness — IMPLEMENTED (Session 432)
 - **Design doc**: `.claude/plans/rosy-launching-dongarra.md`
@@ -75,6 +82,7 @@
 - **Status**: Full PRD complete. 8 implementation phases. Ready to start. (Brainstorming doc was merged into the PRD.)
 
 ## Reference
+- **UI Prototyping Guide**: `.claude/docs/guides/ui-prototyping-workflow.md`
 - **Widget Test Harness Design**: `.claude/plans/rosy-launching-dongarra.md`
 - **Harness Validation Report**: `.claude/test-results/2026-02-21-widget-harness-validation.md`
 - **0582B Flow Harness Test**: `.claude/test-results/2026-02-21-0582b-flow-harness-test.md`

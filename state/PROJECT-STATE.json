@@ -4,7 +4,7 @@
     "app_version": "1.2.3",
     "description": "Cross-platform offline-first mobile/desktop app for construction inspectors",
     "last_updated": "2026-02-21T23:59:59Z",
-    "session_notes": "Session 434: Implemented flow harness for multi-screen journey testing. Cleaned root CLAUDE.md — moved testing docs to rules/testing/patrol-testing.md. Added harness_config.json to .gitignore. 3 app + 1 .claude commits pushed."
+    "session_notes": "Session 436: Set up UI prototyping toolkit — Playwright MCP (screenshots + device emulation) + HTML Sync MCP (live hot reload) + Beer CSS v4 (Material Design 3). Full workflow guide, rules, and CLAUDE.md updated. Restart required to load new MCP servers."
   },
   "current_phase": {
     "phase_name": "Flow harness implemented; manual MCP test pass and architecture.md update pending",

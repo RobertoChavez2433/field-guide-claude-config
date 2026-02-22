@@ -6,6 +6,16 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 431 (2026-02-21)
+**Work**: Brainstormed widget test harness implementation readiness. Audited codebase, found 6 gaps in original plan. Revised design doc with in-memory SQLite approach, two-tier seeding, onException router, 26-screen registry.
+**Decisions**: Real stack over mocks, explicit registry, DatabaseService.forTesting(), two-tier seeding, onException stub router.
+**Next**: Merge toolbox PR, implement harness Phases 0-1.
+
+### Session 430 (2026-02-21)
+**Work**: Planned toolbox feature split with brainstorming skill. Created comprehensive plan for splitting 4 sub-features out of toolbox into independent feature modules.
+**Decisions**: Phase-based split (calculator → todos → gallery → forms → toolbox shell). Each gets own data/presentation layers.
+**Next**: Implement toolbox split plan.
+
 ### Session 429 (2026-02-21)
 **Work**: Fully implemented toolbox split plan with implementation + review agents. Moved calculator/todos/gallery/forms into independent feature folders and converted toolbox to launcher shell only. Added targeted EntryFormCard tests and fixed stale forms doc path.
 **Results**: Full `flutter test` passed; migration-scope analyze clean; second review pass closed with no findings.
