@@ -1,34 +1,34 @@
 # Session State
 
-**Last Updated**: 2026-02-21 | **Session**: 436
+**Last Updated**: 2026-02-22 | **Session**: 441
 
 ## Current Phase
-- **Phase**: UI prototyping toolkit setup complete; ready for design iteration
-- **Status**: Playwright + HTML Sync MCP servers configured, docs written, packages cached. Restart required.
+- **Phase**: 0582B accordion dashboard — implementation complete, validated, and reviewed
+- **Status**: Full plan executed with new hub screen, legacy form entry screens removed, review fixes applied, and full test/analyze green.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (436)
+### What Was Done This Session (441)
 
-1. **UI Prototyping Toolkit Setup** — researched and configured browser-based rapid mockup workflow:
-   - Added `playwright` MCP (@playwright/mcp with --caps vision) for screenshots + device emulation
-   - Added `html-sync` MCP (mcp-html-sync-server) for live hot-reload HTML pages
-   - Both npm packages pre-cached and verified working
-2. **Documentation created**:
-   - `.claude/docs/guides/ui-prototyping-workflow.md` — full guide with Beer CSS boilerplate, 30+ Flutter→CSS component mapping, device sizes, session workflow patterns
-   - `.claude/rules/frontend/ui-prototyping.md` — auto-loading rules for mockups/
-   - Updated CLAUDE.md with prototyping section + rules table entry
-   - Updated project memory with toolkit reference
-3. **Decision**: Beer CSS v4 (Material Design 3) for mockups — closest to Flutter Material widgets, CDN-only, no build step
+1. **Executed 0582B implementation plan with agents** — built and wired `MdotHubScreen` accordion dashboard from `.claude/plans/2026-02-21-0582b-hub-screen-design.md`
+2. **Replaced legacy flow** — added 9 new hub widgets/files and removed 10 legacy screen/widget files (`form_fill_screen.dart`, proctor/test/weights entry screens, and old form table/header/cell widgets)
+3. **Routing and keying updates** — switched `/form/:responseId` to `MdotHubScreen`, removed obsolete sub-routes, and added full hub testing-key surface in `toolbox_keys.dart` + `testing_keys.dart`
+4. **Validation loop complete** — ran `flutter analyze` and full `flutter test` to green (`+2342: All tests passed`)
+5. **Review/fix cycle complete** — fixed two behavior issues found by review agents:
+   - Header confirmation no longer inferred from autofill; explicit confirm required
+   - Quick Test pill status now shows entering while user is on next in-progress test
+
+### Key Decisions (Session 441)
+- **Plan fidelity first** — implemented the approved 7-phase hub plan directly instead of incremental reuse of old form screens
+- **Agent loop policy** — implementation -> QA loop -> review loop remained mandatory until analyze/tests passed and review findings were resolved
+- **Header integrity rule** — autofill is data only; confirmation state is explicit user intent
 
 ### What Needs to Happen Next Session
 
-1. **Restart Claude Code** to load new MCP servers (playwright + html-sync).
-2. **Smoke test prototyping loop** — create page, open URL, screenshot, iterate, verify full workflow.
-3. **Prototype 0582B form redesign** — iterate on visual design before writing Flutter code.
-4. **Fix BUG-1**: FormsListScreen race condition (from Session 435).
-5. **Fix MINOR-2 + MINOR-3** from Session 435.
-6. **Update rules/architecture.md**: still references "13 feature modules" — needs 17.
+1. **Fix BUG-1**: FormsListScreen race condition (from Session 435)
+2. **Fix MINOR-2 + MINOR-3** from Session 435
+3. **Update rules/architecture.md**: still references "13 feature modules" — needs 17
+4. **Run targeted MCP/manual UX pass** on the new 0582B hub flow
 
 ## Blockers
 
@@ -37,32 +37,38 @@
 
 ## Recent Sessions
 
-### Session 436 (2026-02-21)
-**Work**: Set up UI prototyping toolkit. Researched browser-control MCP servers, configured Playwright + HTML Sync, created Beer CSS workflow guide, rules, updated CLAUDE.md + memory.
-**Decisions**: Playwright (vision mode) + HTML Sync Server + Beer CSS v4 for rapid browser mockups. Mockups decoupled from Flutter code.
-**Next**: Restart CC, smoke test prototyping loop, prototype 0582B form, fix 3 bugs from Session 435.
+### Session 441 (2026-02-22)
+**Work**: Implemented full 0582B accordion dashboard plan via implementation agents. Added `MdotHubScreen` + 8 support widgets, removed 10 legacy form entry files, updated router and testing keys, and completed analyze/test/review loops.
+**Results**: `flutter analyze` clean and full `flutter test` green (`+2342`). Review findings fixed (header confirmation gating, quick-test pill status behavior).
+**Next**: Fix BUG-1/MINOR-2/MINOR-3 in forms; run targeted MCP UX pass on hub screen.
 
-### Session 435 (2026-02-21)
-**Work**: Full 0582B flow harness test (5 screens) via dart-mcp + flutter_driver. Verified proctor entry, quick test, weights entry, form save. Found 3 issues (1 race condition bug, 2 minor).
-**Results**: All screens pass end-to-end. Test report at `.claude/test-results/2026-02-21-0582b-flow-harness-test.md`. Defects filed in `.claude/defects/_defects-forms.md`.
-**Next**: Fix BUG-1 FormsListScreen race condition, update architecture.md, start project-based architecture.
+### Session 440 (2026-02-22)
+**Work**: Dead code cleanup via prunekit. 7 parallel agent tasks: deleted 6 dead files (time_provider, pagination_controls, query_mixins, form_response_status_helper, interpretation_patterns, sync_orchestrator), removed 3 dead PDF methods + StringUtils extension block, stripped 47 color/theme constants. 0 new analyzer errors.
+**Decisions**: AppTerminology/FieldFormatter/StringUtils are false positives (active). Prunekit methods ~80% FP — always verify. Types/variables are reliable.
+**Next**: Build 0582B Phase 1 (scaffold + FormAccordion + StatusPillBar). Fix BUG-1.
 
-### Session 434 (2026-02-21)
-**Work**: Implemented flow harness (multi-screen journey testing). Created flow_registry.dart, extended stub_router.dart, added flow mode branch to test_harness.dart. Cleaned up root CLAUDE.md — moved ~120 lines of testing docs to rules/testing/patrol-testing.md. Added harness_config.json to .gitignore.
-**Results**: `flutter analyze` 0 issues. 3 app commits + 1 .claude commit pushed.
-**Next**: Manual MCP flow harness test, update architecture.md feature count, start project-based architecture.
+### Session 439 (2026-02-22)
+**Work**: Brainstormed 0582B design plan into detailed 7-phase implementation plan. 3 Explore agents gathered codebase context. 4 architectural decisions made via structured questioning. Full widget hierarchy, state design, provider wiring, file plan, acceptance criteria, and testing keys specified.
+**Decisions**: Inline everything (delete 4 old screens). Single StatefulWidget hub. Custom FormAccordion (no ExpansionTile). Auto-advance after SEND. Multi-test stays expanded.
+**Next**: Build Phase 1 (scaffold + accordion + pill bar), then Phases 2-7.
 
-### Session 433 (2026-02-21)
-**Work**: Full project directory audit and cleanup. 5 Explore agents audited root/lib/test/tools/.claude/config dirs. 12+ agents executed cleanup across 6 phases. Recovered ~5GB, deleted 83K+ files, fixed 106 analyze issues→0, reorganized tests, updated all docs.
-**Results**: `flutter analyze` 0 issues; `flutter test` +2343 all passed; 8 app commits + 3 .claude commits pushed.
-**Next**: Manual MCP harness pass, update rules/architecture.md feature count.
+### Session 438 (2026-02-22)
+**Work**: Prototyped 0582B hub screen via html-sync + Playwright. Created 3 design alternatives (Tabbed, Stepper, Accordion). Option C (Accordion Dashboard) selected and refined. Built full 5-step flow mockup + side-by-side comparison vs current. Updated design plan.
+**Decisions**: Option C accordion chosen. One section expanded at a time. Summary tiles on collapsed sections. Status pill bar. All buttons "SEND TO FORM". 48dp touch targets. Completion banner with + New Test / Preview PDF.
+**Next**: Build accordion dashboard. Fix 3 bugs from Session 435.
 
-### Session 432 (2026-02-21)
-**Work**: Fully implemented widget test harness plan via implementation/review agents. Added in-memory DB testing path, harness runtime, registry/providers/seeding/stubs, 0582B keys, docs, and validation artifact.
-**Results**: Review findings resolved; `flutter analyze` (changed files) clean; full `flutter test` passed (`+2343 -0`).
-**Next**: Manual MCP interaction sweep on harness screens and PR creation/merge.
+### Session 437 (2026-02-21)
+**Work**: Brainstormed 0582B hub screen design. Reviewed MCP token cost model. Created card-based hub design plan replacing FormFillScreen with 4 always-visible cards (header, quick test, proctor, weights).
+**Decisions**: Hub replaces FormFillScreen. All fields visible. Header collapses after confirm. Grouped field layout. Last-sent compact summary + edit.
+**Next**: Build hub screen starting with header card. Fix 3 bugs from Session 435.
+
 
 ## Active Plans
+
+### 0582B Accordion Dashboard — IMPLEMENTED + VALIDATED (Session 441)
+- **Plan**: `.claude/plans/2026-02-21-0582b-hub-screen-design.md`
+- **Status**: All 7 phases built. Hub route/live flow active. Analyze/test green after review fixes.
+- **Scope delivered**: 9 new files, 10 legacy file deletions, router + barrel + testing key updates
 
 ### UI Prototyping Toolkit — CONFIGURED (Session 436)
 - **MCP servers**: `playwright` (vision) + `html-sync` (hot reload) in `.mcp.json`
@@ -82,6 +88,7 @@
 - **Status**: Full PRD complete. 8 implementation phases. Ready to start. (Brainstorming doc was merged into the PRD.)
 
 ## Reference
+- **0582B Hub Screen Plan**: `.claude/plans/2026-02-21-0582b-hub-screen-design.md`
 - **UI Prototyping Guide**: `.claude/docs/guides/ui-prototyping-workflow.md`
 - **Widget Test Harness Design**: `.claude/plans/rosy-launching-dongarra.md`
 - **Harness Validation Report**: `.claude/test-results/2026-02-21-widget-harness-validation.md`

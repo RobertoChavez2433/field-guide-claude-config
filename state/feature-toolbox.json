@@ -1,8 +1,8 @@
 {
   "id": "toolbox",
   "name": "Inspector Toolbox",
-  "status": "stable",
-  "description": "Toolbox is now a shell/launcher feature after split; calculator, todos, gallery, and forms moved into independent feature directories.",
+  "status": "in_progress",
+  "description": "Toolbox is now a shell/launcher feature after split; calculator, todos, gallery, and forms moved into independent feature directories. 0582B hub-screen rewrite is implemented and under follow-up UX/defect polish.",
   "docs": {
     "overview": "docs/features/feature-toolbox-overview.md",
     "architecture": "docs/features/feature-toolbox-architecture.md",
@@ -11,13 +11,13 @@
   "constraints_file": "architecture-decisions/toolbox-constraints.md",
   "constraints_summary": [
     "Code-first: each form is a Dart class (not JSON schema driven)",
-    "Shared utility layer: auto-fill, PDF export, SmartInputBar, header widgets",
+    "Shared utility layer: auto-fill and PDF export services reused by form UIs",
     "Form-specific layout and calculations in dedicated Dart classes",
     "Generic DB: header_data + response_data JSON columns, form_type discriminator",
     "On-demand PDF preview (no live Syncfusion viewer)",
     "All interactive widgets require ValueKey for dart-mcp testability"
   ],
-  "current_phase": "Toolbox split complete; widget harness implemented/validated (Session 432)",
+  "current_phase": "0582B accordion hub implemented and validated (Session 441); outstanding forms defects from Session 435 still open",
   "integration": {
     "depends_on": [
       "auth",
@@ -27,6 +27,6 @@
   },
   "metrics": {
     "test_coverage_percentage": 0,
-    "last_updated": "2026-02-21T23:59:59Z"
+    "last_updated": "2026-02-22T23:59:59Z"
   }
 }

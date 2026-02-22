@@ -1,5 +1,19 @@
 # Forms Feature Defects
 
+## BUG-2: Header confirmation inferred from autofill state in hub flow
+**Status**: RESOLVED | **Severity**: High | **Found**: Session 441 | **Resolved**: Session 441
+**Location**: `lib/features/forms/presentation/screens/mdot_hub_screen.dart:148`
+**Symptom**: Header could appear confirmed and auto-advance without explicit user confirmation when autofill populated fields.
+**Root Cause**: `_headerConfirmed` fallback treated non-empty header data as confirmation.
+**Fix**: Gate confirmation strictly on persisted `header_confirmed == true` or explicit confirm action.
+
+## BUG-3: Quick Test status pill stayed "sent" during next in-progress test
+**Status**: RESOLVED | **Severity**: Medium | **Found**: Session 441 | **Resolved**: Session 441
+**Location**: `lib/features/forms/presentation/screens/mdot_hub_screen.dart:453`
+**Symptom**: After sending Test #1, pill could misrepresent Test #2 in-progress state.
+**Root Cause**: Status evaluation favored historical sent state semantics over active section entering semantics.
+**Fix**: Prioritize `entering` while quick-test section is expanded; show sent when collapsed with saved tests.
+
 ## BUG-1: FormsListScreen never loads saved responses (Race Condition)
 **Status**: OPEN | **Severity**: Medium | **Found**: Session 435
 **Location**: `lib/features/forms/presentation/screens/forms_list_screen.dart:24-36`

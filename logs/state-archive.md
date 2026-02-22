@@ -6,6 +6,26 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 436 (2026-02-21)
+**Work**: Set up UI prototyping toolkit. Researched browser-control MCP servers, configured Playwright + HTML Sync, created Beer CSS workflow guide, rules, updated CLAUDE.md + memory.
+**Decisions**: Playwright (vision mode) + HTML Sync Server + Beer CSS v4 for rapid browser mockups. Mockups decoupled from Flutter code.
+**Next**: Restart CC, smoke test prototyping loop, prototype 0582B form, fix 3 bugs from Session 435.
+
+### Session 435 (2026-02-21)
+**Work**: Full 0582B flow harness test (5 screens) via dart-mcp + flutter_driver. Verified proctor entry, quick test, weights entry, form save. Found 3 issues (1 race condition bug, 2 minor).
+**Results**: All screens pass end-to-end. Test report at `.claude/test-results/2026-02-21-0582b-flow-harness-test.md`. Defects filed in `.claude/defects/_defects-forms.md`.
+**Next**: Fix BUG-1 FormsListScreen race condition, update architecture.md, start project-based architecture.
+
+### Session 433 (2026-02-21)
+**Work**: Full project directory audit and cleanup. 5 Explore agents audited root/lib/test/tools/.claude/config dirs. 12+ agents executed cleanup across 6 phases. Recovered ~5GB, deleted 83K+ files, fixed 106 analyze issues→0, reorganized tests, updated all docs.
+**Results**: `flutter analyze` 0 issues; `flutter test` +2343 all passed; 8 app commits + 3 .claude commits pushed.
+**Next**: Manual MCP harness pass, update rules/architecture.md feature count.
+
+### Session 432 (2026-02-21)
+**Work**: Fully implemented widget test harness plan via implementation/review agents. Added in-memory DB testing path, harness runtime, registry/providers/seeding/stubs, 0582B keys, docs, and validation artifact.
+**Results**: Review findings resolved; `flutter analyze` (changed files) clean; full `flutter test` passed (`+2343 -0`).
+**Next**: Manual MCP interaction sweep on harness screens and PR creation/merge.
+
 ### Session 431 (2026-02-21)
 **Work**: Brainstormed widget test harness implementation readiness. Audited codebase, found 6 gaps in original plan. Revised design doc with in-memory SQLite approach, two-tier seeding, onException router, 26-screen registry.
 **Decisions**: Real stack over mocks, explicit registry, DatabaseService.forTesting(), two-tier seeding, onException stub router.
