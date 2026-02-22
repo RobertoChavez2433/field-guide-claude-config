@@ -1,40 +1,32 @@
 # Session State
 
-**Last Updated**: 2026-02-21 | **Session**: 433
+**Last Updated**: 2026-02-21 | **Session**: 435
 
 ## Current Phase
-- **Phase**: Full project audit and cleanup complete
-- **Status**: All files committed and pushed. Zero analyze issues, all 2,343 tests passing.
+- **Phase**: 0582B flow harness tested; 3 issues documented
+- **Status**: All screens pass end-to-end. No code changes (test-only session).
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (433)
+### What Was Done This Session (435)
 
-1. **Full project directory audit** using 5 parallel Explore agents across root files, lib/, test/tools, .claude/, and config/platform dirs.
-2. **Massive cleanup** via 12+ parallel agents across 6 phases:
-   - Recovered ~5GB disk (deleted 4.8GB vcpkg clone, 83K+ junk files)
-   - Deleted 30+ stray root files (logs, tmp, prototypes)
-   - Removed 41 one-off PDF debug scripts from tools/
-   - Removed vestigial web/ platform, dead service barrels (services.dart, sync/sync.dart)
-   - Deleted .tmp/, tooling/, test/tooling/, .cursor/
-3. **Structural fixes**: moved weather_helpers to entries feature (layering fix), reorganized 21 test files from toolbox/ to calculator/forms/todos/gallery/.
-4. **Fixed 106 flutter analyze issues → 0**: deprecated grid→rows, unused vars, deprecated APIs, doc comments, unnecessary imports.
-5. **Updated docs**: CLAUDE.md (13→17 features), DEVELOPER_DOCS.md (comprehensive rewrite), toolbox-prd.md (hub architecture), patrol-testing.md (dart-mcp, stage trace, 4-tier strategy).
-6. **CI update**: added 4 missing tests to e2e workflow matrix (10→14).
-7. **Committed**: 8 app repo commits + 3 .claude repo commits, both pushed.
-
-### Key Decisions Made (Session 433)
-- web/ deleted — never an active platform target.
-- patrol-testing.md is THE canonical testing reference — updated, not deleted.
-- e2e-test-setup.md deleted — new testing structure coming.
-- CellGrid.grid deprecated getter fully removed, all call sites migrated to .rows.
-- services.dart barrel deleted (zero importers confirmed).
+1. **Full 0582B flow harness test** with `{"flow": "0582b-forms"}` config via dart-mcp + flutter_driver:
+   - Tested all 5 screens: FormsListScreen, FormViewerScreen, ProctorEntryScreen, QuickTestEntryScreen, WeightsEntryScreen
+   - Verified full round-trip: Proctor → Test → Weights → Save, all data persists back to viewer
+   - Tested live calculations (one-point algorithm, % compaction, 20/10 delta pass/fail)
+   - Tested SmartInputBar field navigation (next/prev/done)
+   - Tested validation (out-of-range proctor warning, disabled save buttons)
+2. **Found 3 issues** (1 bug, 2 minor) — filed in `.claude/defects/_defects-forms.md`:
+   - **BUG-1**: FormsListScreen race condition — saved responses never load (ProjectProvider async timing)
+   - **MINOR-2**: Header auto-fill partially empty in harness (missing seed data)
+   - **MINOR-3**: Empty station shows label text instead of "--" in test viewer
+3. **Test report**: `.claude/test-results/2026-02-21-0582b-flow-harness-test.md`
 
 ### What Needs to Happen Next Session
 
-1. **Manual MCP harness pass**: run widget test harness flows for 0582B screens.
+1. **Fix BUG-1**: FormsListScreen race condition — watch ProjectProvider for selectedProject changes.
 2. **Update rules/architecture.md**: still references "13 feature modules" — needs 17.
-3. **Continue widget test harness**: manual validation + optional smoke tests.
+3. **Project-based architecture**: PRD complete, ready to start Phase 1.
 
 ## Blockers
 
@@ -42,6 +34,16 @@
 **Status**: OPEN (PDF scope only).
 
 ## Recent Sessions
+
+### Session 435 (2026-02-21)
+**Work**: Full 0582B flow harness test (5 screens) via dart-mcp + flutter_driver. Verified proctor entry, quick test, weights entry, form save. Found 3 issues (1 race condition bug, 2 minor).
+**Results**: All screens pass end-to-end. Test report at `.claude/test-results/2026-02-21-0582b-flow-harness-test.md`. Defects filed in `.claude/defects/_defects-forms.md`.
+**Next**: Fix BUG-1 FormsListScreen race condition, update architecture.md, start project-based architecture.
+
+### Session 434 (2026-02-21)
+**Work**: Implemented flow harness (multi-screen journey testing). Created flow_registry.dart, extended stub_router.dart, added flow mode branch to test_harness.dart. Cleaned up root CLAUDE.md — moved ~120 lines of testing docs to rules/testing/patrol-testing.md. Added harness_config.json to .gitignore.
+**Results**: `flutter analyze` 0 issues. 3 app commits + 1 .claude commit pushed.
+**Next**: Manual MCP flow harness test, update architecture.md feature count, start project-based architecture.
 
 ### Session 433 (2026-02-21)
 **Work**: Full project directory audit and cleanup. 5 Explore agents audited root/lib/test/tools/.claude/config dirs. 12+ agents executed cleanup across 6 phases. Recovered ~5GB, deleted 83K+ files, fixed 106 analyze issues→0, reorganized tests, updated all docs.
@@ -57,16 +59,6 @@
 **Work**: Brainstormed widget test harness implementation readiness. Audited codebase, found 6 gaps in original plan. Revised design doc with in-memory SQLite approach, two-tier seeding, onException router, 26-screen registry.
 **Decisions**: Real stack over mocks, explicit registry, DatabaseService.forTesting(), two-tier seeding, onException stub router.
 **Next**: Merge toolbox PR, implement harness Phases 0-1.
-
-### Session 430 (2026-02-21)
-**Work**: Code quality review (6 agents total — 3 first round, 3 second round). Fixed midnight bug, extracted shared utils (roundTo2, date helpers), added InspectorForm.is0582B, removed dead code, deleted 19 trivial tests, cleaned up ~15MB of unnecessary APK files. Created 3 commits on feature branch.
-**Results**: `flutter analyze` 0 errors; 82 affected tests passing; both repos pushed.
-**Next**: Create PR for `refactor/toolbox-feature-split`, move test files to match feature dirs.
-
-### Session 429 (2026-02-21)
-**Work**: Fully implemented toolbox split plan with implementation + review agents. Moved calculator/todos/gallery/forms into independent feature folders and converted toolbox to launcher shell only. Added targeted EntryFormCard tests and fixed stale forms doc path.
-**Results**: Full `flutter test` passed; migration-scope analyze clean; second review pass closed with no findings.
-**Next**: Code quality review and cleanup.
 
 ## Active Plans
 
@@ -85,6 +77,7 @@
 ## Reference
 - **Widget Test Harness Design**: `.claude/plans/rosy-launching-dongarra.md`
 - **Harness Validation Report**: `.claude/test-results/2026-02-21-widget-harness-validation.md`
+- **0582B Flow Harness Test**: `.claude/test-results/2026-02-21-0582b-flow-harness-test.md`
 - **Project-Based Architecture PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
 - **Archive**: `.claude/logs/state-archive.md`
-- **Defects**: `.claude/defects/_defects-toolbox.md`, `.claude/defects/_defects-pdf.md`, `.claude/defects/_defects-sync.md`
+- **Defects**: `.claude/defects/_defects-toolbox.md`, `.claude/defects/_defects-pdf.md`, `.claude/defects/_defects-sync.md`, `.claude/defects/_defects-forms.md`
