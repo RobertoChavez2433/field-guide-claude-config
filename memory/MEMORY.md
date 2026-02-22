@@ -77,6 +77,16 @@
 - **APK decompilation technique**: XABA blob → XALZ (LZ4-compressed) → .NET DLLs → IL bytecode disassembly
 - Python prototypes (OBSOLETE): `tools/one_point_prototype.py`, `tools/one_point_prototype_v2.py`, `tools/one_point_validation.py`
 
+### UI Prototyping Toolkit (Session 436)
+- **MCP servers**: `html-sync` (mcp-html-sync-server) + `playwright` (@playwright/mcp with --caps vision)
+- **Workflow**: create_page → user opens URL → browser_take_screenshot → iterate via update_page → approve → write Flutter code
+- **CSS framework**: Beer CSS v4 (Material Design 3) — CDN-only, no build step
+- **Docs**: `.claude/docs/guides/ui-prototyping-workflow.md` (full guide with component mapping)
+- **Rules**: `.claude/rules/frontend/ui-prototyping.md` (auto-loads for mockups/)
+- **Key**: Always constrain mockups to max-width 412px for phone fidelity
+- **Key**: Use app's color palette from `lib/core/theme/`, realistic construction data
+- Playwright `browser_take_screenshot` lets Claude SEE the mockup and iterate visually with user
+
 ### Dart/Flutter Gotchas
 - Raw strings `r'...'` cannot contain single quotes - use `\x27` instead
 - Pre-existing test failure: table_locator_test "rejects section heading" (expects Y=1700, gets 1610)

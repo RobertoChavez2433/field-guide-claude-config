@@ -34,6 +34,7 @@ lib/
 | `rules/architecture.md` | Any lib/**/*.dart |
 | `rules/platform-standards.md` | Android/iOS config files |
 | `rules/frontend/flutter-ui.md` | lib/**/presentation/** |
+| `rules/frontend/ui-prototyping.md` | mockups/**, prototyping workflow |
 | `rules/backend/data-layer.md` | lib/**/data/** |
 | `rules/backend/supabase-sql.md` | Supabase work |
 | `rules/auth/supabase-auth.md` | lib/features/auth/** |
@@ -133,6 +134,21 @@ Agents load feature docs on demand; see `state/feature-{name}.json` per feature.
 |------|----------|---------|
 | run_and_tail_logs.ps1 | `tools/` | Run app with live log tailing |
 | dump_inspect.py | `tools/` | Crash dump analysis |
+| **UI Prototyping** | MCP: `html-sync` + `playwright` | Rapid browser-based UI mockups (see below) |
+
+## UI Prototyping (Browser Mockups)
+
+Rapid visual design iteration before writing Flutter code. Uses two MCP servers:
+
+| Server | Package | Purpose |
+|--------|---------|---------|
+| `html-sync` | `mcp-html-sync-server` | Create/update HTML with live hot reload |
+| `playwright` | `@playwright/mcp` | Navigate, screenshot, device emulation |
+
+**Workflow**: `create_page` → user opens URL → `browser_take_screenshot` → iterate via `update_page` → approve → write Flutter code.
+**CSS Framework**: Beer CSS (Material Design 3) — mockups look like Flutter widgets.
+**Full guide**: `docs/guides/ui-prototyping-workflow.md`
+**Rules**: `rules/frontend/ui-prototyping.md` (auto-loads for mockups/ files)
 
 ## Data Flow
 ```
