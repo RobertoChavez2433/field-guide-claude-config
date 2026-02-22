@@ -1,7 +1,8 @@
 {
   "id": "auth",
   "name": "Authentication & Session Management",
-  "status": "stable",
+  "status": "in_progress",
+  "current_phase": "Multi-tenant: ALL auth phases fully verified (181/181 PASS) + committed. Pending test/merge/deploy.",
   "description": "Supabase auth with email/password sign-in, sign-up, password reset, deep linking, and session management",
 
   "docs": {
@@ -26,6 +27,6 @@
 
   "metrics": {
     "test_coverage_percentage": 88,
-    "last_updated": "2026-02-13T00:00:00Z"
+    "last_updated": "2026-02-22T00:00:00Z"
   }
 }

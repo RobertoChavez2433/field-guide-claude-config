@@ -6,6 +6,21 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 446 (2026-02-22)
+**Work**: Brainstormed + resolved all 14 CRITICALs. Launched 2nd adversarial review. Resolved 7 security + 20 continuity findings.
+**Next**: Start Phase 1.
+
+### Session 445 (2026-02-22)
+**Work**: Adversarial architecture review of multi-tenant plan. 40 findings from code-review agent. RLS viewer policies broken, pending users locked out, SQLite migration unsafe, 5 tables missing columns.
+**Next**: Brainstorm fixes for CRITICALs, amend plan, then start Phase 1.
+
+### Session 444 (2026-02-22)
+**Work**: Brainstormed multi-tenant architecture plan. Audited Supabase (severely behind). Set up Supabase CLI. Wrote + deployed 3 catch-up migrations. Planning agent produced 102-file implementation plan across 8 phases.
+**Decisions**: Fleis and Vandenbrink as company, 3 roles, sequential phases, sync-on-close with debounce, full Firebase/FCM.
+**Next**: Start Phase 1 (Supabase foundation + Dart models + SQLite v24), get Roberto's auth UUID.
+
+## February 2026
+
 ### Session 443 (2026-02-22)
 **Work**: Redesigned 20/10 weights as compact 80px inline cards. Convergence-aware display (dim past first Δ≤10g). Auto-select converged reading for calc. Overflow "Add Reading" button when all 5 filled without convergence. Harness fixes for MdotHubScreen.
 **Results**: `flutter analyze` clean. Validated via dart-mcp (2-reading, 5-reading, 6-reading overflow scenarios).
