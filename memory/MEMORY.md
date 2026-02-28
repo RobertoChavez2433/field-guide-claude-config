@@ -48,19 +48,24 @@
 - Known Claude Code Windows bugs: #4462, #7032, #5465 - subagent file writes may not persist
 - Context handoff: subagents start fresh - always pass full context in Task prompt or write to `.claude/plans/`
 
-### Dart MCP + Flutter Driver Setup
-- **Marionette REMOVED (Session 409)**: Replaced entirely by dart-mcp + flutter_driver.
-- `lib/driver_main.dart` exists — ALWAYS launch with `target: "lib/driver_main.dart"` for driver commands
+### Testing Setup
+- `lib/driver_main.dart` exists for Flutter Driver-based testing
 - `flutter_driver` is a dev dependency in pubspec.yaml
-- Restart Claude Code after `.mcp.json` changes.
-- **CRITICAL**: NEVER run `Stop-Process -Name 'dart'` — kills MCP servers. Only kill `construction_inspector`.
-- `connect_dart_tooling_daemon` is the GATEWAY to all runtime tools. NEVER exclude it.
-- **Flutter Driver CANNOT interact with dialog overlays** (AlertDialog, BottomSheet, showDialog). Dialogs must be guarded with `const bool.fromEnvironment('FLUTTER_DRIVER')` to auto-skip.
-- **Don't pass `timeout` param** to flutter_driver commands — causes type cast error in dart-mcp.
-- **Nested finders (Descendant/Ancestor) don't work** — JSON serialization bug. Use ByValueKey/ByText instead.
-- **If a driver command times out, DON'T retry** — diagnose (overlay? missing key?) and work around.
-- Use `screenshot` command for visual state — returns image directly.
-- Widget tree can be 250K+ chars — use screenshot or parse saved file with python/jq, don't read raw.
+- **CRITICAL**: NEVER run `Stop-Process -Name 'dart'` — can kill background Dart processes. Only kill `construction_inspector`.
+- dart-mcp MCP server REMOVED (Session 444) — use `pwsh -Command "flutter run ..."` directly instead
+
+### Statusline & Usage Tracking (Session 458)
+- **Statusline script**: `~/.claude/statusline-command.js` (Node.js, 2-line layout)
+- **Anthropic OAuth usage API**: `https://api.anthropic.com/api/oauth/usage` — returns REAL 5h/7d utilization % + reset times
+- **OAuth token**: `~/.claude/.credentials.json` → `claudeAiOauth.accessToken`
+- **API also returns**: `seven_day_sonnet` (separate Sonnet quota), `extra_usage` (monthly limit/used/$)
+- **ccusage** (npm global): weekly token totals, daily logging to `~/.claude/usage-daily.csv`
+- **CRITICAL**: ccusage `totalTokens` is ~93% cache_read_tokens — massively inflated, does NOT reflect actual quota usage. Never use raw totalTokens for percentage calculations.
+- **Feature requests for statusline rate data**: GitHub issues #18121, #19385, #20636, #25819
+- **NDK 28.2**: Removed `gold` linker. Fix: `-DANDROID_LD=lld` in CMake toolchain args + `-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF` to suppress LTO check.
+- **Android API 36 SQLite**: `db.execute('PRAGMA ...')` rejected — use `db.rawQuery('PRAGMA ...')` instead. Move PRAGMA calls to `onConfigure` callback (not `onOpen`).
+- **Android API 36 emulator keyboard**: `TextInputType.emailAddress` triggers IME cancellation bug — use `TextInputType.text` + `autocorrect: false` as workaround.
+- **Android emulator hw keyboard**: Must set `hw.keyboard=yes` in `~/.android/avd/{name}.avd/config.ini` + cold boot. Default is `no` which prevents physical keyboard input.
 
 ### One-Point Chart Digitization — ALGORITHM DECODED (Session 423)
 - **Research doc**: `tools/chart-digitization-research.md`

@@ -4,6 +4,15 @@ Historical defects moved from per-feature defect files. Reference only.
 
 ---
 
+## Archived from _defects-auth.md (2026-02-22)
+
+### [DATA] 2026-02-22: Schema column omissions in parallel worktree implementations
+**Pattern**: Agent implementing migration missed `entry_personnel_counts` and `entry_personnel` when adding `created_by_user_id` to "all 17 tables" — easy to miss tables near the end of a long list.
+**Prevention**: After schema migrations, run a verification query counting columns across ALL target tables. Use a checklist with explicit table names.
+**Ref**: @lib/core/database/database_service.dart, @lib/core/database/schema/personnel_tables.dart
+
+---
+
 ## Archived from _defects-quantities.md (2026-02-21)
 
 ### [RESOLVED] 2026-02-20: DuplicateStrategy switch fallthrough in importBatch

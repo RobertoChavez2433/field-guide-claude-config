@@ -25,9 +25,19 @@ Archive: .claude/logs/defects-archive.md
 **Prevention**: When adding canWrite guards to providers, also update `main.dart` provider registration to pass `canWrite: () => authProvider.canWrite`.
 **Ref**: All 8+ providers with canWrite (contractor, equipment, personnel_type, todo, location, daily_entry, inspector_form, photo)
 
-### [DATA] 2026-02-22: Schema column omissions in parallel worktree implementations
-**Pattern**: Agent implementing migration missed `entry_personnel_counts` and `entry_personnel` when adding `created_by_user_id` to "all 17 tables" — easy to miss tables near the end of a long list.
-**Prevention**: After schema migrations, run a verification query counting columns across ALL target tables. Use a checklist with explicit table names.
-**Ref**: @lib/core/database/database_service.dart, @lib/core/database/schema/personnel_tables.dart
+### [CONFIG] 2026-02-22: Wrong Supabase key type hardcoded
+**Pattern**: `sb_publishable_...` (default publishable key) used instead of JWT `anon` key (`eyJhbG...`). Supabase client silently fails auth — no session restored, no profile loaded.
+**Prevention**: Supabase anon key is always a ~200-char JWT starting with `eyJ`. The `sb_publishable_*` key is a different key type. Always verify key format.
+**Ref**: @lib/core/config/supabase_config.dart
+
+### [FLUTTER] 2026-02-22: createCompany doesn't refresh local profile state
+**Pattern**: RPC `create_company` sets `status=approved, role=admin` server-side, but `AuthProvider.createCompany()` only updates `_company`, not `_userProfile`. Router sees stale `status=pending` and redirects to wrong screen.
+**Prevention**: After any Supabase RPC that modifies user_profiles server-side, always call `await loadUserProfile()` to sync local state.
+**Ref**: @lib/features/auth/presentation/providers/auth_provider.dart:401-419
+
+### [FLUTTER] 2026-02-22: Onboarding routes exempt from profile-based redirect
+**Pattern**: `_kOnboardingRoutes` were fully exempt from redirect checks. If profile loads async and user is already on `/profile-setup`, go_router re-evaluates but returns `null` for onboarding routes — user stays stuck even when fully approved.
+**Prevention**: Onboarding route exemption must still check if user is fully set up (approved + has company) and redirect to `/` if so.
+**Ref**: @lib/core/router/app_router.dart:113-125
 
 <!-- Add defects above this line -->
