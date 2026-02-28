@@ -11,7 +11,7 @@ paths:
 
 # Testing Guide
 
-Complete guide to testing in the Construction Inspector app: unit tests, Patrol E2E, dart-mcp UI testing, widget harness, and PDF stage trace testing.
+Complete guide to testing in the Construction Inspector app: unit tests, Patrol E2E, widget harness, and PDF stage trace testing.
 
 ---
 
@@ -145,85 +145,6 @@ context.read<Provider>().doThing();
 
 ---
 
-## dart-mcp UI Testing (Current Approach)
-
-Uses dart-mcp MCP server + Flutter Driver extension for interactive app testing.
-
-### Prerequisites (already set up)
-
-- `flutter_driver` is a dev dependency in `pubspec.yaml`
-- `lib/driver_main.dart` -- entry point that calls `enableFlutterDriverExtension()` before `app.main()`
-- Dialogs guarded with `const bool.fromEnvironment('FLUTTER_DRIVER')` to auto-skip (Driver can't interact with overlays)
-
-### Launch Sequence (3 calls)
-
-```
-1. mcp__dart-mcp__launch_app(root: "C:\Users\rseba\Projects\Field Guide App", device: "windows", target: "lib/driver_main.dart")
-   -> Returns { dtdUri, pid }
-2. mcp__dart-mcp__connect_dart_tooling_daemon(uri: <dtdUri>)
-3. mcp__dart-mcp__get_widget_tree(summaryOnly: true) -- verify app state
-```
-
-### Interacting with the App
-
-- **Use `flutter_driver` commands**: `tap`, `enter_text`, `get_text`, `scroll`, `screenshot`, `waitFor`
-- **Find widgets by**: `ByValueKey` (preferred), `ByText`, `ByType`, `BySemanticsLabel`
-- **Screenshots**: `flutter_driver` `screenshot` command returns the image directly -- use this, not VM service HTTP
-- **Always `get_widget_tree` first** to discover keys/text before attempting taps
-
-### Flutter Driver Limitations (CRITICAL -- do NOT retry, work around)
-
-| Limitation | Workaround |
-|------------|------------|
-| **Can't find widgets in dialog overlays** (AlertDialog, BottomSheet, showDialog) | Guard dialogs with `FLUTTER_DRIVER` env check to auto-skip in driver mode |
-| **`timeout` int param causes type cast error** in dart-mcp | Don't pass `timeout` parameter to flutter_driver commands |
-| **Nested finders (Descendant/Ancestor) fail** -- JSON serialization bug in dart-mcp | Use `ByValueKey` or `ByText` instead. Add `ValueKey` to widgets if needed |
-| **Widget tree can be 250K+ chars** -- overflows tool output | Use `screenshot` for visual state. Parse tree with python/jq, don't read raw JSON |
-| **`waitFor`/`tap` timeout = driver can't find widget** | Don't retry the same finder. Check if widget is in an overlay or use a different finder type |
-
-### Widget Tree Parsing (when screenshot isn't enough)
-
-When `get_widget_tree` output is saved to file, extract text/keys efficiently:
-
-```python
-# Extract labeled widgets from saved widget tree JSON
-python -c "import sys,json; [extract logic]" < tree.txt
-```
-
-Or use `Grep` on the saved file for `textPreview` or `keyValueString`.
-
-### Adding Testability to Widgets
-
-When flutter_driver can't find a widget, add a `ValueKey` in source code and `hot_reload`:
-
-```dart
-TextButton(key: const ValueKey('my_button'), ...)
-```
-
-- Keys MUST be added to widgets BEFORE they render -- hot reload won't update already-built dialogs
-- Keys live in `lib/shared/testing_keys/` organized by feature
-- Always reference keys from the `TestingKeys` class, never use hardcoded `Key('...')` strings
-
-### Other dart-mcp Tools
-
-- `run_tests` -- run flutter tests without launching app UI
-- `get_app_logs` -- retrieve console output
-- `hot_reload` / `hot_restart` -- reload after code changes
-- `analyze_files` -- static analysis on specific files
-- `dart_format` -- format Dart files
-
-### If Build Fails (PDB lock / stale build / native_assets)
-
-```powershell
-pwsh -Command "Stop-Process -Name 'construction_inspector' -Force -ErrorAction SilentlyContinue; Start-Sleep 2; Remove-Item -Recurse -Force 'C:\Users\rseba\Projects\Field Guide App\build' -ErrorAction SilentlyContinue"
-mkdir -p "C:/Users/rseba/Projects/Field Guide App/build/native_assets/windows"
-pwsh -Command "Set-Location 'C:\Users\rseba\Projects\Field Guide App'; flutter pub get; flutter build windows --debug"
-```
-
-**CRITICAL**: Always create `build/native_assets/windows` before building -- cmake install fails without it.
-
----
-
 ## Widget Test Harness (Isolated Screen Testing)
 
 Purpose: render one screen at a time with real providers backed by in-memory SQLite for faster, lower-load UI testing than full-app launch.
@@ -234,9 +155,8 @@ Purpose: render one screen at a time with real providers backed by in-memory SQL
    ```json
    {"screen":"ProctorEntryScreen","data":{"responseId":"test-response-001"}}
    ```
-2. `mcp__dart-mcp__launch_app(root: "C:\Users\rseba\Projects\Field Guide App", device: "windows", target: "lib/test_harness.dart")`
-3. `mcp__dart-mcp__connect_dart_tooling_daemon(uri: <dtdUri>)`
-4. Use `flutter_driver` commands (`screenshot`, `tap`, `enter_text`, `get_text`, `waitFor`) against the rendered screen
+2. `pwsh -Command "flutter run -d windows -t lib/test_harness.dart"`
+3. Interact with the rendered screen manually or via Patrol tests
 
 ### Config Fields
 
@@ -329,23 +249,18 @@ See `integration_test/patrol/REQUIRED_UI_KEYS.md` for complete list:
 
 ---
 
-## MCP Stability Rules -- CRITICAL
+## Process Management
 
-- **NEVER** `Stop-Process -Name 'dart'` -- kills `dart-mcp` server(s), requires session restart
+- **NEVER** `Stop-Process -Name 'dart'` -- can kill background Dart processes
 - **SAFE kill**: `Stop-Process -Name 'construction_inspector' -Force -ErrorAction SilentlyContinue`
-- **If tools show "No such tool available"** -- MCP servers were killed -- restart Claude Code session
-- For repeated render failures, relaunch via `dart-mcp launch_app` and reconnect daemon before retrying commands
-- After app crash: just call `launch_app` again -- MCP servers survive
-- **If a driver command times out, DON'T retry the same command** -- diagnose why (overlay? missing key? wrong finder?)
 
 ---
 
-## Testing Strategy (4-Tier)
+## Testing Strategy (3-Tier)
 
 1. **Unit tests** -- `test/` for models, repositories, providers, and services
 2. **Widget harness tests** -- `lib/test_harness.dart` + `harness_config.json` for isolated screen interaction
-3. **Full app dart-mcp flows** -- `lib/driver_main.dart` for end-to-end app behavior and navigation
-4. **Patrol E2E** -- `integration_test/patrol/` for full integration tests with native platform interaction
+3. **Patrol E2E** -- `integration_test/patrol/` for full integration tests with native platform interaction
 
 UI test findings: `.claude/test-results/YYYY-MM-DD-ui-test-findings.md`
 
