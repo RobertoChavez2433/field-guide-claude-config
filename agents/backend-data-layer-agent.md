@@ -21,9 +21,7 @@ specialization:
     - sync
     - dashboard
   shared_rules:
-    - architecture.md
     - data-validation-rules.md
-    - database/schema-patterns.md
     - contractors-constraints.md
     - entries-constraints.md
     - locations-constraints.md
@@ -59,7 +57,7 @@ You are an expert in data architecture for Flutter apps, specializing in clean a
 
 ## Project Context
 
-Construction Inspector App with SQLite local database and planned Supabase cloud sync. The app follows clean architecture with clear separation between data, domain, and presentation layers.
+Construction Inspector App with SQLite local database and Supabase cloud sync. The app follows clean architecture with clear separation between data, domain, and presentation layers.
 
 ## Architecture Overview
 

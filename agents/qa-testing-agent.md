@@ -12,9 +12,7 @@ specialization:
   supporting_features:
     - all
   shared_rules:
-    - architecture.md
     - data-validation-rules.md
-    - testing/patrol-testing.md
   guides:
     - docs/guides/testing/manual-testing-checklist.md
     - docs/guides/testing/e2e-test-setup.md
@@ -88,32 +86,32 @@ After reading, apply this methodology throughout your work.
 
 ```bash
 # Analysis
-flutter analyze                    # Full static analysis
-dart fix --apply                   # Auto-fix issues
+pwsh -Command "flutter analyze"                    # Full static analysis
+pwsh -Command "dart fix --apply"                   # Auto-fix issues
 
 # Unit & Widget Tests
-flutter test                       # All tests
-flutter test --coverage            # With coverage
-flutter test test/path/file.dart   # Specific file
+pwsh -Command "flutter test"                       # All tests
+pwsh -Command "flutter test --coverage"            # With coverage
+pwsh -Command "flutter test test/path/file.dart"   # Specific file
 
 # Golden Tests
-flutter test test/golden/          # Run golden tests
-flutter test --update-goldens test/golden/  # Update baseline images
+pwsh -Command "flutter test test/golden/"          # Run golden tests
+pwsh -Command "flutter test --update-goldens test/golden/"  # Update baseline images
 
 # Patrol (E2E) Tests
-patrol test                        # Run all patrol tests
-patrol test -t integration_test/patrol/e2e_tests/navigation_flow_test.dart  # Specific test
-patrol test --verbose              # Verbose output for debugging
+pwsh -Command "patrol test"                        # Run all patrol tests
+pwsh -Command "patrol test -t integration_test/patrol/e2e_tests/navigation_flow_test.dart"  # Specific test
+pwsh -Command "patrol test --verbose"              # Verbose output for debugging
 
 # Builds
-flutter build windows --release    # Windows release
-flutter build apk --release        # Android release
+pwsh -Command "flutter build windows --release"    # Windows release
+pwsh -Command "flutter build apk --release"        # Android release
 ```
 
 ## Testing Workflow
 
-1. **Analyze** -> `flutter analyze` (fix errors first)
-2. **Test** -> `flutter test` (run full suite)
+1. **Analyze** -> `pwsh -Command "flutter analyze"` (fix errors first)
+2. **Test** -> `pwsh -Command "flutter test"` (run full suite)
 3. **Debug** -> Investigate failures with DevTools
 4. **Fix** -> Apply fixes, verify with targeted tests
 5. **Verify** -> Full regression pass

@@ -53,6 +53,7 @@ lib/
 | `auth-agent` | Auth flows | IMPLEMENT |
 | `pdf-agent` | PDF generation | IMPLEMENT |
 | `code-review-agent` | Architecture, code quality | REVIEW |
+| `security-agent` | Security audits, vulnerability scanning, OWASP compliance | REVIEW |
 | `qa-testing-agent` | Testing, debugging | TEST/VERIFY |
 
 **Note**: All agents must be at root `.claude/agents/` level (no subdirectories).
@@ -65,6 +66,7 @@ lib/
 | `interface-design` | Design system | frontend-flutter-specialist |
 | `pdf-processing` | CLI PDF analysis/debugging | pdf-agent |
 | `dispatching-parallel-agents` | Coordinate parallel agents, prevent revert conflicts | planning-agent |
+| `implement` | Autonomous plan execution with quality gates | User-invoked |
 | `resume-session` | Load HOT context on session start | User-invoked |
 | `end-session` | Session handoff with auto-archiving | User-invoked |
 
@@ -95,6 +97,8 @@ Skills are loaded via `skills:` frontmatter in agent files. Claude auto-delegate
 `.claude/state/` — JSON state files for project tracking
 `.claude/hooks/` — Pre-flight + post-work validation scripts
 Agents load feature docs on demand; see `state/feature-{name}.json` per feature.
+
+**Note**: `calculator`, `forms`, `gallery`, `todos` are sub-features of `toolbox` — covered by `feature-toolbox-overview.md` and `feature-toolbox.json`. They do not have separate state/doc files.
 
 ## Quick Reference Commands
 
@@ -127,7 +131,7 @@ Agents load feature docs on demand; see `state/feature-{name}.json` per feature.
 - ALWAYS use `-ErrorAction SilentlyContinue` on Stop-Process
 - ALWAYS set `timeout: 600000` on `flutter run` commands (default 120s is too short)
 - ALWAYS quote paths with spaces: `"C:\Users\rseba\Projects\Field Guide App"`
-- **NEVER run `Stop-Process -Name 'dart'`** — this kills MCP servers (dart-mcp), not just the app. Only kill `construction_inspector`.
+- **NEVER run `Stop-Process -Name 'dart'`** — this can kill background Dart processes. Only kill `construction_inspector`.
 
 ## Development Tools
 | Tool | Location | Purpose |
@@ -191,14 +195,14 @@ Each session, after completing implementation work, check:
 
 ## Testing
 
-All testing details (dart-mcp, widget harness, flow harness, Patrol E2E, PDF stage trace, widget keys, MCP stability rules) live in:
+All testing details (widget harness, flow harness, Patrol E2E, PDF stage trace, widget keys) live in:
 - **`rules/testing/patrol-testing.md`** — Auto-loads when touching `test/**`, `integration_test/**`, `lib/test_harness/**`, `lib/driver_main.dart`, or testing keys files
 - **`docs/guides/testing/e2e-test-setup.md`** — Device setup, CI/CD, troubleshooting (loaded by agents on demand)
 
 Key entry points:
 | Target | Entry Point |
 |--------|-------------|
-| Full app (dart-mcp) | `lib/driver_main.dart` |
+| Full app | `lib/driver_main.dart` |
 | Single screen harness | `lib/test_harness.dart` + `harness_config.json` |
 | Flow harness (multi-screen) | `lib/test_harness.dart` + `harness_config.json` with `"flow"` key |
 | Unit tests | `pwsh -Command "flutter test"` |

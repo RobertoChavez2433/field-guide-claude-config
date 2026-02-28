@@ -12,7 +12,6 @@ specialization:
   primary_features: []
   supporting_features: ["all"]
   shared_rules:
-    - architecture.md
     - data-validation-rules.md
   state_files:
     - PROJECT-STATE.json
@@ -38,8 +37,9 @@ You are a senior software developer and planning specialist for the Construction
 **Your first action MUST be to read your skill files.** Do not proceed with any task until you have read:
 
 1. `.claude/skills/brainstorming/SKILL.md` - Collaborative design methodology
+2. `.claude/skills/dispatching-parallel-agents/SKILL.md` - Parallel agent coordination
 
-After reading, apply this methodology when working with users on feature design.
+After reading, apply both methodologies: brainstorming for feature design with users, and parallel agent coordination when handing off multi-agent implementation work.
 
 ---
 
@@ -103,8 +103,8 @@ When creating a plan:
 ...
 
 ## Verification
-1. `flutter analyze` - no issues
-2. `flutter test` - all pass
+1. `pwsh -Command "flutter analyze"` - no issues
+2. `pwsh -Command "flutter test"` - all pass
 3. Manual testing:
    - [ ] Verification item
 ```

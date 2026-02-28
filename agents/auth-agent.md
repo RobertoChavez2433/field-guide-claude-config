@@ -9,9 +9,7 @@ specialization:
     - auth
   supporting_features: []
   shared_rules:
-    - architecture.md
     - data-validation-rules.md
-    - auth/supabase-auth.md
     - auth-constraints.md
   state_files:
     - PROJECT-STATE.json
@@ -63,7 +61,7 @@ See `@.claude/rules/auth/supabase-auth.md` for full AuthService and AuthProvider
 Key entry points:
 - `AuthService.signIn()` / `.signUp()` / `.signOut()` / `.resetPassword()`
 - `AuthProvider` — stream listener, `isAuthenticated` getter
-- Deep link callback: `com.fvconstruction.construction_inspector://login-callback`
+- Deep link callback: `com.fieldguideapp.inspector://login-callback`
 
 ## Deep Linking Setup
 
@@ -74,7 +72,7 @@ Key entry points:
   <category android:name="android.intent.category.DEFAULT" />
   <category android:name="android.intent.category.BROWSABLE" />
   <data
-    android:scheme="com.fvconstruction.construction_inspector"
+    android:scheme="com.fieldguideapp.inspector"
     android:host="login-callback" />
 </intent-filter>
 ```
@@ -86,14 +84,14 @@ Key entry points:
   <dict>
     <key>CFBundleURLSchemes</key>
     <array>
-      <string>com.fvconstruction.construction_inspector</string>
+      <string>com.fieldguideapp.inspector</string>
     </array>
   </dict>
 </array>
 ```
 
 ### Supabase Dashboard
-- Redirect URL: `com.fvconstruction.construction_inspector://login-callback`
+- Redirect URL: `com.fieldguideapp.inspector://login-callback`
 
 ## Error Messages
 
@@ -123,7 +121,7 @@ During implementation:
 
 ```bash
 # Run auth-related tests
-flutter test test/features/auth/
+pwsh -Command "flutter test test/features/auth/"
 
 # Manual testing checklist
 # 1. Sign up with new email

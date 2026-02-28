@@ -14,9 +14,7 @@ specialization:
     - photos
     - entries
   shared_rules:
-    - architecture.md
     - data-validation-rules.md
-    - pdf/pdf-generation.md
     - pdf-v2-constraints.md
   state_files:
     - PROJECT-STATE.json
@@ -169,10 +167,10 @@ Located in `Pre-devolopment and brainstorming/Form Templates for export/`:
 
 ```bash
 # Run app and generate PDF
-flutter run -d windows
+pwsh -Command "flutter run -d windows"
 
 # Check for analysis errors
-flutter analyze lib/features/pdf/services/pdf_service.dart
+pwsh -Command "flutter analyze lib/features/pdf/services/pdf_service.dart"
 
 # View debug output in console
 # Look for [PDF] tags during PDF generation

@@ -10,7 +10,6 @@ specialization:
   supporting_features:
     - all
   shared_rules:
-    - architecture.md
     - data-validation-rules.md
   state_files:
     - PROJECT-STATE.json
@@ -178,8 +177,8 @@ When finding issues, log to `.claude/defects/_defects-{feature}.md` using format
 ## Verification
 
 Before approving any code or claiming review complete:
-- Run `flutter analyze` and confirm 0 issues
-- Run `flutter test` and confirm all pass
+- Run `pwsh -Command "flutter analyze"` and confirm 0 issues
+- Run `pwsh -Command "flutter test"` and confirm all pass
 - Verify claims with evidence, not assumptions
 
 ## Response Rules

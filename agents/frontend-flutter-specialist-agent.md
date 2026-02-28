@@ -24,7 +24,6 @@ specialization:
     - pdf
     - sync
   shared_rules:
-    - architecture.md
     - data-validation-rules.md
     - contractors-constraints.md
     - dashboard-constraints.md
@@ -107,7 +106,7 @@ After reading, apply these methodologies throughout your work.
 
 **Design Philosophy**: Professional, productivity-focused. Minimize taps for common actions. High contrast for visibility.
 
-**Features**: 13 feature modules (auth, contractors, dashboard, entries, locations, pdf, photos, projects, quantities, settings, sync, toolbox, weather)
+**Features**: 17 feature modules (auth, calculator, contractors, dashboard, entries, forms, gallery, locations, pdf, photos, projects, quantities, settings, sync, todos, toolbox, weather)
 
 ## Reference Documents
 @.claude/rules/frontend/flutter-ui.md

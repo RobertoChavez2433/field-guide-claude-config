@@ -17,11 +17,8 @@ specialization:
     - quantities
     - toolbox
   shared_rules:
-    - architecture.md
     - data-validation-rules.md
     - sync-constraints.md
-    - backend/supabase-sql.md
-    - sync/sync-patterns.md
   guides:
     - docs/guides/implementation/chunked-sync-usage.md
   state_files:
@@ -86,40 +83,40 @@ You are a Supabase and PostgreSQL expert with deep knowledge of cloud database a
 
 ```bash
 # Login to Supabase
-supabase login
+pwsh -Command "supabase login"
 
 # Link to existing project
-supabase link --project-ref vsqvkxvvmnnhdajtgblj
+pwsh -Command "supabase link --project-ref vsqvkxvvmnnhdajtgblj"
 
 # Check project status
-supabase status
+pwsh -Command "supabase status"
 
 # List all migrations
-supabase migration list
+pwsh -Command "supabase migration list"
 
 # Create new migration
-supabase migration new <migration_name>
+pwsh -Command "supabase migration new <migration_name>"
 
 # Apply migrations to remote
-supabase db push
+pwsh -Command "supabase db push"
 
 # Pull schema from remote
-supabase db pull
+pwsh -Command "supabase db pull"
 
 # Generate TypeScript types
-supabase gen types typescript --project-id vsqvkxvvmnnhdajtgblj
+pwsh -Command "supabase gen types typescript --project-id vsqvkxvvmnnhdajtgblj"
 
 # Reset local database
-supabase db reset
+pwsh -Command "supabase db reset"
 
 # View database diff
-supabase db diff
+pwsh -Command "supabase db diff"
 
 # Start local Supabase (for development)
-supabase start
+pwsh -Command "supabase start"
 
 # Stop local Supabase
-supabase stop
+pwsh -Command "supabase stop"
 ```
 
 ## Common Tasks
@@ -146,8 +143,8 @@ Configure buckets, policies, file organization, cleanup orphaned files.
 
 | File | Purpose |
 |------|---------|
-| `supabase/supabase_schema_v3.sql` | Current Supabase schema |
-| `supabase/supabase_schema_v4_rls.sql` | RLS policies |
+| `supabase/migrations/` | Migration files (source of truth for production schema) |
+| `supabase/supabase_schema_v4_rls.sql` | RLS policies (NOTE: contains temporary permissive anon policies) |
 | `lib/core/database/database_service.dart` | Local SQLite schema (source of truth) |
 | `lib/features/sync/` | Sync logic between local and remote |
 | `lib/features/*/data/datasources/remote/` | Remote datasource implementations |
@@ -161,13 +158,13 @@ Configure buckets, policies, file organization, cleanup orphaned files.
 
 ```bash
 # View Supabase logs
-supabase logs --project-ref vsqvkxvvmnnhdajtgblj
+pwsh -Command "supabase logs --project-ref vsqvkxvvmnnhdajtgblj"
 
 # Check database connection
-supabase db lint
+pwsh -Command "supabase db lint"
 
 # Verify schema
-supabase db diff --schema public
+pwsh -Command "supabase db diff --schema public"
 ```
 
 ## Testing
