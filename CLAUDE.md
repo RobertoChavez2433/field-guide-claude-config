@@ -105,25 +105,27 @@ Agents load feature docs on demand; see `state/feature-{name}.json` per feature.
 **CRITICAL**: Git Bash silently fails on Flutter. ALWAYS use pwsh wrapper.
 
 ### Build & Run
-1. `pwsh -Command "flutter run -d windows"`                                    — Run on desktop
-2. `pwsh -Command "flutter clean && flutter build apk --release"`              — Build APK
-3. `pwsh -Command "flutter clean"`                                             — Clean build artifacts
+1. `pwsh -File tools/build.ps1 -Platform android`                              — Build release APK → releases/android/release/
+2. `pwsh -File tools/build.ps1 -Platform windows`                              — Build Windows → releases/windows/release/
+3. `pwsh -File tools/build.ps1 -Platform android -BuildType debug`             — Build debug APK → releases/android/debug/
+4. `pwsh -Command "flutter run -d windows"`                                    — Run on desktop (dev)
+5. `pwsh -Command "flutter clean"`                                             — Clean build artifacts
 
 ### Testing
-4. `pwsh -Command "flutter test"`                                              — All tests
+6. `pwsh -Command "flutter test"`                                              — All tests
 
 ### Process Management (SAFE — preserves MCP servers)
-5. `pwsh -Command "Stop-Process -Name 'construction_inspector' -Force -ErrorAction SilentlyContinue"`  — Kill app ONLY
+7. `pwsh -Command "Stop-Process -Name 'construction_inspector' -Force -ErrorAction SilentlyContinue"`  — Kill app ONLY
 
 ### Dependencies & Diagnostics
-6. `pwsh -Command "flutter pub get"`       — Get dependencies
-7. `pwsh -Command "flutter pub upgrade"`   — Upgrade dependencies
-8. `pwsh -Command "flutter analyze"`       — Static analysis
-9. `pwsh -Command "flutter doctor"`        — Environment diagnostics
+8. `pwsh -Command "flutter pub get"`        — Get dependencies
+9. `pwsh -Command "flutter pub upgrade"`    — Upgrade dependencies
+10. `pwsh -Command "flutter analyze"`       — Static analysis
+11. `pwsh -Command "flutter doctor"`        — Environment diagnostics
 
 ### Git
-10. `git log --oneline -10`                 — Recent commits
-11. `git diff --stat`                       — Change summary
+12. `git log --oneline -10`                 — Recent commits
+13. `git diff --stat`                       — Change summary
 
 ### Common Mistakes (from 577+ errors across 30+ sessions)
 - NEVER run flutter/dart directly in Git Bash — ALWAYS use `pwsh -Command "..."`

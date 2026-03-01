@@ -6,6 +6,10 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## February 2026
 
+### Session 458 (2026-02-26)
+**Work**: Built Claude Code statusline with real Anthropic OAuth usage API data (5h/7d percentages + reset timers). Installed ccusage for weekly token tracking. Daily CSV logging. Attempted Android APK build — discovered flusseract CMake broken with NDK 28.2 (gold linker removed + regex bug).
+**Next**: Fix Android build (CMake regex), widget test strategy decision, revert temp changes.
+
 ### Session 457 (2026-02-22)
 **Work**: Testing strategy analysis. 2 agents reviewed 5+ sessions of failures. Found 10 issues, recommended widget test approach. Fixed SyncOrchestrator.forTesting() harness crash. Added 4 flow definitions + 2 screen registrations. Dashboard verified via harness.
 **Next**: Decide on widget test approach, build StubAuthProvider + widget test harness, write 29 tests.

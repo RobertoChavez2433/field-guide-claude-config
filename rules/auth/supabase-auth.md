@@ -94,20 +94,26 @@ redirect: (context, state) {
 
 ### Callback URL
 ```
-com.fvconstruction.construction_inspector://login-callback
+com.fieldguideapp.inspector://login-callback
 ```
 
-### Handle Auth Callback
+> **Important**: Deep link token exchange is handled by `supabase_flutter` when
+> `AuthFlowType.pkce` is configured. Do not add custom deep link handlers.
+> The library intercepts the deep link, exchanges the PKCE code for tokens,
+> and fires the appropriate `AuthChangeEvent` (e.g., `passwordRecovery`).
+
+### PASSWORD_RECOVERY Event Pattern
 ```dart
-void _handleDeepLink(Uri uri) async {
-  if (uri.scheme == 'com.fvconstruction.construction_inspector' &&
-      uri.host == 'login-callback') {
-    final fragment = uri.fragment;
-    if (fragment.contains('access_token')) {
-      await Supabase.instance.client.auth.recoverSession(fragment);
-    }
+// In AuthProvider — listen for recovery event BEFORE updating _currentUser
+_authSubscription = _authService.authStateChanges.listen((state) {
+  if (state.event == AuthChangeEvent.passwordRecovery) {
+    _isPasswordRecovery = true;
+    _currentUser = state.session?.user;
+    notifyListeners();
+    return; // Skip profile load — user must update password first
   }
-}
+  // ... normal auth state handling
+});
 ```
 
 ## Security

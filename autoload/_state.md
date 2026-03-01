@@ -1,112 +1,112 @@
 # Session State
 
-**Last Updated**: 2026-02-28 | **Session**: 462
+**Last Updated**: 2026-02-28 | **Session**: 465
 
 ## Current Phase
 - **Phase**: Project-Based Multi-Tenant Architecture — DEPLOYED
-- **Status**: All phases (0-8) merged to main. Firebase configured (Android + iOS). Supabase migrations deployed (6/6). Package renamed to `com.fieldguideapp.inspector`. **2345/2345 tests passing.** Android APK builds and runs on emulator.
+- **Status**: All phases (0-8) merged to main. Password reset token_hash fix implemented, reviewed, and committed on `feat/password-reset-token-hash` branch (8 commits). Supabase dashboard email template updated manually. 4 security blockers identified and logged. Needs physical device E2E testing and PR merge.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (462)
+### What Was Done This Session (465)
 
-**`/implement` Skill — IMPLEMENTED (Plan Phases 1-5)**:
-- Created `.claude/skills/implement/SKILL.md` — 421-line 2-layer skill (Supervisor + Orchestrator)
-- Supervisor: reads plan, manages checkpoint, spawns orchestrator, handles DONE/HANDOFF/BLOCKED
-- Orchestrator: dispatches specialized agents via routing table, runs 6 quality gates, checkpoint recovery
-- Added `implement` to CLAUDE.md Skills table
+**Password Reset token_hash Fix — IMPLEMENTED + REVIEWED**:
+- Ran `/implement` skill on `.claude/plans/2026-02-28-password-reset-token-hash-fix.md`
+- Orchestrator completed: Phases 2, 3, 4, 6 (code), Phases 1, 5, 7 (manual/skipped)
+- All 6 quality gates passed (build, analyze, P1 fixes, code review, completeness, security)
 
-**Agent System Cleanup — EXECUTED (Plan Phases 6-8)**:
-- **Phase 6**: Fixed all 9 agents — auth deep links (4 scheme fixes), pwsh wrappers (34+ commands across 5 agents), feature count 13→17, "planned" sync text, planning-agent 2nd skill load, security-agent verification section
-- **Phase 7**: Created 4 missing agent memory stubs (auth, backend-data-layer, backend-supabase, planning). Verified all state JSON files exist.
-- **Phase 8a**: Resolved `shared_rules` path ambiguity — removed `architecture.md` + all `rules/` paths from ALL 9 agents (redundant with `@` inline refs). Only `architecture-decisions/` constraint files remain.
-- **Phase 8e**: Fixed supabase schema refs (v3→migrations/, added permissive anon note to v4)
-- **Phase 8d/8f**: Documented toolbox sub-features in CLAUDE.md
+**Supabase Dashboard Configured (Manual)**:
+- Reset Password email template updated with `{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=recovery&email={{ .Email }}`
+- Redirect URL `com.fieldguideapp.inspector://login-callback` confirmed present
+- OTP expiry confirmed at 3600s (default, not configurable on free plan)
 
-**Opus Review Caught 3 Additional Issues**:
-- 3 bare `flutter` commands missed by sonnet agents: `auth-agent.md:124`, `qa-testing-agent.md:113-114`, `planning-agent.md:106-107` — all fixed
+**Code Review + Security Audit (Full Working Tree)**:
+- Code review agent (opus): found 2 P0, 5 P1, 4 P2
+- Security agent (opus): found 2 HIGH, 4 MEDIUM, 2 LOW
+- Fixer agent (sonnet): resolved all 10 actionable findings
+- Key fixes: shared PasswordValidator (DRY), lowercase check added, register screen updated to 8-char+complexity, SEC-9 string matching narrowed, signOut() clears recovery flag, debugPrint->DebugLogger, config.toml path fixed
 
-### What Was Done Last Session (461)
+**8 Logical Commits on `feat/password-reset-token-hash`**:
+1. `d3c6c85` feat: add deep link URL scheme for iOS, fix Android intent filter
+2. `73f89c9` feat: add verifyRecoveryToken, updatePassword, and shared password validator
+3. `f50781d` feat: add password recovery state management and router guard
+4. `11917b1` feat: add UpdatePasswordScreen, 60s cooldown, unified password validation
+5. `f7d2771` fix: replace PKCE deep link handler with token_hash + verifyOTP approach
+6. `48e8530` feat: harden Supabase auth config and add recovery email template
+7. `7322785` feat: add testing keys for UpdatePasswordScreen
+8. `bb547db` chore: gitignore releases/, update Codex bridge, add build script
 
-- Created security-agent (10-domain read-only Opus auditor)
-- Designed /implement skill (2-layer Supervisor+Orchestrator, 6 quality gates)
-- Planned agent system cleanup (18 items across 9 agents)
-- Exported plan: `.claude/plans/2026-02-27-implement-skill-design.md`
+**4 Security Blockers Logged** (in `_defects-auth.md`):
+1. Custom URI scheme hijackable on Android < 12 — migrate to HTTPS App Links
+2. Recovery flag volatile — persist to secure storage or inspect AMR claims
+3. `secure_password_change = false` — enable and test recovery flow compatibility
+4. Email exposed in deep link URL — use `{{ urlquery .Email }}` template function
+
+### What Was Done Last Session (464)
+- Build system created (tools/build.ps1 + releases/ folder)
+- Password reset PKCE bug diagnosed (flow_state_not_found)
+- token_hash fix plan written
 
 ### What Needs to Happen Next
 
-1. **SET UP password reset deep linking** — BLOCKER-13 (about:blank in Chrome)
-2. **DECISION: Switch to widget test approach** — See `.claude/plans/2026-02-22-testing-strategy-overhaul.md` (BLOCKER-11)
-3. **REVERT temp changes**: `supabase_config.dart` (hardcoded creds), `auth_provider.dart` (debug logging)
-4. **UX fix**: "Certification Number" → "Density Certification Number" in `profile_setup_screen.dart`
-5. **Commit session 460+462 changes** — CMake, SQLite, keyboard fixes + agent/skill/CLAUDE.md changes
+1. **TEST password reset E2E on Samsung S25 Ultra** — kill app, click email link, verify recovery flow works end-to-end
+2. **Push + PR**: `feat/password-reset-token-hash` -> main (8 commits ready)
+3. **FIX BLOCKER: secure_password_change** — Enable `secure_password_change = true` in Supabase, test recovery flow still works, push config
+4. **FIX BLOCKER: Email URL encoding** — Change email template to use `{{ urlquery .Email }}`
+5. **PLAN BLOCKER: Recovery flag persistence** — Design approach (secure storage vs AMR claims)
+6. **PLAN BLOCKER: HTTPS App Links** — Requires a domain + assetlinks.json hosting
+7. **DECISION: Switch to widget test approach** — See `.claude/plans/2026-02-22-testing-strategy-overhaul.md` (BLOCKER-11)
 
 ## Blockers
 
-### BLOCKER-13: Password Reset Deep Linking Broken (NEW)
-**Status**: OPEN
-**Symptom**: Tapping password reset link in email opens about:blank in Chrome instead of returning to app.
-**Root cause**: Supabase `resetPasswordForEmail` redirect URL (`auth_service.dart:115`) not configured for mobile deep linking. Need: (1) proper `redirectTo` URL using app scheme, (2) Supabase dashboard redirect URL allowlist, (3) verify Android intent filter in manifest.
-**Scope**: Needs design — affects all Supabase auth deep links (password reset, email confirmation, magic links).
-
-### BLOCKER-12: Android APK Build Broken — flusseract CMake
-**Status**: RESOLVED (Session 460)
-**Fix**: Added dangling reference cleanup regexes + LTO disable + liblzma docs in `ext-configure-android.cmake`.
+### BLOCKER-13: Password Reset Deep Linking
+**Status**: IMPLEMENTED, NEEDS E2E TEST (Session 465)
+**Branch**: `feat/password-reset-token-hash` (8 commits, not yet merged)
+**Security Blockers**: 4 logged in `_defects-auth.md` (URI hijacking, volatile flag, secure_password_change, email encoding)
+**Desktop (Windows)**: Still broken — custom URL schemes can't be opened from desktop browsers.
+**iOS**: URL scheme added to Info.plist. Untested (no iOS device/Mac available).
 
 ### BLOCKER-11: dart-mcp Testing Strategy Is Wrong Tier
 **Status**: OPEN
 **Plan**: `.claude/plans/2026-02-22-testing-strategy-overhaul.md`
-**Summary**: 33/38 tests should be widget tests (`flutter test`, 1-3s each) not dart-mcp integration tests (2-5 min each).
 
 ### BLOCKER-10: Fixture Generator Requires SPRINGFIELD_PDF Runtime Define
 **Status**: OPEN (PDF scope only).
 
 ## Recent Sessions
 
+### Session 465 (2026-02-28)
+**Work**: Implemented password reset token_hash fix via /implement skill. Supabase dashboard configured manually (email template, redirect URL, OTP expiry). Ran code review (opus) + security audit (opus) on full working tree. Fixed 10 findings via fixer agent. Created 8 logical commits on `feat/password-reset-token-hash`. Logged 4 security blockers. Researched Supabase MCP (official exists but can't manage email templates). Verified `secure_password_change` is a real security risk.
+**Decisions**: token_hash + verifyOTP is the correct approach for PKCE-killed-app scenario. Kept `detectSessionInUri=true` (supabase_flutter ignores token_hash links). Shared PasswordValidator extracted to eliminate DRY violation. 4 security blockers deferred but logged.
+**Next**: E2E test on physical device, push + PR, fix secure_password_change and email encoding blockers.
+
+### Session 464 (2026-02-28)
+**Work**: Diagnosed ARM crash on Samsung S25 Ultra. Created build system. Diagnosed PKCE flow_state_not_found bug. Wrote token_hash fix plan.
+
+### Session 463 (2026-02-28)
+**Work**: Implemented password reset deep linking plan (Feb 27) via /implement skill. Pushed Supabase config to remote.
+
 ### Session 462 (2026-02-28)
-**Work**: Implemented /implement skill (421-line SKILL.md). Executed full agent cleanup: 9 agents fixed (pwsh wrappers, deep links, shared_rules path ambiguity, feature count, schema refs). Created 4 memory stubs. Opus review caught 3 additional bare commands.
-**Decisions**: shared_rules now exclusively reference architecture-decisions/ constraint files. rules/ paths removed as redundant with @ inline refs.
-**Next**: Password reset deep linking (BLOCKER-13), widget test strategy (BLOCKER-11), commit all changes.
+**Work**: Implemented /implement skill (421-line SKILL.md). Agent cleanup: 9 agents fixed, 4 memory stubs.
 
 ### Session 461 (2026-02-27)
-**Work**: Created security-agent (10-domain read-only auditor). Designed /implement skill (2-layer Supervisor+Orchestrator, 6 quality gates, specialized agent routing). Identified 18 cleanup items across all 9 agents.
-**Decisions**: 2-layer architecture for /implement. All 6 gates including security. Specialized agent routing over generic.
-**Next**: Write /implement SKILL.md, execute Phase 6-8 cleanup, password reset deep linking.
-
-### Session 460 (2026-02-26)
-**Work**: Fixed Android APK build (3 CMake root causes), SQLite PRAGMA crash on API 36, email keyboard IME bug, hardware keyboard AVD config. App now builds, installs, and runs on Android emulator. Discovered password reset deep linking is broken (BLOCKER-13).
-**Next**: Set up deep linking for password reset, commit all fixes, widget test strategy.
-
-### Session 459 (2026-02-26)
-**Work**: Upgraded statusline with opus-equiv token budget estimation, agent status tracking, drift detection. Cache_read excluded (weight=0) after analysis showed it inflated totals by 52%. Agents display on line 1.
-**Next**: Fix Android build, widget test strategy, monitor budget calibration convergence.
-
-### Session 458 (2026-02-26)
-**Work**: Built Claude Code statusline with real Anthropic OAuth usage API data (5h/7d percentages + reset timers). Installed ccusage for weekly token tracking. Daily CSV logging. Attempted Android APK build — discovered flusseract CMake broken with NDK 28.2 (gold linker removed + regex bug).
-**Next**: Fix Android build (CMake regex), widget test strategy decision, revert temp changes.
+**Work**: Created security-agent. Designed /implement skill. Identified 18 cleanup items.
 
 ## Active Plans
 
+### Password Reset token_hash Fix — IMPLEMENTED (Session 465)
+- **Plan**: `.claude/plans/2026-02-28-password-reset-token-hash-fix.md`
+- **Status**: IMPLEMENTED on `feat/password-reset-token-hash`. Needs E2E test + PR merge. 4 security blockers logged.
+
 ### /implement Skill + Agent System Cleanup — COMPLETE (Session 462)
 - **Plan**: `.claude/plans/2026-02-27-implement-skill-design.md`
-- **Status**: All 8 phases implemented. Skill at `.claude/skills/implement/SKILL.md`. All 9 agents cleaned up. 4 memory stubs created. shared_rules disambiguated.
 
 ### Testing Strategy Overhaul — BLOCKER-11 (Session 457)
 - **Plan**: `.claude/plans/2026-02-22-testing-strategy-overhaul.md`
-- **Status**: Analyzed. Recommended switch from dart-mcp to widget tests for 33/38 tests.
 
 ### Project-Based Multi-Tenant Architecture — DEPLOYED (Session 453)
 - **PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
 - **Implementation plan**: `.claude/plans/2026-02-22-project-based-architecture-plan.md`
-- **Status**: ALL 8 phases merged to main. Firebase configured. Supabase deployed. Package renamed.
-- **Remaining**: E2E testing (29/38 remaining), revert temp changes, commit fixes
-
-### 0582B Accordion Dashboard — IMPLEMENTED + WEIGHTS CARDS REDESIGNED (Session 443)
-- **Status**: All phases built. Merged to main.
-
-### UI Prototyping Toolkit — CONFIGURED (Session 436)
-### Universal dart-mcp Widget Test Harness — IMPLEMENTED (Session 432)
-### Toolbox Feature Split — MERGED TO MAIN
 
 ## Reference
 - **Testing Strategy Plan**: `.claude/plans/2026-02-22-testing-strategy-overhaul.md`
