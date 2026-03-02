@@ -2,16 +2,17 @@
 
 ## Patterns Discovered
 
-### PDF Test Suite Baseline (2026-02-19, post grid_line_remover addition + stage_2b rewrite)
-- **Total PDF Tests**: 855 passed, 0 failed (extraction suite only — does not include golden tests)
-- **Golden tests**: 76/76 pass, Pipeline Scorecard: **55 OK | 0 LOW | 0 BUG** (57 metrics) — CLEAN!
-- **Quality score**: Springfield overall_score = ~0.977 (was 0.916), QualityStatus.autoAccept
-- The aspirational 0-BUG/0-LOW assertions in `stage_trace_diagnostic_test.dart` now PASS
-- **Changes in this baseline**: Added `grid_line_remover.dart` (Stage 2B-ii.6, OpenCV morphology + inpaint), removed `whitespace_inset_test.dart` (old inset scan methods removed), `text_recognizer_v2.dart` rewritten with cell-level OCR (PSM routing, low-confidence re-OCR, crop upscaling), added `opencv_dart: ^2.2.1+3` dependency, fixtures regenerated
-- **Known flutter_tester.exe lock issue**: Multiple flutter_tester.exe processes linger after test runs and lock `build/native_assets/windows/sqlite3.x64.windows.dll`. Run `taskkill /F /IM flutter_tester.exe` to unblock before next test run.
-- Test locations now: `test/features/pdf/extraction/` (contracts, golden, integration, models, ocr, pipeline, stages)
-- 1 expected skip: Springfield PDF integration test (requires `--dart-define=SPRINGFIELD_PDF` path)
-- Production files: `field_confidence_scorer.dart`, `numeric_interpreter.dart`, `row_parser_v3.dart`, `header_consolidator.dart`, `grid_line_remover.dart` + `interpretation_rule.dart`, `interpreted_value.dart`, `rules/` directory
+### PDF Test Suite Baseline (2026-03-01, post kMinCropWidth=500 REVERT)
+- **Total PDF Tests (extraction/ suite)**: 825 passed, 0 failed
+- **Golden tests**: 81/81 pass (all green)
+- **Pipeline Scorecard**: **68 OK | 3 LOW | 0 BUG** (72 metrics) — RESTORED baseline
+- **Quality score**: Springfield overall_score ~0.977, QualityStatus.autoAccept
+- **Crop upscaler**: DPI-only logic (no kMinCropWidth). `computeScaleFactor` returns 1.0 at >= 600 DPI, else kTargetDpi/renderDpi capped by kMaxScaleFactor and kMaxOutputDimension.
+- **kMinCropWidth=500 experiment result**: REGRESSED. Caused item 50 ("Valve & Box, 6\"") to merge → bogus "50 o1", BUG count 0→2, quality 0.993→0.918. Do NOT re-attempt without first investigating item 50 cell boundary geometry.
+- **Known flutter_tester.exe lock issue**: Multiple flutter_tester.exe processes linger after test runs. Run `Stop-Process -Name 'flutter_tester' -Force` to unblock.
+- Test locations: `test/features/pdf/extraction/` (contracts, golden, integration, models, ocr, pipeline, stages, shared)
+- Fixture generator: `integration_test/generate_golden_fixtures_test.dart` (requires `-d windows --dart-define=SPRINGFIELD_PDF=<path>`)
+- **3 LOW metrics**: Row Classification headers (17 vs 6 expected), B1 unitPrice 6.2%, B2 bidAmount Δ0.062 — these are stable/expected
 
 ### Skipped Tests Pattern
 TesseractInitializer tests skip when `eng.traineddata` asset not available in test environment. This is expected and acceptable - these tests would run in full integration/E2E scenarios.

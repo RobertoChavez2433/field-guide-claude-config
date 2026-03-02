@@ -3,8 +3,8 @@
     "app_name": "Construction Inspector App",
     "app_version": "1.2.3",
     "description": "Cross-platform offline-first mobile/desktop app for construction inspectors",
-    "last_updated": "2026-02-28T23:59:59Z",
-    "session_notes": "Session 463: Implemented BLOCKER-13 password reset deep linking (7 phases, 12 files, all quality gates passed). Pushed Supabase config to remote. Verified deep link works on Android emulator. Desktop about:blank is expected — needs OTP-based recovery."
+    "last_updated": "2026-03-02T19:00:00Z",
+    "session_notes": "Session 477: Implemented geometry-aware crop upscaler (all gates passed, scorecard unchanged 68/3/0). Systematic debug confirmed LOW metrics are Tesseract pattern errors, not resolution. Pulled S25 logs: DNS failure blocked sync. Created sync resilience plan (adversarial-reviewed, 20 findings)."
   },
   "current_phase": {
     "phase_name": "Project-Based Multi-Tenant Architecture — DEPLOYED (Firebase + Supabase)",
@@ -17,10 +17,20 @@
   "release_cycle": {
     "last_release": "2026-02-01",
     "last_release_version": "1.2.2",
-    "next_release_target": "2026-02-28",
+    "next_release_target": "2026-03-07",
     "next_release_version": "1.3.0"
   },
   "active_blockers": [
+    {
+      "id": "BLOCK-018",
+      "title": "DNS resolution failure silently blocks all Supabase sync",
+      "severity": "high",
+      "owner": "user",
+      "status": "plan_ready",
+      "discovered": "2026-03-02",
+      "notes": "Plan: .claude/plans/2026-03-02-sync-resilience-fix.md (adversarial-reviewed). DNS failure blocked all sync on S25 Ultra across 2 sessions.",
+      "impact": "No data syncs to Supabase when DNS fails. User sees no indication."
+    },
     {
       "id": "BLOCK-007",
       "title": "Cross-fixture validation pending for hardened scorecard thresholds",
@@ -44,6 +54,52 @@
   ],
   "recently_resolved_blockers": [
     {
+      "id": "BLOCK-017",
+      "title": "Stale SQLite data persists across sign-out — clearLocalCompanyData never called",
+      "severity": "high",
+      "owner": "user",
+      "status": "resolved",
+      "discovered": "2026-03-01",
+      "resolved": "2026-03-01",
+      "notes": "RESOLVED (Session 475): clearLocalCompanyData wired into signOut(), 4 missing tables added, loadProjectsByCompany(null) returns empty list.",
+      "impact": "Resolved."
+    },
+    {
+      "id": "BLOCK-016",
+      "title": "kMinCropWidth=500 causes item merger regression",
+      "severity": "high",
+      "owner": "user",
+      "status": "resolved",
+      "discovered": "2026-03-01",
+      "resolved": "2026-03-01",
+      "notes": "RESOLVED (Session 473): Reverted all files, baseline 68/3/0 restored.",
+      "impact": "Resolved."
+    },
+    {
+      "id": "BLOCK-015",
+      "title": "New user onboarding routing trap — router sends companyId=null users to pending-approval",
+      "severity": "high",
+      "owner": "user",
+      "status": "resolved",
+      "discovered": "2026-03-01",
+      "resolved": "2026-03-01",
+      "notes": "RESOLVED (Session 472+474): Fixed stale profile cache + 4 auth race conditions.",
+      "impact": "Resolved — onboarding flow routes correctly."
+    },
+    {
+      "id": "BLOCK-014",
+      "title": "Password reset email link cannot deliver token_hash to app",
+      "severity": "high",
+      "owner": "user",
+      "status": "resolved",
+      "discovered": "2026-02-28",
+      "resolved": "2026-03-01",
+      "notes": "RESOLVED (Session 468-469): OTP code entry implemented.",
+      "impact": "Resolved — OTP password reset fully functional."
+    }
+  ],
+  "resolved_blockers": [
+    {
       "id": "BLOCK-013",
       "title": "Firebase platform config requires manual setup",
       "severity": "medium",
@@ -51,11 +107,9 @@
       "status": "resolved",
       "discovered": "2026-02-22",
       "resolved": "2026-02-22",
-      "notes": "Session 453: Created Firebase project, added Android (google-services.json + Gradle plugin) and iOS (GoogleService-Info.plist) apps. Both platforms wired up.",
-      "impact": "Resolved — Firebase ready for push notifications and background sync."
-    }
-  ],
-  "resolved_blockers": [
+      "notes": "Session 453: Firebase project created and wired up.",
+      "impact": "Resolved."
+    },
     {
       "id": "BLOCK-009",
       "title": "Global flutter test suite has unrelated pre-existing failures",
@@ -64,40 +118,18 @@
       "status": "resolved",
       "discovered": "2026-02-18",
       "resolved": "2026-02-21",
-      "notes": "Resolved during Session 426 test-fix loop. Sync provider harness and golden comparator pathing were corrected; full suite reached green.",
-      "impact": "Resolved — no longer blocks full-repo green baseline."
-    },
-    {
-      "id": "BLOCK-011",
-      "title": "Windows integration-test build toolchain failure for M&P test",
-      "severity": "medium",
-      "owner": "user",
-      "status": "resolved",
-      "discovered": "2026-02-20",
-      "resolved": "2026-02-20",
-      "notes": "False positive. NuGet warning is cosmetic (red-colored but non-fatal). Build and test succeed.",
-      "impact": "Resolved — no longer blocks."
-    },
-    {
-      "id": "BLOCK-012",
-      "title": "SyncProvider test harness mismatch (null DatabaseService in mock construction)",
-      "severity": "medium",
-      "owner": "user",
-      "status": "resolved",
-      "discovered": "2026-02-21",
-      "resolved": "2026-02-21",
-      "notes": "Resolved in Session 426 by updating sync-provider test doubles and DB setup to satisfy SyncService constructor contracts.",
-      "impact": "Resolved — sync provider suite now passes."
+      "notes": "Resolved during Session 426.",
+      "impact": "Resolved."
     }
   ],
   "brainstorm_backlog": [
     {
       "id": "BRAINSTORM-001",
       "title": "Cell classification validation using consolidated headers",
-      "description": "Now that headers are consolidated early (Stage 4A.1), we have complete column names and positions available before cell extraction. Brainstorm a validation method that uses the consolidated header structure to validate/correct cell classification — e.g., detecting misclassified boilerplate rows that have values in price/quantity column positions, or confirming data rows align with expected columns.",
+      "description": "Now that headers are consolidated early (Stage 4A.1), we have complete column names and positions available before cell extraction. Brainstorm a validation method that uses the consolidated header structure to validate/correct cell classification.",
       "added": "2026-02-17",
       "session": 364,
-      "context": "During header consolidation design (Option B selected for soft validation), user deferred validation to a future session. The 21 remaining boilerplate misclassifications (7 with valid price data) are a prime candidate for this validation.",
+      "context": "During header consolidation design (Option B selected for soft validation), user deferred validation to a future session.",
       "related_plan": ".claude/plans/completed/2026-02-17-header-consolidation-stage.md"
     }
   ],
@@ -106,23 +138,13 @@
       "phase": "Phase 0",
       "title": "Documentation System Foundation",
       "completed_date": "2026-02-12",
-      "deliverables": [
-        "Directory structure",
-        "State files",
-        "Constraint skeleton",
-        "FILING-SYSTEM.md"
-      ]
+      "deliverables": ["Directory structure", "State files", "Constraint skeleton", "FILING-SYSTEM.md"]
     },
     {
       "phase": "Phase 1",
       "title": "Feature Documentation + Constraints",
       "completed_date": "2026-02-13",
-      "deliverables": [
-        "26 feature docs (13 overviews + 13 architectures)",
-        "13 constraint files",
-        "PRD directory setup",
-        "FEATURE-MATRIX.json updated"
-      ]
+      "deliverables": ["26 feature docs", "13 constraint files", "PRD directory setup", "FEATURE-MATRIX.json updated"]
     }
   ],
   "dependencies_at_risk": [
@@ -130,25 +152,22 @@
       "package": "syncfusion_flutter_pdf",
       "version": "23.1.36",
       "risk_level": "medium",
-      "issue": "Deprecated APIs used for field mapping (Syncfusion migrating to new API surface)",
-      "action_needed": "Audit before next upgrade, test IDR template field mapping",
+      "issue": "Deprecated APIs used for field mapping",
+      "action_needed": "Audit before next upgrade",
       "target_date": "2026-03-01"
     },
     {
       "package": "printing",
       "version": "5.11.0",
       "risk_level": "low",
-      "issue": "Platform channel timeout issues on some devices (GitHub issues open)",
+      "issue": "Platform channel timeout issues on some devices",
       "action_needed": "Monitor, patch if needed",
       "target_date": null
     }
   ],
   "team_context": {
     "primary_owner": "user",
-    "contributors": [
-      "Claude (AI assistant)",
-      "Codex (AI assistant)"
-    ],
+    "contributors": ["Claude (AI assistant)", "Codex (AI assistant)"],
     "work_style": "Orchestration-based (user defines plans, Claude executes with agents)"
   }
 }

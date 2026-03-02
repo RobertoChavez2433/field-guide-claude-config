@@ -4,7 +4,40 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ---
 
+## March 2026
+
+### Session 472 (2026-03-01)
+**Work**: UX fixes (remove cert number, phone formatter). BLOCKER-15 real root cause found (stale profile cache) + fixed with _preflight().
+**Decisions**: kMinCropWidth=500 too aggressive. Needs revert before commit.
+**Next**: Revert crop upscaler, regenerate fixtures, commit good changes only.
+
+### Session 471 (2026-03-01)
+**Work**: Ran `/implement` on onboarding flow fix (BLOCKER-15). 2 phases + 6 quality gates all passed.
+**Decisions**: Added `getPendingJoinRequest()` to AuthService. Loading spinner during pending check.
+**Next**: E2E device test, commit.
+
+### Session 470 (2026-03-01)
+**Work**: Brainstormed BLOCKER-15 via `/brainstorming`. Decided on companyId null check (Option A, no DB migration).
+**Next**: `/implement` the onboarding flow fix plan.
+
+### Session 466 (2026-02-28)
+**Work**: E2E tested password reset on Samsung S25 Ultra — FAILED. Logged BLOCKER-14.
+
+---
+
 ## February 2026
+
+### Session 465 (2026-02-28)
+**Work**: Implemented password reset token_hash fix. Code review + security audit. 8 commits on `feat/password-reset-token-hash`.
+
+### Session 464 (2026-02-28)
+**Work**: Diagnosed ARM crash on Samsung S25 Ultra. Created build system. Diagnosed PKCE flow_state_not_found bug. Wrote token_hash fix plan.
+
+### Session 462 (2026-02-28)
+**Work**: Implemented /implement skill (421-line SKILL.md). Agent cleanup: 9 agents fixed, 4 memory stubs.
+
+### Session 461 (2026-02-27)
+**Work**: Created security-agent. Designed /implement skill. Identified 18 cleanup items.
 
 ### Session 458 (2026-02-26)
 **Work**: Built Claude Code statusline with real Anthropic OAuth usage API data (5h/7d percentages + reset timers). Installed ccusage for weekly token tracking. Daily CSV logging. Attempted Android APK build — discovered flusseract CMake broken with NDK 28.2 (gold linker removed + regex bug).

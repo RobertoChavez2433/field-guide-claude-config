@@ -19,7 +19,7 @@
     "Row parsing stack is V3-only (NumericInterpreter -> RowParserV3 -> FieldConfidenceScorer)",
     "Grid line removal runs before cell OCR (GridLineRemover in Stage 2B-ii.6) with per-page fallback when removal fails",
     "Low-confidence numeric-cell re-OCR fallback retries with PSM8 + numeric whitelist and replaces only when retry output contains digits",
-    "Crop upscaling is DPI-target based (`kTargetDpi=600`) and uses effective DPI metadata per crop",
+    "Crop upscaling uses geometry-aware continuous curve: targetDpi = kBaseDpi(600) + kBoostDpi(300) * max(0, 1 - cropWidth/kWidthCeiling(500)). Narrow columns get 2.28-2.71x scale, wide columns stay at 2.0x",
     "Crop OCR sourceDpi is derived from effective DPI when provided; invalid DPI metadata is sanitized before OCR",
     "Scorecard includes observability rows B1-B6 plus GridLineRemover/orphan coverage with hardened ratio thresholds",
     "Interpretation pattern classification uses centralized `InterpretationPatterns` sets for standard vs correction logic",
@@ -40,7 +40,7 @@
   },
   "metrics": {
     "test_coverage_percentage": 87,
-    "last_updated": "2026-02-21T23:59:59Z",
+    "last_updated": "2026-03-02T19:00:00Z",
     "item_match_rate": 1.0,
     "quality_score": 0.993,
     "median_ocr_confidence": 0.95,

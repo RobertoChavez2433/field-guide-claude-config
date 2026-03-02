@@ -1,70 +1,46 @@
 # Session State
 
-**Last Updated**: 2026-02-28 | **Session**: 465
+**Last Updated**: 2026-03-02 | **Session**: 477
 
 ## Current Phase
 - **Phase**: Project-Based Multi-Tenant Architecture — DEPLOYED
-- **Status**: All phases (0-8) merged to main. Password reset token_hash fix implemented, reviewed, and committed on `feat/password-reset-token-hash` branch (8 commits). Supabase dashboard email template updated manually. 4 security blockers identified and logged. Needs physical device E2E testing and PR merge.
+- **Status**: Geometry-aware crop upscaler implemented + all gates passed. Sync resilience plan created from live device log analysis. Root cause analysis: OCR confidence issues are Tesseract pattern-matching, not resolution.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (465)
+### What Was Done This Session (477)
 
-**Password Reset token_hash Fix — IMPLEMENTED + REVIEWED**:
-- Ran `/implement` skill on `.claude/plans/2026-02-28-password-reset-token-hash-fix.md`
-- Orchestrator completed: Phases 2, 3, 4, 6 (code), Phases 1, 5, 7 (manual/skipped)
-- All 6 quality gates passed (build, analyze, P1 fixes, code review, completeness, security)
+**Geometry-Aware Crop Upscaler — IMPLEMENTED**:
+- `/implement` executed all 4 phases (code change, test updates, fixture regen, stage trace verify)
+- All 6 quality gates passed (Build, Analyze, P1 Fixes, Code Review, Completeness, Security)
+- Formula: `targetDpi = 600 + 300 * max(0, 1 - cropWidth/500)` — avg_scale 2.0→2.368, max_scale 2.0→2.715
+- Scorecard UNCHANGED: 68 OK / 3 LOW / 0 BUG, quality 0.993, 131 items — upscaler works but doesn't fix the LOW metrics
 
-**Supabase Dashboard Configured (Manual)**:
-- Reset Password email template updated with `{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=recovery&email={{ .Email }}`
-- Redirect URL `com.fieldguideapp.inspector://login-callback` confirmed present
-- OTP expiry confirmed at 3600s (default, not configurable on free plan)
+**Systematic Root Cause Analysis — OCR Confidence**:
+- Confirmed scorecard identical after upscaler: the 3 LOW metrics are NOT resolution-limited
+- B1 (unitPrice pattern alarm): 5 european_periods + 2 unrecognized + 1 missing_decimals = Tesseract pattern errors
+- B2 (bidAmount conf gap): Tesseract x_wconf unreliable for dollar amounts (14-52% conf on correct text)
+- effectiveDpi is NEVER passed to Tesseract as user_defined_dpi — Tesseract only gets pixel data
+- Items 121+129 investigated: PSM7 right-alignment failure, missing OCR text, cell-specific artifacts
 
-**Code Review + Security Audit (Full Working Tree)**:
-- Code review agent (opus): found 2 P0, 5 P1, 4 P2
-- Security agent (opus): found 2 HIGH, 4 MEDIUM, 2 LOW
-- Fixer agent (sonnet): resolved all 10 actionable findings
-- Key fixes: shared PasswordValidator (DRY), lowercase check added, register screen updated to 8-char+complexity, SEC-9 string matching narrowed, signOut() clears recovery flag, debugPrint->DebugLogger, config.toml path fixed
-
-**8 Logical Commits on `feat/password-reset-token-hash`**:
-1. `d3c6c85` feat: add deep link URL scheme for iOS, fix Android intent filter
-2. `73f89c9` feat: add verifyRecoveryToken, updatePassword, and shared password validator
-3. `f50781d` feat: add password recovery state management and router guard
-4. `11917b1` feat: add UpdatePasswordScreen, 60s cooldown, unified password validation
-5. `f7d2771` fix: replace PKCE deep link handler with token_hash + verifyOTP approach
-6. `48e8530` feat: harden Supabase auth config and add recovery email template
-7. `7322785` feat: add testing keys for UpdatePasswordScreen
-8. `bb547db` chore: gitignore releases/, update Codex bridge, add build script
-
-**4 Security Blockers Logged** (in `_defects-auth.md`):
-1. Custom URI scheme hijackable on Android < 12 — migrate to HTTPS App Links
-2. Recovery flag volatile — persist to secure storage or inspect AMR claims
-3. `secure_password_change = false` — enable and test recovery flow compatibility
-4. Email exposed in deep link URL — use `{{ urlquery .Email }}` template function
-
-### What Was Done Last Session (464)
-- Build system created (tools/build.ps1 + releases/ folder)
-- Password reset PKCE bug diagnosed (flow_state_not_found)
-- token_hash fix plan written
+**Sync Resilience Plan — CREATED from Live Device Logs**:
+- Pulled logs from S25 Ultra: DNS resolution failure (`Failed host lookup: vsqvkxvvmnnhdajtgblj.supabase.co`) blocked ALL sync
+- 3 PDF extractions across 2 sessions, 1 interrupted mid-pipeline (orphaned project c3ff53b2)
+- Plan: `.claude/plans/2026-03-02-sync-resilience-fix.md` (4 phases, adversarial-reviewed with 20 findings applied)
 
 ### What Needs to Happen Next
 
-1. **TEST password reset E2E on Samsung S25 Ultra** — kill app, click email link, verify recovery flow works end-to-end
-2. **Push + PR**: `feat/password-reset-token-hash` -> main (8 commits ready)
-3. **FIX BLOCKER: secure_password_change** — Enable `secure_password_change = true` in Supabase, test recovery flow still works, push config
-4. **FIX BLOCKER: Email URL encoding** — Change email template to use `{{ urlquery .Email }}`
-5. **PLAN BLOCKER: Recovery flag persistence** — Design approach (secure storage vs AMR claims)
-6. **PLAN BLOCKER: HTTPS App Links** — Requires a domain + assetlinks.json hosting
-7. **DECISION: Switch to widget test approach** — See `.claude/plans/2026-02-22-testing-strategy-overhaul.md` (BLOCKER-11)
+1. **PUSH** commits to origin/main (geometry-aware crop upscaler + prior session 475 commits)
+2. **IMPLEMENT** sync resilience plan (`.claude/plans/2026-03-02-sync-resilience-fix.md`)
+3. **FIX BLOCKER: secure_password_change** — Enable in Supabase production
+4. **PLAN** OCR confidence fixes (confidence floor override + comma-recovery heuristic + space-strip) to clear B1/B2
 
 ## Blockers
 
-### BLOCKER-13: Password Reset Deep Linking
-**Status**: IMPLEMENTED, NEEDS E2E TEST (Session 465)
-**Branch**: `feat/password-reset-token-hash` (8 commits, not yet merged)
-**Security Blockers**: 4 logged in `_defects-auth.md` (URI hijacking, volatile flag, secure_password_change, email encoding)
-**Desktop (Windows)**: Still broken — custom URL schemes can't be opened from desktop browsers.
-**iOS**: URL scheme added to Info.plist. Untested (no iOS device/Mac available).
+### BLOCKER-18: DNS Resolution Failure Blocks Supabase Sync — PLAN READY (Session 477)
+**Status**: PLAN READY — `.claude/plans/2026-03-02-sync-resilience-fix.md`
+**Symptom**: `Failed host lookup: 'vsqvkxvvmnnhdajtgblj.supabase.co'` (errno=7) on all sync attempts. No data synced to Supabase.
+**Plan**: DNS reachability check + exponential backoff retry + sync status banner + orphan cleanup.
 
 ### BLOCKER-11: dart-mcp Testing Strategy Is Wrong Tier
 **Status**: OPEN
@@ -72,34 +48,44 @@
 
 ### BLOCKER-10: Fixture Generator Requires SPRINGFIELD_PDF Runtime Define
 **Status**: OPEN (PDF scope only).
+**Path**: `C:\Users\rseba\OneDrive\Desktop\864130 Springfield DWSRF Water System Improvements CTC [16-23] Pay Items.pdf`
 
 ## Recent Sessions
 
-### Session 465 (2026-02-28)
-**Work**: Implemented password reset token_hash fix via /implement skill. Supabase dashboard configured manually (email template, redirect URL, OTP expiry). Ran code review (opus) + security audit (opus) on full working tree. Fixed 10 findings via fixer agent. Created 8 logical commits on `feat/password-reset-token-hash`. Logged 4 security blockers. Researched Supabase MCP (official exists but can't manage email templates). Verified `secure_password_change` is a real security risk.
-**Decisions**: token_hash + verifyOTP is the correct approach for PKCE-killed-app scenario. Kept `detectSessionInUri=true` (supabase_flutter ignores token_hash links). Shared PasswordValidator extracted to eliminate DRY violation. 4 security blockers deferred but logged.
-**Next**: E2E test on physical device, push + PR, fix secure_password_change and email encoding blockers.
+### Session 477 (2026-03-02)
+**Work**: Implemented geometry-aware crop upscaler (4 phases + 6 gates). Systematic debug: LOW metrics are Tesseract pattern errors, not resolution. Pulled S25 logs: DNS failure blocked sync. Created + adversarial-reviewed sync resilience plan.
+**Decisions**: Upscaler confirmed working but LOW metrics need Tesseract-level fixes (confidence override, comma-recovery). Sync plan uses separate `_isDnsReachable` boolean + two-pass orphan deletion.
+**Next**: Push commits, implement sync plan, plan OCR confidence fixes.
 
-### Session 464 (2026-02-28)
-**Work**: Diagnosed ARM crash on Samsung S25 Ultra. Created build system. Diagnosed PKCE flow_state_not_found bug. Wrote token_hash fix plan.
+### Session 476 (2026-03-01)
+**Work**: Verified live Android extraction matches golden baseline. Created geometry-aware crop upscaler plan with brainstorming + adversarial review. Final plan saved.
+**Decisions**: Column-adaptive DPI (continuous curve) over min-width floor or confidence-retry. Formula: `targetDpi = 600 + 300 * max(0, 1 - cropWidth/500)`.
+**Next**: Implement plan (4 phases), push 6 commits, enable secure_password_change.
 
-### Session 463 (2026-02-28)
-**Work**: Implemented password reset deep linking plan (Feb 27) via /implement skill. Pushed Supabase config to remote.
+### Session 475 (2026-03-01)
+**Work**: Verified BLOCKER-17 fix already in working tree. Created 6 logical commits (auth fixes, UX, security, PDF fixtures). Wiped Windows app data for clean start.
+**Decisions**: Layered fix for BLOCKER-17 (clear on sign-out + defense-in-depth empty list on null companyId). tessdata left intact during wipe.
+**Next**: PDF extraction investigation, push commits, enable secure_password_change in Supabase.
 
-### Session 462 (2026-02-28)
-**Work**: Implemented /implement skill (421-line SKILL.md). Agent cleanup: 9 agents fixed, 4 memory stubs.
+### Session 474 (2026-03-01)
+**Work**: Regenerated PDF golden fixtures (baseline confirmed: 131 items, 0.993 quality, $7.88M exact). Fixed auth cold-start race condition (4 fixes: FIX-1 cached session load, FIX-2 profile skip stub, FIX-3 joinCompany refresh, SEC-8 recovery flag persistence). Discovered BLOCKER-17 stale SQLite.
+**Decisions**: Auth timing fix uses sync `_isLoadingProfile=true` before any notifyListeners. Recovery flag persisted via SharedPreferences (not secure storage — acceptable for boolean flag).
+**Next**: Fix BLOCKER-17 (wire clearLocalCompanyData), commit all auth fixes, PDF extraction investigation.
 
-### Session 461 (2026-02-27)
-**Work**: Created security-agent. Designed /implement skill. Identified 18 cleanup items.
+### Session 473 (2026-03-01)
+**Work**: Reverted kMinCropWidth=500 crop upscaler. Restored all 25 files. Verified 825+81 tests pass, scorecard 68/3/0.
+**Decisions**: kMinCropWidth approach needs geometry investigation before reattempt.
+**Next**: Regenerate golden fixtures, establish clean baseline.
 
 ## Active Plans
 
-### Password Reset token_hash Fix — IMPLEMENTED (Session 465)
-- **Plan**: `.claude/plans/2026-02-28-password-reset-token-hash-fix.md`
-- **Status**: IMPLEMENTED on `feat/password-reset-token-hash`. Needs E2E test + PR merge. 4 security blockers logged.
+### Sync Resilience Fix — READY (Session 477)
+- **Plan**: `.claude/plans/2026-03-02-sync-resilience-fix.md`
+- **Status**: Plan created, adversarial-reviewed (20 corrections applied: 2 CRITICAL, 8 IMPORTANT). Ready for `/implement`.
 
-### /implement Skill + Agent System Cleanup — COMPLETE (Session 462)
-- **Plan**: `.claude/plans/2026-02-27-implement-skill-design.md`
+### Geometry-Aware Crop Upscaler — COMPLETE (Session 477)
+- **Plan**: `.claude/plans/2026-03-01-geometry-aware-crop-upscaler.md`
+- **Status**: Implemented, all 6 quality gates passed. Scorecard unchanged (68/3/0). Upscaler works but LOW metrics need Tesseract-level fixes.
 
 ### Testing Strategy Overhaul — BLOCKER-11 (Session 457)
 - **Plan**: `.claude/plans/2026-02-22-testing-strategy-overhaul.md`
@@ -109,6 +95,7 @@
 - **Implementation plan**: `.claude/plans/2026-02-22-project-based-architecture-plan.md`
 
 ## Reference
+- **Improvements**: `.claude/improvements.md`
 - **Testing Strategy Plan**: `.claude/plans/2026-02-22-testing-strategy-overhaul.md`
 - **Multi-Tenant Plan**: `.claude/plans/2026-02-22-project-based-architecture-plan.md`
 - **Multi-Tenant PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`

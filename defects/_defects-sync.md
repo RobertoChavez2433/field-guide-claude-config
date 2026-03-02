@@ -5,6 +5,11 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [CONFIG] 2026-03-02: DNS Resolution Failure Silently Blocks All Supabase Sync (BLOCKER-18)
+**Pattern**: `connectivity_plus` reports connected but DNS cannot resolve `vsqvkxvvmnnhdajtgblj.supabase.co` (errno=7). SyncOrchestrator fails silently — no user-visible indicator, no retry with backoff, no queued retry when connectivity restores. All sync blocked for entire session.
+**Prevention**: Plan ready at `.claude/plans/2026-03-02-sync-resilience-fix.md`. Adds DNS reachability check (separate `_isDnsReachable` boolean), exponential backoff retry, sync status banner, and timer-based DNS re-check.
+**Ref**: @lib/services/sync_service.dart, @lib/features/sync/application/sync_orchestrator.dart
+
 ### [DATA] 2026-02-22: queueOperation() no-op after provider migration
 **Pattern**: When migrating `SyncProvider` from `SyncService` to `SyncOrchestrator`, `queueOperation()` body was changed to call `scheduleLocalAgencySync()` without passing any arguments — silently dropping individual record syncs.
 **Prevention**: After refactoring provider methods, verify the new call passes ALL original parameters. Test with a round-trip: create record → check sync_queue table → confirm operation queued.

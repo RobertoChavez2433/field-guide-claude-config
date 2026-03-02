@@ -2,6 +2,8 @@
 
 Cross-platform mobile/desktop app for construction inspectors. Offline-first with cloud sync.
 
+**HARD CONSTRAINT: Security is non-negotiable. No shortcuts that bypass approval flows, weaken RLS, or create privilege escalation paths.**
+
 ## Quick Reference
 <!-- Defects: per-feature files in .claude/defects/_defects-{feature}.md -->
 
