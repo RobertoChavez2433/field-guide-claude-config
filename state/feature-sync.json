@@ -2,7 +2,8 @@
   "id": "sync",
   "name": "Sync Engine",
   "status": "in_progress",
-  "description": "Bidirectional offline-first sync between SQLite and Supabase with last-write-wins conflict resolution",
+  "description": "Bidirectional offline-first sync between SQLite and Supabase with last-write-wins conflict resolution and soft-delete awareness",
+  "current_phase": "Soft-delete system implemented (Session 491). Awaiting Supabase migration deploy.",
   "docs": {
     "overview": "docs/features/feature-sync-overview.md",
     "architecture": "docs/features/feature-sync-architecture.md",
@@ -17,7 +18,11 @@
     "Max 3 retry attempts per operation with exponential backoff (5s/10s/20s)",
     "DNS reachability check before sync (separate from connectivity_plus online status)",
     "SyncProvider test doubles must satisfy non-null SyncService constructor dependencies",
-    "Consecutive failure tracking in SyncProvider only (not SyncOrchestrator)"
+    "Consecutive failure tracking in SyncProvider only (not SyncOrchestrator)",
+    "Soft-delete: deleted_at + deleted_by columns on all 14 synced tables",
+    "Edit-wins conflict resolution: if updated_at > deleted_at, record is restored",
+    "RLS SELECT policies do NOT filter deleted_at (sync needs visibility); client-side filtering only",
+    "30-day purge: SoftDeleteService.purgeExpiredRecords() runs after sync + on app startup"
   ],
   "integration": {
     "depends_on": [],
@@ -33,6 +38,6 @@
   },
   "metrics": {
     "test_coverage_percentage": 92,
-    "last_updated": "2026-03-02T22:00:00Z"
+    "last_updated": "2026-03-04T00:00:00Z"
   }
 }

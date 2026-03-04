@@ -6,6 +6,11 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 486 (2026-03-03)
+**Work**: Brainstormed + implemented `/test` skill (ADB-based on-device testing). 5-question design session, then `/implement` for Phases 0-2. 6 new config files, 2 Dart files modified. All quality gates passed. Phase 3 (dry run) deferred.
+**Decisions**: Hybrid UIAutomator+Vision. Wave-based dispatch. SKILL.md convention. Wave agent read-only (Bash+Read). Feature-path map in registry.
+**Next**: Fix BLOCKER-22, commit+push, dry run `/test login` with device.
+
 ### Session 485 (2026-03-03)
 **Work**: Systematic DB debug (7 issues found, all pre-fixed). Deployed 2 Supabase migrations. Fixed build infra (.env + dart-define across all build/run configs). GitHub Releases APK distribution. Confirmed project delete works.
 **Decisions**: `.env` + `--dart-define-from-file` over hardcoded defaults. GitHub Releases over Supabase Storage (50MB project limit). `url_launcher` added for in-app download. Versioning starts at v0.0.1.

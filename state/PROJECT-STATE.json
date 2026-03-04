@@ -4,7 +4,7 @@
     "app_version": "1.2.3",
     "description": "Cross-platform offline-first mobile/desktop app for construction inspectors",
     "last_updated": "2026-03-04T00:00:00Z",
-    "session_notes": "Session 490: Testing system overhaul brainstormed + implemented. 30 flows, 12 journeys, 4 tiers, flag-based CLI. Patrol deprecated. Dual code review passed. Phases 3+5 deferred (device required)."
+    "session_notes": "Session 491: Sync-aware soft-delete system implemented (5 phases, 24 files, all quality gates). Test skill updated for context efficiency (disk-first, background dispatch). 6 logical commits + 2 config commits. Awaiting push + Supabase migration deploy."
   },
   "current_phase": {
     "phase_name": "Project-Based Multi-Tenant Architecture — DEPLOYED (Firebase + Supabase)",

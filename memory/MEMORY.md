@@ -81,6 +81,14 @@
 - **Android API 36 emulator keyboard**: `TextInputType.emailAddress` triggers IME cancellation bug — use `TextInputType.text` + `autocorrect: false` as workaround.
 - **Android emulator hw keyboard**: Must set `hw.keyboard=yes` in `~/.android/avd/{name}.avd/config.ini` + cold boot. Default is `no` which prevents physical keyboard input.
 
+### App Lifecycle & Build (Session 492)
+- **Schema verifier**: `lib/core/database/schema_verifier.dart` checks all 25 tables on startup (~14ms). Self-heals missing columns. ALWAYS add new columns here when adding to schema.
+- **Version tracking**: `package_info_plus` detects upgrade → forces re-auth via `signOutLocally()`. Cold starts always go to dashboard `/`.
+- **DB migration gotcha**: SQLite `onUpgrade` runs once per version. If migration misses a table, it can't re-run. Schema verifier is the safety net.
+- **Gradle lint lock**: `checkReleaseBuilds = false` in `android/app/build.gradle.kts` prevents `lintVitalAnalyzeRelease` file lock. Builds drop from 7min to 45s.
+- **NEVER run `flutter build` directly** — always use `pwsh -File tools/build.ps1` which includes `--dart-define-from-file=.env`. Without it, Supabase credentials are missing → "Supabase not configured in release build" crash.
+- **Version bump required for upgrade detection** — if you build a new APK with the same version string, the app won't detect it as an upgrade.
+
 ### One-Point Chart Digitization — ALGORITHM DECODED (Session 423)
 - **Research doc**: `tools/chart-digitization-research.md`
 - **Decoded algorithm**: `tools/mdot-apk/decoded_algorithm.md` — exact tables + polynomials

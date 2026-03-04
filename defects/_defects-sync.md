@@ -5,6 +5,11 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [DATA] 2026-03-04: Hard-delete resurrection — local DELETE not propagated to Supabase (Session 491, FIXED)
+**Pattern**: `ProjectRepository.delete()` did hard `DELETE FROM projects` in SQLite but never called `queueOperation('projects', id, 'delete')`. Next sync pull re-inserted the project from Supabase. Systemic — affected all synced tables. No `deleted_at` column existed anywhere.
+**Prevention**: FIXED by soft-delete system (Session 491). All deletes now set `deleted_at` + `deleted_by`. Sync propagates soft-deletes bidirectionally. 30-day purge cleans up.
+**Ref**: @lib/services/soft_delete_service.dart, @lib/shared/datasources/generic_local_datasource.dart
+
 ### [ASYNC] 2026-03-03: _handleResumed() must await security callbacks before sync
 **Pattern**: Synchronous `void _handleResumed()` calls `onAppResumed?.call()` (returns Future) without awaiting. Security checks (inactivity timeout, config refresh) race with sync trigger.
 **Prevention**: Make lifecycle handlers `async` when they invoke async callbacks. Always await security checks before evaluating sync readiness.
