@@ -4,6 +4,41 @@ Historical defects moved from per-feature defect files. Reference only.
 
 ---
 
+## Archived from _defects-sync.md (2026-03-03)
+
+### [DATA] 2026-03-02: Triple DNS Check Creates Cascading Sync Failure (Session 479)
+**Pattern**: DNS checked at 3 layers (SyncLifecycleManager, SyncOrchestrator._syncWithRetry, SyncService.syncAll). Each is an independent `InternetAddress.lookup` with 5s timeout. Combined with duplicate `onSyncComplete` callbacks, `_consecutiveFailures` jumps to 3+ from a single logical sync.
+**Prevention**: Consolidate DNS check to ONE layer (orchestrator). Remove adapter-level `onSyncComplete` wiring. Fire `onSyncComplete` ONCE from orchestrator after final result.
+**Ref**: @lib/services/sync_service.dart:397-410, @lib/features/sync/application/sync_orchestrator.dart:115-118
+
+### [DATA] 2026-03-02: Company Context Not Set on Orchestrator's Internal SyncService (Pre-Existing)
+**Pattern**: `main.dart` creates TWO `SyncService` instances — standalone gets `setCompanyContext()`, but one inside `SupabaseSyncAdapter` (via orchestrator) NEVER gets it. Push operations via orchestrator path lack `company_id`/`created_by_user_id`.
+**Prevention**: Wire `setCompanyContext()` through to orchestrator's adapter. Remove orphan standalone SyncService.
+**Ref**: @lib/main.dart:227,265-269, @lib/features/sync/data/adapters/supabase_sync_adapter.dart:31
+
+## Archived from _defects-sync.md (2026-03-02)
+
+### [CONFIG] 2026-03-02: DNS Resolution Failure Silently Blocks All Supabase Sync (BLOCKER-18)
+**Pattern**: `connectivity_plus` reports connected but DNS cannot resolve Supabase host. SyncOrchestrator fails silently — no user-visible indicator, no retry with backoff. All sync blocked for entire session.
+**Prevention**: Fix plan at `.claude/plans/2026-03-02-extraction-and-sync-fix.md` Phase 1.
+**Ref**: @lib/services/sync_service.dart, @lib/features/sync/application/sync_orchestrator.dart
+
+### [DATA] 2026-02-22: queueOperation() no-op after provider migration
+**Pattern**: When migrating `SyncProvider` from `SyncService` to `SyncOrchestrator`, `queueOperation()` body was changed to call `scheduleLocalAgencySync()` without passing any arguments — silently dropping individual record syncs.
+**Prevention**: After refactoring provider methods, verify the new call passes ALL original parameters.
+**Ref**: @lib/features/sync/presentation/providers/sync_provider.dart
+
+### [CONFIG] 2026-02-22: Supabase migration assumes table state without verifying
+**Pattern**: Writing `ALTER TABLE RENAME COLUMN` or `CREATE INDEX` on columns that may not exist if prior schema SQL was partially applied.
+**Prevention**: Always use `DO $$ ... IF EXISTS` conditional blocks for column renames. Use `ADD COLUMN IF NOT EXISTS` for idempotent column additions.
+**Ref**: `supabase/migrations/20260222000000_catchup_v23.sql`
+
+### [CONFIG] 2026-02-22: Supabase schema drift — standalone SQL vs CLI migrations
+**Pattern**: Schema SQL files outside `supabase/migrations/` may or may not be applied to remote. CLI only tracks files in `migrations/`.
+**Prevention**: All schema changes must be in `supabase/migrations/` with timestamp prefix.
+
+---
+
 ## Archived from _defects-auth.md (2026-02-28)
 
 ### [DATA] 2026-02-22: RLS locks columns that code tries to update

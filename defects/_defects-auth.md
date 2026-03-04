@@ -5,6 +5,16 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [ASYNC] 2026-03-03: Inactivity timeout must check before reset on foreground resume
+**Pattern**: `updateLastActive()` resets the 7-day timer without checking `checkInactivityTimeout()` first. On foreground resume, always check timeout THEN reset.
+**Prevention**: In any `onResumed` callback, call `checkInactivityTimeout()` before `updateLastActive()`. Return early if timed out.
+**Ref**: @lib/main.dart:315-325
+
+### [CONFIG] 2026-03-03: clearOnSignOut() defined but never called — stale in-memory config
+**Pattern**: Provider defines `clearOnSignOut()` to reset cached state but sign-out flow never invokes it. Stale config persists across user sessions.
+**Prevention**: Wire `clearOnSignOut()` into auth listener or sign-out flow immediately when defining it.
+**Ref**: @lib/features/auth/presentation/providers/app_config_provider.dart:166
+
 <!-- RESOLVED 2026-03-01: handle_new_user() missing search_path — fixed in migration Session 471 -->
 <!-- RESOLVED 2026-03-01: BLOCKER-15 Router traps new users — fixed in Session 471, companyId null check added -->
 

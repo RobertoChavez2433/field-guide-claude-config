@@ -14,8 +14,10 @@
     "Bidirectional sync (push and pull in same cycle)",
     "Validate checksum (SHA256) on all synced records",
     "All-or-nothing per feature (no partial sync)",
-    "Max 3 retry attempts per operation",
-    "SyncProvider test doubles must satisfy non-null SyncService constructor dependencies"
+    "Max 3 retry attempts per operation with exponential backoff (5s/10s/20s)",
+    "DNS reachability check before sync (separate from connectivity_plus online status)",
+    "SyncProvider test doubles must satisfy non-null SyncService constructor dependencies",
+    "Consecutive failure tracking in SyncProvider only (not SyncOrchestrator)"
   ],
   "integration": {
     "depends_on": [],
@@ -31,6 +33,6 @@
   },
   "metrics": {
     "test_coverage_percentage": 92,
-    "last_updated": "2026-03-02T19:00:00Z"
+    "last_updated": "2026-03-02T22:00:00Z"
   }
 }

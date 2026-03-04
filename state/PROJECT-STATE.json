@@ -3,8 +3,8 @@
     "app_name": "Construction Inspector App",
     "app_version": "1.2.3",
     "description": "Cross-platform offline-first mobile/desktop app for construction inspectors",
-    "last_updated": "2026-03-02T19:00:00Z",
-    "session_notes": "Session 477: Implemented geometry-aware crop upscaler (all gates passed, scorecard unchanged 68/3/0). Systematic debug confirmed LOW metrics are Tesseract pattern errors, not resolution. Pulled S25 logs: DNS failure blocked sync. Created sync resilience plan (adversarial-reviewed, 20 findings)."
+    "last_updated": "2026-03-04T00:00:00Z",
+    "session_notes": "Session 490: Testing system overhaul brainstormed + implemented. 30 flows, 12 journeys, 4 tiers, flag-based CLI. Patrol deprecated. Dual code review passed. Phases 3+5 deferred (device required)."
   },
   "current_phase": {
     "phase_name": "Project-Based Multi-Tenant Architecture — DEPLOYED (Firebase + Supabase)",
@@ -22,14 +22,14 @@
   },
   "active_blockers": [
     {
-      "id": "BLOCK-018",
-      "title": "DNS resolution failure silently blocks all Supabase sync",
+      "id": "BLOCK-024",
+      "title": "SQLite missing UNIQUE constraint on project_number — sync race condition",
       "severity": "high",
       "owner": "user",
-      "status": "plan_ready",
-      "discovered": "2026-03-02",
-      "notes": "Plan: .claude/plans/2026-03-02-sync-resilience-fix.md (adversarial-reviewed). DNS failure blocked all sync on S25 Ultra across 2 sessions.",
-      "impact": "No data syncs to Supabase when DNS fails. User sees no indication."
+      "status": "open",
+      "discovered": "2026-03-03",
+      "notes": "Supabase has UNIQUE(company_id, project_number) but SQLite doesn't. Duplicate project numbers created locally succeed then fail on sync. TOCTOU race in ProjectRepository.create().",
+      "impact": "Users see 'already exists' errors or duplicate projects. Sync failures."
     },
     {
       "id": "BLOCK-007",
@@ -53,6 +53,39 @@
     }
   ],
   "recently_resolved_blockers": [
+    {
+      "id": "BLOCK-020",
+      "title": "Sync data-flow bugs — pull crash + push storm + retry amplification",
+      "severity": "critical",
+      "owner": "user",
+      "status": "resolved",
+      "discovered": "2026-03-02",
+      "resolved": "2026-03-02",
+      "notes": "RESOLVED (Session 481): Column stripping via PRAGMA, lastSyncTime persisted to SQLite, schema errors non-transient.",
+      "impact": "Resolved."
+    },
+    {
+      "id": "BLOCK-019",
+      "title": "PDF extraction regression — 129 items / $357B budget",
+      "severity": "high",
+      "owner": "user",
+      "status": "resolved",
+      "discovered": "2026-03-02",
+      "resolved": "2026-03-02",
+      "notes": "RESOLVED (Session 481): Upscaler reverted to uniform 600 DPI, bidAmount preserved through model chain, all 6 display sites updated.",
+      "impact": "Resolved."
+    },
+    {
+      "id": "BLOCK-018",
+      "title": "Supabase sync failure — triple DNS check + missing company context + duplicate callbacks",
+      "severity": "high",
+      "owner": "user",
+      "status": "resolved",
+      "discovered": "2026-03-02",
+      "resolved": "2026-03-02",
+      "notes": "RESOLVED (Session 481): DNS removed from SyncService, company context wired to orchestrator, onSyncComplete fires once.",
+      "impact": "Resolved."
+    },
     {
       "id": "BLOCK-017",
       "title": "Stale SQLite data persists across sign-out — clearLocalCompanyData never called",

@@ -6,6 +6,56 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 485 (2026-03-03)
+**Work**: Systematic DB debug (7 issues found, all pre-fixed). Deployed 2 Supabase migrations. Fixed build infra (.env + dart-define across all build/run configs). GitHub Releases APK distribution. Confirmed project delete works.
+**Decisions**: `.env` + `--dart-define-from-file` over hardcoded defaults. GitHub Releases over Supabase Storage (50MB project limit). `url_launcher` added for in-app download. Versioning starts at v0.0.1.
+**Next**: Fix BLOCKER-22 (location loading stuck), commit+push, manual Supabase config.
+
+### Session 484 (2026-03-03)
+**Work**: Implemented review-submit-auth plan (5 phases, 50 files, 14 new). Dual code review + security audit. Fixed all 12 findings (2 P0, 1 HIGH, 3 MEDIUM, 5 P1, 2 LOW). 2358 tests green.
+**Decisions**: `package_info_plus` upgraded ^8→^9 for Android compat. Foreground resume hooks via SyncLifecycleManager. `DailyEntry.getMissingFields()` extracted as model method. Batch submit timestamp returned from repository.
+**Next**: Commit+push, deploy Supabase migration, manual Supabase config (refresh token, secure_password_change).
+
+### Session 483 (2026-03-03)
+**Work**: Full brainstorm session for review & submit flow + auth session management. Detailed plan written (Rev 1), dual adversarial review (22 findings), plan updated to Rev 2. No code changes.
+**Decisions**: Draft-only editor, separate review screen, batch submit with SQLite transaction, `reauth_before` timestamp (not boolean), `flutter_secure_storage` for security timestamps, server-side status transition trigger, `pub_semver` for version comparison (fail-open), 7-day Supabase refresh token.
+**Next**: Commit+push pending changes, then implement plan Phase 0–4.
+
+### Session 482 (2026-03-02)
+**Work**: Deployed Supabase migration (bid_amount + test_results drop). Removed bid_amount safety net from sync. Fixed config.toml template path. Pre-flight: 166 pass / 3 pre-existing fail.
+**Decisions**: Migration deployed via `supabase db push`. Safety net code removed immediately after confirming deployment.
+**Next**: Commit+push. Brainstorm fixes for routing, weather, location bugs + save/submit UX design.
+
+### Session 481 (2026-03-02)
+**Work**: Implemented fix plan Rev 3 via `/implement` (4 phases + 6 quality gates). 22 files modified. Column stripping, lastSyncTime persistence, non-transient schema errors, orphan SyncService removal, DNS dedup, onSyncComplete once-firing, upscaler revert, bidAmount preservation, BudgetSanityChecker.
+**Decisions**: Task 0.5+1.2 combined in Phase 0. bid_amount stripped from _convertForRemote as safety net. Golden fixtures + sync tests deferred. Gate 4 P0 fix: onSyncComplete in catch block.
+**Next**: Commit+push, deploy Supabase migrations, remove bid_amount strip after migration.
+
+### Session 479 (2026-03-02)
+**Work**: Investigated PDF extraction regression + sync failure using parallel Opus agents. Fixed auth cold-start race. Created adversarial-reviewed fix plan (3 phases). 4 CRITICAL adversarial findings incorporated.
+**Decisions**: Revert upscaler (not tune). Remove adapter callback wiring (not suppress flag). Supabase migration required before app deploy.
+**Next**: Implement fix plan (Phase 1+2 parallel), commit+push, deploy Supabase migration.
+
+### Session 476 (2026-03-01)
+**Work**: Verified live Android extraction matches golden baseline. Created geometry-aware crop upscaler plan with brainstorming + adversarial review. Final plan saved.
+**Decisions**: Column-adaptive DPI (continuous curve) over min-width floor or confidence-retry. Formula: `targetDpi = 600 + 300 * max(0, 1 - cropWidth/500)`.
+**Next**: Implement plan (4 phases), push 6 commits, enable secure_password_change.
+
+### Session 475 (2026-03-01)
+**Work**: Verified BLOCKER-17 fix already in working tree. Created 6 logical commits (auth fixes, UX, security, PDF fixtures). Wiped Windows app data for clean start.
+**Decisions**: Layered fix for BLOCKER-17 (clear on sign-out + defense-in-depth empty list on null companyId). tessdata left intact during wipe.
+**Next**: PDF extraction investigation, push commits, enable secure_password_change in Supabase.
+
+### Session 474 (2026-03-01)
+**Work**: Regenerated PDF golden fixtures (baseline confirmed: 131 items, 0.993 quality, $7.88M exact). Fixed auth cold-start race condition (4 fixes: FIX-1 cached session load, FIX-2 profile skip stub, FIX-3 joinCompany refresh, SEC-8 recovery flag persistence). Discovered BLOCKER-17 stale SQLite.
+**Decisions**: Auth timing fix uses sync `_isLoadingProfile=true` before any notifyListeners. Recovery flag persisted via SharedPreferences (not secure storage — acceptable for boolean flag).
+**Next**: Fix BLOCKER-17 (wire clearLocalCompanyData), commit all auth fixes, PDF extraction investigation.
+
+### Session 473 (2026-03-01)
+**Work**: Reverted kMinCropWidth=500 crop upscaler. Restored all 25 files. Verified 825+81 tests pass, scorecard 68/3/0.
+**Decisions**: kMinCropWidth approach needs geometry investigation before reattempt.
+**Next**: Regenerate golden fixtures, establish clean baseline.
+
 ### Session 472 (2026-03-01)
 **Work**: UX fixes (remove cert number, phone formatter). BLOCKER-15 real root cause found (stale profile cache) + fixed with _preflight().
 **Decisions**: kMinCropWidth=500 too aggressive. Needs revert before commit.

@@ -54,6 +54,20 @@
 - **CRITICAL**: NEVER run `Stop-Process -Name 'dart'` — can kill background Dart processes. Only kill `construction_inspector`.
 - dart-mcp MCP server REMOVED (Session 444) — use `pwsh -Command "flutter run ..."` directly instead
 
+### Subagent Task Tool Limitation (Session 489)
+- **CRITICAL**: Subagents CANNOT call the Task tool to dispatch further subagents. Nested Task calls silently fail — the subagent recognizes it needs Task but falls back to Bash.
+- **Implication**: The `test-orchestrator-agent` cannot dispatch `test-wave-agent` subagents. Only the top-level conversation agent can dispatch subagents.
+- **Pattern**: For multi-agent orchestration, the main conversation agent must act as the thin orchestrator. Don't use an orchestrator subagent that needs to dispatch its own subagents.
+- **Turn budget**: Each ADB test flow consumes 25-40 turns. Dispatch 1 flow per agent to avoid turn exhaustion.
+
+### ADB Testing on Physical Devices (Session 487)
+- **Samsung SM-G996U**: Android 15, serial `RFCNC0Y975L`
+- **Android 15 screencap broken**: `adb shell screencap -p /sdcard/file.png` fails. Use `adb exec-out screencap -p > local.png` instead.
+- **Git Bash path mangling**: `/sdcard/` → `C:/Program Files/Git/sdcard/`. Fix: prefix with `MSYS_NO_PATHCONV=1` on ALL ADB commands with `/sdcard/` paths.
+- **Flutter Key → resource-id**: `Key('name')` does NOT produce `resource-id` in UIAutomator XML on this device. Zero resource-ids found. Fallback to `content-desc` (Semantics labels) or `text` attributes.
+- **Subagent permissions**: `general-purpose` subagent type auto-denies Bash in async mode. `permissions.allow` patterns may not propagate. Fix: `Bash(*)` wildcard in settings.local.json.
+- **Custom agent loading**: New agents in `.claude/agents/` require CLI restart to appear as available subagent types.
+
 ### Statusline & Usage Tracking (Session 458)
 - **Statusline script**: `~/.claude/statusline-command.js` (Node.js, 2-line layout)
 - **Anthropic OAuth usage API**: `https://api.anthropic.com/api/oauth/usage` — returns REAL 5h/7d utilization % + reset times

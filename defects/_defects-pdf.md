@@ -10,25 +10,10 @@ Archive: .claude/logs/defects-archive.md
 **Prevention**: Geometry-aware upscaling (2.0→2.71x) confirmed this is NOT a resolution problem. Fixes needed at Tesseract interpretation layer: (1) confidence floor override when format+interpretation both validate, (2) comma-recovery heuristic for european_periods, (3) space-strip for spurious word breaks.
 **Ref**: @lib/features/pdf/services/extraction/scoring/field_confidence_scorer.dart:298-306
 
-### [BLOCKER] 2026-03-01: kMinCropWidth=500 Causes Item Merger Regression (BLOCKER-16)
-**Status**: RESOLVED (Session 473+477). Replaced with geometry-aware continuous curve approach.
-**Symptom**: Setting `kMinCropWidth=500` in `CropUpscaler.computeScaleFactor()` drops quality 0.993→0.918. Items 131→130, BUG 0→2. Item 50 ("Valve & Box, 6\", $98,236) merges with adjacent row → bogus "50 o1" with doubled description "Valve Valve & & Box, Box, 4\" 6\"". Checksum $100K short.
-**Root Cause**: Upscaling narrow crops to 500px changes OCR output geometry enough that the downstream row parser merges adjacent rows. The larger crop captures text from neighboring cells.
-**What Was Tried**: `kMinCropWidth=500` added to ensure unitPrice (~355px) and bidAmount (~381px) columns reach 500px. This was motivated by Session 388 finding that those columns had ALL 16 OCR errors while upscaled columns had ZERO.
-**Why It Failed**: The upscaling changes crop boundaries relative to the grid structure. When crops are wider, OCR text from adjacent cells bleeds into the current cell, causing the row parser to see duplicate text and merge rows.
-**Next Steps**:
-1. Revert `kMinCropWidth` change in `crop_upscaler.dart` and tests
-2. Regenerate golden fixtures to restore 68/3/0 baseline
-3. Investigate item 50 specifically — what cell boundary geometry changes at 500px vs native width
-4. Consider per-column upscaling (only upscale columns that are truly narrow, not price columns that are ~355px) or investigate the cell extractor's crop boundary computation
-**Files**:
-- `lib/features/pdf/services/extraction/shared/crop_upscaler.dart` (kMinCropWidth added at line 24)
-- `test/features/pdf/extraction/shared/crop_upscaler_test.dart` (tests updated for 500px)
-- `test/features/pdf/extraction/stages/stage_2b_text_recognizer_test.dart` (3 assertions updated)
-- `test/features/pdf/extraction/golden/springfield_golden_test.dart` (baseline lowered 0.977→0.918)
-- Golden fixtures in `test/features/pdf/extraction/fixtures/` (regenerated with broken change)
-**Springfield PDF**: `C:\Users\rseba\OneDrive\Desktop\864130 Springfield DWSRF Water System Improvements CTC [16-23] Pay Items.pdf`
-**Ref**: @lib/features/pdf/services/extraction/shared/crop_upscaler.dart:24
+### [DATA] 2026-03-02: Geometry-Aware Upscaler Causes Comma/Period OCR Confusion — $357B Budget (BLOCKER-19)
+**Pattern**: Commit `22f2d7b` replaced uniform 600 DPI with `targetDpi = 600 + 300 * max(0, 1 - cropWidth/500)`. Narrow columns upscaled to 2.28-2.71x instead of uniform 2.0x. At higher DPI, Tesseract misreads commas as periods in quantities (e.g., `9,235` → `9.235`). Math backsolve then inflates `unitPrice` 1000x to compensate. Budget = `sum(qty * inflatedPrice)` = $357B instead of $7.88M. Additionally, `bidAmount` (correctly OCR'd) is LOST at `ResultConverter` boundary — never reaches `BidItem` or SQLite. Dashboard recalculates from corrupted `qty * unitPrice`.
+**Prevention**: (1) Revert to uniform 600 DPI. (2) Preserve `bidAmount` through full chain: v2 pipeline → legacy ParsedBidItem → BidItem → SQLite → all 5 display sites. (3) Always use `bidAmount` as source of truth for totals. (4) Add Supabase migration for `bid_amount` column BEFORE app deploy.
+**Ref**: @lib/features/pdf/services/extraction/shared/crop_upscaler.dart, @lib/features/pdf/services/extraction/pipeline/result_converter.dart:31, @lib/features/dashboard/presentation/screens/project_dashboard_screen.dart:313
 
 ### [BLOCKER] 2026-02-20: M&P Parser Regex Finds Only 4 of 131 Items — Anchor-Based Rewrite Needed
 **Status**: DIAGNOSED (Session 403). Root cause confirmed via M&P testing harness.
