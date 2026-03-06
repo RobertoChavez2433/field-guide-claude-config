@@ -1,119 +1,137 @@
 # Session State
 
-**Last Updated**: 2026-03-04 | **Session**: 492
+**Last Updated**: 2026-03-05 | **Session**: 504
 
 ## Current Phase
-- **Phase**: App Lifecycle Safety + Soft-Delete Fixes
-- **Status**: Pushed repos, deployed Supabase migrations, implemented app lifecycle plan (schema verifier, version tracking, upgrade re-auth), fixed trash count refresh, fixed Gradle lint lock. v0.76.0 released.
+- **Phase**: Sync System Rewrite — BULLETPROOF PLAN FULLY PATCHED (32 fixes across 3 rounds)
+- **Status**: Round 3 review (5 part-scoped agents) found 14 critical + 15 high-priority + 6 ambiguities. User made 7 decisions. 3 patch agents applied 32 fixes inline. Plan is implementation-ready.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (492)
+### What Was Done This Session (504)
 
-1. **Pushed both repos** — `fix/sync-dns-resilience` (app) + `master` (config)
-2. **Deployed Supabase migrations** — `20260304000000_soft_delete_columns.sql` + hotfix `20260304100000_soft_delete_missing_tables.sql`
-3. **Fixed missing soft-delete columns** — `entry_contractors` + `entry_personnel_counts` were missing from SQLite migration v28, Supabase migration, and purge function. Added v29 migration.
-4. **Brainstormed app lifecycle design** — 4 states defined (background resume, cold start, upgrade, fresh install). Decisions: auto-repair, cold start → dashboard, upgrade → re-auth, schema verifier.
-5. **Implemented app lifecycle plan via `/implement`** — All 4 phases + 6 quality gates passed:
-   - Phase 0: Schema verifier (25 tables, ~14ms, self-healing)
-   - Phase 1: App version tracking (package_info_plus)
-   - Phase 2: Removed route restore (cold starts → dashboard)
-   - Phase 3: Upgrade re-auth (signOutLocally)
-6. **Fixed trash count not refreshing** — Settings screen now reloads count when returning from trash
-7. **Bumped version to 0.76.0** — Triggers upgrade detection on existing installs
-8. **Fixed Gradle lint lock** — Disabled `checkReleaseBuilds` in build.gradle.kts, builds now ~45s instead of 7min
-9. **Released v0.76.0** — https://github.com/RobertoChavez2433/construction-inspector-tracking-app/releases/tag/v0.76.0
+1. **Dispatched 5 review agents** (1 per plan part) — found 14 CRITICAL, 15 HIGH, 6 AMBIGUITY issues
+2. **Dispatched 3 research agents** to gather codebase context and propose fixes for all issues
+3. **Brainstormed 7 decisions** with user (one at a time)
+4. **Dispatched 3 patch agents** (1 per plan section) — applied 32 fixes inline to the plan
+
+### 7 Decisions Made
+
+1. **C1**: Denormalize `project_id` onto 4 junction tables (SQLite + Supabase) for uniform pull scoping
+2. **C13**: Orphan scanner queries Supabase `photos` table (not local SQLite) to see all devices
+3. **H3**: In-cycle retry (1 attempt with backoff) for transient push errors
+4. **H4/H14**: Mark all change_log entries as processed at cutover (clean slate)
+5. **H15**: Wrap v30 migration in transaction + try/catch with v32 recovery slot
+6. **A1**: `synced_projects` populated by user action (pick/create project → INSERT)
+7. **C6/A6**: RPC and pull engine use identical `project_id` scoping (resolved by C1)
+
+### Key Fixes Applied (32 total)
+
+- **Security**: Restored `status='approved'` in `get_my_company_id()` (C7)
+- **Compilation**: Added `incrementRetry()`, fixed `forceReset()` signature, fixed Java syntax (C2-C4)
+- **Error handling**: PostgREST codes replace HTTP codes, inner retry loop added (C5, H3)
+- **SQL**: IntegrityChecker RPC rebuilt, trigger idempotency fixed (C6, C8)
+- **Tests**: mocktail dep, single-source DDL, project_id in factories, CASCADE tests (C10-C12, H7-H8)
+- **Cutover**: storage_cleanup_queue in wipe, background factory, mark-processed step (H11-H12, H4)
+
+### Key Files
+
+- **Bulletproof plan (PATCHED)**: `.claude/plans/2026-03-05-sync-rewrite-bulletproof.md`
+- **Original plan (DO NOT MODIFY)**: `.claude/plans/2026-03-04-sync-rewrite-and-settings-redesign.md`
 
 ### What Needs to Happen Next
 
-1. **VERIFY: Trash "Empty All" syncs deletions to Supabase** — User reported 426 items still showing after emptying trash. The `purgeExpiredRecords()` does local SQLite DELETE but may not be pushing hard-deletes to Supabase. The sync layer's `_pushPendingChanges()` was supposed to handle this (session 491 Phase 2 — sync layer skip deleted, edit-wins). VERIFY that the push path actually syncs `deleted_at` timestamps to Supabase before the purge hard-deletes them. If the purge runs before push, the records vanish locally and Supabase never learns they were deleted → next pull resurrects them.
-2. **Dry run `/test --smoke`** — Connect device, validate smoke flows
-3. **Fix BLOCKER-24** — add UNIQUE index to SQLite projects table
-4. **Fix BLOCKER-22** — location field stuck loading
+1. **Commit BLOCKER-27 fix** — still uncommitted on `fix/sync-dns-resilience`
+2. **Create feature branch** — `feat/sync-engine-rewrite` off main
+3. **Start Phase 0** — Supabase migration (PART 0 as separate migration file first, then main migration)
 
 ## Blockers
 
-### BLOCKER-26: Trash Purge May Not Sync to Supabase Before Hard Delete
-**Status**: OPEN — NEEDS VERIFICATION (not confirmed as bug yet)
-**Symptom**: User emptied trash (426 items), count badge didn't update (fixed in session 492), but need to verify Supabase actually received the deletions.
-**Theory**: `purgeExpiredRecords(retentionDays: 0)` does hard DELETE locally. If the `deleted_at` timestamps weren't pushed to Supabase BEFORE the purge, Supabase still has the records as non-deleted → next sync pull resurrects them.
-**Verification needed**: Check if sync push includes `deleted_at`/`deleted_by` columns. Check the sync flow: soft-delete → push `deleted_at` to Supabase → THEN purge locally. The post-sync purge in `syncAll()` (line 461-473) runs AFTER push, which is correct for the 30-day auto-purge. But "Empty Trash" calls `purgeExpiredRecords(retentionDays: 0)` directly WITHOUT syncing first.
-**Files**: `lib/services/soft_delete_service.dart:291-329`, `lib/services/sync_service.dart:440-473`, `lib/features/settings/presentation/screens/trash_screen.dart:356-368`
+### BLOCKER-28: SQLite Encryption (sqlcipher)
+**Status**: OPEN — tracked separately from sync rewrite. Future blocker.
+**Notes**: ADV-55 from security hardening. Requires sqflite→sqlcipher dependency swap + DB migration. Separate plan needed.
 
-### BLOCKER-24: SQLite Missing UNIQUE Constraint on Project Number — Sync Race
-**Status**: OPEN — HIGH PRIORITY
-**Symptom**: User creates project, sees "already exists" on save, or project appears duplicated.
-**Fix**: Add `CREATE UNIQUE INDEX idx_project_number_company ON projects(company_id, project_number)` to SQLite.
-**Files**: `lib/core/database/schema/core_tables.dart`, `lib/core/database/database_service.dart`
+### BLOCKER-27: Sync "Pending Changes" Never Clears
+**Status**: FIXED — code complete, awaiting commit + deploy
 
-### BLOCKER-22: Location Field Stuck "Loading" on New Entry Screen
-**Status**: OPEN — HIGH PRIORITY
-**Symptom**: Location field shows perpetual "loading" spinner when no location exists for project.
-**Root cause**: NOT YET INVESTIGATED.
+### BLOCKER-26: Trash Purge Resurrects Records
+**Status**: CONFIRMED — will be fully resolved by Phase 1+3 (change_log triggers + adapters)
+
+### BLOCKER-24: SQLite Missing UNIQUE Constraint on Project Number
+**Status**: OPEN — HIGH PRIORITY (deferred to after sync rewrite Phase 0)
+
+### BLOCKER-22: Location Field Stuck "Loading"
+**Status**: OPEN — HIGH PRIORITY (deferred to after sync rewrite)
 
 ### BLOCKER-23: Flutter Keys Not Propagating to Android resource-id
-**Status**: OPEN — MEDIUM (mitigated by content-desc/text fallback in test skill)
+**Status**: OPEN — MEDIUM
 
 ### BLOCKER-25: Nested Task Tool Calls Don't Work in Subagents
-**Status**: OPEN — ARCHITECTURAL LIMITATION (mitigated by top-level orchestration)
+**Status**: OPEN — ARCHITECTURAL LIMITATION
 
 ### BLOCKER-10: Fixture Generator Requires SPRINGFIELD_PDF Runtime Define
-**Status**: OPEN (PDF scope only).
+**Status**: OPEN (PDF scope only)
 
 ## Recent Sessions
 
-### Session 492 (2026-03-04)
-**Work**: Pushed repos + deployed Supabase migrations. Fixed 2 missing soft-delete tables (entry_contractors, entry_personnel_counts) — DB v29. Brainstormed + implemented app lifecycle safety (schema verifier, version tracking, upgrade re-auth, route restore removal). Fixed trash count refresh. Bumped to v0.76.0. Fixed Gradle lint lock (45s builds). Released v0.76.0.
-**Decisions**: Schema verifier on every startup (self-healing). Cold start → dashboard. Upgrade → re-auth. Disable Gradle lint on release builds. Version must be bumped for upgrade detection to trigger.
-**Next**: Verify trash purge syncs to Supabase (BLOCKER-26), smoke test, fix BLOCKER-24, fix BLOCKER-22.
+### Session 504 (2026-03-05)
+**Work**: Round 3 review: 5 part-scoped agents found 14 critical + 15 high + 6 ambiguities. 3 research agents gathered context. 7 decisions with user. 3 patch agents applied 32 fixes inline. Plan implementation-ready.
+**Decisions**: Denormalize project_id on junctions. Orphan scanner queries Supabase. In-cycle retry. Mark-processed at cutover. Transaction-wrapped migrations. User-driven synced_projects. Unified RPC/pull scoping.
+**Next**: Commit BLOCKER-27, create feature branch, start Phase 0.
 
-### Session 491 (2026-03-04)
-**Work**: Context-efficient test skill. Investigated + brainstormed + implemented sync-aware soft-delete system (5 phases, 24 files, all quality gates). Committed 6 logical app commits + 2 config commits.
-**Decisions**: Soft-delete + 30-day purge. Edit-wins conflict resolution. Trash screen in Settings. RLS SELECT policies NOT modified. DB version 27→28.
-**Next**: Push repos, deploy migration, smoke test, fix BLOCKER-24, fix BLOCKER-22.
+### Session 503 (2026-03-05)
+**Work**: 8 per-phase review agents found 31 critical issues. 3 research agents gathered codebase context. Brainstormed 14 decisions with user. Agent applied all fixes to bulletproof plan.
+**Decisions**: Fix PART 5 SQL + split PART 0. Fix 5 SECURITY DEFINER functions. Update schema files + _onCreate. Add upgrade-path migrations. project_id in v30. Trigger suppression for bookkeeping. Retry once. Resurrect soft-deleted rows. Engine-owned photo push. Phase 5 wiring-only. Phase 6 API fixes. Phase 7i test cleanup. Completion gates for Phases 2-5.
+**Next**: Commit BLOCKER-27, create feature branch, start Phase 0.
 
-### Session 490 (2026-03-03)
-**Work**: Brainstormed + implemented testing system overhaul. 30 flows, 12 journeys, 4 tiers, flag-based CLI.
-**Decisions**: Replace Patrol entirely. 4 tiers. Flag style CLI. Top-level orchestration. Haiku for wave agents.
-**Next**: Dry run `/test --smoke`, fix sync defects, fix BLOCKER-24.
+### Session 502 (2026-03-05)
+**Work**: Verified bulletproof plan vs original with 5 review agents (1 per part). Brainstormed 12 omissions, 8 modifications, 7 recommendations with user. Made 17 decisions. Agent updated bulletproof plan (11,748→12,008 lines).
+**Decisions**: Integrate security hardening (not defer). ADV-55 separate plan. Denormalize project_id on junction tables. Keep single-lock, 4-variant ScopeType. Revert to incremental build+test. Within-cycle backoff. Benchmark as gate.
+**Next**: Commit BLOCKER-27, create feature branch, start Phase 0.
 
-### Session 489 (2026-03-03)
-**Work**: Validated test orchestration delegation. Confirmed BLOCKER-25 (nested Task calls fail).
-**Decisions**: Top-level orchestration only. 1 flow per agent. Haiku for wave agents.
-**Next**: Testing system overhaul brainstorm, fix sync defects, fix BLOCKER-24.
+### Session 501 (2026-03-05)
+**Work**: Full 10-agent pipeline to produce bulletproof implementation plan. 4 Opus analysis agents reviewed plan vs codebase. 5 Opus writer agents produced detailed step-by-step plans. 1 Opus synthesis agent merged into 11,748-line unified plan.
+**Decisions**: Section C split into C1+C2 to avoid 32K output limit. Synthesis does merge only, no verification (deferred to next session).
+**Next**: Verify bulletproof plan vs original, commit BLOCKER-27, start Phase 0.
 
-### Session 488 (2026-03-03)
-**Work**: Full `/test --all` run (3/5 PASS, 1 FAIL). Redesigned orchestrator + wave agent. Discovered BLOCKER-24.
-**Decisions**: Orchestrator gets Task tool. Wave agents get Write/Edit + mandatory logcat.
-**Next**: CLI restart, retry `/test --all`, fix BLOCKER-24, fix BLOCKER-22.
+### Session 500 (2026-03-05)
+**Work**: 4 code-review agents exhaustively reviewed sync rewrite plan vs codebase. 46 findings (5 CRITICAL). Launched Opus agent to write bulletproof plan — hit 32K output limit, file not yet created.
+**Decisions**: Original plan preserved. New bulletproof plan will be written to separate file.
+**Next**: Create bulletproof plan (chunk writes), cross-reference vs original, commit BLOCKER-27.
 
 ## Active Plans
 
+### Sync System Rewrite + Settings Redesign — BULLETPROOF PLAN READY (Session 504)
+- **Original plan (DO NOT MODIFY)**: `.claude/plans/2026-03-04-sync-rewrite-and-settings-redesign.md`
+- **Bulletproof plan (PATCHED x3)**: `.claude/plans/2026-03-05-sync-rewrite-bulletproof.md`
+- **Section files**: `.claude/plans/sections/section-{a,b,c1,c2,d}-*.md`
+- **Status**: 3 rounds of review (Sessions 502-504). 32+31+17 = 80 total fixes. 7+14+17 = 38 decisions. Implementation-ready.
+- **Phases**: 0=Schema+Security, 1=ChangeLogs+Triggers, 2=EngineCore, 3=Adapters, 4=PhotoAdapter, 5=IntegrityChecker(wiring-only), 6=UI+Settings, 7=Cutover(9 sub-phases incl 7i)
+
+### Sync System Audit — COMPLETE (Session 494)
+- **Audit Report**: `.claude/plans/2026-03-04-sync-system-audit-report.md`
+- **Status**: Superseded by rewrite plan.
+
 ### App Lifecycle Safety — IMPLEMENTED (Session 492)
 - **Design**: `.claude/plans/2026-03-04-app-lifecycle-design.md`
-- **Status**: All 4 phases implemented, all 6 quality gates passed. Released as v0.76.0.
-- **Key files**: `lib/core/database/schema_verifier.dart`, `lib/main.dart`
+- **Status**: Released as v0.76.0.
 
-### Sync-Aware Deletion System — IMPLEMENTED (Session 491)
+### Sync-Aware Deletion System — SUPERSEDED (Session 491)
 - **Design**: `.claude/plans/2026-03-04-sync-aware-deletion-system.md`
-- **Status**: Implemented + deployed. BLOCKER-26 open re: trash purge sync verification.
-- **Key files**: `lib/services/soft_delete_service.dart`, `lib/features/settings/presentation/screens/trash_screen.dart`
+- **Status**: Replaced by sync rewrite Phase 1+3.
 
 ### Testing System Overhaul — IMPLEMENTED (Session 490)
 - **Design**: `.claude/plans/2026-03-03-testing-system-overhaul.md`
-- **Status**: Phases 0-2 + 4 implemented. Phases 3 + 5 deferred (require device).
-
-### Review & Submit Flow + Auth — IMPLEMENTED (Session 484)
-- **Plan**: `.claude/plans/2026-03-03-review-submit-flow-and-auth.md`
-- **Status**: All 5 phases implemented + reviewed + fixed. Committed.
+- **Status**: Phases 0-2 + 4 implemented. Phases 3 + 5 deferred.
 
 ### Project-Based Multi-Tenant Architecture — DEPLOYED (Session 453)
 - **PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
 
 ## Reference
+- **Sync Rewrite Plan**: `.claude/plans/2026-03-04-sync-rewrite-and-settings-redesign.md`
+- **Bulletproof Plan**: `.claude/plans/2026-03-05-sync-rewrite-bulletproof.md`
+- **Sync Audit Report**: `.claude/plans/2026-03-04-sync-system-audit-report.md`
+- **PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
 - **Improvements**: `.claude/improvements.md`
-- **Lifecycle Plan**: `.claude/plans/2026-03-04-app-lifecycle-design.md`
-- **Deletion System Plan**: `.claude/plans/2026-03-04-sync-aware-deletion-system.md`
-- **Testing Overhaul Plan**: `.claude/plans/2026-03-03-testing-system-overhaul.md`
 - **Archive**: `.claude/logs/state-archive.md`
 - **Defects**: `.claude/defects/_defects-database.md`, `.claude/defects/_defects-toolbox.md`, `.claude/defects/_defects-pdf.md`, `.claude/defects/_defects-sync.md`, `.claude/defects/_defects-forms.md`, `.claude/defects/_defects-auth.md`, `.claude/defects/_defects-projects.md`, `.claude/defects/_defects-entries.md`

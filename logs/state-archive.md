@@ -6,6 +6,51 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 499 (2026-03-05)
+**Work**: CodeMunch gap analysis of sync rewrite plan vs codebase (376 files, 3,757 symbols). Found 18 gaps. Expanded Phase 7 from 13 to 50+ tasks (8 sub-phases). Added 2 Phase 0 prereqs, 1 Phase 2 task, 3 Phase 6 tasks, 14 new tests, 3 risk rows.
+**Decisions**: Plan hardened with complete cleanup manifest. Dead code grep gate as merge requirement.
+**Next**: Commit BLOCKER-27, start Phase 0 (storage RLS first, 2 prereq checks).
+
+### Session 498 (2026-03-05)
+**Work**: Brainstormed 12 design decisions for sync rewrite (trigger gate, lock, push/pull, integrity, cutover, tables, PII, settings, profile). Table audit (1 legacy found). Integrated into plan (1,712 lines). Code review passed. Deleted superseded draft.
+**Decisions**: sync_control gate, hybrid 5-min lock, user-driven project selection, no feature flag, Big Bang cutover, 16 adapter tables, user_certifications table, expanded profile, no SharedPrefs fallback.
+**Next**: Commit BLOCKER-27, start Phase 0 (storage RLS first).
+
+### Session 497 (2026-03-05)
+**Work**: Launched 3 Opus agents to map fixes for all 63 adversarial findings. Draft integrated plan (1,714 lines) written then REVERTED. Explained 10 core functional changes to user. Saved draft as reference.
+**Decisions**: User wants to brainstorm each core design change before integration. Original plan restored.
+**Next**: Brainstorm 10 core design changes with user, commit BLOCKER-27, then Phase 0.
+
+### Session 496 (2026-03-04)
+**Work**: Adversarial review of sync rewrite plan with 3 agents (security, architecture, completeness). 63 findings: 16 CRITICAL, 23 HIGH, 15 MEDIUM, 9 LOW. All appended to plan with full context.
+**Decisions**: Plan needs fixes before implementation. Top 5 blockers: trigger-pull infinite loop, LWW spoofing+tiebreaker, no rollback, entry_personnel ghost table, setForEntry poisoning.
+**Next**: Brainstorm fixes for 63 findings, commit BLOCKER-27, then Phase 0.
+
+### Session 495 (2026-03-04)
+**Work**: Validated sync audit with 5 sonnet agents (confirmed all 19 gaps, found 11 new). Brainstormed sync rewrite (9 design decisions). Audited settings with 2 agents (15 issues). Wrote 8-phase implementation plan with testing strategy.
+**Decisions**: SQLite triggers for change tracking. Table adapter registry. LWW + conflict_log. Three-phase photo sync. Incremental pull + daily integrity. Settings full redesign. Stage trace scorecard testing. Firebase deferred.
+**Next**: Commit BLOCKER-27, start Phase 0 (schema + security), verify storage RLS.
+
+### Session 493 (2026-03-04)
+**Work**: Fixed BLOCKER-27 — sync_status infinite loop. Stripped sync_status from push payloads (3 files), forced 'synced' on pull (1 file), created Supabase migration to drop column. All tests pass.
+**Decisions**: sync_status is local-only concept — never push to Supabase, always force 'synced' on pull. Drop column from Supabase entirely.
+**Next**: Commit + push + deploy migration, verify BLOCKER-26, fix BLOCKER-24, fix BLOCKER-22.
+
+### Session 492 (2026-03-04)
+**Work**: Pushed repos + deployed Supabase migrations. Fixed 2 missing soft-delete tables (entry_contractors, entry_personnel_counts) — DB v29. Brainstormed + implemented app lifecycle safety (schema verifier, version tracking, upgrade re-auth, route restore removal). Fixed trash count refresh. Bumped to v0.76.0. Fixed Gradle lint lock (45s builds). Released v0.76.0.
+**Decisions**: Schema verifier on every startup (self-healing). Cold start → dashboard. Upgrade → re-auth. Disable Gradle lint on release builds.
+**Next**: Verify trash purge syncs to Supabase (BLOCKER-26), smoke test, fix BLOCKER-24, fix BLOCKER-22.
+
+### Session 491 (2026-03-04)
+**Work**: Context-efficient test skill. Investigated + brainstormed + implemented sync-aware soft-delete system (5 phases, 24 files, all quality gates). Committed 6 logical app commits + 2 config commits.
+**Decisions**: Soft-delete + 30-day purge. Edit-wins conflict resolution. Trash screen in Settings. DB version 27→28.
+**Next**: Push repos, deploy migration, smoke test.
+
+### Session 488 (2026-03-03)
+**Work**: Full `/test --all` run (3/5 PASS, 1 FAIL). Redesigned orchestrator + wave agent. Discovered BLOCKER-24.
+**Decisions**: Orchestrator gets Task tool. Wave agents get Write/Edit + mandatory logcat.
+**Next**: CLI restart, retry `/test --all`, fix BLOCKER-24, fix BLOCKER-22.
+
 ### Session 486 (2026-03-03)
 **Work**: Brainstormed + implemented `/test` skill (ADB-based on-device testing). 5-question design session, then `/implement` for Phases 0-2. 6 new config files, 2 Dart files modified. All quality gates passed. Phase 3 (dry run) deferred.
 **Decisions**: Hybrid UIAutomator+Vision. Wave-based dispatch. SKILL.md convention. Wave agent read-only (Bash+Read). Feature-path map in registry.

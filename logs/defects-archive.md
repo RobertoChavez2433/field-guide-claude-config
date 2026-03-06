@@ -4,6 +4,33 @@ Historical defects moved from per-feature defect files. Reference only.
 
 ---
 
+## Sync (archived 2026-03-05, Session 504)
+
+### [TEST] 2026-03-03: pullCompanyMembers FOREIGN KEY constraint failure silently drops user_profiles sync (auto-test)
+**Status**: OPEN
+**Suggested cause**: user_profiles INSERT references a company_id or FK that doesn't yet exist locally. Fix: ensure companies pulled before user_profiles.
+
+### [TEST] 2026-03-03: entry_equipment and entry_quantities pull fails — wrong column in Supabase query (auto-test)
+**Status**: OPEN (will be resolved by sync rewrite — new adapters use correct column names)
+
+### [ASYNC] 2026-03-03: _handleResumed() must await security callbacks before sync
+**Pattern**: Synchronous `void _handleResumed()` calls async `onAppResumed?.call()` without awaiting. Security checks race with sync trigger.
+**Prevention**: Make lifecycle handlers async. Always await security checks before sync readiness.
+
+## Sync (archived 2026-03-05, Session 503)
+
+### [DATA] 2026-03-02: _lastSyncTime In-Memory Only — Full Push Every Cold Start (Session 480)
+**Pattern**: `_lastSyncTime` is `DateTime?` in memory. Every cold start = null → pushes ALL local data. Push before pull amplifies corruption.
+**Prevention**: Persist `_lastSyncTime` to SQLite `sync_metadata` table. (SUPERSEDED by sync rewrite — new engine uses change_log cursor)
+
+### [DATA] 2026-03-02: Schema Errors Classified as Transient — 3x Retry Amplification (Session 480)
+**Pattern**: `_isTransientError()` defaults `return true` for unknown errors → retries 3x with full push each time.
+**Prevention**: Add schema error patterns to `nonTransientPatterns`. (SUPERSEDED by sync rewrite — new engine classifies errors explicitly)
+
+### [DATA] 2026-03-02: _convertForLocal() Does Not Strip Unknown Columns (Session 480)
+**Pattern**: Pull phase crashes on unknown columns from Supabase not in local SQLite.
+**Prevention**: Column stripping via `PRAGMA table_info()`. (SUPERSEDED by sync rewrite — new engine uses adapter column definitions)
+
 ## Archived from _defects-sync.md (2026-03-03)
 
 ### [DATA] 2026-03-02: Triple DNS Check Creates Cascading Sync Failure (Session 479)
