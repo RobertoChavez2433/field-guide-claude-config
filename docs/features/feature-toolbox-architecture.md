@@ -65,7 +65,7 @@ Project (1)
 
 ### InspectorFormRepository
 
-**Location**: `lib/features/toolbox/data/repositories/inspector_form_repository.dart`
+**Location**: `lib/features/forms/data/repositories/form_response_repository.dart` (forms feature, not toolbox)
 
 ```dart
 class InspectorFormRepository {
@@ -80,7 +80,7 @@ class InspectorFormRepository {
 
 ### FormResponseRepository
 
-**Location**: `lib/features/toolbox/data/repositories/form_response_repository.dart`
+**Location**: `lib/features/forms/data/repositories/form_response_repository.dart`
 
 ```dart
 class FormResponseRepository {
@@ -99,7 +99,7 @@ class FormResponseRepository {
 
 ### CalculatorService
 
-**Location**: `lib/features/toolbox/data/services/calculator_service.dart`
+**Location**: Calculator service (sub-feature code in `lib/features/calculator/`)
 
 ```dart
 class CalculatorService {
@@ -116,7 +116,7 @@ class CalculatorService {
 
 ### FormParsingService
 
-**Location**: `lib/features/toolbox/data/services/form_parsing_service.dart`
+**Location**: Form parsing service (sub-feature code in `lib/features/forms/`)
 
 ```dart
 class FormParsingService {
@@ -318,92 +318,76 @@ Location: `test/features/toolbox/presentation/screens/`
 
 ## File Locations
 
+The toolbox is a hub screen; actual sub-feature code lives in separate feature directories:
+
 ```
-lib/features/toolbox/
+lib/features/toolbox/                    # Hub only
+├── presentation/
+│   └── screens/
+│       └── toolbox_home_screen.dart     # Navigation hub for sub-features
+└── toolbox.dart                         # Feature entry point
+
+lib/features/calculator/                 # Calculator sub-feature
+├── data/
+│   └── models/
+│       └── calculation_history.dart
+├── presentation/
+│   ├── providers/
+│   │   └── calculator_provider.dart
+│   └── screens/
+│       └── calculator_screen.dart
+└── calculator.dart
+
+lib/features/forms/                      # Forms sub-feature
 ├── data/
 │   ├── models/
-│   │   ├── models.dart
 │   │   ├── inspector_form.dart
 │   │   ├── form_response.dart
-│   │   ├── todo_item.dart
-│   │   ├── calculation_history.dart
-│   │   └── [other models]
-│   │
-│   ├── services/
-│   │   ├── services.dart
-│   │   ├── form_parsing_service.dart
-│   │   ├── calculator_service.dart
-│   │   ├── density_calculator_service.dart
-│   │   ├── auto_fill_engine.dart
-│   │   └── [other services]
-│   │
+│   │   ├── form_field_entry.dart
+│   │   └── auto_fill_result.dart
 │   ├── datasources/
-│   │   ├── local/
-│   │   │   ├── local_datasources.dart
-│   │   │   ├── inspector_form_local_datasource.dart
-│   │   │   ├── form_response_local_datasource.dart
-│   │   │   ├── todo_item_local_datasource.dart
-│   │   │   └── calculation_history_local_datasource.dart
-│   │   └── remote/
-│   │       ├── remote_datasources.dart
-│   │       └── [remote datasources]
-│   │
+│   │   └── local/
+│   │       └── form_response_local_datasource.dart
 │   └── repositories/
-│       ├── repositories.dart
-│       ├── inspector_form_repository.dart
 │       └── form_response_repository.dart
-│
 ├── presentation/
-│   ├── screens/
-│   │   ├── screens.dart
-│   │   ├── toolbox_home_screen.dart
-│   │   ├── forms_list_screen.dart
-│   │   ├── form_fill_screen.dart
-│   │   ├── calculator_screen.dart
-│   │   ├── gallery_screen.dart
-│   │   ├── todos_screen.dart
-│   │   └── form_import_screen.dart
-│   │
-│   ├── widgets/
-│   │   ├── widgets.dart
-│   │   ├── dynamic_form_field.dart
-│   │   ├── form_fields_tab.dart
-│   │   ├── form_preview_tab.dart
-│   │   ├── form_status_card.dart
-│   │   ├── form_thumbnail.dart
-│   │   ├── auto_fill_indicator.dart
-│   │   ├── table_rows_section.dart
-│   │   └── [other widgets]
-│   │
 │   ├── providers/
-│   │   ├── providers.dart
-│   │   ├── inspector_form_provider.dart
-│   │   ├── form_import_provider.dart
-│   │   ├── todo_provider.dart
-│   │   ├── calculator_provider.dart
-│   │   ├── gallery_provider.dart
-│   │   └── [other providers]
-│   │
-│   ├── utils/
-│   │   └── field_icon_utils.dart
-│   │
-│   └── presentation.dart
-│
-└── toolbox.dart                      # Feature entry point
+│   │   └── inspector_form_provider.dart
+│   └── screens/
+│       ├── forms_list_screen.dart
+│       ├── form_viewer_screen.dart
+│       ├── form_fill_screen.dart
+│       └── mdot_hub_screen.dart
+└── forms.dart
+
+lib/features/gallery/                    # Gallery sub-feature
+├── presentation/
+│   └── screens/
+│       └── gallery_screen.dart
+└── gallery.dart
+
+lib/features/todos/                      # Todos sub-feature
+├── data/
+│   └── models/
+│       └── todo_item.dart
+├── presentation/
+│   └── providers/
+│       └── todo_provider.dart
+└── todos.dart
 
 lib/core/database/
-└── database_service.dart             # SQLite schema for forms, responses, todos, calculations
+└── database_service.dart                # SQLite schema for forms, responses, todos, calculations
 ```
 
 ### Import Pattern
 
 ```dart
-// Within toolbox feature
-import 'package:construction_inspector/features/toolbox/data/models/inspector_form.dart';
-import 'package:construction_inspector/features/toolbox/data/services/calculator_service.dart';
-import 'package:construction_inspector/features/toolbox/presentation/providers/inspector_form_provider.dart';
+// Sub-feature imports (each has its own directory)
+import 'package:construction_inspector/features/forms/data/models/inspector_form.dart';
+import 'package:construction_inspector/features/calculator/presentation/providers/calculator_provider.dart';
+import 'package:construction_inspector/features/todos/presentation/providers/todo_provider.dart';
 
-// Barrel export
+// Hub screen
 import 'package:construction_inspector/features/toolbox/toolbox.dart';
 ```
 

@@ -24,19 +24,22 @@ The Toolbox feature provides construction inspectors with a suite of productivit
 
 ## Key Files
 
+The toolbox is a hub; sub-feature code lives in separate feature directories:
+
 | File Path | Purpose |
 |-----------|---------|
-| `lib/features/toolbox/data/models/inspector_form.dart` | Inspector form model |
-| `lib/features/toolbox/data/models/form_response.dart` | Form submission and response data |
-| `lib/features/toolbox/data/models/todo_item.dart` | Todo item model |
-| `lib/features/toolbox/data/models/calculation_history.dart` | Calculation result history |
-| `lib/features/toolbox/data/services/form_parsing_service.dart` | Form field discovery and parsing |
-| `lib/features/toolbox/data/services/calculator_service.dart` | Calculation engine |
-| `lib/features/toolbox/presentation/screens/toolbox_home_screen.dart` | Toolbox hub |
-| `lib/features/toolbox/presentation/screens/forms_list_screen.dart` | Form listing and selection |
-| `lib/features/toolbox/presentation/screens/form_fill_screen.dart` | Form filling UI |
-| `lib/features/toolbox/presentation/screens/calculator_screen.dart` | Calculator UI |
-| `lib/features/toolbox/presentation/screens/gallery_screen.dart` | Photo gallery |
+| `lib/features/toolbox/presentation/screens/toolbox_home_screen.dart` | Toolbox hub (navigation to sub-features) |
+| `lib/features/forms/data/models/inspector_form.dart` | Inspector form model |
+| `lib/features/forms/data/models/form_response.dart` | Form submission and response data |
+| `lib/features/forms/presentation/screens/forms_list_screen.dart` | Form listing and selection |
+| `lib/features/forms/presentation/screens/form_fill_screen.dart` | Form filling UI |
+| `lib/features/forms/presentation/screens/form_viewer_screen.dart` | Form viewer |
+| `lib/features/todos/data/models/todo_item.dart` | Todo item model |
+| `lib/features/todos/presentation/providers/todo_provider.dart` | Todo state management |
+| `lib/features/calculator/data/models/calculation_history.dart` | Calculation result history |
+| `lib/features/calculator/presentation/providers/calculator_provider.dart` | Calculator state |
+| `lib/features/calculator/presentation/screens/calculator_screen.dart` | Calculator UI |
+| `lib/features/gallery/presentation/screens/gallery_screen.dart` | Photo gallery |
 
 ## Data Sources
 
