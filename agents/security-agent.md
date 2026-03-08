@@ -81,7 +81,7 @@ password|secret|api_key|apiKey              # Generic secret patterns
 - Any `supabase.from(tableName).select()` without `.eq('company_id', ...)` guard
 
 **Key multi-tenant tables** (must have company-scoped RLS):
-`projects`, `locations`, `contractors`, `equipment`, `bid_items`, `daily_entries`, `entry_personnel`, `entry_equipment`, `entry_quantities`, `photos`, `sync_queue`
+`projects`, `locations`, `contractors`, `equipment`, `bid_items`, `daily_entries`, `entry_contractors`, `entry_equipment`, `entry_personnel_counts`, `entry_quantities`, `photos`, `sync_queue`
 
 **Severity**: CRITICAL for anon full-access policies on data tables; HIGH for missing company_id in RLS.
 
@@ -176,7 +176,7 @@ password|secret|api_key|apiKey              # Generic secret patterns
 ### Domain 8: Sync Integrity
 
 **What to scan**:
-- `sync_service.dart` — how `company_id` is injected into payloads
+- `lib/features/sync/engine/sync_engine.dart` — how `company_id` is injected into payloads [BRANCH: feat/sync-engine-rewrite]
 - `sync_queue` table schema — check for HMAC/hash columns
 - Sync processing loop — is payload validated before sending to Supabase?
 - Background sync handler — does it verify auth session before syncing?

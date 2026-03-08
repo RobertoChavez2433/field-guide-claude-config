@@ -2,7 +2,7 @@
 feature: sync
 type: architecture
 scope: Cloud Synchronization & Multi-Backend Support
-updated: 2026-02-13
+updated: 2026-03-08
 ---
 
 # Sync Feature Architecture
@@ -49,22 +49,45 @@ updated: 2026-02-13
 Project (mode: ProjectMode)
     ├─→ ProjectMode.localAgency
     │   └─→ SupabaseSyncAdapter
-    │       └─→ SyncService (legacy)
-    │           └─→ Supabase Backend
+    │       └─→ Supabase Backend
     │
     └─→ ProjectMode.mdot
         └─→ AASHTOWareSyncAdapter (future)
             └─→ AASHTOWare OpenAPI
 ```
 
-### SyncAdapter → Entities (N-N)
+### SyncEngine → TableAdapters (1-N) [BRANCH: feat/sync-engine-rewrite]
 ```
-SyncAdapter.syncAll()
-    ├─→ syncProjects() → Project[]
-    ├─→ syncEntries() → DailyEntry[]
-    ├─→ syncPhotos() → Photo[]
-    ├─→ syncContractors() → Contractor[]
-    └─→ syncLocations() → Location[]
+SyncEngine.syncAll()
+    ├─→ SyncRegistry provides ordered list of TableAdapters
+    ├─→ ChangeTracker identifies pending changes per table
+    ├─→ For each TableAdapter:
+    │   ├─→ Push local changes to remote
+    │   ├─→ Pull remote changes to local
+    │   └─→ ConflictResolver handles conflicts
+    └─→ IntegrityChecker validates post-sync consistency
+```
+
+### TableAdapters (17 concrete) [BRANCH: feat/sync-engine-rewrite]
+```
+TableAdapter (base)
+    ├─→ ProjectAdapter
+    ├─→ LocationAdapter
+    ├─→ ContractorAdapter
+    ├─→ EquipmentAdapter
+    ├─→ PersonnelTypeAdapter
+    ├─→ BidItemAdapter
+    ├─→ DailyEntryAdapter
+    ├─→ EntryContractorsAdapter
+    ├─→ EntryEquipmentAdapter
+    ├─→ EntryPersonnelCountsAdapter
+    ├─→ EntryQuantitiesAdapter
+    ├─→ InspectorFormAdapter
+    ├─→ FormResponseAdapter
+    ├─→ TodoItemAdapter
+    ├─→ CalculationHistoryAdapter
+    ├─→ PhotoAdapter
+    └─→ TypeConverters (shared utility)
 ```
 
 ### Entity → SyncStatus (1-1)
@@ -76,27 +99,30 @@ Entity (Project, DailyEntry, Photo, etc.)
         └─ error (last sync failed)
 ```
 
-### Sync Operation Flow
+### Sync Operation Flow [BRANCH: feat/sync-engine-rewrite]
 ```
-User triggers sync (Settings screen or auto-reconnect)
+User triggers sync (Settings screen, Dashboard, or auto-reconnect)
     ↓
 SyncProvider.syncAll()
     ↓
 SyncOrchestrator.syncProject(project)
     ↓
-SupabaseSyncAdapter.syncAll()
+SyncEngine.syncAll()
     ↓
-SyncService._pushPendingChanges()  [legacy]
-    ├─→ Push projects (pending → synced)
-    ├─→ Push entries (pending → synced)
-    └─→ Push photos (pending → synced)
+SyncMutex.acquire()                         # Prevents concurrent syncs
     ↓
-SyncService._pullRemoteChanges()  [legacy]
-    ├─→ Merge remote projects
-    ├─→ Merge remote entries
-    └─→ Merge remote photos
+ChangeTracker.getPendingChanges()           # Identifies dirty records
     ↓
-SyncResult returned (pushed=X, pulled=Y, errors=Z)
+For each TableAdapter (ordered by SyncRegistry):
+    ├─→ adapter.push(pendingRecords)        # Push local changes
+    ├─→ adapter.pull(lastSyncTimestamp)      # Pull remote changes
+    └─→ ConflictResolver.resolve(conflicts) # Handle conflicts
+    ↓
+IntegrityChecker.validate()                 # Post-sync consistency check
+    ↓
+SyncMutex.release()
+    ↓
+SyncResult returned
 ```
 
 ## Repository Pattern
@@ -123,8 +149,7 @@ void Function(int, int?)? onProgressUpdate             // Progress (processed, t
 
 **Location**: `lib/features/sync/data/adapters/supabase_sync_adapter.dart`
 
-- Wraps legacy `SyncService`
-- Implements all SyncAdapter methods
+- Implements SyncAdapter interface for Supabase backend
 - Returns SyncResult for each operation
 - Callbacks invoke on status/progress changes
 
@@ -134,18 +159,23 @@ void Function(int, int?)? onProgressUpdate             // Progress (processed, t
 
 - Routes based on `ProjectMode`
 - Maintains adapter instances per mode
-- Methods:
-  - `syncProject(Project) → Future<SyncResult>`
-  - `syncEntry(DailyEntry) → Future<SyncResult>`
-  - `getAdapter(ProjectMode) → SyncAdapter`
+- Handles auth verification before sync operations
 
-### SyncService (Legacy)
+### SyncEngine [BRANCH: feat/sync-engine-rewrite]
 
-**Location**: `lib/services/sync_service.dart`
+**Location**: `lib/features/sync/engine/sync_engine.dart`
 
-- Full Supabase sync implementation
-- Manages: push/pull logic, queue, connectivity, retries
-- Wrapped by SupabaseSyncAdapter for feature isolation
+- Core sync engine coordinating all sync operations
+- Uses SyncRegistry for ordered table adapter execution
+- Delegates to ChangeTracker, ConflictResolver, IntegrityChecker
+- SyncMutex prevents concurrent sync operations
+
+### BackgroundSyncHandler [BRANCH: feat/sync-engine-rewrite]
+
+**Location**: `lib/features/sync/application/background_sync_handler.dart`
+
+- Handles background sync triggers (connectivity changes, app lifecycle)
+- Coordinates with SyncOrchestrator for deferred syncs
 
 ## State Management
 
@@ -293,10 +323,42 @@ Location: `test/features/sync/providers/`
 ## File Locations
 
 ```
-lib/features/sync/
+lib/features/sync/                      [BRANCH: feat/sync-engine-rewrite]
+├── adapters/                           # 17 table adapters + base
+│   ├── table_adapter.dart              # Base class for all table adapters
+│   ├── type_converters.dart            # Shared type conversion utilities
+│   ├── project_adapter.dart
+│   ├── location_adapter.dart
+│   ├── contractor_adapter.dart
+│   ├── equipment_adapter.dart
+│   ├── personnel_type_adapter.dart
+│   ├── bid_item_adapter.dart
+│   ├── daily_entry_adapter.dart
+│   ├── entry_contractors_adapter.dart
+│   ├── entry_equipment_adapter.dart
+│   ├── entry_personnel_counts_adapter.dart
+│   ├── entry_quantities_adapter.dart
+│   ├── inspector_form_adapter.dart
+│   ├── form_response_adapter.dart
+│   ├── todo_item_adapter.dart
+│   ├── calculation_history_adapter.dart
+│   └── photo_adapter.dart
+│
+├── engine/                             # Core sync engine
+│   ├── sync_engine.dart                # Main engine coordinating sync
+│   ├── change_tracker.dart             # Tracks local pending changes
+│   ├── conflict_resolver.dart          # Conflict resolution logic
+│   ├── integrity_checker.dart          # Post-sync consistency validation
+│   ├── sync_mutex.dart                 # Prevents concurrent syncs
+│   ├── sync_registry.dart              # Ordered registry of table adapters
+│   ├── orphan_scanner.dart             # Detects orphaned records
+│   ├── scope_type.dart                 # Sync scope enumeration
+│   └── storage_cleanup.dart            # Post-sync storage cleanup
+│
 ├── domain/
 │   ├── domain.dart                     # Barrel export
-│   └── sync_adapter.dart               # Interface + SyncResult, SyncAdapterStatus
+│   ├── sync_adapter.dart               # Interface + SyncResult, SyncAdapterStatus
+│   └── sync_types.dart                 # Shared type definitions
 │
 ├── data/
 │   ├── data.dart                       # Barrel export
@@ -307,16 +369,27 @@ lib/features/sync/
 │
 ├── application/
 │   ├── application.dart                # Barrel export
-│   └── sync_orchestrator.dart          # Multi-backend router
+│   ├── sync_orchestrator.dart          # Multi-backend router
+│   └── background_sync_handler.dart    # Background/lifecycle sync triggers
 │
-└── presentation/
-    ├── presentation.dart               # Barrel export
-    └── providers/
-        ├── providers.dart              # Barrel export
-        └── sync_provider.dart          # ChangeNotifier for UI
-
-lib/services/
-└── sync_service.dart                   # Legacy Supabase sync engine
+├── config/
+│   └── sync_config.dart                # Sync configuration parameters
+│
+├── presentation/
+│   ├── presentation.dart               # Barrel export
+│   ├── providers/
+│   │   ├── providers.dart              # Barrel export
+│   │   └── sync_provider.dart          # ChangeNotifier for UI
+│   ├── screens/
+│   │   ├── sync_dashboard_screen.dart  # Sync status dashboard
+│   │   ├── conflict_viewer_screen.dart # View and resolve conflicts
+│   │   └── project_selection_screen.dart
+│   └── widgets/
+│       ├── sync_status_banner.dart
+│       ├── sync_status_icon.dart
+│       └── deletion_notification_banner.dart
+│
+└── sync.dart                           # Feature entry point
 
 lib/core/database/
 └── database_service.dart               # SQLite with sync status tracking
@@ -328,10 +401,8 @@ lib/core/database/
 // Within sync feature
 import 'package:construction_inspector/features/sync/domain/sync_adapter.dart';
 import 'package:construction_inspector/features/sync/application/sync_orchestrator.dart';
+import 'package:construction_inspector/features/sync/engine/sync_engine.dart';
 
 // From other features
 import 'package:construction_inspector/features/sync/presentation/providers/sync_provider.dart';
-
-// Legacy (deprecated but functional)
-import 'package:construction_inspector/services/sync_service.dart';
 ```

@@ -29,15 +29,13 @@ const SyncConfig.defaultConfig = SyncConfig(
 ### Custom Configuration
 
 ```dart
-import 'package:construction_inspector/services/sync_service.dart';
+// [BRANCH: feat/sync-engine-rewrite] SyncConfig moved to sync feature
+import 'package:construction_inspector/features/sync/config/sync_config.dart';
 
 final customConfig = SyncConfig(
   pushChunkSize: 25,   // Smaller chunks for slower networks
   pullChunkSize: 200,  // Larger pages for faster networks
 );
-
-final syncService = SyncService(
-  databaseService,
   config: customConfig,
 );
 ```
@@ -209,7 +207,7 @@ final result = await syncService.syncAll();
 
 | File | Changes |
 |------|---------|
-| `lib/services/sync_service.dart` | Added `SyncConfig`, chunking methods |
+| `lib/features/sync/config/sync_config.dart` | SyncConfig (moved from legacy sync_service) [BRANCH: feat/sync-engine-rewrite] |
 | `lib/features/sync/domain/sync_adapter.dart` | Added `onProgressUpdate` callback |
 | `lib/features/sync/data/adapters/supabase_sync_adapter.dart` | Wired progress to legacy service |
 | `lib/features/sync/data/adapters/mock_sync_adapter.dart` | Added progress stub |

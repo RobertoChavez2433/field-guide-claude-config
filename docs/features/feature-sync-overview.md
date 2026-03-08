@@ -25,11 +25,14 @@ The Sync feature enables offline-first data synchronization between the local SQ
 
 | File Path | Purpose |
 |-----------|---------|
-| `lib/features/sync/domain/sync_adapter.dart` | SyncAdapter interface & value objects |
+| `lib/features/sync/engine/sync_engine.dart` | Core sync engine [BRANCH: feat/sync-engine-rewrite] |
 | `lib/features/sync/application/sync_orchestrator.dart` | Multi-backend router (ProjectMode → adapter) |
+| `lib/features/sync/adapters/table_adapter.dart` | Base table adapter (17 concrete adapters) [BRANCH: feat/sync-engine-rewrite] |
+| `lib/features/sync/domain/sync_adapter.dart` | SyncAdapter interface & value objects |
 | `lib/features/sync/data/adapters/supabase_sync_adapter.dart` | Supabase implementation |
 | `lib/features/sync/presentation/providers/sync_provider.dart` | UI provider for sync state/actions |
-| `lib/services/sync_service.dart` | Legacy Supabase sync engine (wrapped by adapter) |
+| `lib/features/sync/engine/change_tracker.dart` | Tracks local changes for sync [BRANCH: feat/sync-engine-rewrite] |
+| `lib/features/sync/engine/conflict_resolver.dart` | Conflict resolution logic [BRANCH: feat/sync-engine-rewrite] |
 | `lib/core/database/database_service.dart` | SQLite schema and local persistence |
 
 ## Data Sources
@@ -89,5 +92,5 @@ See `architecture-decisions/sync-constraints.md` for:
 See `rules/sync/sync-patterns.md` for:
 - SyncAdapter interface documentation
 - Multi-backend routing patterns
-- Legacy SyncService wrapper usage
+- Table adapter patterns [BRANCH: feat/sync-engine-rewrite]
 - Offline queue management
