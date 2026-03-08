@@ -41,7 +41,6 @@ Each agent loads relevant feature documentation via their `specialization.shared
 - **backend-supabase-agent** → Sync docs
 - **frontend-flutter-specialist-agent** → Dashboard, Entries, Settings, Weather docs
 - **backend-data-layer-agent** → Contractors, Locations, Photos, Projects, Quantities, Toolbox docs
-- **planning-agent** → All feature docs (cross-cutting)
 - **code-review-agent** → All feature docs (read-only)
 - **qa-testing-agent** → All feature docs (test perspective)
 

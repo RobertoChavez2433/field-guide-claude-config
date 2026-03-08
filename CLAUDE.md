@@ -48,7 +48,6 @@ lib/
 ## Agents
 | Agent | Use For | Phase |
 |-------|---------|-------|
-| `planning-agent` | Requirements, implementation plans | PLAN |
 | `frontend-flutter-specialist-agent` | Screens, widgets, performance | IMPLEMENT |
 | `backend-data-layer-agent` | Models, repositories, providers | IMPLEMENT |
 | `backend-supabase-agent` | Sync, schema, RLS | IMPLEMENT |
@@ -63,16 +62,16 @@ lib/
 ## Skills (Agent Enhancements)
 | Skill | Purpose | Used By |
 |-------|---------|---------|
-| `brainstorming` | Collaborative design | planning-agent |
+| `brainstorming` | Collaborative spec design with adversarial review | User-invoked |
+| `writing-plans` | CodeMunch-powered implementation plans with dependency analysis | User-invoked |
 | `systematic-debugging` | Root cause analysis | qa-testing-agent |
 | `interface-design` | Design system | frontend-flutter-specialist |
 | `pdf-processing` | CLI PDF analysis/debugging | pdf-agent |
-| `dispatching-parallel-agents` | Coordinate parallel agents, prevent revert conflicts | planning-agent |
 | `implement` | Autonomous plan execution with quality gates | User-invoked |
 | `resume-session` | Load HOT context on session start | User-invoked |
 | `end-session` | Session handoff with auto-archiving | User-invoked |
 
-Skills are loaded via `skills:` frontmatter in agent files. Claude auto-delegates to agents based on task description.
+Skills are loaded via `skills:` frontmatter in agent files or invoked directly by the user. The planning pipeline flows: brainstorming (spec) → writing-plans (plan) → implement (execute).
 
 ## Session
 - `/resume-session` - Load HOT context only
@@ -92,12 +91,18 @@ Skills are loaded via `skills:` frontmatter in agent files. Claude auto-delegate
 | code-reviews/ | Code review reports (auto-saved by code-review-agent) |
 | hooks/ | Pre-flight and post-work validation scripts |
 | test-results/ | UI test findings per journey run |
+| specs/ | Design specifications from brainstorming |
+| dependency_graphs/ | CodeMunch codebase analysis per plan |
+| adversarial_reviews/ | Spec-level adversarial review reports |
 
 ## Documentation System
 `.claude/docs/` — Feature overviews + architecture docs (lazy-loaded by agents)
 `.claude/architecture-decisions/` — Feature-specific constraints + shared rules
 `.claude/state/` — JSON state files for project tracking
 `.claude/hooks/` — Pre-flight + post-work validation scripts
+`.claude/specs/` — Design specifications produced by brainstorming skill
+`.claude/dependency_graphs/` — CodeMunch analysis (dependency graphs + blast radius)
+`.claude/adversarial_reviews/` — Spec-level adversarial review reports
 Agents load feature docs on demand; see `state/feature-{name}.json` per feature.
 
 **Note**: `calculator`, `forms`, `gallery`, `todos` are sub-features of `toolbox` — covered by `feature-toolbox-overview.md` and `feature-toolbox.json`. They do not have separate state/doc files.

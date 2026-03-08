@@ -15,7 +15,7 @@ Complete documentation for all 13 features. Each feature has:
 - **`feature-{name}-overview.md`** - Quick reference (purpose, capabilities, data model, sync strategy)
 - **`feature-{name}-architecture.md`** - Technical deep-dive (patterns, implementation details)
 
-**Agents that load feature docs**: planning-agent, code-review-agent, qa-testing-agent (cross-cutting)
+**Agents that load feature docs**: code-review-agent, qa-testing-agent (cross-cutting)
 **Agents that load specific features**: Based on their specialization (frontend, backend-data, backend-supabase, auth, pdf agents)
 
 👉 See [features/README.md](features/README.md) for feature-to-agent mapping
@@ -31,7 +31,7 @@ How-to guides and references organized by type:
   - Regression triggers and test result template
 
 - **`e2e-test-setup.md`** - Patrol E2E test configuration and troubleshooting
-  - Used by: **qa-testing-agent**, **planning-agent**
+  - Used by: **qa-testing-agent**
   - Device setup, animation settings, permissions, CI/CD integration
   - Test flags, environment configuration, common issues
 
@@ -74,7 +74,6 @@ specialization:
 | **qa-testing-agent** | Manual Testing Checklist, E2E Test Setup |
 | **frontend-flutter-specialist-agent** | Pagination Widgets Guide |
 | **backend-supabase-agent** | Chunked Sync Usage |
-| **planning-agent** | All feature docs (cross-cutting) |
 | **code-review-agent** | All feature docs (read-only) |
 
 ---

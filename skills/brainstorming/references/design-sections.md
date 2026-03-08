@@ -1,6 +1,8 @@
 # Design Section Templates
 
-Break designs into 200-300 word validated sections.
+Break designs into validated sections, scaled to complexity.
+
+> **Note:** Not all sections are required for every feature. Scale to complexity — small features may only need Overview, Data Model, and User Flow.
 
 ## Section Order
 
@@ -11,6 +13,10 @@ Break designs into 200-300 word validated sections.
 5. **State Management** - Provider/repository design
 6. **Offline Behavior** - Sync and conflict resolution
 7. **Edge Cases** - Error states and boundaries
+8. **Testing Strategy** - What and how to test
+9. **Performance Considerations** - Bottlenecks and optimization
+10. **Security Implications** - Auth, data exposure, RLS
+11. **Migration/Cleanup** - Schema changes, dead code removal
 
 ---
 
@@ -192,6 +198,105 @@ Screen -> Provider -> Repository -> Datasource -> SQLite/Supabase
 ### Permission Edge Cases
 - [What if user lacks permission?]
 - [What if permission revoked mid-flow?]
+```
+
+---
+
+## 8. Testing Strategy Section
+
+```markdown
+## Testing Strategy
+
+### Unit Tests
+| Component | Test Focus | Priority |
+|-----------|-----------|----------|
+| [Model/Repository] | [What to test] | HIGH/MED/LOW |
+
+### Widget Tests
+| Screen/Widget | Test Focus | Priority |
+|--------------|-----------|----------|
+| [ScreenName] | [Key interactions] | HIGH/MED/LOW |
+
+### Integration Tests
+- [ ] [End-to-end flow to verify]
+- [ ] [Critical path to test]
+
+### Coverage Expectations
+- [Which areas need thorough coverage vs. smoke tests]
+```
+
+---
+
+## 9. Performance Considerations Section
+
+```markdown
+## Performance Considerations
+
+### Potential Bottlenecks
+| Area | Concern | Mitigation |
+|------|---------|------------|
+| [Database] | [Large query] | [Indexing, pagination] |
+| [UI] | [Heavy rebuild] | [const widgets, selective rebuild] |
+
+### Optimization Targets
+- [Lazy loading strategy]
+- [Caching approach]
+- [Image/file size management]
+
+### Benchmarks
+- [Acceptable load time for this feature]
+- [Max acceptable memory usage]
+```
+
+---
+
+## 10. Security Implications Section
+
+```markdown
+## Security Implications
+
+### Authentication & Authorization
+- [Which operations require auth?]
+- [Role-based access needed?]
+
+### Data Exposure
+| Data | Sensitivity | Protection |
+|------|------------|------------|
+| [Field] | PII/Internal/Public | [RLS/Encryption/Masking] |
+
+### RLS Policies
+- [New policies needed for Supabase tables]
+- [Existing policies to verify]
+
+### Input Validation
+- [Untrusted input boundaries]
+- [Sanitization requirements]
+```
+
+---
+
+## 11. Migration/Cleanup Section
+
+```markdown
+## Migration/Cleanup
+
+### Schema Changes
+| Table | Change | Migration Strategy |
+|-------|--------|-------------------|
+| [table_name] | [ADD/MODIFY/DROP column] | [Strategy] |
+
+### Dead Code Removal
+- [Files/methods that become unused]
+- [Imports to clean up]
+
+### Backward Compatibility
+- [Data migration needed?]
+- [Feature flags for gradual rollout?]
+
+### Cleanup Checklist
+- [ ] [Remove deprecated code]
+- [ ] [Update imports]
+- [ ] [Clean up test fixtures]
 ```
 
 ---

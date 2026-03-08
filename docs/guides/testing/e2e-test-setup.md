@@ -1,6 +1,6 @@
 # E2E Test Setup Guide
 
-> **Used By**: [qa-testing-agent](../../../agents/qa-testing-agent.md) and [planning-agent](../../../agents/planning-agent.md) for test environment configuration and CI/CD integration
+> **Used By**: [qa-testing-agent](../../../agents/qa-testing-agent.md) for test environment configuration and CI/CD integration
 
 Complete device and environment setup for running Patrol E2E tests.
 

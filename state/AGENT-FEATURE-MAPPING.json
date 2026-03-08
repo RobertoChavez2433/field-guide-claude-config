@@ -5,19 +5,6 @@
 
   "agents": [
     {
-      "name": "planning-agent",
-      "description": "Gather requirements, ask clarifying questions, and create implementation plans with agent handoff. Use BEFORE implementing any significant feature.",
-      "phase": "PLAN",
-      "model": "opus",
-      "primary_features": [],
-      "supporting_features": ["all"],
-      "skills": ["brainstorming"],
-      "tools": ["Read", "Bash", "Grep", "Glob", "WebFetch", "Write"],
-      "disallowed_tools": ["Edit"],
-      "rules": ["rules/architecture.md", "architecture-decisions/data-validation-rules.md"],
-      "notes": "Cross-cutting orchestrator. Does not own any feature but coordinates work across all features. Produces plans in .claude/plans/ for handoff to specialized agents."
-    },
-    {
       "name": "frontend-flutter-specialist-agent",
       "description": "Senior Flutter specialist. Expert in Dart/Flutter, Clean Architecture, state management (Provider/BLoC/Riverpod), performance optimization, testing, and field-optimized interfaces.",
       "phase": "IMPLEMENT",
@@ -214,7 +201,7 @@
   ],
 
   "routing_rules": {
-    "description": "File-path-based routing for agent handoff, as defined in planning-agent.md",
+    "description": "File-path-based routing for agent handoff, as defined in CLAUDE.md and the implement skill",
     "rules": [
       { "pattern": "lib/**/presentation/**", "agent": "frontend-flutter-specialist-agent" },
       { "pattern": "lib/**/data/**", "agent": "backend-data-layer-agent" },
@@ -231,10 +218,6 @@
   "cross_cutting_agents": {
     "description": "Agents that operate across all features rather than owning specific ones",
     "agents": [
-      {
-        "name": "planning-agent",
-        "role": "Orchestrates all features during PLAN phase. Creates plans, assigns work to specialized agents."
-      },
       {
         "name": "code-review-agent",
         "role": "Reviews all features during REVIEW phase. Read-only, cannot modify code."
@@ -257,7 +240,7 @@
     "overlaps": [
       "lib/core/database/** is co-owned by backend-data-layer-agent and backend-supabase-agent. Both must coordinate on schema changes.",
       "For features with a dedicated specialist (auth, pdf, sync), the specialist owns BOTH data and presentation layers, potentially conflicting with the generic layer-based routing (frontend owns presentation, data-layer owns data).",
-      "The planning-agent handoff table routes lib/features/auth/** entirely to auth-agent, but the file-path routing also matches lib/**/presentation/** (frontend) and lib/**/data/** (data-layer). Feature-specific agents should take priority."
+      "The implement skill routing table routes lib/features/auth/** entirely to auth-agent, but the file-path routing also matches lib/**/presentation/** (frontend) and lib/**/data/** (data-layer). Feature-specific agents should take priority."
     ],
     "recommendations": [
       "Consider adding an explicit priority order to routing rules: feature-specific agent > layer-specific agent > cross-cutting agent.",

@@ -9,7 +9,7 @@ Quick reference and setup instructions for manual and automated testing.
 | Guide | Purpose | Used By |
 |-------|---------|---------|
 | [Manual Testing Checklist](testing/manual-testing-checklist.md) | 168-point QA coverage across all features | qa-testing-agent |
-| [E2E Test Setup](testing/e2e-test-setup.md) | Patrol E2E test environment configuration and troubleshooting | qa-testing-agent, planning-agent |
+| [E2E Test Setup](testing/e2e-test-setup.md) | Patrol E2E test environment configuration and troubleshooting | qa-testing-agent |
 
 ## Implementation Guides
 
