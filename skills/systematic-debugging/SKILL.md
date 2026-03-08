@@ -26,7 +26,7 @@ Every fix must be preceded by understanding WHY the bug exists. Guessing wastes 
 
 Before debugging ANY issue:
 1. Read `.claude/defects/_defects-{feature}.md` for the relevant feature
-2. Search for matching pattern (ASYNC, E2E, FLUTTER, DATA, CONFIG)
+2. Search for matching pattern (ASYNC, E2E, FLUTTER, DATA, CONFIG, SYNC, MIGRATION, SCHEMA)
 3. Apply known prevention strategies if pattern matches
 
 @.claude/skills/systematic-debugging/references/defects-integration.md
@@ -40,7 +40,7 @@ Before debugging ANY issue:
 1. **Read the error** - Full message, stack trace, context
 2. **Reproduce** - Exact steps that trigger the bug
 3. **Isolate** - Minimal reproduction case
-4. **Gather Evidence in Multi-Component Systems** - Before proposing a fix, instrument each component boundary. Add logging/echo at the entry and exit of each layer (e.g., Stage 4A → Stage 4B → Stage 4D). Confirm which layer produces the unexpected output before touching any code.
+4. **Gather Evidence in Multi-Component Systems** - Before proposing a fix, instrument each component boundary. Add logging/echo at the entry and exit of each layer: `Screen → Provider → Repository → Datasource → SQLite → SyncEngine → Supabase`. Confirm which layer produces the unexpected output before touching any code.
 5. **Trace Data Flow** - Follow the data path end-to-end. A bug that appears in Stage 4E may originate in Stage 3. See root-cause-tracing.md for the full checklist.
 6. **Timeline** - When did this last work? What changed?
 
@@ -130,13 +130,9 @@ When the user says any of these, they are telling you to stop guessing:
 ## After Fixing: Update Per-Feature Defects
 
 If you discovered a new pattern:
-1. Identify category: ASYNC, E2E, FLUTTER, DATA, CONFIG
+1. Identify category: ASYNC, E2E, FLUTTER, DATA, CONFIG, SYNC, MIGRATION, SCHEMA
 2. Write pattern, prevention, and reference
 3. Add to `.claude/defects/_defects-{feature}.md` for the relevant feature
-
-## Pressure Test Scenarios
-
-> Pressure test scenarios available in `references/pressure-tests/` — invoke on demand if needed.
 
 ## Rationalization Prevention
 
@@ -163,20 +159,33 @@ If you discovered a new pattern:
 ## Flutter-Specific Debug Commands
 
 ```bash
-# Full analysis
-flutter analyze
+# Static analysis
+pwsh -Command "flutter analyze"
+
+# Full test suite
+pwsh -Command "flutter test"
 
 # Verbose test output
-flutter test --verbose
+pwsh -Command "flutter test --verbose"
 
 # Specific test with logging
-flutter test test/path/file.dart -r expanded
+pwsh -Command "flutter test test/path/file.dart -r expanded"
 
-# Patrol verbose mode
-patrol test --verbose
+# Sync engine debugging — check pending changes
+sqlite3 app.db "SELECT * FROM change_log WHERE synced = 0;"
 
-# Check for async issues
-flutter test --enable-vmservice
+# Sync engine debugging — inspect change_log status
+sqlite3 app.db "SELECT table_name, operation, processed, error_message FROM change_log ORDER BY created_at DESC LIMIT 20;"
+
+# Sync engine debugging — verify FK integrity
+sqlite3 app.db "PRAGMA foreign_key_check;"
+
+# Sync engine debugging — check adapter registration order
+# (trace through SyncRegistry.registerSyncAdapters() in lib/features/sync/engine/sync_registry.dart)
+
+# ADB-based E2E debugging
+adb logcat -s flutter | grep -i error
+adb shell uiautomator dump /dev/tty
 ```
 
 ## Anti-Patterns

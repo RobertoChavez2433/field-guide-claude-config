@@ -1,8 +1,8 @@
 # Defense in Depth
 
-Four-layer validation strategy to catch bugs before they escape.
+Five-layer validation strategy to catch bugs before they escape.
 
-## The Four Layers
+## The Five Layers
 
 ### Layer 1: Static Analysis
 
@@ -10,10 +10,10 @@ Catch bugs at compile time.
 
 ```bash
 # Flutter/Dart analysis
-flutter analyze
+pwsh -Command "flutter analyze"
 
 # Auto-fix what's possible
-dart fix --apply
+pwsh -Command "dart fix --apply"
 ```
 
 **What It Catches**:
@@ -31,68 +31,67 @@ Catch logic bugs in isolation.
 
 ```bash
 # All unit tests
-flutter test test/
-
-# Specific test file
-flutter test test/data/models/project_test.dart
+pwsh -Command "flutter test test/"
 ```
 
 **What It Catches**:
 - Model serialization errors
-- Repository logic bugs
+- Repository CRUD logic bugs
 - Business rule violations
-- Edge case handling
+- Sync adapter mapping errors (16 adapters in `test/features/sync/adapters/`)
+- Engine component errors (change_tracker, conflict_resolver, integrity_checker, sync_mutex)
+- Schema/migration correctness (`test/features/sync/schema/`)
+- Trigger behavior (`test/features/sync/triggers/`)
 
 **Coverage Targets**:
 - Models: 100% serialization coverage
-- Repositories: Core CRUD operations
-- Services: Happy path + error cases
+- Adapters: 100% mapping coverage
+- Engine components: Happy path + error paths
 
-### Layer 3: Widget/Integration Tests
+### Layer 3: Widget Tests
 
-Catch UI and interaction bugs.
+Catch UI and state management bugs.
 
 ```bash
 # Widget tests
-flutter test test/presentation/
-
-# Integration tests
-flutter test integration_test/
+pwsh -Command "flutter test test/features/"
 ```
 
 **What It Catches**:
-- Widget rendering issues
-- State management bugs
-- Navigation problems
+- Provider state management bugs
+- Screen rendering issues
 - Form validation errors
+- Navigation problems
 
 **Key Patterns**:
 - `pumpWidget` for widget tests
 - `pumpAndSettle` for animations
-- Mock dependencies for isolation
+- Mock dependencies for isolation (MockDatabase, mock repositories from `test/helpers/`)
 
-### Layer 4: E2E Tests (Patrol)
+### Layer 4: ADB-Based E2E Tests
 
 Catch real-world user flow bugs.
 
-```bash
-# All E2E tests
-patrol test
-
-# Specific flow
-patrol test -t integration_test/patrol/e2e_tests/entry_flow_test.dart
-```
-
-**What It Catches**:
-- System permission handling
-- Deep link flows
-- Cross-screen state
-- Native feature integration
+- `/test` skill with flow registry
+- UIAutomator element finding + Claude vision verification
+- Logcat monitoring after every interaction
+- Real device, real permissions, real network
 
 **Key Patterns**:
-- Use TestingKeys, never hardcoded keys
-- waitFor conditions, never hardcoded delays
+- Use TestingKeys (per-feature key classes), never hardcoded strings
+- Poll for conditions via ADB, never hardcoded delays
 - Atomic test scenarios
+
+### Layer 5: Sync/Data Integrity
+
+Catch sync engine and data layer bugs.
+
+- `PRAGMA foreign_key_check` -- FK integrity
+- `change_log` inspection -- trigger coverage
+- `change_log` status -- pending operations
+- IntegrityChecker -- orphan detection, constraint validation
+- SchemaVerifier -- migration correctness
+- Adapter integration tests (`test/features/sync/engine/adapter_integration_test.dart`)
 
 ## Layer Priority During Debug
 
@@ -102,14 +101,17 @@ When debugging, check layers in order:
 1. Does it pass static analysis?
    NO -> Fix analysis errors first
 
-2. Do unit tests pass?
-   NO -> Bug is in business logic
+2. Do unit/adapter tests pass?
+   NO -> Bug is in business logic or sync mapping
 
 3. Do widget tests pass?
-   NO -> Bug is in UI layer
+   NO -> Bug is in UI/state layer
 
-4. Do E2E tests pass?
+4. Do E2E flows pass on device?
    NO -> Bug is in integration/real-world flow
+
+5. Does data integrity hold after sync?
+   NO -> Bug is in sync engine, triggers, or schema
 ```
 
 ## Defensive Coding Patterns
@@ -170,6 +172,22 @@ void updateProject(String name) {
   _project = _project.copyWith(name: name);
   notifyListeners(); // Never forget!
 }
+```
+
+### Sync Safety Defense
+
+```dart
+// Layer 1: Adapter validates before push
+Map<String, dynamic> toSupabaseMap(Map<String, dynamic> row) {
+  assert(row['id'] != null, 'Cannot sync row without id');
+  return {...row}..remove('change_log_id');
+}
+
+// Layer 2: Engine checks FK order
+// SyncRegistry enforces push order: projects -> locations -> daily_entries -> ...
+
+// Layer 3: IntegrityChecker post-sync
+await integrityChecker.checkOrphans(db);
 ```
 
 ## Regression Prevention

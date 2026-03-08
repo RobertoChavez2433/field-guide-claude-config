@@ -13,21 +13,24 @@ The bug you're looking at might be a known pattern.
 1. Read `.claude/defects/_defects-{feature}.md` for the feature you're debugging
 2. Search for related categories:
    - `[ASYNC]` - Context safety, dispose issues
-   - `[E2E]` - Patrol testing patterns
+   - `[E2E]` - ADB/UIAutomator testing patterns
    - `[FLUTTER]` - Widget, Provider patterns
    - `[DATA]` - Repository, collection access
    - `[CONFIG]` - Supabase, credentials, environment
+   - `[SYNC]` - SyncEngine, adapters, change tracker
+   - `[MIGRATION]` - Schema versions, migration steps
+   - `[SCHEMA]` - FK constraints, triggers, table structure
 3. If pattern exists, apply the documented prevention
 
 ### Example Check
 
-Debugging: "App crashes after saving entry"
+Debugging: "Sync adapter pushing wrong column data"
 
-1. Open `.claude/defects/_defects-entries.md`
-2. Search for "save", "async", "context"
-3. Find: `[ASYNC] 2026-01-21: Async Context Safety`
-4. Check: Does the crash happen after an `await`?
-5. Apply: Add `if (!mounted) return;` check
+1. Open `.claude/defects/_defects-sync.md`
+2. Search for "adapter", "column", "push"
+3. Find: `[SYNC] 2026-03-01: Type Converter Mismatch`
+4. Check: Does the adapter's toSupabaseMap() strip local-only columns?
+5. Apply: Verify TypeConverters alignment
 
 ## During Debugging
 
@@ -70,10 +73,13 @@ Format:
 | Category | Use For |
 |----------|---------|
 | `[ASYNC]` | Context safety, dispose issues, Future handling |
-| `[E2E]` | Patrol testing patterns, TestingKeys, waits |
+| `[E2E]` | ADB/UIAutomator testing patterns, TestingKeys, waits |
 | `[FLUTTER]` | Widget lifecycle, Provider, setState |
 | `[DATA]` | Repository, collection access, null safety |
 | `[CONFIG]` | Supabase, environment, credentials |
+| `[SYNC]` | SyncEngine, adapters, change tracker, conflict resolution |
+| `[MIGRATION]` | Schema versions, migration steps, DatabaseService upgrades |
+| `[SCHEMA]` | FK constraints, trigger behavior, table structure, SchemaVerifier |
 
 ### Example Entry
 
@@ -81,7 +87,7 @@ Format:
 ### [ASYNC] 2026-02-01: Timer Callback After Dispose
 **Pattern**: Timer.periodic callback runs after widget disposed
 **Prevention**: Cancel timer in dispose(); use mounted check in callback
-**Ref**: @lib/features/sync/presentation/widgets/sync_status_indicator.dart
+**Ref**: @lib/features/sync/presentation/widgets/sync_status_icon.dart
 ```
 
 ## Defect Lifecycle
@@ -125,6 +131,29 @@ When adding new defects:
 
 ## Quick Reference
 
+### Per-Feature Defect Files
+
+```bash
+# All 15 active per-feature defect files:
+.claude/defects/_defects-auth.md
+.claude/defects/_defects-contractors.md
+.claude/defects/_defects-dashboard.md
+.claude/defects/_defects-database.md
+.claude/defects/_defects-entries.md
+.claude/defects/_defects-forms.md
+.claude/defects/_defects-locations.md
+.claude/defects/_defects-pdf.md
+.claude/defects/_defects-photos.md
+.claude/defects/_defects-projects.md
+.claude/defects/_defects-quantities.md
+.claude/defects/_defects-settings.md
+.claude/defects/_defects-sync.md
+.claude/defects/_defects-toolbox.md
+.claude/defects/_defects-weather.md
+```
+
+### Common Commands
+
 ```bash
 # View PDF defects
 Read .claude/defects/_defects-pdf.md
@@ -134,4 +163,7 @@ Glob .claude/defects/_defects-*.md
 
 # Search for async patterns across all features
 Grep "ASYNC" .claude/defects/
+
+# Search for sync patterns
+Grep "SYNC" .claude/defects/
 ```

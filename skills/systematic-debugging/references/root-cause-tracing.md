@@ -101,18 +101,63 @@ Symptom: setState() called after dispose
 ```
 Symptom: Test passes/fails randomly
   -> Timing-dependent assertion?
-    -> No wait for condition?
-      -> Assumed synchronous what's async?
-        -> ROOT: Missing waitFor/pump in test
+    -> Widget not settled before expect?
+      -> Missing pumpAndSettle or runAsync?
+        -> ROOT: Async operation not awaited before assertion
 ```
 
 ### Supabase Sync Failure
 ```
 Symptom: Data not syncing
-  -> Sync queue processing?
-    -> Network available?
-      -> RLS policy blocking?
-        -> ROOT: Missing or incorrect RLS policy
+  -> SyncOrchestrator triggering engine?
+    -> SyncEngine.push() completing?
+      -> TableAdapter.pushChanges() succeeding?
+        -> ROOT: RLS policy blocking, or adapter toSupabaseMap() stripping required column
+```
+
+### Sync Adapter Failure
+```
+Symptom: Table data not syncing
+  -> SyncEngine.push() skipping table?
+    -> Adapter registered in SyncRegistry?
+      -> FK dependency order correct?
+        -> ROOT: Adapter missing from registerSyncAdapters() or wrong order
+```
+
+### Migration/Schema Drift
+```
+Symptom: App crashes on startup after update
+  -> DatabaseService.open() failing?
+    -> Schema version mismatch?
+      -> Migration step missing or incomplete?
+        -> ROOT: v{N} migration doesn't match expected schema
+```
+
+### FK Constraint Violation
+```
+Symptom: Insert/update fails with FOREIGN KEY constraint
+  -> Child record referencing nonexistent parent?
+    -> Parent deleted before child? (soft-delete cascade)
+      -> Change tracker missed dependency?
+        -> ROOT: Cascade delete trigger not covering this relationship
+```
+
+### Change Tracker Drift
+```
+Symptom: Edits not appearing in sync queue
+  -> change_log trigger firing?
+    -> Trigger installed on this table?
+      -> Column in excluded list?
+        -> ROOT: SQLite trigger missing or filtering out the column
+```
+
+### Provider State Stale After Sync
+```
+Symptom: UI shows old data after sync completes
+  -> SyncProvider notifying listeners?
+    -> Feature provider listening to sync events?
+      -> Provider reloading from DB after sync?
+        -> ROOT: Feature provider not calling loadItems() on sync completion
 ```
 
 ## Evidence Collection
