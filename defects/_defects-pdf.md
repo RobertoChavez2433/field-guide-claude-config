@@ -5,6 +5,16 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [DATA] 2026-03-08: _measureContrast Bug — 70% Underreported After 1-Channel Conversion
+**Pattern**: After `processed.convert(numChannels: 1)` at line 229, `_measureContrast(processed)` at line 233 calls `img.getLuminance(pixel)` which computes `0.299*r + 0.587*g + 0.114*b`. On a 1-channel image, `g=0` and `b=0`, so it returns `0.299 * r` instead of `r`. The `contrastAfter` metric is systematically underreported by ~70%. Does not affect downstream logic (metric-only), but corrupts diagnostic output.
+**Prevention**: Either move `_measureContrast()` before the 1-channel conversion, or use `pixel.r` directly instead of `getLuminance()` (consistent with `_isDarkPixel` in grid_line_detector).
+**Ref**: @lib/features/pdf/services/extraction/stages/image_preprocessor_v2.dart:229-233
+
+### [DATA] 2026-03-07: Cross-Platform Renderer Divergence — $457K OCR Discrepancy
+**Pattern**: `pdfx` uses AOSP PdfRenderer on Android (old PDFium fork) but upstream PDFium on Windows. Different font rendering → different OCR output for identical PDFs. DPI was correctly set (600 for crops) but irrelevant — grid pages never call `recognizeImage()`, only `recognizeCrop()`. The renderer pixel differences propagate through the OCR pipeline causing character confusion (5↔S, 9↔0, merged items).
+**Prevention**: Use `pdfrx` (bundles upstream PDFium 144.0.7520.0 on ALL platforms). Returns BGRA8888 pixels (not PNG) — use `Image.fromBytes(order: ChannelOrder.bgra)`. Migration plan: `.claude/plans/2026-03-07-pdfrx-renderer-migration.md`.
+**Ref**: @lib/features/pdf/services/extraction/stages/page_renderer_v2.dart:165 (Platform.isWindows gate)
+
 ### [QUALITY] 2026-03-02: Tesseract x_wconf Unreliable for Dollar Amounts — Root Cause of B1/B2 LOWs
 **Pattern**: Tesseract reports 14-52% confidence on perfectly-extracted dollar amounts (e.g., "$860,970.00" at 34% conf, "$4,911.90" at 14%). The 50% OCR weight in `field_confidence_scorer.dart` weighted geometric mean amplifies this into B2 LOW. Also, 5/8 B1 unitPrice correction patterns are comma→period substitution (`european_periods`), not resolution issues.
 **Prevention**: Geometry-aware upscaling (2.0→2.71x) confirmed this is NOT a resolution problem. Fixes needed at Tesseract interpretation layer: (1) confidence floor override when format+interpretation both validate, (2) comma-recovery heuristic for european_periods, (3) space-strip for spurious word breaks.
@@ -61,19 +71,9 @@ pwsh -Command "flutter test test/features/pdf/services/mp/mp_stage_trace_diagnos
 ```
 **Ref**: @lib/features/pdf/services/mp/mp_extraction_service.dart:229-233
 
-### [QUALITY] 2026-02-19: Permissive Scorecard Assertions Can Hide Real Extraction Regressions
-**Pattern**: Stage trace scorecard assertions allowed degraded outputs (`parsed>=126`, `withAmount>=122`, `bugCount<=2`) to pass, creating false-green confidence while pipeline quality remained below target.
-**Prevention**: Keep strict gates aligned to target outcomes (`parsed>=131`, `withAmount>=131`, `bugCount==0`, `lowCount==0`) and treat failures as upstream blockers instead of relaxing assertions.
-**Ref**: @test/features/pdf/extraction/golden/stage_trace_diagnostic_test.dart:3900-3905
-
-### [QUALITY] 2026-02-18: RowParserV3 Stage Confidence Can Mask High Skip Rates
-**Pattern**: `RowParserV3` computes `StageReport.stageConfidence` from confidences of emitted items, while excluded/skipped rows do not reduce that value. A run can report high stage confidence even when many input rows are skipped.
-**Prevention**: Include skip/exclusion ratio as a penalty term in stage confidence, or raise warning severity / fail guard when `excludedCount / inputCount` exceeds threshold.
-**Ref**: @lib/features/pdf/services/extraction/stages/row_parser_v3.dart:241-279
-
-### [DATA] 2026-02-18: Relaxed/Rescue PriceContinuation Gates Can Misclassify Rows When Item-Number Semantic Is Missing
-**Pattern**: Mixed text+price rows can be incorrectly promoted to `priceContinuation` if `itemNumber` semantic is absent from `columnMap` (or unset per-page). In that case `hasItemNumber` is always false, so continuation gates may absorb legitimate base rows into prior items.
-**Prevention**: Require `zones.itemNumberColumn != null` before relaxed mixed-text price-continuation gate and boilerplate rescue sweep are allowed. Add explicit test coverage for missing-item-semantic behavior.
-**Ref**: @lib/features/pdf/services/extraction/stages/row_classifier_v3.dart:284,376
+### [CONFIG] 2026-03-07: V2 OCR Engine Does Not Thread DPI to Tesseract — 70 DPI Fallback on Android
+**Pattern**: `TesseractEngineV2.recognizeImage()` and `recognizeCrop()` compute source DPI via `_computeSourceDpi()` but never call `tess.setVariable("user_defined_dpi", dpi)`. The C++ layer (`flusseract.cpp:95-108`) checks for this variable, falls back to 70 DPI when absent. On Android (pdfx renderer, no embedded DPI metadata), Tesseract processes 300 DPI images as 70 DPI — 4.3x mismatch degrades page segmentation. On Windows (Printing.raster embeds DPI), auto-detection masks the bug. V1 engine had this correct.
+**Prevention**: Always call `tess.setVariable("user_defined_dpi", sourceDpi.toString())` before `hocrText()` in both `recognizeImage()` and `recognizeCrop()`. Fix plan: `.claude/plans/2026-03-07-ocr-dpi-fix.md`
+**Ref**: @lib/features/pdf/services/extraction/ocr/tesseract_engine_v2.dart:70-76, :114-119
 
 <!-- Add defects above this line -->

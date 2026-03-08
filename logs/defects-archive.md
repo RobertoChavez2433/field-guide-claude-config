@@ -4,6 +4,64 @@ Historical defects moved from per-feature defect files. Reference only.
 
 ---
 
+## PDF (archived 2026-03-08)
+
+### [QUALITY] 2026-02-18: RowParserV3 Stage Confidence Can Mask High Skip Rates
+**Pattern**: `RowParserV3` computes `StageReport.stageConfidence` from confidences of emitted items, while excluded/skipped rows do not reduce that value. A run can report high stage confidence even when many input rows are skipped.
+**Prevention**: Include skip/exclusion ratio as a penalty term in stage confidence, or raise warning severity / fail guard when `excludedCount / inputCount` exceeds threshold.
+**Ref**: @lib/features/pdf/services/extraction/stages/row_parser_v3.dart:241-279
+
+### [QUALITY] 2026-02-19: Permissive Scorecard Assertions Can Hide Real Extraction Regressions
+**Pattern**: Stage trace scorecard assertions allowed degraded outputs (`parsed>=126`, `withAmount>=122`, `bugCount<=2`) to pass, creating false-green confidence while pipeline quality remained below target.
+**Prevention**: Keep strict gates aligned to target outcomes (`parsed>=131`, `withAmount>=131`, `bugCount==0`, `lowCount==0`) and treat failures as upstream blockers instead of relaxing assertions.
+**Ref**: @test/features/pdf/extraction/golden/stage_trace_diagnostic_test.dart:3900-3905
+
+### [BLOCKER] 2026-02-20: M&P Parser Regex Finds Only 4 of 131 Items — Anchor-Based Rewrite Needed
+**Status**: DIAGNOSED (Session 403). Root cause confirmed via M&P testing harness.
+**Pattern**: Parser regex `^\s*Item\s+([0-9]+)\.?\s+(.+?)(?::\s*|\.\s+)(.*)$` has fatal flaw: `^` line-start anchor requires `Item` at beginning of line, but Syncfusion PdfTextExtractor does NOT preserve line breaks at item boundaries.
+**Prevention**: Use unanchored `Item\s+(\d+)` to find all items (proven to find 131), then segment by anchor positions.
+**Ref**: @lib/features/pdf/services/mp/mp_extraction_service.dart:229-233
+
+## Sync
+
+### [CONFIG] 2026-03-06: Supabase migration type mismatch — TEXT vs UUID FK columns (Session 505)
+**Pattern**: Migration used `project_id UUID REFERENCES projects(id)` but `projects.id` is `TEXT` in Supabase. FK constraint fails with "incompatible types".
+**Prevention**: Before writing migration SQL, query actual table schemas. Never assume column types from the plan.
+**Ref**: @supabase/migrations/20260305000000_schema_alignment_and_security.sql
+
+## Sync (archived from _defects-sync.md)
+
+### [DATA] 2026-03-05: PostgREST error codes are PGRST*, not HTTP status codes (Session 504)
+**Pattern**: Plan checked `PostgrestException.code == '401'` / `'429'` / `'503'`, but `.code` contains PostgREST codes like `'PGRST301'`, `'PGRST116'`, never raw HTTP status codes.
+**Prevention**: Always check PostgREST codes (PGRST301=JWT, PGRST304=RLS, PGRST116=not found) with message-based fallbacks.
+**Ref**: @lib/services/sync_service.dart
+
+### [DATA] 2026-03-06: Schema column name drift between plan and implementation (Session 505)
+**Pattern**: Plan specifies column names that differ from actual table schema. Causes runtime "no such column" crashes.
+**Prevention**: After implementing any schema, grep all consuming code for column references and cross-check against CREATE TABLE DDL.
+**Ref**: @sync_dashboard_screen.dart, @project_selection_screen.dart, @conflict_viewer_screen.dart
+
+## Projects (archived 2026-03-06)
+
+### [TEST] 2026-03-03: create-project flow — Save button does not auto-navigate back (auto-test)
+**Status**: OPEN
+**Symptom**: Tapping Save with keyboard open inserts project but screen doesn't pop. Only Back button works.
+**Ref**: .claude/test-results/2026-03-03-1933-run/screenshots/create-project-step7.png
+
+## Sync (archived 2026-03-06)
+
+### [DATA] 2026-03-05: Plan-stage API drift — code samples reference non-existent methods/properties (Session 503)
+**Pattern**: Multi-part plans written by different agents reference APIs that don't exist. Causes compile failures.
+**Ref**: Phases 4-6 of sync rewrite plan
+
+### [DATA] 2026-03-05: Fresh-install path neglected in migrations (Session 503)
+**Pattern**: `_onUpgrade` adds tables but `_onCreate` and schema constants never updated. Fresh installs get stale schemas.
+**Ref**: Phase 1 review — 6 critical issues
+
+### [DATA] 2026-03-04: sync_status leaks to Supabase — infinite pending loop (Session 493, FIXED)
+**Pattern**: `sync_status` column on both SQLite and Supabase caused permanent "2 pending changes."
+**Ref**: @lib/services/sync_service.dart
+
 ## Sync (archived 2026-03-05, Session 504)
 
 ### [TEST] 2026-03-03: pullCompanyMembers FOREIGN KEY constraint failure silently drops user_profiles sync (auto-test)
@@ -141,6 +199,13 @@ Historical defects moved from per-feature defect files. Reference only.
 **Ref**: @test/features/sync/presentation/providers/sync_provider_test.dart:7,99
 
 ---
+
+## Archived from _defects-pdf.md (2026-03-07, Session 513)
+
+### [DATA] 2026-02-18: Relaxed/Rescue PriceContinuation Gates Can Misclassify Rows When Item-Number Semantic Is Missing
+**Pattern**: Mixed text+price rows can be incorrectly promoted to `priceContinuation` if `itemNumber` semantic is absent from `columnMap` (or unset per-page). In that case `hasItemNumber` is always false, so continuation gates may absorb legitimate base rows into prior items.
+**Prevention**: Require `zones.itemNumberColumn != null` before relaxed mixed-text price-continuation gate and boilerplate rescue sweep are allowed. Add explicit test coverage for missing-item-semantic behavior.
+**Ref**: @lib/features/pdf/services/extraction/stages/row_classifier_v3.dart:284,376
 
 ## Archived from _defects-pdf.md (2026-02-20, Session 403)
 

@@ -5,6 +5,16 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [DATA] 2026-03-06: Pre-generated project UUID causes FK violations for child records (Session 507)
+**Pattern**: `project_setup_screen.dart:66` generates `_projectId = Uuid().v4()` but doesn't INSERT project row until Save. Child records (bid_items, locations, contractors) added via tabs reference this ID and fail FK check against `projects(id)` since `PRAGMA foreign_keys=ON`.
+**Prevention**: Eagerly INSERT a minimal project row when UUID is generated. Use `repository.save()` (bypasses duplicate check). `StartupCleanupService` handles orphaned drafts. Don't enroll draft in `synced_projects` until Save.
+**Ref**: @lib/features/projects/presentation/screens/project_setup_screen.dart:66
+
+### [DATA] 2026-03-06: v30 migration SELECTs non-existent columns from old table (Session 507)
+**Pattern**: `entry_personnel_counts` rebuild tried to SELECT `project_id`, `created_at`, `updated_at`, `created_by_user_id` from old table that only had `id, entry_id, contractor_id, type_id, count, deleted_at, deleted_by`. Crashed app on startup.
+**Prevention**: Before writing INSERT...SELECT migrations, verify source table columns with `PRAGMA table_info` or by tracing which migrations added which columns. Only SELECT columns that exist.
+**Ref**: @lib/core/database/database_service.dart:1236-1244 (FIXED)
+
 ### [DATA] 2026-03-02: Auth cold-start race — loadProjectsByCompany(null) empties project list
 **Pattern**: `ProjectProvider` is created inside `ChangeNotifierProvider.create` which runs during widget build.
 At that instant `authProvider.userProfile?.companyId` may be null because `AuthProvider.loadUserProfile()` is async and hasn't resolved yet.
@@ -28,13 +38,5 @@ The duplicate-check query in `ProjectRepository.create()` uses `project.companyI
 **Prevention**: Add `CREATE UNIQUE INDEX idx_project_number_company ON projects(company_id, project_number)` to SQLite schema. Bump DB version. Add migration for existing installs. Consider also adding `sync_status` column to projects (entries have it, projects don't).
 **Fix**: `lib/core/database/schema/core_tables.dart` (add index), `lib/core/database/database_service.dart` (migration)
 **Ref**: @lib/core/database/schema/core_tables.dart:6-27, @lib/features/projects/data/repositories/project_repository.dart:64-78
-
-### [TEST] 2026-03-03: create-project flow — Save button does not auto-navigate back (auto-test)
-**Status**: OPEN
-**Source**: Automated test run 2026-03-03-1933-run.md
-**Symptom**: On the New Project screen, tapping Save while a text field is focused and the keyboard is open triggers the DB insert (confirmed via flutter log: `INSERT projects id=b56304be`) but the screen does not pop off the navigation stack. The form remains open showing the entered data. Tapping Save a second time after keyboard is dismissed also does not navigate back — only tapping the Back button returns to the project list. The project itself is created correctly; this is purely a navigation UX bug.
-**Logcat**: `I flutter : [DB] [19:37:15.990] INSERT projects id=b56304be-1d2d-4861-97ae-758ea794eceb` — insert succeeded; no navigation event followed.
-**Screenshot**: .claude/test-results/2026-03-03-1933-run/screenshots/create-project-step7.png (form still open after Save)
-**Suggested cause**: The save handler likely calls `Navigator.pop()` or uses GoRouter to navigate back, but if the keyboard is open and the field still has focus, the navigation event may be swallowed or the keyboard dismissal is consuming the back gesture. Alternatively, the save callback may be returning early on a validation path when focus is active. Check the onPressed handler for the Save button in the project editor screen — confirm Navigator.pop/GoRouter.pop is called unconditionally after successful save.
 
 <!-- Add defects above this line -->

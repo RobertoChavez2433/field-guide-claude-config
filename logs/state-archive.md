@@ -6,6 +6,59 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 511 (2026-03-06)
+**Work**: Implemented sync auth fix (4 bugs in sync_orchestrator.dart). Fixed hanging test. Full suite passes.
+**Decisions**: Adversarial plan superseded original. Guard before _updateStatus to avoid UI flicker.
+**Next**: Commit, device test, PR to main. Then start UI refactor.
+
+### Session 510 (2026-03-06)
+**Work**: Wrote comprehensive UI refactor implementation plan (12 phases, 50+ subphases, 100+ steps). Encoded all brainstorm decisions, component specs, token gaps, violation registry, and cheat sheets into actionable plan.
+**Decisions**: None new — all decisions were locked in session 509. This session was pure planning/writing.
+**Next**: Implement sync auth fix. Then start UI refactor Phase 1 (Foundation).
+
+### Session 509 (2026-03-06)
+**Work**: Implemented sync UX fixes plan (6 files, 6 quality gates passed). Brainstormed UI refactor approach (12 phases).
+**Decisions**: FieldGuideColors ThemeExtension, WeatherProvider, theme-aware colors, Extras & Overruns kept.
+**Next**: Write comprehensive UI refactor plan. Commit sync + UX fixes.
+
+### Session 508 (2026-03-06)
+**Work**: Implemented consolidated-fixes plan (10 phases, 32 files, 6 quality gates). Device tested → found 3 sync UX bugs. Brainstormed sync UX fixes.
+**Decisions**: Auth guard+retry (5s). Unified staleness banner. 4-bucket pending counts.
+**Next**: Implement sync-ux-fixes (done in 509).
+
+### Session 507 (2026-03-06)
+**Work**: Device testing found 4 critical bugs. Fixed migration + permissions. Brainstormed project selection UX. Consolidated 2 plans into 1.
+**Decisions**: Hybrid project list. NO auto-enrollment. Two-section UI.
+**Next**: Implement consolidated plan (done in 508).
+
+## March 2026
+
+### Session 506 (2026-03-06)
+**Work**: Full data layer audit with jcodemunch MCP. Dead code cleanup (13,450 lines). Found critical sync registry bug.
+**Decisions**: entry_personnel safe to deprecate. Background sync needs own adapter registration.
+**Next**: Implement data-layer-fixes (superseded by consolidated plan).
+
+### Session 505 (2026-03-06)
+**Work**: Full sync engine rewrite implementation. 5 orchestrator cycles, 3 review sweeps, 3 completeness audits. All 8 phases at 100%. 9 logical commits.
+**Next**: Data layer audit (done in 506).
+
+### Session 504 (2026-03-05)
+**Work**: Round 3 review: 5 part-scoped agents found 14 critical + 15 high + 6 ambiguities.
+**Next**: Implementation.
+
+### Session 503 (2026-03-05)
+**Work**: 8 per-phase review agents found 31 critical issues.
+**Next**: Final plan review.
+
+### Session 502 (2026-03-05)
+**Work**: Verified bulletproof plan vs original.
+**Next**: Round 3 review.
+
+### Session 500 (2026-03-05)
+**Work**: 4 code-review agents reviewed sync rewrite plan vs codebase. 46 findings (5 CRITICAL). Launched Opus agent to write bulletproof plan — hit 32K output limit.
+**Decisions**: Original plan preserved. New bulletproof plan will be written to separate file.
+**Next**: Create bulletproof plan, cross-reference vs original.
+
 ### Session 499 (2026-03-05)
 **Work**: CodeMunch gap analysis of sync rewrite plan vs codebase (376 files, 3,757 symbols). Found 18 gaps. Expanded Phase 7 from 13 to 50+ tasks (8 sub-phases). Added 2 Phase 0 prereqs, 1 Phase 2 task, 3 Phase 6 tasks, 14 new tests, 3 risk rows.
 **Decisions**: Plan hardened with complete cleanup manifest. Dead code grep gate as merge requirement.

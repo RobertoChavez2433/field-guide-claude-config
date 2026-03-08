@@ -1,137 +1,113 @@
 # Session State
 
-**Last Updated**: 2026-03-05 | **Session**: 504
+**Last Updated**: 2026-03-08 | **Session**: 517
 
 ## Current Phase
-- **Phase**: Sync System Rewrite — BULLETPROOF PLAN FULLY PATCHED (32 fixes across 3 rounds)
-- **Status**: Round 3 review (5 part-scoped agents) found 14 critical + 15 high-priority + 6 ambiguities. User made 7 decisions. 3 patch agents applied 32 fixes inline. Plan is implementation-ready.
+- **Phase**: Implement skill rewritten with per-phase reviews
+- **Status**: `/implement` skill rewritten — per-phase completeness, code review, and security reviews with hard gating. 6 end-of-pipeline gates collapsed to 3 integration gates. Severity standardized to CRITICAL/HIGH/MEDIUM/LOW. All findings fixed before phase advancement (no deferrals). Testing mandatory per-phase.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (504)
+### What Was Done This Session (517)
 
-1. **Dispatched 5 review agents** (1 per plan part) — found 14 CRITICAL, 15 HIGH, 6 AMBIGUITY issues
-2. **Dispatched 3 research agents** to gather codebase context and propose fixes for all issues
-3. **Brainstormed 7 decisions** with user (one at a time)
-4. **Dispatched 3 patch agents** (1 per plan section) — applied 32 fixes inline to the plan
-
-### 7 Decisions Made
-
-1. **C1**: Denormalize `project_id` onto 4 junction tables (SQLite + Supabase) for uniform pull scoping
-2. **C13**: Orphan scanner queries Supabase `photos` table (not local SQLite) to see all devices
-3. **H3**: In-cycle retry (1 attempt with backoff) for transient push errors
-4. **H4/H14**: Mark all change_log entries as processed at cutover (clean slate)
-5. **H15**: Wrap v30 migration in transaction + try/catch with v32 recovery slot
-6. **A1**: `synced_projects` populated by user action (pick/create project → INSERT)
-7. **C6/A6**: RPC and pull engine use identical `project_id` scoping (resolved by C1)
-
-### Key Fixes Applied (32 total)
-
-- **Security**: Restored `status='approved'` in `get_my_company_id()` (C7)
-- **Compilation**: Added `incrementRetry()`, fixed `forceReset()` signature, fixed Java syntax (C2-C4)
-- **Error handling**: PostgREST codes replace HTTP codes, inner retry loop added (C5, H3)
-- **SQL**: IntegrityChecker RPC rebuilt, trigger idempotency fixed (C6, C8)
-- **Tests**: mocktail dep, single-source DDL, project_id in factories, CASCADE tests (C10-C12, H7-H8)
-- **Cutover**: storage_cleanup_queue in wipe, background factory, mark-processed step (H11-H12, H4)
-
-### Key Files
-
-- **Bulletproof plan (PATCHED)**: `.claude/plans/2026-03-05-sync-rewrite-bulletproof.md`
-- **Original plan (DO NOT MODIFY)**: `.claude/plans/2026-03-04-sync-rewrite-and-settings-redesign.md`
+1. **Researched implement skill ecosystem** — 3 parallel Opus agents mapped the full skill lifecycle, codebase changes since last update, and review gap patterns. Found 10 design gaps (no test gate, checkpoint schema drift, fixer agent identity, etc.).
+2. **Brainstormed per-phase review design** — 6 structured questions via brainstorming skill. User decisions: hard gate all findings (CRITICAL through LOW), completeness-first then code+security parallel, 3 cycles max, CRITICAL/HIGH/MEDIUM/LOW severity standard, mandatory testing per-phase.
+3. **Wrote implementation plan** — 7 phases (0-6) covering checkpoint schema, supervisor summary, severity standard, implementation loop rewrite, quality gate loop rewrite, termination states, and on-start section. 14 verification criteria.
+4. **Implemented via /implement** — Orchestrator completed all 7 phases with 0 findings across all reviews. Single orchestrator cycle, 0 handoffs.
+5. **Code review agent verified** — Opus reviewer found 1 LOW (Step 3 "current gate" → "current position" wording). Fixed.
+6. **Plan moved to completed/** — `.claude/plans/completed/2026-03-08-implement-skill-per-phase-reviews.md`
 
 ### What Needs to Happen Next
-
-1. **Commit BLOCKER-27 fix** — still uncommitted on `fix/sync-dns-resilience`
-2. **Create feature branch** — `feat/sync-engine-rewrite` off main
-3. **Start Phase 0** — Supabase migration (PART 0 as separate migration file first, then main migration)
+1. **Implement pdfrx migration** — start with Phase 0 (install + verify API + baseline timing)
+2. **Device validation** — the KEY test: Android extraction matches Windows fixtures after pdfrx
+3. **Commit** DPI fix + renderer migration on `feat/sync-engine-rewrite`
+4. **Create PR** for `feat/sync-engine-rewrite` → main
+5. **Pipeline performance fixes** — start with P0 trivial fixes (null guards, measureContrast bug)
 
 ## Blockers
 
+### BLOCKER-31: Android OCR regression — renderer divergence
+**Status**: PLAN READY — `.claude/plans/2026-03-07-pdfrx-renderer-migration.md`
+**Root Cause**: pdfx uses AOSP PdfRenderer on Android (old PDFium fork) vs upstream PDFium on Windows. Different font rendering → different OCR → $457K discrepancy on Springfield.
+**Fix**: Replace pdfx with pdfrx (bundles upstream PDFium on all platforms).
+
+### BLOCKER-29: Cannot delete synced data from device — sync re-pushes
+**Status**: OPEN — HIGH PRIORITY
+
 ### BLOCKER-28: SQLite Encryption (sqlcipher)
-**Status**: OPEN — tracked separately from sync rewrite. Future blocker.
-**Notes**: ADV-55 from security hardening. Requires sqflite→sqlcipher dependency swap + DB migration. Separate plan needed.
-
-### BLOCKER-27: Sync "Pending Changes" Never Clears
-**Status**: FIXED — code complete, awaiting commit + deploy
-
-### BLOCKER-26: Trash Purge Resurrects Records
-**Status**: CONFIRMED — will be fully resolved by Phase 1+3 (change_log triggers + adapters)
+**Status**: OPEN — tracked separately.
 
 ### BLOCKER-24: SQLite Missing UNIQUE Constraint on Project Number
-**Status**: OPEN — HIGH PRIORITY (deferred to after sync rewrite Phase 0)
+**Status**: OPEN — HIGH PRIORITY
 
 ### BLOCKER-22: Location Field Stuck "Loading"
-**Status**: OPEN — HIGH PRIORITY (deferred to after sync rewrite)
+**Status**: OPEN — HIGH PRIORITY
 
 ### BLOCKER-23: Flutter Keys Not Propagating to Android resource-id
 **Status**: OPEN — MEDIUM
-
-### BLOCKER-25: Nested Task Tool Calls Don't Work in Subagents
-**Status**: OPEN — ARCHITECTURAL LIMITATION
 
 ### BLOCKER-10: Fixture Generator Requires SPRINGFIELD_PDF Runtime Define
 **Status**: OPEN (PDF scope only)
 
 ## Recent Sessions
 
-### Session 504 (2026-03-05)
-**Work**: Round 3 review: 5 part-scoped agents found 14 critical + 15 high + 6 ambiguities. 3 research agents gathered context. 7 decisions with user. 3 patch agents applied 32 fixes inline. Plan implementation-ready.
-**Decisions**: Denormalize project_id on junctions. Orphan scanner queries Supabase. In-cycle retry. Mark-processed at cutover. Transaction-wrapped migrations. User-driven synced_projects. Unified RPC/pull scoping.
-**Next**: Commit BLOCKER-27, create feature branch, start Phase 0.
+### Session 517 (2026-03-08)
+**Work**: Rewrote `/implement` skill with per-phase reviews. 3 research agents mapped ecosystem + gaps. Brainstormed 6 questions with user. Wrote 7-phase plan. Implemented via /implement (0 findings). Code review verified (1 LOW fixed).
+**Decisions**: Hard gate all findings (no deferrals). Completeness first → code+security parallel. CRITICAL/HIGH/MEDIUM/LOW severity. Mandatory testing. Sonnet implementers/fixers, Opus reviewers, Opus final pass. 3 integration gates (down from 6).
+**Next**: pdfrx migration Phase 0, device validation, commit, PR.
 
-### Session 503 (2026-03-05)
-**Work**: 8 per-phase review agents found 31 critical issues. 3 research agents gathered codebase context. Brainstormed 14 decisions with user. Agent applied all fixes to bulletproof plan.
-**Decisions**: Fix PART 5 SQL + split PART 0. Fix 5 SECURITY DEFINER functions. Update schema files + _onCreate. Add upgrade-path migrations. project_id in v30. Trigger suppression for bookkeeping. Retry once. Resurrect soft-deleted rows. Engine-owned photo push. Phase 5 wiring-only. Phase 6 API fixes. Phase 7i test cleanup. Completion gates for Phases 2-5.
-**Next**: Commit BLOCKER-27, create feature branch, start Phase 0.
+### Session 516 (2026-03-08)
+**Work**: Second adversarial review of pdfrx plan (3 critical, 4 high, 7 medium fixes). 3-agent pipeline performance audit (14 bottlenecks, 30-80s savings). Brainstormed all with user. Rewrote plan. Created pipeline perf audit doc. Found `_measureContrast` correctness bug.
+**Decisions**: BGRA→PNG for diagnostics. Encode in fallback paths. No feature flag. Separate perf plan. Verify `?.call()` null short-circuit first.
+**Next**: Implement pdfrx migration Phase 0. Then P0 pipeline perf fixes.
 
-### Session 502 (2026-03-05)
-**Work**: Verified bulletproof plan vs original with 5 review agents (1 per part). Brainstormed 12 omissions, 8 modifications, 7 recommendations with user. Made 17 decisions. Agent updated bulletproof plan (11,748→12,008 lines).
-**Decisions**: Integrate security hardening (not defer). ADV-55 separate plan. Denormalize project_id on junction tables. Keep single-lock, 4-variant ScopeType. Revert to incremental build+test. Within-cycle backoff. Benchmark as gate.
-**Next**: Commit BLOCKER-27, create feature branch, start Phase 0.
+### Session 515 (2026-03-07)
+**Work**: DPI fix implemented + device-tested (not root cause — grid pages skip recognizeImage). Root-caused to renderer divergence (pdfx AOSP PdfRenderer vs upstream PDFium). Researched pdfrx (4 agents), mapped blast radius (2 agents), wrote 7-phase migration plan, adversarial review (17 findings addressed), brainstormed all decisions (BGRA passthrough, format enum, alias import, Phase 0 verification).
+**Decisions**: pdfrx replaces pdfx. Raw BGRA passthrough (no PNG encode/decode). RenderedPage format enum. Image.fromBytes(order: ChannelOrder.bgra). Phase 0 API verification mandatory. pdfrx alias import for PdfDocument collision.
+**Next**: Implement pdfrx migration Phase 0, then full migration, device validation.
 
-### Session 501 (2026-03-05)
-**Work**: Full 10-agent pipeline to produce bulletproof implementation plan. 4 Opus analysis agents reviewed plan vs codebase. 5 Opus writer agents produced detailed step-by-step plans. 1 Opus synthesis agent merged into 11,748-line unified plan.
-**Decisions**: Section C split into C1+C2 to avoid 32K output limit. Synthesis does merge only, no verification (deferred to next session).
-**Next**: Verify bulletproof plan vs original, commit BLOCKER-27, start Phase 0.
+### Session 514 (2026-03-07)
+**Work**: Full overhaul of systematic-debugging skill (7 phases, 6 files updated, 3 deleted). Brainstormed specs, compared vs upstream superpowers, indexed codebase via CodeMunch. Added sync engine traces, 5-layer defense model, ADB/UIAutomator patterns, 3 new defect categories. Dual Opus review caught 4 issues, all fixed.
+**Decisions**: Remove pressure tests. Rewrite condition-based-waiting for ADB. 5-layer defense. Add SYNC/MIGRATION/SCHEMA defect categories. Keep codex wrapper.
+**Next**: Implement OCR DPI fix, device test, commit, PR.
 
-### Session 500 (2026-03-05)
-**Work**: 4 code-review agents exhaustively reviewed sync rewrite plan vs codebase. 46 findings (5 CRITICAL). Launched Opus agent to write bulletproof plan — hit 32K output limit, file not yet created.
-**Decisions**: Original plan preserved. New bulletproof plan will be written to separate file.
-**Next**: Create bulletproof plan (chunk writes), cross-reference vs original, commit BLOCKER-27.
+### Session 513 (2026-03-07)
+**Work**: Device-tested sync engine. Diagnosed PDF OCR regression: V2 engine not threading DPI to Tesseract. Added temp stage dumps, pulled 28 stage JSONs, pinpointed divergence at items 94-96 on page 4. Wrote fix plan.
+**Decisions**: Fix is 2 setVariable calls. No pdfx changes needed. Temp stage dump code to be removed after verification.
+**Next**: Implement OCR DPI fix, re-test on device, remove temp code, commit, PR.
 
 ## Active Plans
 
-### Sync System Rewrite + Settings Redesign — BULLETPROOF PLAN READY (Session 504)
-- **Original plan (DO NOT MODIFY)**: `.claude/plans/2026-03-04-sync-rewrite-and-settings-redesign.md`
-- **Bulletproof plan (PATCHED x3)**: `.claude/plans/2026-03-05-sync-rewrite-bulletproof.md`
-- **Section files**: `.claude/plans/sections/section-{a,b,c1,c2,d}-*.md`
-- **Status**: 3 rounds of review (Sessions 502-504). 32+31+17 = 80 total fixes. 7+14+17 = 38 decisions. Implementation-ready.
-- **Phases**: 0=Schema+Security, 1=ChangeLogs+Triggers, 2=EngineCore, 3=Adapters, 4=PhotoAdapter, 5=IntegrityChecker(wiring-only), 6=UI+Settings, 7=Cutover(9 sub-phases incl 7i)
+### pdfrx Renderer Migration — PLAN FINALIZED (Session 515-516)
+- **Plan**: `.claude/plans/2026-03-07-pdfrx-renderer-migration.md`
+- **Status**: 7 phases, two-round adversarial review, 3-agent perf audit. All findings incorporated. Ready to implement Phase 0.
+- **Perf audit**: `.claude/docs/pdf-pipeline-performance-audit.md` (14 bottlenecks, separate from migration)
 
-### Sync System Audit — COMPLETE (Session 494)
-- **Audit Report**: `.claude/plans/2026-03-04-sync-system-audit-report.md`
-- **Status**: Superseded by rewrite plan.
+### Implement Skill Per-Phase Reviews — IMPLEMENTED (Session 517)
+- **Plan**: `.claude/plans/completed/2026-03-08-implement-skill-per-phase-reviews.md`
+- **Status**: 100% implemented. 7 phases, all reviews passed, 1 LOW fixed.
 
-### App Lifecycle Safety — IMPLEMENTED (Session 492)
-- **Design**: `.claude/plans/2026-03-04-app-lifecycle-design.md`
-- **Status**: Released as v0.76.0.
+### OCR DPI Fix — IMPLEMENTED but NOT ROOT CAUSE (Session 515)
+- **Plan**: `.claude/plans/2026-03-07-ocr-dpi-fix.md`
+- **Status**: DPI fix code is correct (defensive). But DPI was not the root cause — renderer divergence is. Keep the DPI fix as defensive code.
 
-### Sync-Aware Deletion System — SUPERSEDED (Session 491)
-- **Design**: `.claude/plans/2026-03-04-sync-aware-deletion-system.md`
-- **Status**: Replaced by sync rewrite Phase 1+3.
+### Systematic Debugging Overhaul — IMPLEMENTED (Session 514)
+- **Plan**: `.claude/plans/2026-03-07-systematic-debugging-overhaul.md`
+- **Status**: 100% implemented. 7 phases, dual Opus review passed.
 
-### Testing System Overhaul — IMPLEMENTED (Session 490)
-- **Design**: `.claude/plans/2026-03-03-testing-system-overhaul.md`
-- **Status**: Phases 0-2 + 4 implemented. Phases 3 + 5 deferred.
+### Sync Auth Fix — IMPLEMENTED + DEVICE-TESTED (Session 511/513)
+- **Plan**: `.claude/plans/completed/2026-03-06-sync-auth-fix.md`
+- **Status**: All 4 fixes applied. Device-tested. Needs commit + PR.
 
-### Project-Based Multi-Tenant Architecture — DEPLOYED (Session 453)
-- **PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
+### UI Refactor — PLAN REVIEWED + HARDENED (Session 512)
+- **Plan**: `.claude/plans/2026-03-06-ui-refactor-comprehensive.md`
+- **Status**: 12 phases + Phase 3.5. Reviewed by 3 agents, 23 issues fixed.
 
 ## Reference
-- **Sync Rewrite Plan**: `.claude/plans/2026-03-04-sync-rewrite-and-settings-redesign.md`
-- **Bulletproof Plan**: `.claude/plans/2026-03-05-sync-rewrite-bulletproof.md`
-- **Sync Audit Report**: `.claude/plans/2026-03-04-sync-system-audit-report.md`
-- **PRD**: `.claude/prds/2026-02-21-project-based-architecture-prd.md`
-- **Improvements**: `.claude/improvements.md`
+- **Implement Skill Plan**: `.claude/plans/completed/2026-03-08-implement-skill-per-phase-reviews.md`
+- **pdfrx Migration Plan**: `.claude/plans/2026-03-07-pdfrx-renderer-migration.md`
+- **OCR DPI Fix Plan**: `.claude/plans/2026-03-07-ocr-dpi-fix.md`
+- **UI Refactor Plan**: `.claude/plans/2026-03-06-ui-refactor-comprehensive.md`
+- **Sync Auth Fix**: `.claude/plans/completed/2026-03-06-sync-auth-fix.md`
+- **Defects**: `.claude/defects/_defects-pdf.md`, `_defects-sync.md`, `_defects-projects.md`
 - **Archive**: `.claude/logs/state-archive.md`
-- **Defects**: `.claude/defects/_defects-database.md`, `.claude/defects/_defects-toolbox.md`, `.claude/defects/_defects-pdf.md`, `.claude/defects/_defects-sync.md`, `.claude/defects/_defects-forms.md`, `.claude/defects/_defects-auth.md`, `.claude/defects/_defects-projects.md`, `.claude/defects/_defects-entries.md`
