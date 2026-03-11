@@ -11,7 +11,7 @@
 - **kMinCropWidth=500 experiment result**: REGRESSED. Caused item 50 ("Valve & Box, 6\"") to merge → bogus "50 o1", BUG count 0→2, quality 0.993→0.918. Do NOT re-attempt without first investigating item 50 cell boundary geometry.
 - **Known flutter_tester.exe lock issue**: Multiple flutter_tester.exe processes linger after test runs. Run `Stop-Process -Name 'flutter_tester' -Force` to unblock.
 - Test locations: `test/features/pdf/extraction/` (contracts, golden, integration, models, ocr, pipeline, stages, shared)
-- Fixture generator: `integration_test/generate_golden_fixtures_test.dart` (requires `-d windows --dart-define=SPRINGFIELD_PDF=<path>`)
+- Pipeline report test: `integration_test/springfield_report_test.dart` (requires `-d windows --dart-define=SPRINGFIELD_PDF=<path>`). CLI comparison: `tools/pipeline_comparator.dart`.
 - Springfield PDF path: `C:\Users\rseba\Projects\Field_Guide_App\Pre-devolopment and brainstorming\Screenshot examples\Companies IDR Templates and examples\864130 Springfield DWSRF Water System Improvements CTC.pdf`
 - **3 LOW metrics**: Row Classification headers (17 vs 6 expected), B1 unitPrice 6.2%, B2 bidAmount Δ0.062 — these are stable/expected
 

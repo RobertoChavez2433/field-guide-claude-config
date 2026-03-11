@@ -76,7 +76,7 @@
 **Status**: OPEN — MEDIUM
 
 ### BLOCKER-10: Fixture Generator Requires SPRINGFIELD_PDF Runtime Define
-**Status**: OPEN (PDF scope only)
+**Status**: RESOLVED (Session 536) — `generate_golden_fixtures_test.dart` deleted, replaced by `springfield_report_test.dart` (same `--dart-define` pattern)
 
 ## Recent Sessions
 
@@ -107,11 +107,10 @@
 
 ## Active Plans
 
-### Pipeline Test Suite Restructure — READY TO IMPLEMENT (Session 535)
+### Pipeline Test Suite Restructure — COMPLETE (Session 536)
 - **Spec**: `.claude/specs/2026-03-10-pipeline-test-restructure-spec.md`
 - **Plan**: `.claude/plans/2026-03-10-pipeline-test-restructure.md`
-- **Dependency Graph**: `.claude/dependency_graphs/2026-03-10-pipeline-test-restructure/`
-- **Status**: `/implement` skill fixed. Run `/implement` to execute the plan.
+- **Status**: All 7 phases done. 4 new files, 11 deleted (~6,280 net line reduction). Test passes on Windows.
 
 ### pdfrx Parity + Grid Line Threshold — COMPLETE (Session 532)
 - **Plan**: `.claude/plans/2026-03-09-pdfrx-parity.md`

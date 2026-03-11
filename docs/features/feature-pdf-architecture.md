@@ -168,12 +168,17 @@ Location: `test/features/pdf/extraction/stages/`
 
 Location: `test/features/pdf/extraction/integration/full_pipeline_integration_test.dart`
 
-### Golden Fixtures
-- **springfield_golden_test.dart**: Defines ground truth (131 items, expected fields)
-- **Fixtures**: JSON snapshots for each stage output (quality profiler through post-processor)
-- **Benchmark**: Performance tracking for each DPI/PSM variant
+### Pipeline Report & Comparison System
+- **springfield_report_test.dart**: Full pipeline trace + regression gate (replaces old fixture generator)
+- **pipeline_comparator.dart**: Single comparison library replacing 3 old tools
+- **report_generator.dart**: JSON trace + MD scorecard generator
+- **tools/pipeline_comparator.dart**: CLI for cross-platform report comparison
+- **Fixtures**: JSON ground truth at `test/features/pdf/extraction/fixtures/`
 
-Location: `test/features/pdf/extraction/fixtures/` and `test/features/pdf/extraction/golden/`
+Locations:
+- Test: `integration_test/springfield_report_test.dart`
+- Library: `test/features/pdf/extraction/golden/`
+- Reports: `test/features/pdf/extraction/reports/` (gitignored, per-platform)
 
 ### Test Contracts (Stage Boundaries)
 - DocumentQualityProfiler → preprocessors: Document profile output matches input PDF characteristics

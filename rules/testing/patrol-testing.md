@@ -292,43 +292,47 @@ pwsh -Command "flutter test test/features/pdf/services/<test_file>.dart"
 
 Validates the PDF extraction pipeline end-to-end against ground truth fixtures.
 
-### Springfield Fixture Workflow
+### Springfield Pipeline Report Workflow
 
-**CRITICAL: Always regenerate fixtures before scorecard/stage trace work.**
-Stale fixtures from older pipeline versions produce misleading results. Do NOT analyze failures against stale fixtures.
+**CRITICAL: Always run the pipeline report test after any pipeline stage code changes.**
+This generates a JSON trace + MD scorecard and runs a regression gate against the previous baseline.
 
-Regeneration command (substitute the actual path to your Springfield PDF):
+Run command (substitute your Springfield PDF path):
 
 ```powershell
-pwsh -Command "flutter test integration_test/generate_golden_fixtures_test.dart -d windows --dart-define='SPRINGFIELD_PDF=<your-local-path-to-springfield-pdf>'"
+pwsh -Command "flutter test integration_test/springfield_report_test.dart -d windows --dart-define='SPRINGFIELD_PDF=<your-local-path-to-springfield-pdf>'"
 ```
 
-Regeneration takes 2-3 minutes. Run this whenever any pipeline stage code has changed.
+Takes ~2 minutes on Windows. Reports saved to `test/features/pdf/extraction/reports/latest-<platform>/`.
+
+Variants:
+- `--dart-define=NO_GATE=true` — exploratory run, skip regression gate
+- `--dart-define=RESET_BASELINE=true` — archive current baseline, establish new one
+
+CLI comparison (any two report folders):
+```powershell
+pwsh -Command "dart run tools/pipeline_comparator.dart reports/latest-windows reports/latest-sm-s938u"
+```
+
+### Key Test Files
+
+| File | Purpose |
+|------|---------|
+| `integration_test/springfield_report_test.dart` | Full pipeline report + regression gate |
+| `test/features/pdf/extraction/golden/pipeline_comparator.dart` | Comparison library (replaces 3 old tools) |
+| `test/features/pdf/extraction/golden/report_generator.dart` | JSON trace + MD scorecard generator |
+| `tools/pipeline_comparator.dart` | CLI entry point for cross-platform comparison |
+
+### Report Output
+
+- **Desktop**: `test/features/pdf/extraction/reports/` (gitignored)
+  - `latest-<platform>/` — current baseline (regression gate compares against this)
+  - `<platform>_<date>_<time>/` — dated archives (max 20 per platform)
+- **Android**: `<app-docs>/extraction_reports/` (pull via adb)
 
 ### Scorecard Display Format
 
-When presenting scorecard results, ALWAYS use this table format:
-
-| # | Stage | Metric | Expected | Actual | % | Status |
-|---|-------|--------|----------|--------|---|--------|
-
-Bold rows where Status is LOW or BUG.
-
-### GT Item Trace Format
-
-Each ground-truth item gets exactly 4 rows:
-
-| Item# | Layer | Description | Unit | Qty | Price | Amount |
-|-------|-------|-------------|------|-----|-------|--------|
-
-Layers: Ground Truth, Cell Grid 4D, Parsed 4E, Processed 5
-
-### Bogus Items Format
-
-| Item# | Description | Unit | Qty | Price | Amount | Fields |
-|-------|-------------|------|-----|-------|--------|--------|
-
-Never dump raw test output. Always format into tables.
+The report test generates a scorecard automatically. When presenting results, use the generated scorecard MD directly. Key sections: Stage Statistics table, Item Flow table, Summary.
 
 ### Test Monitoring Rules
 
@@ -344,6 +348,6 @@ Never dump raw test output. Always format into tables.
 
 - TestingKeys: `lib/shared/testing_keys/testing_keys.dart`
 - UI Keys Reference: `integration_test/patrol/REQUIRED_UI_KEYS.md`
-- Golden Tests: `test/golden/README.md`
+- Pipeline Reports: `test/features/pdf/extraction/reports/` (gitignored, per-platform baselines)
 - Defects to Avoid: `.claude/defects/_defects-{feature}.md` (per-feature defect files)
 - Screen Registry: `lib/test_harness/screen_registry.dart`
