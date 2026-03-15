@@ -6,6 +6,11 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 566 (2026-03-14, Codex)
+**Work**: Implemented much of the PDF wave-1 plan: corpus/harness, OCR decision tracing, residue metrics, OCR policy scaffolding, and safe Windows build recovery. Re-ran the Windows Springfield report multiple times and compared against an archived pre-wave baseline.
+**Decisions**: Keep the new harness/diagnostics, but do not treat wave 1 as successful. Revert grid-removal behavior changes when they regress controls. Keep work upstream-only; no downstream compensation.
+**Next**: Recover or exceed the archived baseline in Stage `2B-iii`, improve item-number corpus performance, and fix the remaining `cell_boundary_verification_test.dart` failure.
+
 ### Session 563 (2026-03-13)
 **Work**: Verification pass — analyze clean, migration review, fixed `user_id→id` bug in email backfill, deployed both Supabase migrations. Added Supabase CLI to CLAUDE.md.
 **Decisions**: `npx supabase` is the CLI access pattern.
