@@ -89,6 +89,7 @@ When you need to run `flutter analyze`, `flutter test`, or `flutter build`, disp
 - `subagent_type: general-purpose`, `model: haiku`
 - Prompt: "Read `<checkpoint path>`, then apply these updates: [describe changes]. Write the updated JSON back to `<checkpoint path>`."
 - Use this for ALL checkpoint updates. You cannot write files yourself.
+- **NOTE**: Implementer agents also update the checkpoint directly per-substep. The checkpoint-writer is used for phase-level finalization (Step 5) and review results.
 
 ---
 
@@ -147,7 +148,9 @@ For each pending phase **within your PHASES_TO_EXECUTE list**, execute these ste
 3. Dispatch via Task. The prompt MUST include:
    - The **COMPLETE phase text** from the plan (all sub-phases, all steps, all code blocks — copy verbatim)
    - The project context block
+   - The checkpoint path and this instruction: **"After completing EACH sub-step (e.g. 1.1, 1.2, 1.3, 1.4), update the checkpoint JSON at `<checkpoint path>`. Read the file, set `phases[N].substeps["X.Y"] = "done"`, and write it back. This is MANDATORY — do not batch substep updates."**
    - This instruction: "Implement the assigned phase exactly as written. The plan contains complete code for every step — write it to the specified files. Do not add anything beyond what the plan specifies. Do not omit anything the plan requires. Read each target file before editing (to preserve existing content if modifying). Use `pwsh -Command \"...\"` for all Flutter commands. NEVER run flutter clean."
+   - This instruction: **"Print a status line to stdout after each sub-step: `[PROGRESS] Phase N Step X.Y: DONE — <brief description>`"**
 
 ### Step 2: Dispatch Build-Runner
 
@@ -179,13 +182,15 @@ Dispatch BOTH in a single message (two Task calls):
 
 If findings -> dispatch fixer -> dispatch build-runner -> re-dispatch both reviewers. Max 3 cycles -> BLOCKED.
 
-### Step 5: Dispatch Checkpoint-Writer
+### Step 5: Dispatch Checkpoint-Writer (final phase checkpoint)
 
 Dispatch a checkpoint-writer agent (haiku) with:
 - Path: `<checkpoint path>`
-- Instructions: "Read the checkpoint. Set phase [N] status to 'done'. Set its reviews to: completeness={status:'pass', ...}, code_review={status:'pass', ...}, security={status:'pass', ...}. Add these files to modified_files: [list]. Write the updated JSON."
+- Instructions: "Read the checkpoint. Set phase [N] status to 'done'. Verify all substeps are marked 'done' in phases[N].substeps. Set its reviews to: completeness={status:'pass', ...}, code_review={status:'pass', ...}, security={status:'pass', ...}. Add these files to modified_files: [list]. Write the updated JSON."
 
 After the checkpoint-writer returns, proceed to the next phase **if it is in your PHASES_TO_EXECUTE list**. Otherwise, return STATUS: DONE.
+
+**NOTE**: Step 5 is the FINAL checkpoint write for the phase. Substep-level checkpoint updates happen DURING Step 1 (the implementer updates after each sub-step). Step 5 just finalizes the phase status and review results.
 
 ---
 

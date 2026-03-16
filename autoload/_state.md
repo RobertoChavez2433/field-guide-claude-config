@@ -1,48 +1,63 @@
 # Session State
 
-**Last Updated**: 2026-03-15 | **Session**: 571
+**Last Updated**: 2026-03-15 | **Session**: 577
 
 ## Current Phase
-- **Phase**: Debug Framework IMPLEMENTED + PDF Upstream OCR Hardening ongoing
-- **Status**: Unified Logger, HTTP debug server, systematic-debugging skill rewrite, and Logger migration all complete. 7 phases, 3 review cycles, 3 fix cycles. All committed. PDF fringe-edge crop boundaries plan still ready to implement.
+- **Phase**: OCR Accuracy — 131/131 items, 2 description blockers remain (38, 130)
+- **Status**: Items 100%. Checksum $0. Description 98.5% (2 failures: items 38, 130). All numerics 100%.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (571)
+### What Was Done This Session (577)
 
-1. **Implemented debug framework** — 7 phases via `/implement` skill:
-   - Phase 1: HTTP log server (`tools/debug-server/server.js`) — Node.js, zero-dep, localhost:3947
-   - Phase 2: Unified Logger (`lib/core/logging/logger.dart`) — file + HTTP transports, sensitive scrub, hypothesis tagging
-   - Phase 3: Build script guard (`tools/build.ps1`) — blocks DEBUG_SERVER in release
-   - Phase 4: Logger migration — DebugLogger/AppLogger → deprecation forwarding shells, 6 call sites migrated
-   - Phase 5: Debug skill rewrite — 10-phase log-first workflow, 4 reference files, debug-research-agent
-   - Phase 6: Logger unit tests — 33 tests passing
-   - Phase 7: Validation — 2753 tests pass (2 pre-existing failures), analysis clean
-2. **3 review cycles** (completeness + code + security per phase group):
-   - Cycle 1 (P2-4): 3 critical + 4 high fixed (double init, writeQueue drain, isolate init, JSON recursion, regex, fallback, timeout)
-   - Cycle 2 (P5-6): 2 critical + 6 medium fixed (hypothesis signature, stale path, response shapes, test patterns)
-   - Cycle 3 (final audit): Added 3 missing Logger methods, fixed spec field name, updated stale refs
-3. **Committed both repos** — 6 app commits, 5 config commits, all logically grouped
-4. **Note**: `claude --agent` CLI is broken on Windows (zero output). Workaround: use Task subagents directly.
+1. **Systematic debug** of remaining 3 failures (items 38, 62, 130) using systematic-debugging skill
+2. **Corrected wrong root cause for item 62** — prior session claimed "Tesseract drops 6 from 62, dedup kills it". Actually TWO failure modes exist:
+   - Mode A: Tesseract reads "62" correctly, but pipe artifact in amount cell (`| $1,752.40`) causes `_normalizeCorruptedSymbol` to produce `$$1,752.40` (double dollar sign) which fails parsing → bid_amount=null
+   - Mode B: Tesseract non-deterministically reads "2" instead of "62" → dedup groups with real item 2 → item 62 dropped
+3. **Fixed both failure modes**:
+   - Currency fix: `currency_rules.dart` — don't prepend `$` when remaining text already starts with `$`
+   - Sequential gap-fill: `item_deduplicator.dart` — before standard dedup, check if a duplicate item number fills a gap between neighbors (e.g., 61, "2", 63 → rename "2" to 62)
+4. **Verified**: Springfield 131/131 items, $0 checksum, all numerics 100%
+5. **Committed all changes** from sessions 575-577 as 5 logical commits
 
-### Key Decisions Made
-- Unified Logger replaces both AppLogger and DebugLogger via deprecation forwarding
-- HTTP transport compile-time gated via `bool.fromEnvironment('DEBUG_SERVER')`, triple-layered defense
-- 21 files still import debug_logger.dart via forwarding — intentional incremental migration
-- Debug research agent uses `model: sonnet` (not opus) per project memory preference
-- Added Logger.photo(), Logger.lifecycle(), Logger.bg() beyond original plan
+### Verification Results
+
+| Metric | Previous (S576) | Current (S577) | Delta |
+|--------|-----------------|----------------|-------|
+| Items | 130/131 | 131/131 | +1 (item 62 recovered) |
+| Checksum | $1,752.40 | $0 | Fixed |
+| Description | 98.5% | 98.5% | Same (items 38, 130 remain) |
+| Unit | 100% | 100% | Same |
+| Qty/Price/Amount | 100% | 100% | Same |
+
+### Remaining 2 Failures
+
+#### BLOCKER-34: Item 38 — Superscript `th` → `"` (Tesseract limitation)
+- PDF renders "20th" with `th` as superscript ordinal suffix
+- Tesseract reads superscript as `"` at confidence 0.87
+- **Fix**: Ordinal suffix recovery rule in `_descriptionArtifactRules` — convert `\d{1,3}"` to ordinal when NOT in a measurement context
+
+#### BLOCKER-36: Item 130 — Whitewash destroys `y` descender
+- Whitewash at bleed=2 overwrites descender pixels in wrapped text rows
+- textProtection mask won't work (descenders overlap gridMask → classified as grid, not text)
+- **Fix**: Threshold-based whitewash — only whitewash pixels brighter than ~160 (bleed artifacts are light, text is dark)
 
 ### NOT Done — Carry to Next Session
 
-1. **`/implement` fringe-edge crop boundaries** — plan at `.claude/plans/2026-03-14-fringe-edge-crop-boundaries.md`
-2. **Re-run Springfield** after crop fix — target: <25 FAILs, <10 MISS
-3. **Address text_recognizer_v2 retry regression separately**
-4. **Fix cell_boundary_verification_test.dart** pipe artifact failure (row 111, col 3)
+1. **Verify on Android device** — confirm 131/131 on physical device
+2. **Fix item 130** — threshold-based whitewash
+3. **Fix item 38** — ordinal suffix recovery rule
 
 ## Blockers
 
-### BLOCKER-33: 100% Accuracy — Pipe artifact contamination
-**Status**: PARTIALLY FIXED. Fringe mask bugs fixed (3 bugs). Remaining pipes from crop boundaries. Plan ready.
+### BLOCKER-34: Item 38 — Superscript `th` → `"` (Tesseract limitation)
+**Status**: OPEN — Ordinal suffix recovery rule needed in post-processing.
+
+### BLOCKER-35: Item 62 — Currency parsing + OCR non-determinism
+**Status**: FIXED (S577) — Two fixes: currency double-dollar bug + sequential gap-fill dedup.
+
+### BLOCKER-36: Item 130 — Whitewash destroys `y` descender
+**Status**: OPEN — Threshold-based whitewash needed (skip dark text pixels).
 
 ### BLOCKER-28: SQLite Encryption (sqlcipher)
 **Status**: OPEN — tracked separately.
@@ -55,51 +70,49 @@
 
 ## Recent Sessions
 
-### Session 571 (2026-03-15)
-**Work**: Implemented full debug framework (7 phases). Unified Logger with HTTP debug transport, Logger migration, systematic-debugging skill rewrite, 33 unit tests. 3 review cycles with fixes. Committed 6 app + 5 config commits.
-**Decisions**: Deprecation forwarding for incremental migration. HTTP transport triple-gated. `claude --agent` CLI broken on Windows — use Task subagents.
-**Next**: `/implement` fringe-edge crop boundaries. Retest Springfield.
+### Session 577 (2026-03-15)
+**Work**: Systematic debug of items 38, 62, 130. Corrected wrong root cause for item 62 (NOT a dedup issue — currency parsing bug + OCR non-determinism). Fixed both: currency double-dollar bug in `_normalizeCorruptedSymbol`, sequential gap-fill in `ItemDeduplicator.deduplicate`. Springfield: 131/131, $0 checksum. Committed 5 logical commits.
+**Decisions**: Item 62 had TWO failure modes (Tesseract non-determinism). textProtection won't work for item 130 (descenders classified as grid). Threshold-based whitewash is the correct approach.
+**Next**: Verify on Android device. Fix items 130 (threshold whitewash) and 38 (ordinal suffix recovery).
 
-### Session 570 (2026-03-15)
-**Work**: Root-caused 3 fringe mask bugs (halfThick formula, centerShift double-accounting, inpaint radius). Fixed all 3. Springfield: 79 PASS, 37 FAIL, 15 MISS, 10 BOGUS. Full diagnostic audit confirmed cleaned images are pristine but pipes persist from crop boundaries at grid line centers. Planned fringe-edge crop boundaries (Option A: per-line dynamic fringe threading, 6 phases, 20 steps). Plan code-reviewed and approved.
-**Decisions**: Fix crop boundaries, not grid removal. Option A (per-line fringe) over Option B (constant). Column detection unchanged.
-**Next**: `/implement` fringe-edge crop boundaries plan. Retest Springfield.
+### Session 576 (2026-03-15)
+**Work**: Deep systematic debug of all 6 OCR failures. Fixed 3 (items 22, 26, 97). Deep-traced remaining 3 with individual agents. Springfield: 130/131, desc 98.5%, numerics 100%. Tried whitewash bleed reduction — regressed, reverted.
+**Decisions**: Pipe stripping must run AFTER rules. `_kWhitewashBleed=2` is essential (bleed=1 causes 126/131 regression). Item 130 needs text-aware whitewash. Item 62 needs sequential dedup or PSM 13. Item 38 needs per-token retry or PDF text layer.
+**Next**: Fix item 62 (sequential dedup), fix item 130 (text-aware whitewash), fix item 38 (per-token retry). Commit.
 
-### Session 569 (2026-03-14)
-**Work**: Implemented fringe fallback expansion (2 orchestrator launches, all PASS). Springfield 114→124/131 (+10). Fixed 3 diagnostic tests (13 issues: broken diff image, phantom GT failures, unreachable branches, blind regression gate). Corrected diagnostics show 0 excess removal. Pixel-level inspection reveals fringe residue survives — mask doesn't physically cover the measured fringe zone.
-**Decisions**: Fringe computation is correct but mask coverage has a gap. Need to trace cv.line() expansion vs actual pixel coverage. Diagnostic tests now accurate.
-**Next**: Root-cause why expandedThickness in cv.line() doesn't cover fringe. Fix mask. Re-run Springfield.
+### Session 575 (2026-03-15)
+**Work**: Implemented OCR accuracy fixes plan (6 fixes across 4 phases). Springfield: 130/131, desc 96.2%, unit/qty/price/amount 100%. 4 items fixed (36, 37, 52, 106). 2 regressions from 900 DPI upscale (items 22, 97). Cell crop diagnostic confirms all crops pristine — failures are Tesseract misreads.
+**Decisions**: 900 DPI description upscale is counterproductive — must revert to 600 max. Need deep debug session for remaining 6 failures.
+**Next**: Revert 900 DPI, add pipe to roman numeral regex, deep debug all remaining failures, commit.
 
-### Session 568 (2026-03-14)
-**Work**: Implemented dynamic fringe removal (4 orchestrator launches, all PASS). Springfield 82→114/131 (+32). Deep root cause analysis: 30% of lines have text-adjacent fringe that can't be measured → residue in crops → Tesseract reads "|" → item# garbled → rows misclassified as priceContinuation → mega-blobs. Option A (lower sample threshold) tested — no effect. Fringe fallback plan written.
-**Decisions**: Fix grid_line_remover fringe coverage first. Two-pass: measure all, compute page avg, apply as fallback to zero-measurement lines. Option B (crop inset) is fallback plan.
-**Next**: `/implement` fringe fallback plan. Retest Springfield. If insufficient, implement crop boundary inset.
+### Session 574 (2026-03-15)
+**Work**: Implemented post-inpaint whitewash (Option B) in grid_line_remover. Springfield: 131/131 items, $0 checksum (was $1.39M), numeric 100%. Description 90% — investigated 13 failures (4 categories), wrote OCR normalization plan (5 rules across 2 files).
+**Decisions**: Whitewash at expandedThickness+4px bleed. Text protection confirmed already disabled. Generic algorithmic rules only (no PDF-specific heuristics). 2 items unfixable (OCR limitations).
+**Next**: `/implement` OCR normalization plan. Commit all changes.
 
-### Session 567 (2026-03-14)
-**Work**: Systematic upstream trace of 105→82 Springfield regression. Root-caused to grid fringe residue + text_recognizer retry rewrite. Designed, spec'd, reviewed, and planned dynamic per-line grayscale fringe removal algorithm.
-**Decisions**: Fix grid removal first (most upstream). No text protection subtraction. Fixed fringe parameters (200/3px/10 samples). Fringe band 128-200 with dual-boundary stop.
-**Next**: `/implement` fringe removal plan. Run Springfield. Address text_recognizer retry separately.
+### Session 573 (2026-03-15)
+**Work**: Phase 6 integration verification — Springfield REGRESSED ($1.39M checksum distance, -63 elements). Root-caused via systematic-debugging: TELEA creates ~2px bleed artifacts beyond mask boundary. Orange diff bands confirmed as diagnostic artifact (hardcoded fringeMargin). Generated 1644 cell crop PNGs. Three-agent investigation: Option B (post-inpaint whitewash in grid_line_remover) is the fix.
+**Decisions**: Option A (+2px safety) too marginal. Option C (mask expansion) already working. Option B eliminates TELEA bleed at source.
+**Next**: Investigate Option B with 2 agents, implement, re-run Springfield.
 
 ## Active Plans
+
+### OCR Accuracy Fixes — COMPLETE (Session 576)
+- **Plan**: `.claude/plans/2026-03-15-ocr-accuracy-fixes.md`
+- **Status**: All code fixes applied. Items 22, 26, 97 fixed. Items 38, 62, 130 remain as blockers.
+
+### OCR Normalization Rules — IMPLEMENTED (Session 575)
+- **Plan**: `.claude/plans/2026-03-15-ocr-normalization-rules.md`
+- **Status**: All 3 phases complete.
+
+### Fringe-Edge Crop Boundaries — FIXED (Session 574)
+- **Plan**: `.claude/plans/2026-03-14-fringe-edge-crop-boundaries.md`
+- **Status**: Complete. Whitewash applied. Springfield: $0 checksum, 131/131 items.
 
 ### Debug Framework — IMPLEMENTED (Session 571)
 - **Spec**: `.claude/specs/2026-03-14-debug-framework-spec.md`
 - **Plan**: `.claude/plans/2026-03-14-debug-framework.md`
-- **Status**: All 7 phases complete. 19 files modified. 33 Logger tests pass. All reviews PASS.
-
-### Fringe-Edge Crop Boundaries — PLAN READY (Session 570)
-- **Plan**: `.claude/plans/2026-03-14-fringe-edge-crop-boundaries.md`
-- **Review**: `.claude/code-reviews/2026-03-14-fringe-edge-crop-boundaries-plan-review.md`
-- **Status**: Plan written, code-reviewed, approved. Ready for `/implement`.
-
-### Fringe Fallback Expansion — IMPLEMENTED (Session 569)
-- **Plan**: `.claude/plans/2026-03-14-fringe-fallback-expansion.md`
-- **Status**: Implemented. Fringe mask bugs FIXED in session 570.
-
-### Dynamic Fringe Removal — IMPLEMENTED (Session 568)
-- **Spec**: `.claude/specs/2026-03-14-dynamic-fringe-removal-spec.md`
-- **Plan**: `.claude/plans/2026-03-14-dynamic-fringe-removal.md`
-- **Status**: Implemented. Springfield 82→114/131.
+- **Status**: All 7 phases complete. 19 files modified. 33 Logger tests pass.
 
 ### Sync Engine Hardening — IMPLEMENTED + DEPLOYED (Session 563)
 - **Status**: All 9 phases complete. 29 files modified. 476 sync tests pass. Supabase migrations deployed.
@@ -109,8 +122,12 @@
 - **Status**: 12 phases + Phase 3.5. Reviewed by 3 agents.
 
 ## Reference
+- **OCR Accuracy Fixes Plan**: `.claude/plans/2026-03-15-ocr-accuracy-fixes.md`
+- **OCR Normalization Plan**: `.claude/plans/2026-03-15-ocr-normalization-rules.md`
 - **Debug Framework Spec**: `.claude/specs/2026-03-14-debug-framework-spec.md`
 - **Debug Framework Plan**: `.claude/plans/2026-03-14-debug-framework.md`
 - **Sync Hardening Plan**: `.claude/plans/2026-03-13-sync-engine-hardening.md`
 - **Pipeline Report Test**: `integration_test/springfield_report_test.dart`
+- **Latest Scorecard**: `test/features/pdf/extraction/reports/latest-windows/scorecard.md`
+- **Cell Crop PNGs**: `test/features/pdf/extraction/diagnostics/crops/`
 - **Defects**: `.claude/defects/_defects-pdf.md`, `_defects-sync.md`, `_defects-projects.md`

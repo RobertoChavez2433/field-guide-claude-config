@@ -25,10 +25,10 @@ Archive: .claude/logs/defects-archive.md
 **Prevention**: Treat Stage `2B-ii.6` tuning as experimental until both the cell harness and Springfield improve over the archived pre-wave baseline. Keep diagnostics, but revert behavioral tuning immediately when control columns or item totals regress.
 **Ref**: @lib/features/pdf/services/extraction/stages/grid_line_remover.dart
 
-### [DATA] 2026-03-13: Description Cells Using Row PSM 7 Blank On Multiline Crops (Session 565)
-**Pattern**: `TextRecognizerV2` first pass still inherits `rowPsm` for all columns, so wrapped `description` cells often run with `psm 7`. On Springfield page 6, visually clean multiline description crops like `Timber Wall Repair` and `Pavt Mrkg, Waterborne, 2nd Application 4", Yellow` return blank under `psm 7` but read correctly under multiline-friendly modes like `psm 6`.
-**Prevention**: Make first-pass OCR truly column-aware. Description cells need a multiline-friendly first-pass policy plus result-and-image-gated retries, instead of relying on row-height heuristics.
-**Ref**: @lib/features/pdf/services/extraction/stages/text_recognizer_v2.dart:735-911
+### [DATA] 2026-03-15: _buildCell() Left-to-Right Sort Scrambles Wrapped Descriptions (Session 574)
+**Pattern**: `CellExtractorV2._buildCell()` sorts OCR fragments by `boundingBox.left` only. When a description wraps to two lines within one grid cell, line 2 words (lower X) interleave before line 1 words, producing scrambled text like `"Allowance) Private Property Landscape Repair (Cash"` instead of `"Private Property Landscape Repair (Cash Allowance)"`.
+**Prevention**: Sort Y-first (using Y-band tolerance = 0.5 * median fragment height), then X within each band. This preserves reading order for multi-line cells without breaking single-line text with baseline jitter.
+**Ref**: @lib/features/pdf/services/extraction/stages/cell_extractor_v2.dart:528
 
 ### [DATA] 2026-03-09: BLOCKER-35 — Cross-Device Checksum Divergence $500K (Session 530)
 **Pattern**: After pdfrx migration, both Windows and S25 Ultra extract 130 items (item count parity achieved), but computed checksums diverge by $500K: Windows=$7,602,768.73, S25=$8,102,768.73. OCR element counts also differ slightly (1249 vs 1246). Specific differences: item 94 normalized as "Boy" (Windows) vs "Bey" (S25), item 108 qty changed on Windows but not S25.

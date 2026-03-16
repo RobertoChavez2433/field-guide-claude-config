@@ -4,6 +4,14 @@ Historical defects moved from per-feature defect files. Reference only.
 
 ---
 
+## PDF Feature
+
+### [DATA] 2026-03-13: Description Cells Using Row PSM 7 Blank On Multiline Crops (Session 565)
+**Pattern**: `TextRecognizerV2` first pass still inherits `rowPsm` for all columns, so wrapped `description` cells often run with `psm 7`. On Springfield page 6, visually clean multiline description crops like `Timber Wall Repair` and `Pavt Mrkg, Waterborne, 2nd Application 4", Yellow` return blank under `psm 7` but read correctly under multiline-friendly modes like `psm 6`.
+**Prevention**: Make first-pass OCR truly column-aware. Description cells need a multiline-friendly first-pass policy plus result-and-image-gated retries, instead of relying on row-height heuristics.
+**Ref**: @lib/features/pdf/services/extraction/stages/text_recognizer_v2.dart:735-911
+**Note**: Partially superseded — description column now always uses PSM 6 (session 574 investigation confirmed).
+
 ## PDF (archived 2026-03-14)
 
 ### [QUALITY] 2026-03-08: Silent Null bid_amount Pass-Through — 4-Layer Quality Gap

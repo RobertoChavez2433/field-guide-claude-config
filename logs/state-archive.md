@@ -6,6 +6,13 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 568 (2026-03-14)
+**Work**: Implemented dynamic fringe removal (4 orchestrator launches, all PASS). Springfield 82→114/131 (+32). Deep root cause analysis: 30% of lines have text-adjacent fringe that can't be measured → residue in crops → Tesseract reads "|" → item# garbled → rows misclassified as priceContinuation → mega-blobs. Option A (lower sample threshold) tested — no effect. Fringe fallback plan written.
+**Decisions**: Fix grid_line_remover fringe coverage first. Two-pass: measure all, compute page avg, apply as fallback to zero-measurement lines. Option B (crop inset) is fallback plan.
+**Next**: `/implement` fringe fallback plan. Retest Springfield. If insufficient, implement crop boundary inset.
+
+## March 2026
+
 ### Session 566 (2026-03-14, Codex)
 **Work**: Implemented much of the PDF wave-1 plan: corpus/harness, OCR decision tracing, residue metrics, OCR policy scaffolding, and safe Windows build recovery. Re-ran the Windows Springfield report multiple times and compared against an archived pre-wave baseline.
 **Decisions**: Keep the new harness/diagnostics, but do not treat wave 1 as successful. Revert grid-removal behavior changes when they regress controls. Keep work upstream-only; no downstream compensation.
