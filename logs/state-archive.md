@@ -6,6 +6,24 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 583 (2026-03-17)
+**Work**: Device testing session. Version bump to 0.1.1. Fixed 8 bugs across auth, sync, and admin flows. Discovered root cause: version-upgrade forced signOutLocally() which wiped all local data. Fixed by adding forceReauthOnly() method. Reverted auto-enrollment of pulled projects.
+**Decisions**: forceReauthOnly() preserves local data on upgrade. Draft INSERTs must suppress triggers. Auto-enrollment of pulled projects is WRONG — selective import is intentional.
+**Next**: Commit fixes. Fix project import UX gap. RLS migration.
+
+---
+
+## March 2026
+
+### Session 582 (2026-03-16) — Archived from _state.md (Session 587 rotation)
+**Work**: /implement for project lifecycle (19 phases, 11 orchestrator launches, 0 handoffs). All reviews PASS. Committed 6 logical commits to app repo + 1 to config repo. ~140 files changed total.
+**Decisions**: Merged PR2 phases (15-19) into single orchestrator launch for speed — worked without context exhaustion.
+**Next**: Rebuild + test on device. Push Supabase migrations. Fix BLOCKER-22.
+
+### Session 581 (2026-03-16) — Archived from _state.md (Session 586 rotation)
+**Work**: /writing-plans for project lifecycle. CodeMunch indexed 850 files/5469 symbols. Opus plan-writer produced 19-phase plan.
+**Next**: /implement the plan.
+
 ### Session 577 (2026-03-15) — Archived from _state.md (Session 582 rotation)
 **Work**: Systematic debug of items 38, 62, 130. Corrected wrong root cause for item 62 (NOT a dedup issue — currency parsing bug + OCR non-determinism). Fixed both: currency double-dollar bug in `_normalizeCorruptedSymbol`, sequential gap-fill in `ItemDeduplicator.deduplicate`. Springfield: 131/131, $0 checksum. Committed 5 logical commits.
 **Decisions**: Item 62 had TWO failure modes (Tesseract non-determinism). textProtection won't work for item 130 (descenders classified as grid). Threshold-based whitewash is the correct approach.

@@ -3,7 +3,7 @@
   "name": "Sync Engine",
   "status": "in_progress",
   "description": "Bidirectional offline-first sync between SQLite and Supabase with last-write-wins conflict resolution and soft-delete awareness",
-  "current_phase": "HARDENED (Session 562): Full sync hardening implemented — soft-delete push, upsert pre-check, company validation, error categorization, heartbeat mutex, circuit breaker, orphan auto-delete. 29 files, 476 tests pass. Needs commit + deploy Supabase migrations + device test + PR.",
+  "current_phase": "S588: Phantom pending-count bug fixed (_pushUpsert pulling guard). Project State UI spec includes new project_assignments adapter + auto-enrollment rework. Needs commit + /writing-plans.",
   "docs": {
     "overview": "docs/features/feature-sync-overview.md",
     "architecture": "docs/features/feature-sync-architecture.md",
@@ -39,6 +39,6 @@
   },
   "metrics": {
     "test_coverage_percentage": 92,
-    "last_updated": "2026-03-13T00:00:00Z"
+    "last_updated": "2026-03-18T00:00:00Z"
   }
 }

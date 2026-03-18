@@ -5,6 +5,16 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [CONFIG] 2026-03-17: SyncOrchestrator not registered as Provider — crashes project management (Session 585)
+**Pattern**: `project_list_screen.dart` calls `context.read<SyncOrchestrator>()` in 3 places (network check, import, delete sheet) but `SyncOrchestrator` was never added to the MultiProvider tree in `main.dart`. Every project management action crashes with `ProviderNotFoundException`. The orchestrator was passed to `SyncProvider` constructor but never registered as its own Provider.
+**Prevention**: When a widget calls `context.read<T>()`, verify `T` is registered in the MultiProvider tree. Search `main.dart` for `Provider<T>` before using `context.read<T>()` in any screen.
+**Ref**: @lib/main.dart (missing), @lib/features/projects/presentation/screens/project_list_screen.dart:52,85,114
+
+### [DATA] 2026-03-17: Background sync auto-enrolls ALL company projects defeating selective import (Session 585)
+**Pattern**: BLOCKER-38 fix in `_pullTable()` auto-enrolled every pulled project into `synced_projects`. Since ProjectAdapter uses `ScopeType.direct` (pulls ALL company projects), every background sync enrolled everything, causing all child data to download. This defeats the Import-based UX where users choose which projects to download.
+**Prevention**: `synced_projects` INSERT should ONLY happen via explicit user action (download confirmation, project creation, manual toggle). Never auto-enroll in the sync engine's pull path.
+**Ref**: @lib/features/sync/engine/sync_engine.dart:1082-1088
+
 ### [DATA] 2026-03-06: Pre-generated project UUID causes FK violations for child records (Session 507)
 **Pattern**: `project_setup_screen.dart:66` generates `_projectId = Uuid().v4()` but doesn't INSERT project row until Save. Child records (bid_items, locations, contractors) added via tabs reference this ID and fail FK check against `projects(id)` since `PRAGMA foreign_keys=ON`.
 **Prevention**: Eagerly INSERT a minimal project row when UUID is generated. Use `repository.save()` (bypasses duplicate check). `StartupCleanupService` handles orphaned drafts. Don't enroll draft in `synced_projects` until Save.
