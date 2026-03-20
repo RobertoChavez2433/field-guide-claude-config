@@ -1,34 +1,42 @@
 # Session State
 
-**Last Updated**: 2026-03-19 | **Session**: 598
+**Last Updated**: 2026-03-20 | **Session**: 606
 
 ## Current Phase
-- **Phase**: Test skill redesign IMPLEMENTED. All plans implemented. Massive uncommitted work from S590+.
-- **Status**: All 9 phases done (S598). Build + analyze PASS. All reviews PASS. Uncommitted work from S590+.
+- **Phase**: Baseline bug fixes IMPLEMENTED. 13 bugs fixed across 9 phases. All reviews PASS. 3056 tests pass, 0 failures. Supabase migrations deployed. Uncommitted changes on `feat/sync-engine-rewrite`.
+- **Status**: Ready to commit and re-run E2E baseline.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (598)
+### What Was Done This Session (606)
 
-1. **/implement on test skill redesign plan** — 9 phases, 4 dispatch groups, 4 orchestrator launches, 0 handoffs
-   - Group A (Phases 1,4,5,6,8): TestPhotoService, build script, debug server, flow registry, pruning script
-   - Group B+D (Phases 2,7): HTTP driver server + skill/agent rewrite
-   - Group C (Phase 3): Custom entrypoint (main_driver.dart)
-   - Group E (Phase 9): Cleanup and verification
-2. **All reviews passing** — 0 critical/high findings across all 9 phases. ~16 total fix cycles.
-3. **New files**: `test_photo_service.dart`, `driver_server.dart`, `main_driver.dart`, `prune-test-results.ps1`, `registry.md`
-4. **Modified**: `build.ps1`, `server.js`, `.gitignore`, `SKILL.md`, `test-wave-agent.md`
+1. **`/implement` executed** — 5 orchestrator launches (G0→G4), 0 handoffs
+2. **Phase 0**: 3 Supabase migrations created + pushed (handle_new_user trigger, integrity RPC, security repair)
+3. **Phase 1**: Sync engine fixes — engine-internal enrollment (Bug 1), integrity checker soft-delete (Bug 9), orphan scanner company scope (Bug 10)
+4. **Phase 2**: Todo priority serialization (Bug 2) — `toMap()`, `TodoPriorityConverter`, DB migration v39
+5. **Phase 3**: UI fixes — contractor controller init (Bug 3), calendar flexible (Bug 4), contractor dropdown (Bug 6), ghost project (Bug 8), entry edit keys (Bug 11)
+6. **Phase 4**: Auth fixes — name required at registration (Bug 7), profile completion gate, stale config banner (Bug 15)
+7. **Phase 5**: Sync UI snackbar dedup (Bug 16)
+8. **Phase 6**: Photo direct-inject endpoint (Bug 5)
+9. **Phase 7+8**: Architecture doc + verification (3056 tests, 0 failures, 3 pre-existing warnings)
+10. **Supervisor re-reviewed Phases 7+8** — code-review PASS(L:2), security PASS, QA verified test counts
+11. **Fixed 2 LOW findings** — qualified file path + cross-reference to Loading Pattern in architecture.md
 
 ### What Needs to Happen Next
 
-1. **Commit** all uncommitted work (S590 project state UI + S596 E2E verification + bug triage + S598 test skill redesign)
-2. **Build debug APK** and device test
-3. **Push DB migration** — remote DB has pre-review SQL; local files corrected post-review
+1. **Commit all changes** — 29 modified files on `feat/sync-engine-rewrite`
+2. **Re-run E2E baseline** — target 80%+ pass rate (up from 39.6%)
+3. **Create PR** when baseline confirms improvement
 
-### KNOWN PROBLEMS
-- **OrphanScanner crash**: `column photos.company_id does not exist` — needs join fix
-- **Unknown display name**: `handle_new_user()` trigger only inserts `id`, no `display_name` from metadata
-- **Repair migration needed** — remote DB has pre-review SQL; local files corrected post-review
+### Credentials
+- Stored in `.claude/test-credentials.secret` (gitignored)
+- Admin: rsebastian2433@gmail.com / !T1esr11993
+- Inspector: rsebastian5553@gmail.com / !T1esr11993
+
+### Key Decisions (S606)
+- Security repair migration (20260320000002) added — integrity RPC had cross-tenant data leakage. Server now derives company_id internally via `get_my_company_id()`
+- Dart integrity checker does NOT pass `p_company_id` — only `p_table_name` and `p_supports_soft_delete`
+- `PhotoRepository.createFromFile()` didn't exist — adapted to construct Photo model + `createPhoto()`
 
 ## Blockers
 
@@ -46,62 +54,68 @@
 
 ## Recent Sessions
 
-### Session 598 (2026-03-19)
-**Work**: /implement test skill redesign. 9 phases, 4 dispatch groups, 4 orchestrator launches, 0 handoffs. All reviews PASS. 10 files (3 new Dart, 1 new PS1, 1 new registry, 5 modified). Build + analyze PASS.
-**Decisions**: None new — all key decisions made in S597.
-**Next**: Commit all work (S590+). Build debug APK. Device test.
+### Session 606 (2026-03-20)
+**Work**: Full `/implement` execution — 5 orchestrator launches, 9 phases, 13 bugs fixed. 29 files modified. 3 Supabase migrations deployed. Supervisor re-reviewed Phases 7+8. Fixed 2 LOW doc findings. 3056 tests pass, 0 failures.
+**Decisions**: Security repair migration for integrity RPC (cross-tenant fix). Dart code doesn't pass company_id to RPC. PhotoRepository adapted for direct-inject.
+**Next**: Commit. Re-run E2E baseline. Create PR.
 
-### Session 597 (2026-03-19)
-**Work**: /writing-plans on test skill redesign. Full pipeline: CodeMunch indexing, dependency graph (6 symbols), Opus plan-writer (9 phases, 5 dispatch groups), parallel adversarial review (code REJECT + security APPROVE WITH CONDITIONS). Fixed 22 findings inline (3 CRIT + 5 HIGH + 8 MED + 6 LOW).
-**Decisions**: scheduleTask for pumpAndSettle. Auth token stdout-only. GoRouter for routes. userUpdateTextEditingValue. getTemporaryDirectory. Body size caps. PII redaction in tree dumps.
-**Next**: /implement test skill redesign. Commit all work. Build + device test.
+### Session 605 (2026-03-20)
+**Work**: Full writing-plans pipeline: CodeMunch dependency graph (22 files), opus plan-writer, parallel adversarial review (code-review REJECT + security APPROVE w/ conditions). Fixed 3 CRITICAL + 6 HIGH + 4 MEDIUM findings in plan v2. 15 path corrections.
+**Decisions**: Error reset targets change_log (not entity tables). Bug 10 trusts RLS (no .like filter). RPC allowlist required. Eager checkConfig on login.
+**Next**: /implement the plan. Push Supabase migrations first. Re-run baseline.
 
-### Session 596 (2026-03-19)
-**Work**: Implemented E2E sync verification (7 phases, 20 files). Brainstormed test skill redesign (8 questions). Spec'd HTTP driver architecture (IntegrationTestWidgetsFlutterBinding, port 4948, per-session auth token). Adversarial review (8 MUST-FIX resolved, 6 SC resolved, 3/7 NH accepted).
-**Decisions**: main_driver.dart entrypoint. Claude as orchestrator. 3 tier-based agents. TestPhotoService override. Script-based pruning. since= log queries. *.secret gitignore.
-**Next**: /writing-plans on test skill redesign. /implement. Commit all work.
+### Session 604 (2026-03-20)
+**Work**: Deep exploration of all 17 baseline bugs (4 parallel agents). Brainstormed each bug 1-by-1. Wrote spec v3 with adversarial review (5 MUST-FIX + 7 SHOULD-CONSIDER, all resolved inline). Committed S590+ work (3 commits). Cleaned 137 test screenshots.
+**Decisions**: Engine-internal enrollment for sync pull. `toMap()` fix for priority. `didChangeDependencies` for controller init (deviation documented). SyncProvider dedup for snackbar. Profile-completion gate for existing users.
+**Next**: /writing-plans → /implement 13 bug fixes. Push Supabase migrations first. Re-run baseline.
 
-### Session 595 (2026-03-19)
-**Work**: /writing-plans on bug triage fix spec. Full pipeline: CodeMunch indexing, dependency graph (14 direct files, ~24 canWrite refs), Opus plan-writer (9 phases, 20 sub-phases), parallel adversarial review (both REJECT). Fixed 3 CRITICAL + 5 HIGH + 4 MEDIUM findings inline.
-**Decisions**: 9 phases (added bulk canWrite migration). Dual sync/async _checkNetwork. _disposed flag on orchestrator. DELETE policy tightened. Route guard inside profile != null block.
-**Next**: /implement bug triage plan. /implement E2E verification. Commit S590 work.
+### Session 603 (2026-03-20)
+**Work**: Full baseline E2E test. 38 PASS / 1 FAIL / 16 BLOCKED / 39 SKIP. Both roles tested (admin + inspector). 17 bugs catalogued. Sync pull root cause found (synced_projects empty). Todo push root cause found (priority type mismatch). Testing keys agent added 7 missing key sets. Inspector permissions all correct (T85-T90 PASS).
+**Decisions**: Sync pull fix is #1 priority (unblocks 12+ flows). Todo priority fix is #2. LateInitError is #3.
+**Next**: Fix sync pull + todo priority + _contractorController init. Commit. Re-run baseline.
+
+### Session 602 (2026-03-20)
+**Work**: Expanded test registry from 14 to 104 flows (96 automated + 8 manual). 4 parallel exploration agents mapped all 37 routes, 17 synced tables, 3 roles, all dialogs/forms. Organized into 13 tiers with full dependency chain.
+**Decisions**: 8 flows marked MANUAL. Separate inspector session. Sync verification tier runs after data creation tiers.
+**Next**: Fix sync push + driver text entry. Commit. Begin automated testing.
 
 ## Active Plans
 
+### Baseline Bug Fixes — IMPLEMENTED (Session 606)
+- **Spec**: `.claude/specs/2026-03-20-baseline-bugfix-spec.md` (v3)
+- **Plan**: `.claude/plans/2026-03-20-baseline-bugfix.md` (v2, post-review)
+- **Checkpoint**: `.claude/state/implement-checkpoint.json`
+- **Status**: All 9 phases done. 29 files modified. 3056 tests pass. Ready to commit.
+
+### Test Registry Expansion — COMPLETE (Session 602)
+- **Registry**: `.claude/test-flows/registry.md`
+- **Status**: 104 flows defined. 96 automated, 8 manual.
+
 ### Test Skill Redesign — IMPLEMENTED (Session 598)
-- **Spec**: `.claude/specs/2026-03-19-test-skill-redesign-spec.md`
-- **Plan**: `.claude/plans/2026-03-19-test-skill-redesign.md`
-- **Review**: `.claude/code-reviews/2026-03-19-test-skill-redesign-plan-review.md`
-- **Status**: All 9 phases implemented. 10 files modified. Build + analyze PASS. Needs commit.
+- **Status**: All 9 phases implemented. Needs commit.
 
 ### E2E Sync Verification System — IMPLEMENTED (Session 596)
-- **Spec**: `.claude/specs/2026-03-19-e2e-sync-verification-spec.md`
-- **Plan**: `.claude/plans/2026-03-19-e2e-sync-verification.md`
-- **Status**: All 7 phases implemented. 20 files modified. Build + analyze PASS.
+- **Status**: All 7 phases implemented. Needs commit.
 
 ### Bug Triage Fix — IMPLEMENTED (Session 596)
-- **Spec**: `.claude/specs/2026-03-19-bug-triage-fix-spec.md`
-- **Plan**: `.claude/plans/2026-03-19-bug-triage-fix.md`
-- **Status**: All 9 phases implemented. 30 files modified. Needs commit.
+- **Status**: All 9 phases implemented. Needs commit.
 
 ### Project State UI & Assignments — IMPLEMENTED (Session 590)
-- **Spec**: `.claude/specs/2026-03-18-project-state-ui-spec.md`
-- **Plan**: `.claude/plans/2026-03-18-project-state-ui.md`
-- **Status**: All 11 phases implemented. 38 files modified. Needs commit.
-
-### Project Management E2E Fix — COMMITTED (Session 589)
-- **Status**: Committed in 5 logical commits. Needs device test.
-
-### Sync Hardening & RLS Enforcement — COMMITTED (Session 585)
-- **Status**: All 6 phases. Committed.
+- **Status**: All 11 phases implemented. Needs commit.
 
 ## Reference
-- **Test Skill Redesign Plan**: `.claude/plans/2026-03-19-test-skill-redesign.md`
-- **Test Skill Redesign Review**: `.claude/code-reviews/2026-03-19-test-skill-redesign-plan-review.md`
-- **Dependency Graph**: `.claude/dependency_graphs/2026-03-19-test-skill-redesign/analysis.md`
-- **Bug Triage Fix Plan**: `.claude/plans/2026-03-19-bug-triage-fix.md`
-- **E2E Sync Verification Plan**: `.claude/plans/2026-03-19-e2e-sync-verification.md`
-- **E2E Verification Checkpoint**: `.claude/state/implement-checkpoint.json`
-- **Defects**: `.claude/defects/_defects-pdf.md`, `_defects-sync.md`, `_defects-entries.md`
+- **Implement Checkpoint**: `.claude/state/implement-checkpoint.json`
+- **Bugfix Plan**: `.claude/plans/2026-03-20-baseline-bugfix.md` (v2, reviewed)
+- **Plan Review**: `.claude/code-reviews/2026-03-20-baseline-bugfix-plan-review.md`
+- **Dependency Graph**: `.claude/dependency_graphs/2026-03-20-baseline-bugfix/analysis.md`
+- **Bugfix Spec**: `.claude/specs/2026-03-20-baseline-bugfix-spec.md` (v3)
+- **Adversarial Review**: `.claude/adversarial_reviews/2026-03-20-baseline-bugfix/review.md`
+- **Baseline Report**: `.claude/test_results/2026-03-20_08-02/baseline-report.md`
+- **Checkpoint**: `.claude/test_results/2026-03-20_08-02/checkpoint.json`
+- **Test Skill**: `.claude/skills/test/SKILL.md`
+- **Test Agent**: `.claude/agents/test-wave-agent.md`
+- **Test Credentials**: `.claude/test-credentials.secret`
+- **Test Registry**: `.claude/test-flows/registry.md`
+- **Defects**: `.claude/defects/_defects-projects.md`, `_defects-pdf.md`, `_defects-sync.md`, `_defects-entries.md`
 - **Debug build tag**: `debug-admin-dashboard-v0.1.2` on GitHub releases
 - **Release build tag**: `v0.1.1` on GitHub releases

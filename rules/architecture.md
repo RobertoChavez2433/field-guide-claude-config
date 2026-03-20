@@ -183,3 +183,10 @@ Reference: `lib/features/contractors/data/models/contractor.dart:47-53`
 | `image` | Image preprocessing (grayscale, contrast) |
 | `opencv_dart` | Grid line removal via inpainting |
 | `xml` | HOCR parsing |
+
+## Known Deviations
+
+### didChangeDependencies for Provider-Dependent Controllers (Bug 3 Fix)
+**File:** `lib/features/entries/presentation/screens/home_screen.dart`
+**Why:** `ContractorEditingController` requires `DatabaseService` from Provider, which is not available in `initState()`. The standard Loading Pattern (see above) using `addPostFrameCallback` created a race condition causing `LateInitializationError` when build ran before the callback. Moving to `didChangeDependencies` with a `_controllersInitialized` guard is the established Flutter pattern when `context` is required at build time.
+**Guard:** `_controllersInitialized` flag prevents re-initialization on dependency changes.

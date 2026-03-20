@@ -6,6 +6,16 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 600 (2026-03-19)
+**Work**: Test skill redesigned for autonomous overnight mode. Credentials verified. Ghost project defect logged.
+**Decisions**: Autonomous mode = orchestrator runs directly. Checkpoint.json for compaction recovery.
+**Next**: /test overnight. Commit. Debug APK.
+
+### Session 599 (2026-03-19)
+**Work**: First /test run on Windows. Updated test-wave-agent.md and SKILL.md.
+**Decisions**: Opus for test agents. python3 replaces jq.
+**Next**: Re-run /test. Commit.
+
 ### Session 594 (2026-03-19)
 **Work**: /writing-plans on E2E sync verification spec. Full pipeline: CodeMunch indexing, dependency graph, Opus plan-writer, parallel adversarial review (code REJECT + security APPROVE WITH CONDITIONS). Fixed 4 critical + 4 high findings inline. 7-phase plan with 12 sub-phases.
 **Decisions**: Per-table sync events deferred. Gitignore before .env.secret. _debugServerEnabled gate added.
