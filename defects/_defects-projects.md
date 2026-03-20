@@ -20,6 +20,12 @@ Archive: .claude/logs/defects-archive.md
 **Prevention**: `synced_projects` INSERT should ONLY happen via explicit user action (download confirmation, project creation, manual toggle). Never auto-enroll in the sync engine's pull path.
 **Ref**: @lib/features/sync/engine/sync_engine.dart:1082-1088
 
+### [DATA] 2026-03-19: App kill during project creation leaves orphaned empty project record (Session 600)
+**Pattern**: If the app is killed (force-close, crash, OS reclaim) while the user is on the project creation screen, a project record with no name/number gets persisted to SQLite. This happens because the project row is eagerly inserted (to satisfy FK constraints for child tabs) but the user never completed the form or tapped Save. On next launch the ghost project appears in the project list with blank name and number.
+**Symptom**: Project list shows a card with no name, no project number, just "No client" and "Today".
+**Prevention**: On app startup, scan for projects with NULL/empty name and delete them (cleanup service). Or: mark eagerly-inserted records with a `draft` status and filter them from the project list query until explicitly saved.
+**Ref**: @lib/features/projects/presentation/screens/project_setup_screen.dart:66
+
 ### [DATA] 2026-03-06: Pre-generated project UUID causes FK violations for child records (Session 507)
 **Pattern**: `project_setup_screen.dart:66` generates `_projectId = Uuid().v4()` but doesn't INSERT project row until Save. Child records (bid_items, locations, contractors) added via tabs reference this ID and fail FK check against `projects(id)` since `PRAGMA foreign_keys=ON`.
 **Prevention**: Eagerly INSERT a minimal project row when UUID is generated. Use `repository.save()` (bypasses duplicate check). `StartupCleanupService` handles orphaned drafts. Don't enroll draft in `synced_projects` until Save.
