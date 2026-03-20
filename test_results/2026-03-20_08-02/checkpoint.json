@@ -1,0 +1,52 @@
+{
+  "run_id": "2026-03-20_08-02",
+  "platform": "windows",
+  "results_dir": ".claude/test_results/2026-03-20_08-02",
+  "current_role": "admin",
+  "completed": {
+    "admin": {
+      "T01": "PASS", "T02": "PASS", "T03": "PASS",
+      "T05": "PASS", "T06": "PASS", "T07": "PASS",
+      "T08": "PASS", "T09": "PASS", "T10": "PASS",
+      "T11": "PASS", "T12": "PASS", "T13": "PASS",
+      "T14": "PASS", "T15": "PASS", "T16": "PASS",
+      "T17": "BLOCKED", "T18": "BLOCKED", "T19": "BLOCKED",
+      "T20": "BLOCKED", "T21": "BLOCKED",
+      "T22": "FAIL", "T24": "BLOCKED", "T25": "BLOCKED",
+      "T26": "PASS", "T31": "PASS",
+      "T35": "PASS", "T38": "PASS", "T39": "PASS",
+      "T41": "PASS",
+      "T44": "PASS", "T45": "PASS", "T46": "PASS",
+      "T47": "PASS", "T48": "PASS", "T49": "PASS",
+      "T50": "PASS", "T51": "PASS", "T52": "PASS", "T53": "PASS",
+      "T92": "PASS", "T93": "PASS", "T94": "PASS"
+    },
+    "inspector": {}
+  },
+  "next_flow": "FIX_SYNC_THEN_RERUN",
+  "bugs": [
+    {"flow": "SYNC", "desc": "Pull skips all project-scoped tables: synced_projects empty after project pull", "severity": "CRITICAL"},
+    {"flow": "SYNC", "desc": "Todo push: priority sends string 'normal' but Supabase expects integer (22P02)", "severity": "CRITICAL"},
+    {"flow": "STARTUP", "desc": "LateInitializationError: _contractorController not initialized (3 occurrences)", "severity": "HIGH"},
+    {"flow": "T15", "desc": "Calendar month view RenderFlex overflow 17px (3 occurrences)", "severity": "HIGH"},
+    {"flow": "T22", "desc": "Photo injection queued but UI shows 0 photos", "severity": "HIGH"},
+    {"flow": "T08", "desc": "Contractor type dropdown selection not applied", "severity": "HIGH"},
+    {"flow": "T13", "desc": "Inspector display name shows Unknown", "severity": "MEDIUM"},
+    {"flow": "T05", "desc": "Ghost project on duplicate project number", "severity": "MEDIUM"},
+    {"flow": "STARTUP", "desc": "Integrity check failed for project_assignments (2x)", "severity": "MEDIUM"},
+    {"flow": "STARTUP", "desc": "OrphanScanner scan failed - photos.company_id (2x)", "severity": "MEDIUM"},
+    {"flow": "T25", "desc": "Weather dropdown items lack testing keys", "severity": "LOW"},
+    {"flow": "T41", "desc": "PDF Preview and Save As buttons lack testing keys", "severity": "LOW"},
+    {"flow": "T33", "desc": "Todo checkbox lacks testing key", "severity": "LOW"},
+    {"flow": "T11", "desc": "Pay item unit dropdown items lack testing keys", "severity": "LOW"}
+  ],
+  "observations": [
+    "29 PASS, 1 FAIL, 6 BLOCKED, 44 SKIP, 2 MANUAL out of 96 flows",
+    "Sync pull fundamentally broken — synced_projects empty, 15 adapters skipped",
+    "Sync push broken for todos — priority type mismatch",
+    "Driver text entry notifyListeners bug is FIXED",
+    "10 error logs: 3 RenderFlex, 3 LateInitError, 2 integrity, 2 orphan scanner",
+    "PDF generation works end-to-end",
+    "Entry wizard accessible from Dashboard only (no Calendar FAB)"
+  ]
+}
