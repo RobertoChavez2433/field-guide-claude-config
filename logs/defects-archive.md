@@ -4,6 +4,18 @@ Historical defects moved from per-feature defect files. Reference only.
 
 ---
 
+## Sync (archived 2026-03-20)
+
+### [DATA] 2026-03-18: Delete Forever skips Supabase — raw database.delete() bypasses change_log (Session 587)
+**Pattern**: `TrashScreen._confirmDeleteForever()` called `database.delete()` directly instead of `SoftDeleteService.hardDeleteWithSync()`. No change_log entry created, so sync never pushed the delete to Supabase.
+**Prevention**: Never use raw `database.delete()` for user-facing delete operations. Always use `SoftDeleteService.hardDeleteWithSync()`.
+
+### [DATA] 2026-03-18: Permanent offline trap — _isOnline never recovers once false (Session 587)
+**Pattern**: `_syncWithRetry()` only called `checkDnsReachability()` on retry attempts, not the first. Once `_isOnline=false`, no code path re-tested it.
+**Prevention**: Always call `checkDnsReachability()` before trusting `_isOnline`.
+
+---
+
 ### [CONFIG] 2026-03-16: InternetAddress.lookup fails on Android despite good connectivity (Session 580) — Archived S591
 **Pattern**: `SyncOrchestrator.checkDnsReachability()` used `InternetAddress.lookup(hostname)` which fails with errno=7 on Android. Known Android issue — Dart's DNS lookup doesn't bind to the correct network interface.
 **Prevention**: Use HTTP HEAD request instead of raw DNS lookup.

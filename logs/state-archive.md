@@ -4,6 +4,15 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ---
 
+### Session 604 (2026-03-20)
+**Work**: Deep exploration of all 17 baseline bugs (4 parallel agents). Brainstormed each bug 1-by-1. Wrote spec v3 with adversarial review (5 MUST-FIX + 7 SHOULD-CONSIDER, all resolved inline). Committed S590+ work (3 commits). Cleaned 137 test screenshots.
+**Decisions**: Engine-internal enrollment for sync pull. `toMap()` fix for priority. `didChangeDependencies` for controller init (deviation documented). SyncProvider dedup for snackbar. Profile-completion gate for existing users.
+
+### Session 603 (2026-03-20)
+**Work**: Full baseline E2E test. 38 PASS / 1 FAIL / 16 BLOCKED / 39 SKIP. Both roles tested (admin + inspector). 17 bugs catalogued. Sync pull root cause found (synced_projects empty). Todo push root cause found (priority type mismatch). Testing keys agent added 7 missing key sets. Inspector permissions all correct (T85-T90 PASS).
+**Decisions**: Sync pull fix is #1 priority (unblocks 12+ flows). Todo priority fix is #2. LateInitError is #3.
+**Next**: Fix sync pull + todo priority + _contractorController init. Commit. Re-run baseline.
+
 ### Session 602 (2026-03-20)
 **Work**: Expanded test registry from 14 to 104 flows (96 automated + 8 manual). 4 parallel exploration agents mapped all 37 routes, 17 synced tables, 3 roles, all dialogs/forms. Organized into 13 tiers with full dependency chain.
 **Decisions**: 8 flows marked MANUAL. Separate inspector session. Sync verification tier runs after data creation tiers.
