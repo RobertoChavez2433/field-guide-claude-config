@@ -6,6 +6,31 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 594 (2026-03-19)
+**Work**: /writing-plans on E2E sync verification spec. Full pipeline: CodeMunch indexing, dependency graph, Opus plan-writer, parallel adversarial review (code REJECT + security APPROVE WITH CONDITIONS). Fixed 4 critical + 4 high findings inline. 7-phase plan with 12 sub-phases.
+**Decisions**: Per-table sync events deferred. Gitignore before .env.secret. _debugServerEnabled gate added.
+**Next**: /writing-plans on bug triage spec. /implement both plans. Commit S590 work.
+
+### Session 593 (2026-03-19)
+**Work**: Bug triage — read bugs_report.md, dispatched 4 exploration agents (all 13 bugs confirmed), brainstormed fix approach (8 questions), wrote spec, adversarial review (8 MUST-FIX + 9 SHOULD-CONSIDER all resolved). New permission model: canManageProjects + canEditFieldData replacing canWrite.
+**Decisions**: Inspector = field data CRUD. canWrite removed. is_viewer() body replaced not dropped. RLS INSERT + UPDATE tightened. BUG-005+002 merged.
+**Next**: /writing-plans → /implement bug triage fixes. flutter test. Commit S590 work.
+
+### Session 592 (2026-03-19)
+**Work**: Designed E2E sync verification system. Researched testing keys (488 existing, ~30 missing). Brainstormed + spec'd 42-flow test checklist covering 17 tables. Adversarial review (10 MUST-FIX resolved). Architecture: flutter_driver + debug server hybrid.
+**Decisions**: flutter_driver for driving, debug server for diagnostics. E2E prefix for test data. `.env.secret` for service role key. flow_registry in .claude/.
+**Next**: /writing-plans → /implement verification system. Fix BUG-006 (blocks sync testing). Commit S590 work.
+
+### Session 591 (2026-03-18)
+**Work**: Live 2-device testing (S25 admin + Windows inspector). Filed 14 bugs in `bugs_report.md`. Critical: sticky _isOnline kills sync (BUG-006), synced_projects gap (BUG-005), no route guards (BUG-007), canWrite=true for inspector (BUG-008). Permission audit found 10 inspector role gaps.
+**Decisions**: BUG-013 dismissed (inspector remove-from-device is intentional). Session ended early — S25 sync blocked.
+**Next**: Fix BUG-006 (sticky _isOnline). Fix BUG-005/007/008. Re-run untested flows. Commit S590 work.
+
+### Session 590 (2026-03-18)
+**Work**: /implement project state UI plan (11 phases, 9 orchestrator launches, 0 handoffs). 38 files modified. All reviews PASS. New: project_assignments table, adapter, provider, 3-tab list screen, assignment wizard.
+**Decisions**: None new — followed S588-S589 spec/plan decisions.
+**Next**: flutter test + analyze. Commit. Fix OrphanScanner + display_name bugs. Build + device test.
+
 ### Session 587 (2026-03-18)
 **Work**: Device testing bug fixes (P1 location, P2 weather, P4/P8 delete-sync, P6/P7 admin offline). CRITICAL: found and fixed sync permanent offline trap (_isOnline never recovers). Debug APK v0.1.2-debug-s587 on GitHub.
 **Decisions**: Tombstone check via change_log not separate table. P3/P5 are network, not code.

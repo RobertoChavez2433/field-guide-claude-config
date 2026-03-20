@@ -1,53 +1,36 @@
 # Session State
 
-**Last Updated**: 2026-03-19 | **Session**: 592
+**Last Updated**: 2026-03-19 | **Session**: 598
 
 ## Current Phase
-- **Phase**: E2E sync verification system designed and spec'd. Ready for /writing-plans → /implement.
-- **Status**: S590 Project State UI work still uncommitted. 14 bugs from S591 still open.
+- **Phase**: Test skill redesign IMPLEMENTED. All plans implemented. Massive uncommitted work from S590+.
+- **Status**: All 9 phases done (S598). Build + analyze PASS. All reviews PASS. Uncommitted work from S590+.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (592)
+### What Was Done This Session (598)
 
-1. **Researched existing testing infrastructure** — 488 testing keys across 12 files, test harness with flutter_driver, debug server on port 3947
-2. **Identified ~30 missing testing keys** across sync dashboard, project list tabs, filter chips, dialogs, assignment step, project switcher
-3. **Brainstormed + spec'd E2E sync verification system** — 42 test flows across 7 tiers covering all 17 synced tables
-4. **Adversarial review** (code-review + security) found 10 MUST-FIX items — all resolved in spec:
-   - 5 table name mismatches corrected (daily_entries, todo_items, entry_personnel_counts, entry_equipment, inspector_forms)
-   - flutter_driver for driving app (not custom HTTP server) + debug server for diagnostics
-   - SERVICE_ROLE_KEY in `.env.secret` (not `.env`)
-   - T31 RLS test must use user JWT, not service role key
-   - Cleanup enforces `E2E ` prefix
-5. **Spec saved**: `.claude/specs/2026-03-19-e2e-sync-verification-spec.md`
-6. **Review saved**: `.claude/adversarial_reviews/2026-03-19-e2e-sync-verification/review.md`
-
-### Key Decisions (S592)
-- Hybrid approach: flutter_driver for coordinates/taps + HTTP debug server for diagnostics/logs
-- New `/sync/status` endpoint on existing debug server (port 3947) for sync completion polling
-- E2E prefix on all test data, existing account (no separate test company)
-- `flow_registry.md` in `.claude/test_results/` (persists in config repo, not gitignored)
-- Windows-only testing for now; device-adaptable when phone available
+1. **/implement on test skill redesign plan** — 9 phases, 4 dispatch groups, 4 orchestrator launches, 0 handoffs
+   - Group A (Phases 1,4,5,6,8): TestPhotoService, build script, debug server, flow registry, pruning script
+   - Group B+D (Phases 2,7): HTTP driver server + skill/agent rewrite
+   - Group C (Phase 3): Custom entrypoint (main_driver.dart)
+   - Group E (Phase 9): Cleanup and verification
+2. **All reviews passing** — 0 critical/high findings across all 9 phases. ~16 total fix cycles.
+3. **New files**: `test_photo_service.dart`, `driver_server.dart`, `main_driver.dart`, `prune-test-results.ps1`, `registry.md`
+4. **Modified**: `build.ps1`, `server.js`, `.gitignore`, `SKILL.md`, `test-wave-agent.md`
 
 ### What Needs to Happen Next
 
-1. **Run /writing-plans** on the e2e sync verification spec
-2. **Run /implement** to build the verification system (testing keys, debug server sync status, verify-sync.ps1, flow registry)
-3. **Fix BUG-006** — sticky `_isOnline` flag (critical, blocks all sync testing)
-4. **Fix BUG-005** — `synced_projects` enrollment gap
-5. **Fix BUG-007 + BUG-008** — route guards + `canWrite` permission model
-6. **Still pending from S590**: flutter test, analyze, commit Project State UI work
+1. **Commit** all uncommitted work (S590 project state UI + S596 E2E verification + bug triage + S598 test skill redesign)
+2. **Build debug APK** and device test
+3. **Push DB migration** — remote DB has pre-review SQL; local files corrected post-review
 
 ### KNOWN PROBLEMS
 - **OrphanScanner crash**: `column photos.company_id does not exist` — needs join fix
 - **Unknown display name**: `handle_new_user()` trigger only inserts `id`, no `display_name` from metadata
 - **Repair migration needed** — remote DB has pre-review SQL; local files corrected post-review
-- **14 bugs in `bugs_report.md`** — see file for full details
 
 ## Blockers
-
-### BLOCKER-22: Location Field Stuck "Loading"
-**Status**: FIXED (S587)
 
 ### BLOCKER-34: Item 38 — Superscript `th` → `"` (Tesseract limitation)
 **Status**: OPEN
@@ -63,59 +46,62 @@
 
 ## Recent Sessions
 
-### Session 592 (2026-03-19)
-**Work**: Designed E2E sync verification system. Researched testing keys (488 existing, ~30 missing). Brainstormed + spec'd 42-flow test checklist covering 17 tables. Adversarial review (10 MUST-FIX resolved). Architecture: flutter_driver + debug server hybrid.
-**Decisions**: flutter_driver for driving, debug server for diagnostics. E2E prefix for test data. `.env.secret` for service role key. flow_registry in .claude/.
-**Next**: /writing-plans → /implement verification system. Fix BUG-006 (blocks sync testing). Commit S590 work.
+### Session 598 (2026-03-19)
+**Work**: /implement test skill redesign. 9 phases, 4 dispatch groups, 4 orchestrator launches, 0 handoffs. All reviews PASS. 10 files (3 new Dart, 1 new PS1, 1 new registry, 5 modified). Build + analyze PASS.
+**Decisions**: None new — all key decisions made in S597.
+**Next**: Commit all work (S590+). Build debug APK. Device test.
 
-### Session 591 (2026-03-18)
-**Work**: Live 2-device testing (S25 admin + Windows inspector). Filed 14 bugs in `bugs_report.md`. Critical: sticky _isOnline kills sync (BUG-006), synced_projects gap (BUG-005), no route guards (BUG-007), canWrite=true for inspector (BUG-008). Permission audit found 10 inspector role gaps.
-**Decisions**: BUG-013 dismissed (inspector remove-from-device is intentional). Session ended early — S25 sync blocked.
-**Next**: Fix BUG-006 (sticky _isOnline). Fix BUG-005/007/008. Re-run untested flows. Commit S590 work.
+### Session 597 (2026-03-19)
+**Work**: /writing-plans on test skill redesign. Full pipeline: CodeMunch indexing, dependency graph (6 symbols), Opus plan-writer (9 phases, 5 dispatch groups), parallel adversarial review (code REJECT + security APPROVE WITH CONDITIONS). Fixed 22 findings inline (3 CRIT + 5 HIGH + 8 MED + 6 LOW).
+**Decisions**: scheduleTask for pumpAndSettle. Auth token stdout-only. GoRouter for routes. userUpdateTextEditingValue. getTemporaryDirectory. Body size caps. PII redaction in tree dumps.
+**Next**: /implement test skill redesign. Commit all work. Build + device test.
 
-### Session 590 (2026-03-18)
-**Work**: /implement project state UI plan (11 phases, 9 orchestrator launches, 0 handoffs). 38 files modified. All reviews PASS. New: project_assignments table, adapter, provider, 3-tab list screen, assignment wizard.
-**Decisions**: None new — followed S588-S589 spec/plan decisions.
-**Next**: flutter test + analyze. Commit. Fix OrphanScanner + display_name bugs. Build + device test.
+### Session 596 (2026-03-19)
+**Work**: Implemented E2E sync verification (7 phases, 20 files). Brainstormed test skill redesign (8 questions). Spec'd HTTP driver architecture (IntegrationTestWidgetsFlutterBinding, port 4948, per-session auth token). Adversarial review (8 MUST-FIX resolved, 6 SC resolved, 3/7 NH accepted).
+**Decisions**: main_driver.dart entrypoint. Claude as orchestrator. 3 tier-based agents. TestPhotoService override. Script-based pruning. since= log queries. *.secret gitignore.
+**Next**: /writing-plans on test skill redesign. /implement. Commit all work.
 
-### Session 589 (2026-03-18)
-**Work**: Committed all S585-S588 work (5 app commits, 1 config commit). /writing-plans produced 11-phase project state UI plan. Adversarial review (code+security) found 4 CRITICAL + 5 HIGH — all fixed inline. Plan ready for /implement.
-**Decisions**: project_assignments NOT in triggeredTables (adapter-driven push). Dedicated enforce_assignment_assigned_by() trigger. Creator locked in wizard. RemovalDialog requires isOnline.
-**Next**: /implement project state UI. Fix OrphanScanner + display_name bugs. Build + device test.
-
-### Session 588 (2026-03-18)
-**Work**: Fixed admin dashboard RPC type mismatch + sync phantom-pending bug. Brainstormed + spec'd Project State UI (3-tab layout, project_assignments table, assignment wizard, auto-enrollment). Adversarial review complete (6 MUST-FIX resolved, 8 SHOULD-CONSIDER decided). Debug APK on GitHub.
-**Decisions**: Assignments = organizational not access-control. Scoped SELECT RLS. Archived respects assignments. In-memory wizard state.
-**Next**: Commit. /writing-plans for project state UI. Fix OrphanScanner + display_name bugs.
+### Session 595 (2026-03-19)
+**Work**: /writing-plans on bug triage fix spec. Full pipeline: CodeMunch indexing, dependency graph (14 direct files, ~24 canWrite refs), Opus plan-writer (9 phases, 20 sub-phases), parallel adversarial review (both REJECT). Fixed 3 CRITICAL + 5 HIGH + 4 MEDIUM findings inline.
+**Decisions**: 9 phases (added bulk canWrite migration). Dual sync/async _checkNetwork. _disposed flag on orchestrator. DELETE policy tightened. Route guard inside profile != null block.
+**Next**: /implement bug triage plan. /implement E2E verification. Commit S590 work.
 
 ## Active Plans
 
-### E2E Sync Verification System — SPEC COMPLETE (Session 592)
+### Test Skill Redesign — IMPLEMENTED (Session 598)
+- **Spec**: `.claude/specs/2026-03-19-test-skill-redesign-spec.md`
+- **Plan**: `.claude/plans/2026-03-19-test-skill-redesign.md`
+- **Review**: `.claude/code-reviews/2026-03-19-test-skill-redesign-plan-review.md`
+- **Status**: All 9 phases implemented. 10 files modified. Build + analyze PASS. Needs commit.
+
+### E2E Sync Verification System — IMPLEMENTED (Session 596)
 - **Spec**: `.claude/specs/2026-03-19-e2e-sync-verification-spec.md`
-- **Review**: `.claude/adversarial_reviews/2026-03-19-e2e-sync-verification/review.md`
-- **Status**: Spec approved. Needs /writing-plans → /implement.
+- **Plan**: `.claude/plans/2026-03-19-e2e-sync-verification.md`
+- **Status**: All 7 phases implemented. 20 files modified. Build + analyze PASS.
+
+### Bug Triage Fix — IMPLEMENTED (Session 596)
+- **Spec**: `.claude/specs/2026-03-19-bug-triage-fix-spec.md`
+- **Plan**: `.claude/plans/2026-03-19-bug-triage-fix.md`
+- **Status**: All 9 phases implemented. 30 files modified. Needs commit.
 
 ### Project State UI & Assignments — IMPLEMENTED (Session 590)
 - **Spec**: `.claude/specs/2026-03-18-project-state-ui-spec.md`
 - **Plan**: `.claude/plans/2026-03-18-project-state-ui.md`
-- **Review**: `.claude/code-reviews/2026-03-18-project-state-ui-plan-review.md`
-- **Status**: All 11 phases implemented (9 orchestrator launches). 38 files modified. Needs commit + device test.
+- **Status**: All 11 phases implemented. 38 files modified. Needs commit.
 
 ### Project Management E2E Fix — COMMITTED (Session 589)
-- **Spec**: `.claude/specs/2026-03-17-project-management-e2e-spec.md`
-- **Plan**: `.claude/plans/2026-03-17-project-management-e2e.md`
-- **Status**: All 11 phases implemented. Committed in 5 logical commits. Needs device test.
+- **Status**: Committed in 5 logical commits. Needs device test.
 
-### Sync Hardening & RLS Enforcement — IMPLEMENTED + COMMITTED (Session 585)
-- **Plan**: `.claude/plans/2026-03-17-sync-hardening-and-rls.md`
-- **Status**: All 6 phases implemented. 2962 tests passing. Committed.
+### Sync Hardening & RLS Enforcement — COMMITTED (Session 585)
+- **Status**: All 6 phases. Committed.
 
 ## Reference
-- **E2E Sync Verification Spec**: `.claude/specs/2026-03-19-e2e-sync-verification-spec.md`
-- **Project State UI Spec**: `.claude/specs/2026-03-18-project-state-ui-spec.md`
-- **Project Management E2E Spec**: `.claude/specs/2026-03-17-project-management-e2e-spec.md`
-- **Project Lifecycle Spec**: `.claude/specs/2026-03-16-project-lifecycle-spec.md`
-- **Pipeline UX Spec**: `.claude/specs/2026-03-15-pipeline-ux-overhaul-spec.md`
+- **Test Skill Redesign Plan**: `.claude/plans/2026-03-19-test-skill-redesign.md`
+- **Test Skill Redesign Review**: `.claude/code-reviews/2026-03-19-test-skill-redesign-plan-review.md`
+- **Dependency Graph**: `.claude/dependency_graphs/2026-03-19-test-skill-redesign/analysis.md`
+- **Bug Triage Fix Plan**: `.claude/plans/2026-03-19-bug-triage-fix.md`
+- **E2E Sync Verification Plan**: `.claude/plans/2026-03-19-e2e-sync-verification.md`
+- **E2E Verification Checkpoint**: `.claude/state/implement-checkpoint.json`
 - **Defects**: `.claude/defects/_defects-pdf.md`, `_defects-sync.md`, `_defects-entries.md`
 - **Debug build tag**: `debug-admin-dashboard-v0.1.2` on GitHub releases
 - **Release build tag**: `v0.1.1` on GitHub releases
