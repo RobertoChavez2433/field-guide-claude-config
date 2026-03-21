@@ -1,0 +1,246 @@
+{
+  "run_id": "2026-03-20_20-21",
+  "platform": "windows",
+  "results_dir": ".claude/test_results/2026-03-20_20-21",
+  "current_role": "admin",
+  "completed": {
+    "admin": {
+      "T01": "PASS",
+      "T02": "PASS",
+      "T03": "PASS",
+      "T04": "PASS",
+      "T05": "PASS",
+      "T06": "PASS",
+      "T07": "PASS",
+      "T08": "PASS",
+      "T09": "PASS",
+      "T10": "PASS",
+      "T11": "PASS",
+      "T12": "PASS",
+      "T13": "PASS",
+      "T14": "PASS",
+      "T15": "PASS",
+      "T16": "PASS",
+      "T17": "PASS",
+      "T18": "PASS",
+      "T19": "PASS",
+      "T20": "FAIL",
+      "T21": "FAIL",
+      "T22": "PASS",
+      "T23": "PASS",
+      "T24": "PASS",
+      "T25": "PASS",
+      "T26": "PASS",
+      "T27": "FAIL",
+      "T28": "BLOCKED",
+      "T29": "BLOCKED",
+      "T30": "PASS",
+      "T31": "PASS",
+      "T32": "PASS",
+      "T33": "PASS",
+      "T34": "PASS",
+      "T35": "PASS",
+      "T36": "PASS",
+      "T37": "N/A",
+      "T38": "PASS",
+      "T39": "PASS",
+      "T40": "PASS",
+      "T41": "PASS",
+      "T42": "PASS",
+      "T43": "N/A",
+      "T44": "PASS",
+      "T45": "PASS",
+      "T46": "PASS",
+      "T47": "PASS",
+      "T48": "PASS",
+      "T49": "PASS",
+      "T50": "PASS",
+      "T51": "PASS",
+      "T52": "PASS",
+      "T53": "PASS",
+      "T54": "PASS",
+      "T55": "PASS",
+      "T56": "N/A",
+      "T57": "N/A",
+      "T58": "PASS",
+      "T59": "PASS",
+      "T60": "PASS",
+      "T61": "PASS",
+      "T62": "PASS",
+      "T63": "PASS",
+      "T64": "BLOCKED",
+      "T65": "PASS",
+      "T66": "PASS",
+      "T67": "FAIL",
+      "T68": "BLOCKED",
+      "T69": "FAIL",
+      "T70": "PASS",
+      "T71": "PASS",
+      "T72": "PASS",
+      "T73": "N/A",
+      "T74": "FAIL",
+      "T75": "N/A",
+      "T76": "N/A",
+      "T77": "FAIL",
+      "T78": "FAIL",
+      "T79": "FAIL",
+      "T80": "PASS",
+      "T81": "FAIL",
+      "T82": "FAIL",
+      "T83": "PASS",
+      "T84": "FAIL"
+    },
+    "inspector": {
+      "T85": "BLOCKED",
+      "T86": "PASS",
+      "T87": "PASS",
+      "T88": "PASS",
+      "T89": "BLOCKED",
+      "T90": "BLOCKED",
+      "T91": "BLOCKED"
+    }
+  },
+  "next_flow": "T92",
+  "admin_tier12": {
+    "T92": "PASS",
+    "T93": "PASS",
+    "T94": "PASS",
+    "T95": "BLOCKED",
+    "T96": "BLOCKED"
+  },
+  "bugs": [
+    {
+      "role": "admin",
+      "flow": "T20",
+      "desc": "report_add_quantity_dialog.dart had no testing keys (FIXED by agent). Dismissing dialog caused _dependents.isEmpty assertion crash (red screen). App required full restart.",
+      "screenshot": "admin-T22-check.png"
+    },
+    {
+      "role": "admin",
+      "flow": "T27",
+      "desc": "DraftsListScreen: checkbox taps via driver update visual state but _selectedIds set does not update. Review Selected button stays disabled (onPressed: null). Likely StatefulWidget state management issue with driver interactions.",
+      "screenshot": "admin-T27-debug2.png"
+    },
+    {
+      "role": "infra",
+      "flow": "N/A",
+      "desc": "entry_equipment table missing created_at column on Supabase remote — caused persistent sync push failure (PGRST204). Fixed with migration 20260321000002.",
+      "screenshot": null
+    },
+    {
+      "role": "infra",
+      "flow": "N/A",
+      "desc": "[SECURITY] entry_equipment and entry_personnel tables have UNRESTRICTED RLS — no policies. Need RLS enabled + project-scoped policies.",
+      "screenshot": null
+    },
+    {
+      "role": "infra",
+      "flow": "N/A",
+      "desc": "entry_personnel table appears to be an orphan (app uses entry_personnel_counts). Investigate if it can be dropped.",
+      "screenshot": null
+    },
+    {
+      "role": "feature",
+      "flow": "T37",
+      "desc": "[FEATURE] MDOT 0582B forms have no submit workflow — section-by-section completion only. No form_submit_btn exists. T37 marked N/A.",
+      "screenshot": null
+    },
+    {
+      "role": "feature",
+      "flow": "N/A",
+      "desc": "[FEATURE] MDOT 0582B forms should be attachable to daily entries. If form date aligns with entry date, prompt user to attach. Currently forms live independently with no entry link.",
+      "screenshot": null
+    },
+    {
+      "role": "infra",
+      "flow": "T55",
+      "desc": "[DRIVER] DropdownButton duplicate keys: popup overlay items share keys with collapsed dropdown items. Driver taps the hidden collapsed item instead of the popup item when reverting selection. Role revert from Engineer->Inspector failed via driver.",
+      "screenshot": "admin-T55-revert3.png"
+    },
+    {
+      "role": "infra",
+      "flow": "N/A",
+      "desc": "[SYNC] Persistent 'Sync error: Sync failed' banner on Admin Dashboard. Visible in T53-T58 screenshots.",
+      "screenshot": "admin-T55-debug.png"
+    },
+    {
+      "role": "admin",
+      "flow": "N/A",
+      "desc": "[BUG] Duplicate GlobalKeys detected in widget tree — appeared twice during session. Causes widget tree truncation and unpredictable behavior.",
+      "screenshot": null
+    },
+    {
+      "role": "infra",
+      "flow": "N/A",
+      "desc": "[SYNC] Integrity check failed for entry_contractors — PostgrestException 'Invalid table name: entry_contractors' (P0001). Sync engine references a table name that doesn't exist on Supabase.",
+      "screenshot": null
+    },
+    {
+      "role": "admin",
+      "flow": "T67",
+      "desc": "[MISSING KEY] contractor_editor_view_mode duplicate key — two contractors share the same static key. Also personnel_types_add key does not exist.",
+      "screenshot": null
+    },
+    {
+      "role": "admin",
+      "flow": "T68",
+      "desc": "[LAYOUT] Report screen inline preview on home screen does not scroll past Safety section — Quantities and Attachments/Photos sections are not accessible. Photos exist but cannot be interacted with.",
+      "screenshot": "admin-T68-check.png"
+    },
+    {
+      "role": "admin",
+      "flow": "T69",
+      "desc": "[DRIVER] InputChip delete button (equipment chip X icon) — driver tap hits onPressed not onDeleted. Cannot delete equipment via driver.",
+      "screenshot": null
+    },
+    {
+      "role": "admin",
+      "flow": "T74",
+      "desc": "[MISSING KEY] Form response delete buttons on forms_list_screen have no testing keys. Trash icons visible but not tappable via driver.",
+      "screenshot": "admin-T74-forms.png"
+    },
+    {
+      "role": "admin",
+      "flow": "T77",
+      "desc": "[NAV BUG] settings_trash_tile tap navigates to Projects screen instead of Trash screen. Routing issue.",
+      "screenshot": "admin-T77-trash3.png"
+    },
+    {
+      "role": "sync",
+      "flow": "T78",
+      "desc": "[SYNC] 5 unresolved conflicts on sync dashboard: bid_items, contractors, locations, 2x daily_entries. All remote-originated. Conflicts created by local delete operations (T70-T72) conflicting with remote data.",
+      "screenshot": "admin-T78-conflicts.png"
+    },
+    {
+      "role": "sync",
+      "flow": "T79",
+      "desc": "[SYNC] Pull skips (FK violation): 2 project_assignments skipped — parent project missing locally. Pull reports 0 pulled but silently skips records.",
+      "screenshot": null
+    },
+    {
+      "role": "sync",
+      "flow": "T84",
+      "desc": "[SYNC] Sync dashboard shows 5 conflicts and pull skips are not counted as errors. Sync reports 'completed' with 0 errors while data is actually missing.",
+      "screenshot": "admin-T78-sync-dashboard.png"
+    }
+  ],
+  "observations": [
+    "Tier 0: 4/4 PASS",
+    "Tier 1: 10/10 PASS (data from prior sessions reused)",
+    "Tier 2: 7/9 PASS, 2 FAIL (T20 crash, T21 blocked)",
+    "Tier 3: 4/7 — T24-T26 PASS, T27 FAIL (checkbox state), T28-T29 BLOCKED, T30 PASS",
+    "Tier 4: 9/10 PASS, 1 N/A (T37 no submit workflow)",
+    "Tier 5: 2/3 PASS, 1 N/A (T43 depends on T37 submitted form)",
+    "Tier 6: 9/9 PASS",
+    "Tier 7: 4/6 PASS, 2 N/A",
+    "Tier 8: 6/9 PASS, 1 BLOCKED, 1 FAIL, 1 N/A",
+    "Tier 9: 3/10 PASS (T70 contractor, T71 location, T72 pay item), 3 FAIL (T69 equipment chip, T74 missing keys, T77 nav bug), 1 BLOCKED (T68 layout), 3 N/A (T73 already deleted, T75 no long_press, T76 manual)",
+    "Project ID: 223f503b-76d4-48f9-ad81-c050ab53e551",
+    "Entry IDs: b277e8f9 (main), 6bf1556e (day 2 - restored from trash)",
+    "Photo IDs: c72a4851, 56817f0c",
+    "Report screen inline preview doesn't scroll past Safety — blocks access to quantities, photos, attachments",
+    "Tier 10: 2/7 PASS (T80 photos, T83 manual sync), 5 FAIL (T78 conflicts, T79 pull skips, T81 entry conflicts, T82 edit conflicts, T84 dashboard not clean)",
+    "Tier 11: 3/7 PASS (T86 no admin tile, T87 create entry, T88 create todo), 4 BLOCKED (T85/T89/T90/T91 — inspector account was on Engineer role, not Inspector). User manually reverted role.",
+    "Tier 12: 3/5 PASS (T92 entries list, T93 quantities, T94 toolbox), 2 BLOCKED (T95/T96 — no data loaded after re-login, empty state)"
+  ]
+}
