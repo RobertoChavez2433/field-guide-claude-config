@@ -4,6 +4,11 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ---
 
+### Session 605 (2026-03-20)
+**Work**: Full writing-plans pipeline: CodeMunch dependency graph (22 files), opus plan-writer, parallel adversarial review (code-review REJECT + security APPROVE w/ conditions). Fixed 3 CRITICAL + 6 HIGH + 4 MEDIUM findings in plan v2. 15 path corrections.
+**Decisions**: Error reset targets change_log (not entity tables). Bug 10 trusts RLS (no .like filter). RPC allowlist required. Eager checkConfig on login.
+**Next**: /implement the plan. Push Supabase migrations first. Re-run baseline.
+
 ### Session 604 (2026-03-20)
 **Work**: Deep exploration of all 17 baseline bugs (4 parallel agents). Brainstormed each bug 1-by-1. Wrote spec v3 with adversarial review (5 MUST-FIX + 7 SHOULD-CONSIDER, all resolved inline). Committed S590+ work (3 commits). Cleaned 137 test screenshots.
 **Decisions**: Engine-internal enrollment for sync pull. `toMap()` fix for priority. `didChangeDependencies` for controller init (deviation documented). SyncProvider dedup for snackbar. Profile-completion gate for existing users.
