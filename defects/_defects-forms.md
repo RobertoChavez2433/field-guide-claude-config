@@ -1,5 +1,9 @@
 # Forms Feature Defects
 
+## Active E2E Patterns
+
+<!-- RESOLVED 2026-03-22 S623: [E2E] Form delete + trash delete-forever dialog buttons — Fixed: added formDeleteCancelButton/formDeleteConfirmButton and trashDeleteForeverCancelButton/trashDeleteForeverConfirmButton keys. Ref: forms_list_screen.dart:276, trash_screen.dart:298 -->
+
 ## BUG-4: 20/10 weights calc fired on every keystroke with no confirmation gate
 **Status**: RESOLVED | **Severity**: High | **Found**: Session 442 | **Resolved**: Session 442
 **Location**: `lib/features/forms/presentation/screens/mdot_hub_screen.dart:294`

@@ -4,6 +4,27 @@ Historical defects moved from per-feature defect files. Reference only.
 
 ---
 
+## Entries (archived 2026-03-21 S622)
+
+### [DATA] 2026-03-21: Todo hard-delete bypasses soft-delete infrastructure
+**Pattern**: `TodoItemLocalDatasource.deleteTodo()` called `database.delete()` directly instead of inheriting `GenericLocalDatasource.delete()→softDelete()`. Deleted todos vanished permanently, never appearing in Trash.
+**Prevention**: Custom delete methods in datasource subclasses must call `softDelete()` or `super.delete()`, never raw `database.delete()`.
+**Ref**: `lib/features/todos/data/datasources/local/todo_item_local_datasource.dart:136-161`
+
+### [TEST] 2026-03-03: submit-entry flow fails — required fields missing
+**Pattern**: "Mark Ready & Review" disabled because create-entry flow only fills activities. Location and SESC are required by review flow.
+**Prevention**: Update create-entry test flow to fill location + SESC measures. Or use "Skip" to bypass review validation.
+**Ref**: `entry_review_screen.dart:241`
+
+## Entries (archived 2026-03-21)
+
+### [CONFIG] 2026-03-03: Flutter Keys invisible to UIAutomator
+**Pattern**: `Key('login_email_field')` does not produce `resource-id` in Android UIAutomator XML dump.
+**Prevention**: Investigate `ValueKey` + `Semantics` widget approach.
+**Ref**: `lib/shared/testing_keys/testing_keys.dart`
+
+---
+
 ## Sync (archived 2026-03-20)
 
 ### [DATA] 2026-03-18: Delete Forever skips Supabase — raw database.delete() bypasses change_log (Session 587)

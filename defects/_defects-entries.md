@@ -5,12 +5,16 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
-### [CONFIG] 2026-03-03: Flutter Keys invisible to UIAutomator
-**Pattern**: `Key('login_email_field')` does not produce `resource-id` in Android UIAutomator XML dump. Zero resource-ids found on any widget.
-**Prevention**: Investigate whether `ValueKey` + explicit `Semantics` widget is needed, or if Flutter's native view embedder doesn't propagate Keys to Android accessibility IDs. May need a custom SemanticsKey approach.
-**Ref**: `lib/shared/testing_keys/testing_keys.dart`, UIAutomator dump from Session 487
+### [E2E] 2026-03-22: Tap-to-edit sections require explicit section tap before field interaction
+**Pattern**: Activities, safety, and temperature sections in the entry editor use tap-to-edit mode (`alwaysEditing: false`). TextFields only render after tapping the section card (setting `_isEditing=true`). Test flows that skip this tap step get 404 (widget not found) because the TextField doesn't exist in the tree yet.
+**Prevention**: E2E flows must tap the section card key (e.g., `report_activities_section`) and wait for the field key (e.g., `report_activities_field`) before attempting text input. The `isViewer` guard also blocks editing for non-creators on safety/temperature sections.
+**Ref**: `lib/features/entries/presentation/widgets/entry_activities_section.dart:67,96`, `lib/features/entries/presentation/screens/entry_editor_screen.dart:896,1313`
+**Ref**: `lib/features/entries/presentation/screens/entry_editor_screen.dart` (T62/T63)
 
-## Active Patterns
+### [DATA] 2026-03-21: createdByUserId never set on entry creation
+**Pattern**: `DailyEntry` constructor in entry wizard omitted `createdByUserId`, so all entries had null attribution. Delete buttons and attribution text never appeared.
+**Prevention**: When adding attribution/ownership fields to models, grep all creation sites to ensure the field is populated. Add to provider or screen-level creation.
+**Ref**: `lib/features/entries/presentation/screens/entry_editor_screen.dart:364`
 
 ### [FLUTTER] 2026-03-03: firstWhere crash on sync-deleted location
 **Pattern**: `locations.firstWhere((l) => l.id == value)` throws `StateError` if a location was sync-deleted but its ID remains in a dropdown. This is a recurring anti-pattern across 5+ reviews.
@@ -27,18 +31,6 @@ Archive: .claude/logs/defects-archive.md
 **Prevention**: Return the timestamp from the repository method and use it in the provider for in-memory updates.
 **Ref**: @lib/features/entries/data/repositories/daily_entry_repository.dart:224
 
-### [TEST] 2026-03-03: submit-entry flow fails — required fields missing
-**Status**: OPEN
-**Source**: Automated test run 2026-03-03-1834
-**Symptom**: "Mark Ready & Review" button is disabled (enabled=false) because create-entry flow only fills activities field. Location and SESC measures are required by the review flow but were left empty.
-**Fix**: Update create-entry test flow to fill location (select first available) and SESC measures. Or update submit-entry flow to use "Skip" to bypass review validation.
-**Screenshot**: `.claude/test-results/2026-03-03-1834-run/screenshots/wave3_submit_step6_review_screen.png`
-**Ref**: `entry_review_screen.dart:241` (`_canMarkReady` checks `getMissingFields()`)
-
-### [DATA] 2026-03-21: Todo hard-delete bypasses soft-delete infrastructure
-**Pattern**: `TodoItemLocalDatasource.deleteTodo()` called `database.delete()` directly instead of inheriting `GenericLocalDatasource.delete()→softDelete()`. Deleted todos vanished permanently, never appearing in Trash.
-**Prevention**: Custom delete methods in datasource subclasses must call `softDelete()` or `super.delete()`, never raw `database.delete()`. Grep for `database.delete(` in datasource files during reviews.
-**Ref**: `lib/features/todos/data/datasources/local/todo_item_local_datasource.dart:136-161`
 
 <!-- RESOLVED 2026-03-21 S619: [SECURITY] Inspectors can edit other users' entries — Fixed: canEditEntry() now denies ALL non-creators. Null createdByUserId = read-only. Ref: auth_provider.dart:192-196 -->
 

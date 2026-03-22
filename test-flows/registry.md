@@ -47,12 +47,12 @@
 | ID | Flow | Table(s) | Driver Steps | Verify-Sync | Verify-Logs | Status | Last Run | Notes |
 |----|------|----------|--------------|-------------|-------------|--------|----------|-------|
 | T15 | Create Daily Entry (Draft) | daily_entries | tap(calendar_nav) → tap(add_entry_fab) → tap(location_dropdown) → tap(location_select_a) → tap(weather_dropdown) → tap(weather_sunny) → text(temp_low,"45") → text(temp_high,"72") → text(activities,"E2E test activities") → tap(save_draft) | -Table daily_entries -CountOnly | sync,db | UNTESTED | - | Depends: T06 |
-| T16 | Add Entry Safety Fields | daily_entries | tap(entry_card) → text(site_safety,"E2E safety notes") → text(sesc_measures,"E2E SESC") → text(traffic_control,"E2E traffic") → text(visitors,"E2E visitor") | -Table daily_entries -Filter "id=eq.{entryId}" | sync,db | UNTESTED | - | Depends: T15; inline edit mode |
+| T16 | Add Entry Safety Fields | daily_entries | tap(entry_card) → tap(report_safety_section) → wait(report_site_safety_field) → text(report_site_safety_field,"E2E safety notes") → text(report_sesc_field,"E2E SESC") → text(report_traffic_field,"E2E traffic") → text(report_visitors_field,"E2E visitor") | -Table daily_entries -Filter "id=eq.{entryId}" | sync,db | UNTESTED | - | Depends: T15; tap safety card to enter edit mode first |
 | T17 | Add Contractor to Entry | entry_contractors | tap(entry_card) → tap(contractors_section_add) → tap(select_contractor_prime) → tap(contractor_entry_save) | -Table entry_contractors -CountOnly | sync,db | UNTESTED | - | Depends: T08,T15 |
 | T18 | Add Personnel Count | entry_personnel_counts | tap(personnel_add) → text(personnel_count,"5") → tap(personnel_save) | -Table entry_personnel_counts -CountOnly | sync,db | UNTESTED | - | Depends: T17 |
 | T19 | Add Equipment Usage | entry_equipment | tap(equipment_usage_add) → tap(select_equipment_excavator) → tap(equipment_usage_save) | -Table entry_equipment -CountOnly | sync,db | UNTESTED | - | Depends: T10,T15 |
 | T20 | Log Quantity | entry_quantities | tap(quantities_section_add) → tap(select_bid_item) → text(quantity_value,"10.5") → text(quantity_notes,"E2E qty note") → tap(quantity_save) | -Table entry_quantities -CountOnly | sync,db | PASS | 2026-03-21 | Bid item autocomplete keys working |
-| T21 | Use Quantity Calculator (HMA) | entry_quantities | tap(quantities_section_add) → tap(calculator_launch) → text(calc_width,"20") → text(calc_length,"100") → text(calc_depth,"4") → text(calc_density,"145") → tap(calculate_btn) → tap(use_result) | -Table entry_quantities -CountOnly | sync,db | UNTESTED | - | Depends: T11,T15 |
+| T21 | Use Quantity Calculator (HMA) | entry_quantities | tap(quantities_section_add) → tap(calculator_launch) → text(calc_width,"20") → text(calc_length,"100") → text(calc_depth,"4") → text(calc_density,"145") → tap(calculate_btn) → tap(use_result) | -Table entry_quantities -CountOnly | sync,db | MANUAL | - | Calculator not wired from entry screen; use standalone calculator (T38) instead |
 | T22 | Attach Photo (inject-photo) | photos | tap(photos_section_add) → inject-photo(test.jpg) → text(photo_caption,"E2E test photo") → tap(photo_save) → wait(photo_thumbnail) | -Table photos -CountOnly | sync,photo | UNTESTED | - | Depends: T15 |
 | T23 | Attach Second Photo | photos | tap(photos_section_add) → inject-photo(test2.jpg) → text(photo_caption,"E2E photo 2") → tap(photo_save) → wait(photo_thumbnail) | -Table photos -Filter "project_id=eq.{projectId}" | sync,photo | UNTESTED | - | Depends: T15; needed for gallery tests |
 
@@ -131,12 +131,12 @@
 | T59 | Edit Project Details | projects | tap(project_card) → tap(project_edit) → text(project_name,"E2E Updated Project") → tap(project_save) | -Table projects -Filter "name=like.Updated*" | sync,db | UNTESTED | - | Depends: T05 |
 | T60 | Edit Contractor | contractors | tap(project_edit) → tap(contractors_tab) → tap(contractor_card) → text(contractor_name,"E2E Prime Updated") → tap(contractor_save) | -Table contractors -Filter "name=like.Updated*" | sync,db | UNTESTED | - | Depends: T08 |
 | T61 | Edit Pay Item | bid_items | tap(project_edit) → tap(payitems_tab) → tap(bid_item_edit) → text(item_desc,"HMA Surface Updated") → tap(bid_item_save) | -Table bid_items -Filter "description=like.Updated*" | sync,db | UNTESTED | - | Depends: T11 |
-| T62 | Edit Entry Activities | daily_entries | tap(entry_card) → text(activities,"Updated activities text") → wait(auto_save) | -Table daily_entries -Filter "id=eq.{entryId}" | sync,db | UNTESTED | - | Depends: T15 |
-| T63 | Edit Entry Temperature | daily_entries | tap(entry_card) → tap(temp_row) → text(temp_low,"50") → text(temp_high,"80") → wait(auto_save) | -Table daily_entries -Filter "id=eq.{entryId}" | sync,db | UNTESTED | - | Depends: T15 |
+| T62 | Edit Entry Activities | daily_entries | tap(entry_card) → tap(report_activities_section) → wait(report_activities_field) → text(report_activities_field,"Updated activities text") → wait(auto_save) | -Table daily_entries -Filter "id=eq.{entryId}" | sync,db | UNTESTED | - | Depends: T15; tap activities card to enter edit mode first |
+| T63 | Edit Entry Temperature | daily_entries | tap(entry_card) → tap(report_temperature_section) → wait(report_temp_low_field) → text(report_temp_low_field,"50") → text(report_temp_high_field,"80") → wait(auto_save) | -Table daily_entries -Filter "id=eq.{entryId}" | sync,db | UNTESTED | - | Depends: T15; tap temperature row to enter edit mode first |
 | T64 | Edit Quantity Value | entry_quantities | tap(entry_card) → tap(quantity_row) → text(quantity_value,"25.0") → tap(quantity_save) | -Table entry_quantities -Filter "id=eq.{qtyId}" | sync,db | UNTESTED | - | Depends: T20 |
 | T65 | Unarchive Project | projects | tap(projects_nav) → tap(archived_tab) → tap(activate_btn) → wait(project_active) | -Table projects -Filter "is_active=eq.true" | sync,db | UNTESTED | - | Depends: T58 |
 | T66 | Remove Assignment | project_assignments | tap(project_edit) → tap(assignments_tab) → tap(remove_assignment) → tap(remove_confirm) | -Table project_assignments -CountOnly | sync,db | UNTESTED | - | Depends: T13 |
-| T67 | Add Personnel Type | personnel_types | tap(entry_card) → tap(personnel_types_add) → text(personnel_type_name,"Laborer") → tap(type_save) | -Table personnel_types -CountOnly | sync,db | UNTESTED | - | Depends: T17 |
+| T67 | Add Personnel Type | personnel_types | tap(entry_card) → tap(personnel_types_add) → text(personnel_type_name,"Laborer") → tap(type_save) | -Table personnel_types -CountOnly | sync,db | MANUAL | - | Personnel types management not wired from entry screen; screen exists but not reachable |
 
 ## Tier 9: Delete Operations (T68-T77)
 
@@ -181,7 +181,7 @@
 | T88 | Inspector: Can Create Todo | todo_items | tap(toolbox_nav) → tap(todos_tile) → tap(add_todo_fab) → text(todo_title,"Inspector Todo") → tap(todo_save) | -Table todo_items -CountOnly | sync,db | UNTESTED | - | Depends: T04 |
 | T89 | Inspector: Cannot Archive Project | N/A | tap(projects_nav) → tap(project_card) → screenshot → assert_not_visible(archive_btn) | N/A | auth | UNTESTED | - | Depends: T04 |
 | T90 | Inspector: Project Edit Read-Only | N/A | tap(project_card) → tap(project_edit) → screenshot → assert_not_visible(project_save_btn) | N/A | auth | UNTESTED | - | Depends: T04; fields should be read-only |
-| T91 | Inspector: Route Guard /project/new | N/A | navigate(/project/new) → wait(projects_screen) → screenshot | N/A | auth,nav | UNTESTED | - | Depends: T04; should redirect to /projects |
+| T91 | Inspector: Route Guard /project/new | N/A | POST /driver/navigate {"path":"/project/new"} → wait(projects_screen) → screenshot | N/A | auth,nav | UNTESTED | - | Depends: T04; should redirect to /projects; uses /driver/navigate endpoint |
 
 ## Tier 12: Navigation & Dashboard (T92-T96)
 
@@ -210,6 +210,8 @@
 | M07 | Download Remote Project | Requires remote-only project | Check synced_projects locally | MANUAL | - | Full: company tab → tap remote → download → verify |
 | M08 | Deactivate/Reactivate Member | Requires second active member | Check user_profiles status | MANUAL | - | Admin: member sheet → deactivate → reactivate |
 | M09 | Submit Form (Section-by-Section) | 0582B uses proctor/test section sends, no global submit | Check form_responses status | MANUAL | - | Was T37 — no single submit button to automate |
+| M12 | Use Quantity Calculator from Entry | Calculator not launchable from entry report screen | Check entry_quantities count | MANUAL | - | Was T21 — calculator not wired from entry context |
+| M13 | Add Personnel Type from Entry | Personnel types management not reachable from entry | Check personnel_types count | MANUAL | - | Was T67 — PersonnelTypesScreen exists but no tile/route to it |
 | M10 | Approve Join Request | Requires pending join request from second account | Check user_profiles approval | MANUAL | - | Was T56 — no pending requests exist for automation |
 | M11 | Reject Join Request | Requires pending join request from second account | Check company_join_requests rejection | MANUAL | - | Was T57 — no pending requests exist for automation |
 
@@ -232,8 +234,8 @@
 | Tier 10 | T78-T84 | 7 | Sync Verification |
 | Tier 11 | T85-T91 | 7 | Role & Permission Verification |
 | Tier 12 | T92-T96 | 5 | Navigation & Dashboard |
-| Manual | M01-M11 | 11 | Manual-Only Flows |
-| **Total** | | **104** | **93 automated + 11 manual** |
+| Manual | M01-M13 | 13 | Manual-Only Flows |
+| **Total** | | **104** | **91 automated + 13 manual** |
 
 ## Dependency Chain (Execution Order)
 

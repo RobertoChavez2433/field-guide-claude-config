@@ -308,6 +308,8 @@ Add `-IncludeDebugServer` to also kill the debug server.
 
 ## Test Data Safety
 - All test projects use "E2E " prefix
+- **CRITICAL**: Always use timestamped project names (e.g., "E2E Test 1711046095") to avoid collisions with prior runs
+- When a prior E2E project already exists, REUSE it instead of creating a new one (tap into it, verify sub-entities)
 - Cleanup: `pwsh -File tools/verify-sync.ps1 -Cleanup -ProjectName "E2E*" -DryRun`
 
 ## Windows Bash Constraints

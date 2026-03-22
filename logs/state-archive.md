@@ -4,6 +4,18 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ---
 
+## March 2026
+
+### Session 619 (2026-03-21)
+**Work**: Fixed entry ownership (creator-only editing, null=read-only). Fixed todo soft-delete (T51/T77). Added UserAttributionText to calendar entry cards + draft tiles. H-markers already clean.
+**Decisions**: Entry editing restricted to creator regardless of role (not role-based). Short "By:" prefix for compact cards.
+**Next**: Fix T55 (role change UI). Commit all changes + PR.
+
+### Session 618 (2026-03-21)
+**Work**: E2E retest of 20 failing flows. 17→PASS, 3→FAIL (missing features). Sync verified clean (0 errors). New bug: inspector can edit admin entries.
+**Decisions**: Added entries_list_entry_tile key to enable entry editor navigation.
+**Next**: Fix entry ownership bug. Fix T51/T55/T77. Remove H-markers. Commit+PR.
+
 ### Session 615 (2026-03-21)
 **Work**: Deep debug of remaining E2E failures. 4 parallel investigation agents + 7 hypothesis markers verified via debug server on admin + inspector accounts. Discovered security bug (entry ownership). 3 opus-level fix maps. Debug session MD written.
 **Decisions**: SQLite data must NOT be wiped on sign-out. In-memory provider cache IS safe to clear. Inspector = own entries only.
@@ -324,6 +336,11 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 **Work**: Implemented consolidated-fixes plan (10 phases, 32 files, 6 quality gates). Device tested → found 3 sync UX bugs. Brainstormed sync UX fixes.
 **Decisions**: Auth guard+retry (5s). Unified staleness banner. 4-bucket pending counts.
 **Next**: Implement sync-ux-fixes (done in 509).
+
+### Session 620 (2026-03-21)
+**Work**: Full E2E test run — 53 flows, 45 PASS (85%), 8 FAIL. Created fresh E2E project. Fully filled 0582B form (proctor + test). Found 3 CRITICAL security bugs (inspector project access), ViewOnlyBanner issue, contractor card gaps, Proctor Wet PCF=0.00, forms not linkable to entries.
+**Decisions**: Remove ViewOnlyBanner entirely. Bug fix round next session. Timestamped project names for tests.
+**Next**: Bug fix round (security, keys, contractor card, proctor calc). Then retest + remaining flows + Supabase pull test.
 
 ### Session 507 (2026-03-06)
 **Work**: Device testing found 4 critical bugs. Fixed migration + permissions. Brainstormed project selection UX. Consolidated 2 plans into 1.
