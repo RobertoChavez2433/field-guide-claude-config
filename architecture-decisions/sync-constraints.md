@@ -3,9 +3,9 @@
 ## Hard Rules (Violations = Reject Proposal)
 - ✗ MUST use last-write-wins conflict resolution ONLY (no merge attempts)
 - ✗ MUST implement bidirectional sync (push & pull in same cycle)
-- ✗ MUST validate checksum (SHA256) on all synced records
+- ✗ MUST use hash-based change detection on all synced records
 - ✗ MUST NOT attempt partial sync (all-or-nothing per feature)
-- ✗ MUST NOT retry indefinitely (max 3 attempts per operation)
+- ✗ MUST NOT retry indefinitely (max 5 attempts per operation)
 
 ## Soft Guidelines (Violations = Discuss)
 - ⚠ Use exponential backoff on sync retry (100ms → 300ms → 900ms)
@@ -21,7 +21,7 @@
 - Single record sync: < 500ms
 - Batch sync (100 records): < 5 seconds
 - Conflict detection: < 100ms per record
-- Retry backoff: 100ms + exponential (max 3 attempts = 1.3 seconds)
+- Retry backoff: 100ms + exponential (max 5 attempts = 12.1 seconds)
 
 ## Testing Requirements
 - >= 85% test coverage

@@ -17,8 +17,9 @@
 
 ### Draft/Complete/Submitted Workflow
 - ✗ No skipping workflow states (can't jump from DRAFT to SUBMITTED without COMPLETE)
-- ✓ Entry states: DRAFT → COMPLETE → SUBMITTED (three states, one-way transitions)
-- ✗ No reverting COMPLETE or SUBMITTED entries to DRAFT
+- ✓ Entry states: DRAFT → COMPLETE → SUBMITTED (three states, forward transitions only)
+- ✗ No reverting COMPLETE entries to DRAFT
+- ✓ SUBMITTED → DRAFT is allowed via `undoSubmission()` (intentional reversal for correction workflows)
 - ✓ SUBMITTED entries read-only (block all edits in UI)
 
 **Why**: Immutable submitted entries prevent audit log corruption; clear workflow prevents confusion.

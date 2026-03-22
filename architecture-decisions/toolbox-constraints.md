@@ -31,13 +31,10 @@
 
 **Why**: Instant feedback improves UX; reduces invalid submissions.
 
-### No Data Persistence Required
-- ✗ No saving toolbox form submissions to database by default
-- ✓ Forms are ephemeral (user fills, submits, data used for immediate action)
-- ✓ If results need persistence, explicitly integrate with target feature (e.g., save calculator result to notes)
-- ✓ Optional: Export form results as PDF/CSV
-
-**Why**: Toolbox is utility; persistence is optional per form.
+### Persistence
+The toolbox features (calculator, forms, gallery, todos) use persistent SQLite storage
+with full CRUD operations and cloud sync support. Each sub-feature has its own table(s)
+managed through the standard repository/datasource pattern.
 
 ---
 
