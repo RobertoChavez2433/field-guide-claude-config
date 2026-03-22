@@ -1,0 +1,42 @@
+{
+  "run_id": "2026-03-21_retest",
+  "platform": "windows",
+  "results_dir": ".claude/test_results/2026-03-21_retest",
+  "current_role": "inspector",
+  "completed": {
+    "admin": {
+      "T14": "PASS",
+      "T16": "FAIL",
+      "T24": "PASS",
+      "T25": "PASS",
+      "T29": "PASS"
+    },
+    "inspector": {
+      "T85": "PASS",
+      "T89": "PASS",
+      "T90": "PASS"
+    }
+  },
+  "next_flow": "T18",
+  "bugs": [
+    {
+      "role": "admin",
+      "flow": "T16",
+      "desc": "report_activities_field key exists in constants but not applied to TextField widget. Same for safety/SESC/traffic/visitors fields.",
+      "screenshot": "admin-T24-attempt.png"
+    }
+  ],
+  "observations": [
+    "T14: Filter toggle reveals search field — works correctly now",
+    "T24/T25: Location/weather dropdowns work after canEditEntry fix for null createdByUserId",
+    "T29: Undo button appears after canEditEntry fix. Dialog shows but confirm/cancel buttons need keys (added)",
+    "T85/T89/T90: All PASS after fixing inspector role from engineer back to inspector via RPC",
+    "Inspector test account was changed to engineer during T55 last session — fixed via update_member_role RPC",
+    "canEditEntry fix: null createdByUserId now returns true (legacy entries editable by anyone with field-data permission)"
+  ],
+  "fixes_applied": [
+    "auth_provider.dart: canEditEntry returns true for null createdByUserId (legacy entries)",
+    "entry_editor_screen.dart: Added undo_cancel_button and undo_confirm_button keys to undo submission dialog",
+    "Supabase: Inspector role restored via update_member_role RPC"
+  ]
+}

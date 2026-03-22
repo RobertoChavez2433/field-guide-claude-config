@@ -1,0 +1,83 @@
+{
+  "run_id": "2026-03-21_full34",
+  "platform": "windows",
+  "results_dir": ".claude/test_results/2026-03-21_full34",
+  "current_role": "inspector",
+  "completed": {
+    "admin": {
+      "T18": "PASS",
+      "T19": "PASS",
+      "T21": "SKIP",
+      "T30": "PASS",
+      "T42": "PASS",
+      "T51": "PASS",
+      "T58": "PASS",
+      "T59": "PASS",
+      "T60": "PASS",
+      "T61": "PASS",
+      "T62": "FAIL",
+      "T63": "FAIL",
+      "T64": "PASS",
+      "T65": "PASS",
+      "T66": "PASS",
+      "T67": "SKIP",
+      "T68": "PASS",
+      "T69": "PASS",
+      "T70": "PASS",
+      "T71": "PASS",
+      "T72": "PASS",
+      "T73": "PASS",
+      "T74": "FAIL",
+      "T75": "PASS",
+      "T77": "FAIL",
+      "T78": "PASS",
+      "T79": "PASS",
+      "T80": "PASS",
+      "T81": "PASS",
+      "T82": "PASS",
+      "T83": "PASS",
+      "T84": "PASS"
+    },
+    "inspector": {
+      "T91": "SKIP"
+    }
+  },
+  "next_flow": null,
+  "bugs": [
+    {
+      "role": "admin",
+      "flow": "T62",
+      "desc": "report_activities_field key exists in code but TextField not rendering in edit mode (entry may be in submitted state blocking edit)"
+    },
+    {
+      "role": "admin",
+      "flow": "T63",
+      "desc": "report_temp_low_field / report_temp_high_field keys exist in code but TextField not rendering"
+    },
+    {
+      "role": "admin",
+      "flow": "T74",
+      "desc": "Form response delete dialog buttons (Cancel/Delete) have no testing keys"
+    },
+    {
+      "role": "admin",
+      "flow": "T77",
+      "desc": "Trash delete-forever dialog buttons (Cancel/Delete Forever) have no testing keys"
+    }
+  ],
+  "observations": [
+    "T18: Personnel counter +/- buttons work, incremented to 5",
+    "T19: Equipment chip auto-checked when contractor was added in S620",
+    "T21: quantity_calculate_button key defined but not applied — calculator not wired from entry screen",
+    "T30: Entry deleted via overflow menu (report_menu_button → report_delete_menu_item → delete_confirm_button)",
+    "T42: PDF export → Save As → filename dialog → saved successfully",
+    "T51: Entry restored from trash after T30 delete",
+    "T58: Project archived, visible in Archived tab",
+    "T62/T63: Keys ARE in code per agent verification — but entry edit mode not activating (possible submitted entry state)",
+    "T64: Quantity inline edit works — amount/notes fields have dynamic keys that work",
+    "T67: settings_personnel_types_tile not in settings screen, all types already assigned to contractor",
+    "T74/T77: Dialog buttons for form delete and trash delete-forever lack testing keys",
+    "T78-T84: Sync completed with 0 errors, 0 conflicts, 2 FK skips (expected)",
+    "T91: HTTP driver lacks route navigation — can't test route guard directly"
+  ]
+}
