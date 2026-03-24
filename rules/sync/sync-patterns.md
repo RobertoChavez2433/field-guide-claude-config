@@ -231,3 +231,17 @@ import 'package:construction_inspector/features/sync/sync.dart';
 // - SyncEngine, ChangeTracker, ConflictResolver
 // - SyncProvider
 ```
+
+## Sync Testing
+
+Sync correctness is verified via a 3-layer system:
+
+- **Layer 1** — Unit tests (fast, no device needed):
+  `pwsh -Command "flutter test test/features/sync/engine/"`
+- **Layer 2** — Per-table push/pull/conflict scenarios (requires device + Supabase):
+  `node tools/debug-server/run-tests.js --layer L2`
+- **Layer 3** — Cross-cutting scenarios (multi-device, offline, RLS):
+  `node tools/debug-server/run-tests.js --layer L3`
+
+Scenario files live in `tools/debug-server/scenarios/`. Results are accessible via
+`GET /test-status` on the debug server (port 3947).

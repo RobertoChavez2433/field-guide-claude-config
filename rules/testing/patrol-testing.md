@@ -264,6 +264,24 @@ See `integration_test/patrol/REQUIRED_UI_KEYS.md` for complete list:
 
 UI test findings: `.claude/test-results/YYYY-MM-DD-ui-test-findings.md`
 
+## Sync Testing (Debug Server)
+
+Sync-specific tests run via the debug server, not Patrol. Use these commands:
+
+```bash
+# Layer 1: Unit tests (fast, no device)
+pwsh -Command "flutter test test/features/sync/engine/"
+
+# Layer 2: Per-table push/pull/conflict scenarios
+node tools/debug-server/run-tests.js --layer L2
+
+# Layer 3: Cross-cutting scenarios (multi-device, offline, RLS)
+node tools/debug-server/run-tests.js --layer L3
+```
+
+Scenario files: `tools/debug-server/scenarios/L2/` and `tools/debug-server/scenarios/L3/`
+Test results endpoint: `GET http://127.0.0.1:3947/test-status`
+
 ---
 
 ## PDF Extraction Stage Trace Testing

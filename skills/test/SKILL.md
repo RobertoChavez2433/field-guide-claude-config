@@ -41,7 +41,7 @@ After **EVERY tier**, additionally:
 /test admin                        # T53-T58 (Admin Operations)
 /test edits                        # T59-T67 (Edit Mutations)
 /test deletes                      # T68-T77 (Delete Operations)
-/test sync                         # T78-T84 (Sync Verification)
+/test sync                         # Sync verification via debug server (run-tests.js)
 /test permissions                  # T85-T91 (Role Verification)
 /test navigation                   # T92-T96 (Nav & Dashboard)
 /test T03                          # Single flow
@@ -65,7 +65,7 @@ settings     → T44-T52
 admin        → T53-T58
 edits        → T59-T67
 deletes      → T68-T77
-sync         → T78-T84
+sync         → node tools/debug-server/run-tests.js (L2/L3 scenarios)
 permissions  → T85-T91
 navigation   → T92-T96
 ```
@@ -284,7 +284,7 @@ Binds to loopback (127.0.0.1) only — no auth required.
 **Tier 7 (T53-T58)** — Admin Operations
 **Tier 8 (T59-T67)** — Edit Mutations: Edit entities from earlier tiers
 **Tier 9 (T68-T77)** — Delete Operations: Delete entities (run last before cleanup)
-**Tier 10 (T78-T84)** — Sync Verification
+**Sync** — Sync Verification via `node tools/debug-server/run-tests.js` (L2/L3 scenarios, not driver flows)
 **Tier 11 (T85-T91)** — Role Verification (inspector role)
 **Tier 12 (T92-T96)** — Nav & Dashboard
 
@@ -310,7 +310,7 @@ Add `-IncludeDebugServer` to also kill the debug server.
 - All test projects use "E2E " prefix
 - **CRITICAL**: Always use timestamped project names (e.g., "E2E Test 1711046095") to avoid collisions with prior runs
 - When a prior E2E project already exists, REUSE it instead of creating a new one (tap into it, verify sub-entities)
-- Cleanup: `pwsh -File tools/verify-sync.ps1 -Cleanup -ProjectName "E2E*" -DryRun`
+- Cleanup: `pwsh -File tools/verify-sync.ps1 -Cleanup -ProjectName "E2E*" -DryRun` (still valid for data cleanup; sync correctness verification is now handled by `node tools/debug-server/run-tests.js`)
 
 ## Windows Bash Constraints
 - **NO `jq`** — use `python3 -c "import json..."` for JSON parsing
