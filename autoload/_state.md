@@ -1,48 +1,50 @@
 # Session State
 
-**Last Updated**: 2026-03-22 | **Session**: 625
+**Last Updated**: 2026-03-23 | **Session**: 630
 
 ## Current Phase
-- **Phase**: E2E bugs fixed — 6/6 verified PASS. All 91 automated flows should now pass (100%).
-- **Status**: All S614-S625 app changes still uncommitted. Workflow improvements plan ready for /implement.
+- **Phase**: Writing-plans — plan fully reviewed (4 passes), all code fixed inline. Ready for `/implement`.
+- **Status**: Code review v4: APPROVE WITH CONDITIONS (0 Critical, 1 High, 3 Medium, 2 Low — all implementer-actionable). Security review v4: APPROVE WITH CONDITIONS (0 Critical, 0 High, 1 Medium, 1 Low). Plan is implementable.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (625)
+### What Was Done This Session (630)
 
-1. **Deep debug session for 6 E2E bugs** (systematic-debugging skill, deep mode):
-   - Launched research agent (CodeMunch) for parallel codebase analysis
-   - Root-caused all 6 bugs: T16/T62/T63 (tap-to-edit test flow gap), T74/T77 (unkeyed dialog buttons), T91 (missing driver endpoint)
-2. **Code fixes**:
-   - Added `formDeleteCancelButton`/`formDeleteConfirmButton` keys to forms delete dialog
-   - Added `trashDeleteForeverCancelButton`/`trashDeleteForeverConfirmButton` keys to trash dialog
-   - Added `POST /driver/navigate` endpoint to `driver_server.dart` (uses GoRouter.go())
-3. **Test flow updates**:
-   - T16/T62/T63: Updated registry with tap-to-edit step (tap section card → wait for field → type)
-   - T21/T67: Moved to Manual (M12/M13) — features not wired
-   - T91: Updated to use `/driver/navigate`
-   - Flow counts: 91 automated + 13 manual
-4. **All 6 verified PASS via HTTP driver on Windows** (T74, T77, T62, T63, T16, T91)
-5. **Defect files updated**: entries defect corrected (was "submitted state blocks edit" → now "tap-to-edit requires section tap"), forms defect resolved
+1. **Review pass 3** (code-review + security, parallel Opus agents):
+   - Code review v3: REJECT — 3 new Critical (C10: wrong SQL column names in all Phase 1 INSERTs, C11: uppercase trigger ops, C12: Future<Database> without await), 4 High, 4 Medium
+   - Security review v3: APPROVE WITH CONDITIONS — 0 Critical, 2 High still open in code, 2 new Medium (SEC-013 .env.test gitignore, SEC-014 assert→verify)
+2. **Fixer agent (Opus)** rewrote all v3 findings inline:
+   - C10: All INSERTs fixed to actual schema columns (`name`, `is_active`, `created_by_user_id`, `date`, `created_at`, `type`)
+   - C11: All trigger assertions → lowercase
+   - C12: All driver endpoints → `final db = await databaseService!.database;`
+   - H7-H10: Batch test flatten, retry threshold 5, L3 multi-device rewrite, `request` not `req`
+   - M1-M9: Port unified 4948, S2-S5 semantics rewritten, `verify` not `assert`
+   - SEC-002/003/006/007/013/015: All fixed in actual code blocks
+3. **Review pass 4** (code-review + security, parallel Opus agents):
+   - Code review v4: APPROVE WITH CONDITIONS — 0 Critical, 1 High (H11 variations table columns), 3 Medium (M11 find POST→GET, M12 navigate body key, M13 authenticateAs missing)
+   - Security review v4: APPROVE WITH CONDITIONS — 0 Critical, 0 High, 1 Medium (NEW-001 = M13), 1 Low
+4. **Fixer agent (Opus)** rewrote all v4 findings inline:
+   - H11: Variations table rewritten — all 16 tables have correct columns from actual schema
+   - M11: `find()` → GET with query param
+   - M12: `navigate()` → `{ path: route }`
+   - M13: Full `authenticateAs(role)` + `resetAuth()` added to SupabaseVerifier
+   - L5: `project_name` → `name` in conflict test maps
+   - L6: Dynamic http/https protocol detection
+   - NEW-002: URL encoding on getLocalRecord/getChangeLog
 
 ### What Needs to Happen Next
 
-**Next Session (S626):**
-1. Commit all changes (S614-S625 uncommitted — large commit)
-2. `/implement` on `.claude/plans/2026-03-22-workflow-improvements.md` (8 phases)
-3. Merge `feat/sync-engine-rewrite` (111+ commits, 17+ days diverged)
+**Next Session (S631):**
+1. `/implement` the sync verification plan — all reviews passed, plan is ready
+2. Still pending: merge `feat/sync-engine-rewrite` to main (deferred until sync tests exist)
+
+**Still Pending:**
+- BLOCKER-28: SQLite encryption (sqlcipher) — production readiness
+- BLOCKER-23: Flutter Keys not propagating to Android resource-id
 
 ## Uncommitted Changes
 
-All changes from S614-S625 still uncommitted. S625 changed:
-| File | Change |
-|------|--------|
-| `lib/shared/testing_keys/toolbox_keys.dart` | +2 form delete dialog keys |
-| `lib/shared/testing_keys/settings_keys.dart` | +2 trash dialog keys |
-| `lib/shared/testing_keys/testing_keys.dart` | +4 facade delegates |
-| `lib/features/forms/presentation/screens/forms_list_screen.dart` | Wired keys to dialog buttons |
-| `lib/features/settings/presentation/screens/trash_screen.dart` | Wired keys to dialog buttons |
-| `lib/core/driver/driver_server.dart` | Added /driver/navigate endpoint |
+None — all work is in .claude/ (config repo).
 
 ## Blockers
 
@@ -60,30 +62,30 @@ All changes from S614-S625 still uncommitted. S625 changed:
 
 ## Recent Sessions
 
-### Session 625 (2026-03-22)
-**Work**: Deep debug of 6 E2E bugs. Fixed T74/T77 (dialog keys), T91 (driver navigate endpoint). Updated T16/T62/T63 test flows (tap-to-edit). Moved T21/T67 to Manual. All 6 verified PASS via driver. Target: 91/91 automated (100%).
-**Decisions**: T21/T67 removed from automated flows (features not wired). Tap-to-edit is correct behavior, not a bug — test flows needed updating.
-**Next**: Commit all. /implement workflow improvements. Merge branch.
+### Session 630 (2026-03-23)
+**Work**: Ran review passes 3 and 4 on sync verification plan (code + security, parallel Opus). Fixed all findings inline via fixer agents: C10-C12 (schema columns, trigger case, Future<Database>), H7-H11 (batch test, retry threshold, L3 multi-device rewrite, driver params, variations table), M1-M13 (ports, S2-S5 semantics, verify imports, find/navigate/authenticateAs), SEC-002-015 (PostgREST injection, table allowlist, ReDoS, cleanup retry, .env.test, auth token). Both reviews now APPROVE WITH CONDITIONS (implementer-actionable only).
+**Decisions**: Plan code must match actual codebase exactly — cross-referenced all schema files. Variations table required complete rewrite for 16 tables. authenticateAs/resetAuth added to SupabaseVerifier for RLS testing.
+**Next**: /implement the sync verification plan.
 
-### Session 624 (2026-03-22)
-**Work**: Full brainstorming→spec→plan pipeline for workflow improvements. Spec covers 8 categories: config remediation, stale defects, constraint reconciliation, V5 raw SQL fix, anti-pattern fixes (92 catch(_), 8 firstWhere), skill updates (brainstorming, writing-plans, new /spike), pre-commit hooks, agent memory population. Plan written and reviewed.
-**Decisions**: V1-V4 update docs, V5 fix code. Brainstorming = intent only (no adversarial review). XS+S bypass pipeline. Tiered hooks. Provider proxy removed (KISS).
-**Next**: /implement the plan.
+### Session 629 (2026-03-23)
+**Work**: Incorporated v1 review findings (12 blocks) into sync verification plan. Ran review pass 2 (code + security). Code review found 5 new Critical (C5-C9: wrong types, column names, API signatures). Fixed all directly in plan code (~50 edits). Also fixed SEC-001 (.env.test), all Medium issues (M1-M6), and added SEC-002/003 findings.
+**Decisions**: Plan code samples must compile — verified against actual codebase APIs. `verify()` not `assert()` in JS. `.env.test` separate from root `.env`.
+**Next**: Review pass 3 for test coverage gaps, then /implement.
 
-### Session 623 (2026-03-22)
-**Work**: 27-agent workflow insights analysis (9 Sonnet + 9 Opus + 9 Opus verification). Comprehensive report at `.claude/docs/workflow-insights-report.md`. Found 5 constraint violations, 2 stale defects, .gitignore bug, haiku model violation, 55 catch (_), 8 unsafe firstWhere. Process maturity: 3.25/5.
-**Decisions**: Report findings verified against actual source code. Settings PII claim refuted. fix:feat ratio claim refuted. Repo size corrected (46MB not 70MB).
-**Next**: Brainstorming session on report findings → improvement spec.
+### Session 628 (2026-03-22)
+**Work**: /writing-plans on sync verification spec. CodeMunch indexing + dependency graph. Plan v1 written (2800 lines) → REJECTED by adversarial review (4C, 6H). Plan v2 re-launched with all findings. Security review passed with conditions (2H, 4M).
+**Decisions**: Plan must match spec exactly — L1 test names/risks, L3 multi-device scenarios, S1-S5 naming, SYNCTEST- prefix, per-role JWT auth, /driver/remove-from-device endpoint, shared secret auth, column name validation.
+**Next**: Verify plan v2, re-run reviews, then /implement.
 
-### Session 622 (2026-03-21)
-**Work**: E2E retest (7/8 PASS) + 34 remaining flows (25 PASS, 4 FAIL, 4 SKIP). Fixed canEditEntry for null createdByUserId. Fixed inspector role via RPC. Overall: 77 PASS / 90 automatable = 86%.
-**Decisions**: Null createdByUserId = allow edit (legacy entries). T21/T67/T91 deferred (features not wired/driver limitation).
-**Next**: Commit all S614-S622 changes. Fix T62/T63 edit mode toggle. Add missing dialog keys (T74/T77).
+### Session 627 (2026-03-22)
+**Work**: Deep sync system research (4 Opus agents). Brainstormed + spec'd three-layer sync verification system: L1 unit tests, L2 driver E2E (80 flows across 16 tables), L3 multi-device cross-role (10 scenarios). Debug server becomes orchestrator + Supabase verifier.
+**Decisions**: Debug server owns verification. All 16 tables × 5 scenarios. ADB airplane mode for offline. Remove 9 obsolete flows + Verify-Sync column. Merge deferred until tests exist.
+**Next**: /writing-plans on spec, then /implement.
 
-### Session 621 (2026-03-21)
-**Work**: Deep debug session — fixed all 8 bug clusters from S620. Verified 16/16 via driver. Found+fixed createdByUserId never set. Replaced hardcoded keys with TestingKeys.
-**Decisions**: Long-press → visible delete buttons everywhere. ViewOnlyBanner deleted entirely. Proctor auto-converts cm³→ft³.
-**Next**: Commit all changes. E2E retest. Fix inspector test account role. Permission model spec.
+### Session 626 (2026-03-22)
+**Work**: Committed all S614-S625 changes (6 app + 3 config commits). Executed /implement on workflow improvements plan — all 8 phases complete across 5 orchestrator launches with 0 handoffs. Fixed pre-commit hook blockers (moved raw SQL from sync dashboard to SyncOrchestrator). Total: 11 app + 8 config commits pushed.
+**Decisions**: Isolate logger guards and display formatter catch(_) are acceptable patterns (not bugs). sync_dashboard raw SQL moved to orchestrator for consistency.
+**Next**: Merge branch to main. Full E2E retest.
 
 ## Active Debug Session
 
@@ -91,18 +93,20 @@ None active.
 
 ## Test Results
 
-- **Latest runs**: `.claude/test_results/2026-03-22/` (verification of 6 bugs)
 - **Target pass rate**: 100% (91/91 automated flows)
 - **Previously failing**: T16, T62, T63, T74, T77 — all FIXED
-- **Previously skipped**: T21, T67 → MANUAL (M12, M13); T91 → FIXED (navigate endpoint)
-- **Sync**: Clean (0 errors, 0 conflicts from S622)
+- **Previously skipped**: T21, T67 → MANUAL; T91 → FIXED
+- **Needs retest**: Full E2E run post-implementation to verify no regressions
+- **Sync verification**: Plan fully reviewed (4 passes), all code fixed. Ready for /implement.
 
 ## Reference
-- **Debug Session Log**: `.claude/debug-sessions/2026-03-22_e2e-6-bugs-fix.md`
+- **Sync Verification Spec**: `.claude/specs/2026-03-22-sync-verification-system-spec.md`
+- **Sync Verification Plan**: `.claude/plans/2026-03-22-sync-verification-system.md`
+- **Sync Verification Dep Graph**: `.claude/dependency_graphs/2026-03-22-sync-verification-system/analysis.md`
+- **Code Review v4**: `.claude/code-reviews/2026-03-23-sync-verification-plan-v4-code-review.md`
+- **Security Review v4**: `.claude/code-reviews/2026-03-23-sync-verification-plan-v4-security-review.md`
 - **Workflow Improvements Spec**: `.claude/specs/2026-03-22-workflow-improvements-spec.md`
 - **Workflow Improvements Plan**: `.claude/plans/2026-03-22-workflow-improvements.md`
-- **Workflow Improvements Review**: `.claude/code-reviews/2026-03-22-workflow-improvements-plan-review.md`
-- **Workflow Insights Report**: `.claude/docs/workflow-insights-report.md`
+- **Implementation Checkpoint**: `.claude/state/implement-checkpoint.json`
 - **Test Registry**: `.claude/test-flows/registry.md`
-- **Test Credentials**: `.claude/test-credentials.secret`
 - **Defects**: `.claude/defects/_defects-{feature}.md`

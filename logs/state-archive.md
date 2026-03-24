@@ -6,6 +6,11 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 625 (2026-03-22)
+**Work**: Deep debug of 6 E2E bugs. Fixed T74/T77 (dialog keys), T91 (driver navigate endpoint). Updated T16/T62/T63 test flows (tap-to-edit). Moved T21/T67 to Manual. All 6 verified PASS via driver. Target: 91/91 automated (100%).
+**Decisions**: T21/T67 removed from automated flows (features not wired). Tap-to-edit is correct behavior, not a bug.
+**Next**: Commit all. /implement workflow improvements. Merge branch.
+
 ### Session 619 (2026-03-21)
 **Work**: Fixed entry ownership (creator-only editing, null=read-only). Fixed todo soft-delete (T51/T77). Added UserAttributionText to calendar entry cards + draft tiles. H-markers already clean.
 **Decisions**: Entry editing restricted to creator regardless of role (not role-based). Short "By:" prefix for compact cards.

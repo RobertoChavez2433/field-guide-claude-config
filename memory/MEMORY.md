@@ -54,8 +54,8 @@
 - **CRITICAL**: NEVER run `Stop-Process -Name 'dart'` — can kill background Dart processes. Only kill `construction_inspector`.
 - dart-mcp MCP server REMOVED (Session 444) — use `pwsh -Command "flutter run ..."` directly instead
 
-### Subagent Task Tool Limitation (Session 489)
-- **CRITICAL**: Subagents CANNOT call the Task tool to dispatch further subagents. Nested Task calls silently fail — the subagent recognizes it needs Task but falls back to Bash.
+### Subagent Agent Tool Limitation (Session 489)
+- **CRITICAL**: Subagents CANNOT call the Agent tool to dispatch further subagents. Nested Agent calls silently fail — the subagent recognizes it needs Agent but falls back to Bash.
 - **Implication**: The `test-orchestrator-agent` cannot dispatch `test-wave-agent` subagents. Only the top-level conversation agent can dispatch subagents.
 - **Pattern**: For multi-agent orchestration, the main conversation agent must act as the thin orchestrator. Don't use an orchestrator subagent that needs to dispatch its own subagents.
 - **Turn budget**: Each ADB test flow consumes 25-40 turns. Dispatch 1 flow per agent to avoid turn exhaustion.

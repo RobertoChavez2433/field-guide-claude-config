@@ -25,7 +25,7 @@ This conversation (supervisor)
 ```
 
 The orchestrator runs as a **separate main-thread CLI process** (not a subagent). This gives it:
-- Task tool access (can dispatch implementers, reviewers, fixers)
+- Agent tool access (can dispatch implementers, reviewers, fixers)
 - Its own context window (doesn't consume ours)
 - Behavioral self-restriction from its system prompt (won't use Edit/Write/Bash directly)
 - `permissionMode: bypassPermissions` (no interactive prompts)
@@ -223,7 +223,7 @@ Read the final checkpoint to populate this summary. The supervisor does NOT comm
 The orchestrator's prompt says "ONLY the listed phases." If it ignores this, strengthen the instruction in the prompt or add a checkpoint verification that rejects work on unassigned phases.
 
 ### Orchestrator uses Edit/Write directly instead of dispatching
-The orchestrator's system prompt behaviorally restricts it to Read/Glob/Grep/Task. If it violates this, the agent file at `.claude/agents/implement-orchestrator.md` needs prompt strengthening.
+The orchestrator's system prompt behaviorally restricts it to Read/Glob/Grep/Agent. If it violates this, the agent file at `.claude/agents/implement-orchestrator.md` needs prompt strengthening.
 
 ### Orchestrator can't find agents
 Custom agents must exist in `.claude/agents/`. Verify the files exist with Glob.

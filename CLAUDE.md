@@ -103,7 +103,7 @@ Screen -> Provider -> Repository -> SQLite (local) -> Supabase (sync)
 `.claude/` is gitignored from app repo and tracked separately.
 
 ## Context Efficiency
-- **Prefer parallel Task calls** over `run_in_background`. Never call TaskOutput more than once per subagent.
+- **Prefer parallel Agent calls** over `run_in_background`.
 - Cap **Explore agents at 3 per session**. Only spawn subagents for 5+ tool-call tasks.
 - Don't echo back file contents already in context. Prefer file:line references over code blocks.
 - Summarize subagent results in 3-5 bullets, not full output.

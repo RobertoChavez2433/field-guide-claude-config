@@ -32,11 +32,11 @@ Main Agent (you)
   ├─ Phase 1: Read spec + Index codebase (CodeMunch MCP — only you have access)
   ├─ Phase 2: Build dependency graph + blast radius (CodeMunch MCP)
   ├─ Phase 3: Save dependency graph to disk
-  ├─ Phase 4: Spawn plan-writer agent (Task tool, model: opus)
+  ├─ Phase 4: Spawn plan-writer agent (Agent tool, model: opus)
   │     └─ Reads dependency graph + spec from disk, writes the plan
   ├─ Phase 5: Adversarial review (dispatch 2 agents in PARALLEL)
-  │     ├─ code-review-agent (Task tool)
-  │     └─ security-agent (Task tool)
+  │     ├─ code-review-agent (Agent tool)
+  │     └─ security-agent (Agent tool)
   ├─ Phase 6: Address findings (edit plan inline or re-spawn plan-writer)
   └─ Phase 7: Present summary to user
 ```
@@ -76,7 +76,7 @@ Write the analysis to `.claude/dependency_graphs/YYYY-MM-DD-<name>/analysis.md` 
 
 ### Phase 4: Spawn Plan-Writer Agent
 
-Spawn a single agent via Task tool:
+Spawn a single agent via Agent tool:
 - `subagent_type: general-purpose`
 - `model: opus`
 
@@ -264,7 +264,7 @@ Every code block in the plan MUST include annotations where logic isn't self-evi
 | Anti-Pattern | Why It's Wrong | Do This Instead |
 |--------------|----------------|-----------------|
 | Delegating CodeMunch to subagent | Subagents have NO MCP access | Main agent runs all CodeMunch calls |
-| Expecting subagent to spawn agents | Subagents can't use Task tool | Main agent dispatches all subagents |
+| Expecting subagent to spawn agents | Subagents can't use Agent tool | Main agent dispatches all subagents |
 | Vague steps ("add validation") | Agent has to think | Complete code with annotations |
 | Missing file paths | Agent guesses wrong | Exact `path/to/file.dart:line` |
 | Skipping tests | Breaks TDD cycle | Every sub-phase has test steps |
