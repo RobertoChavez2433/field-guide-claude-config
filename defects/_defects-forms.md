@@ -1,5 +1,12 @@
 # Forms Feature Defects
 
+## Active Patterns
+
+### [DATA] 2026-03-27: _sendTest uses '--' sentinel string in numeric field of legal form
+**Pattern**: When `_test['moisture_pcf']` is empty, `percent_compaction` is set to the string `'--'` in the submitted test row JSON. This propagates into PDF rendering and sync payload — a sentinel value in a legally certified MDOT density test form.
+**Prevention**: Use `null` instead of `'--'` in row construction. The `_fmt()` helper already handles `null → '--'` for display-only contexts.
+**Ref**: @lib/features/forms/presentation/screens/mdot_hub_screen.dart:625
+
 ## Active E2E Patterns
 
 <!-- RESOLVED 2026-03-22 S623: [E2E] Form delete + trash delete-forever dialog buttons — Fixed: added formDeleteCancelButton/formDeleteConfirmButton and trashDeleteForeverCancelButton/trashDeleteForeverConfirmButton keys. Ref: forms_list_screen.dart:276, trash_screen.dart:298 -->

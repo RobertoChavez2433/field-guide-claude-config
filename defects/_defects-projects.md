@@ -5,6 +5,16 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [DATA] 2026-03-27: Path traversal guard uses contains('..') — bypassed by encoded sequences
+**Pattern**: Photo deletion in `_handleRemoveFromDevice` guards with `path.contains('..')` only. URL-encoded variants, absolute paths outside sandbox bypass this.
+**Prevention**: Validate `File(path)` resolves inside known photo directory prefix (from `getApplicationDocumentsDirectory()`). Reject paths that don't share this prefix.
+**Ref**: @lib/features/projects/presentation/screens/project_list_screen.dart:191
+
+### [DATA] 2026-03-27: sync_control pulling flag set outside transaction — crash leaves it stuck
+**Pattern**: `UPDATE sync_control SET value = '1'` runs before `_db.transaction()`. Crash between flag-set and transaction completion leaves `pulling = '1'` permanently, suppressing all change_log triggers.
+**Prevention**: Add startup guard in `DatabaseService.onOpen` that resets `pulling` to `'0'` if left `'1'`.
+**Ref**: @lib/features/projects/data/services/project_lifecycle_service.dart:101
+
 ### [DATA] 2026-03-26: ProjectAssignmentProvider creator auto-add defeats hasChanges (BUG-3)
 **Pattern**: `loadForProject()` auto-adds creator to `_assignedUserIds` then snapshots to `_originalAssignedUserIds`. On new projects (no DB records), both sets match → `hasChanges == false` → `save()` never called → creator assignment record never written to `project_assignments`.
 **Prevention**: Always snapshot `_originalAssignedUserIds` from DB state BEFORE any in-memory mutations. The diff between DB state and current state is what `hasChanges` should reflect.

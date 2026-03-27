@@ -5,6 +5,21 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [CONFIG] 2026-03-27: Seeded data invisible without project_assignments
+**Pattern**: Inserting bid_items directly into Supabase is not enough for sync. The sync engine requires a `project_assignments` row for the user to enroll the project into `synced_projects`. Without it, `_syncedProjectIds` is empty and all `viaProject` adapters skip the project entirely.
+**Prevention**: When seeding project data in Supabase, always create a `project_assignments` row for target users. The enrollment chain is: `project_assignments` pull → `_enrollProjectsFromAssignments()` → `synced_projects` → child adapters pull.
+**Ref**: `lib/features/sync/engine/sync_engine.dart:1644` (`inFilter('project_id', _syncedProjectIds)`)
+
+### [CONFIG] 2026-03-27: enforce_created_by trigger nullifies service role inserts
+**Pattern**: `enforce_created_by()` trigger stamps `created_by_user_id = auth.uid()`. When using service role key, `auth.uid()` returns NULL, so all inserted rows have `created_by_user_id = NULL` — even if explicitly set in the INSERT. This can break FK constraints and RLS visibility.
+**Prevention**: For seeding, authenticate as a real user via OTP flow (`admin.generateLink` + `verifyOtp`) rather than using the service role key directly.
+**Ref**: `supabase/migrations/20260222100000_multi_tenant_foundation.sql:358`
+
+### [CONFIG] 2026-03-27: RAISE LOG not captured in Supabase Cloud production
+**Pattern**: `cascade_project_soft_delete` and `admin_soft_delete_project` use `RAISE LOG` for audit events. Supabase Cloud's default log level is `WARNING` — `LOG` events are silently discarded in production.
+**Prevention**: Use `RAISE NOTICE` or insert into an `audit_log` table for production-visible audit trails.
+**Ref**: @supabase/migrations/20260326200001_fix_cascade_entry_personnel.sql:113
+
 ### [DATA] 2026-03-26: Schema divergence — project_assignments missing audit/soft-delete columns
 **Pattern**: `project_assignments` was created without `created_by_user_id`, `deleted_at`, `deleted_by` — the only table out of 17 missing these. Sync engine stamps `created_by_user_id` unconditionally on ALL payloads, causing PGRST204 rejection. Also `entry_personnel_counts` missing `created_at` on Supabase. Schema verifier missing entries for infrastructure tables.
 **Prevention**: When adding a new synced table, cross-reference against the standard column template (created_by_user_id, deleted_at, deleted_by, created_at, updated_at). Add to schema_verifier.dart expectedSchema. Add to purge_soft_deleted_records(). Run column-level audit before first sync test.

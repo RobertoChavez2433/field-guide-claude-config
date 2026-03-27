@@ -168,8 +168,8 @@
 | S06 | Calculator | calculation_history | Admin: HMA calculation → save → sync → Inspector: sync x2 → verify locally | sync,db | UNTESTED | - | Depends: S01; COMPACTION PAUSE after |
 | S07 | Update All | All updatable tables | Admin: update project, location, contractor, equipment, bid_item, personnel_type, entry fields, photo, form, todo, calculator → sync → Inspector: verify | sync,db | UNTESTED | - | Depends: S01-S06 |
 | S08 | PDF Export | N/A (output artifact) | Admin: export IDR + 0582B PDFs → ADB pull → pdftk verify fields | pdf | UNTESTED | - | Depends: S07; ADB timeout → FAIL S08, continue to S09 |
-| S09 | Delete Cascade | All child tables of project 1 | Admin: two-step delete → sync → Supabase: verify 14 child tables soft-deleted → Inspector: deletion banner → verify gone | sync,db | UNTESTED | - | Depends: S07; COMPACTION PAUSE after |
-| S10 | Unassignment + Cleanup | project_assignments, projects | Admin: unassign inspector from project 2 → sync → Inspector: verify project 2 removed → Admin: delete project 2 → post-run VRF sweep | sync,db | UNTESTED | - | Depends: S01 |
+| S09 | Delete Cascade | All child tables of project 1 | Admin: two-step delete → sync → Supabase: verify 14 child tables soft-deleted → Inspector: deletion banner → verify gone | sync,db | PASS | 2026-03-27 | RPC + cascade trigger + RLS fix + orphan cleaner all working. Inspector pulls 21 tombstones, shows deletion banner, project auto-evicted on 2nd sync. |
+| S10 | Unassignment + Cleanup | project_assignments, projects | Admin: unassign inspector from project 2 → sync → Inspector: verify project 2 removed → Admin: delete project 2 → post-run VRF sweep | sync,db | FAIL | 2026-03-27 | BUG-S01-2: Assignment toggle doesn't persist soft-delete to SQLite/change_log. Pre-existing bug. |
 
 ## Tier 11: Role & Permission Verification (T85-T91)
 

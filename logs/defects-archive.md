@@ -4,6 +4,18 @@ Historical defects moved from per-feature defect files. Reference only.
 
 ---
 
+## PDF
+
+### [E2E] 2026-03-14: Wave-1 Grid Tuning Must Be Reversible Until Springfield Beats Baseline (Session 566)
+**Pattern**: Conservative fringe-expansion and text-protected removal changes in `GridLineRemover` materially regressed the real Springfield extraction before any upstream gain was proven. The run recovered only after grid-removal behavior was rolled back while leaving diagnostics in place.
+**Prevention**: Treat Stage `2B-ii.6` tuning as experimental until both the cell harness and Springfield improve over the archived pre-wave baseline. Keep diagnostics, but revert behavioral tuning immediately when control columns or item totals regress.
+**Ref**: @lib/features/pdf/services/extraction/stages/grid_line_remover.dart
+
+### [DATA] 2026-03-15: _buildCell() Left-to-Right Sort Scrambles Wrapped Descriptions (Session 574)
+**Pattern**: `CellExtractorV2._buildCell()` sorts OCR fragments by `boundingBox.left` only. When a description wraps to two lines within one grid cell, line 2 words (lower X) interleave before line 1 words, producing scrambled text like `"Allowance) Private Property Landscape Repair (Cash"` instead of `"Private Property Landscape Repair (Cash Allowance)"`.
+**Prevention**: Sort Y-first (using Y-band tolerance = 0.5 * median fragment height), then X within each band. This preserves reading order for multi-line cells without breaking single-line text with baseline jitter.
+**Ref**: @lib/features/pdf/services/extraction/stages/cell_extractor_v2.dart:528
+
 ## Entries (archived 2026-03-21 S622)
 
 ### [DATA] 2026-03-21: Todo hard-delete bypasses soft-delete infrastructure

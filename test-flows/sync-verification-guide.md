@@ -109,6 +109,32 @@ curl -s -X DELETE "${SUPABASE_URL}/rest/v1/<table>?id=eq.<uuid>" \
   -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}"
 ```
 
+## Scrollable Keys Reference
+
+The driver's `/driver/scroll` endpoint requires a `ValueKey` on the scrollable widget itself (not a child).
+Use these keys when you need to scroll a screen:
+
+| Screen | Key | Widget Type |
+|--------|-----|-------------|
+| Entry editor (create/edit) | `entry_editor_scroll` | CustomScrollView |
+| Entry review/detail | `entry_review_scroll` | SingleChildScrollView |
+| Project details form | `project_details_scroll` | SingleChildScrollView |
+| Project locations list | `project_locations_list` | ListView |
+| Project contractors list | `project_contractors_list` | ListView |
+| Project bid items list | `project_bid_items_list` | ListView |
+| Project assignments list | `project_assignments_list` | ListView |
+| Settings screen | `settings_list` | ListView |
+| Home report preview | `home_report_preview_scroll_view` | SingleChildScrollView (already had key) |
+
+**Usage:**
+```bash
+# Scroll down by 500px
+curl -s -X POST http://127.0.0.1:4948/driver/scroll -d '{"key":"entry_editor_scroll","dx":0,"dy":-500}'
+```
+
+> **IMPORTANT:** The `key` must target the scrollable widget, NOT a child widget inside it.
+> Child widgets (TextFields, Cards) consume the gesture and prevent scrolling.
+
 ## Cross-Device Sync Protocol
 
 Use this 4-step pattern after every data mutation:
@@ -314,13 +340,13 @@ On resume:
    # Note: equipment is added per-contractor — tap contractor_card_<id> to expand the contractor first
    curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_card_<contractorId>"}'
    sleep 1
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"project_add_equipment_button"}'
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_add_equipment_button"}'
    sleep 1
    curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"equipment_name_field","text":"VRF-CAT 320 Excavator '"${RUN_TAG}"'"}'
    curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"equipment_dialog_add"}'
    sleep 1
    # Second equipment
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"project_add_equipment_button"}'
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_add_equipment_button"}'
    sleep 1
    curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"equipment_name_field","text":"VRF-Volvo A40G Hauler '"${RUN_TAG}"'"}'
    curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"equipment_dialog_add"}'
@@ -346,38 +372,37 @@ On resume:
    sleep 1
    ```
 
-8. Add 3 personnel types (via Settings):
+8. Add 3 personnel types (via Contractors tab — expand contractor card):
    ```bash
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"settings_nav_button"}'
+   # Personnel types are added from within the Contractors tab, not Settings.
+   # The contractor card must be expanded first (tap to enter editing mode).
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"project_contractors_tab"}'
    sleep 1
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"settings_personnel_types_tile"}'
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_card_<contractorId1>"}'
    sleep 1
    # Laborer
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"personnel_types_add_button"}'
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_add_personnel_type_button"}'
    sleep 1
-   curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"personnel_type_name_field","text":"VRF-Laborer '"${RUN_TAG}"'"}'
-   curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"personnel_type_short_code_field","text":"LAB"}'
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"add_personnel_type_confirm"}'
+   curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"personnel_type_dialog_name_field","text":"VRF-Laborer '"${RUN_TAG}"'"}'
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"personnel_type_dialog_add"}'
    sleep 1
    # Operator
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"personnel_types_add_button"}'
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_add_personnel_type_button"}'
    sleep 1
-   curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"personnel_type_name_field","text":"VRF-Operator '"${RUN_TAG}"'"}'
-   curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"personnel_type_short_code_field","text":"OPR"}'
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"add_personnel_type_confirm"}'
+   curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"personnel_type_dialog_name_field","text":"VRF-Operator '"${RUN_TAG}"'"}'
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"personnel_type_dialog_add"}'
    sleep 1
    # Foreman
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"personnel_types_add_button"}'
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_add_personnel_type_button"}'
    sleep 1
-   curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"personnel_type_name_field","text":"VRF-Foreman '"${RUN_TAG}"'"}'
-   curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"personnel_type_short_code_field","text":"FOR"}'
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"add_personnel_type_confirm"}'
+   curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"personnel_type_dialog_name_field","text":"VRF-Foreman '"${RUN_TAG}"'"}'
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"personnel_type_dialog_add"}'
    sleep 1
    ```
 
 9. Assign inspector:
    ```bash
-   # Navigate back to project edit → assignments tab
+   # Navigate to assignments tab (still in project edit)
    curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"project_assignments_tab"}'
    sleep 1
    # Toggle inspector user assignment
@@ -415,94 +440,88 @@ On resume:
    ```bash
    curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"dashboard_nav_button"}'
    sleep 1
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"add_entry_fab"}'
-   sleep 1
+   # NOTE: Button is dashboard_new_entry_button (not add_entry_fab)
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"dashboard_new_entry_button"}'
+   sleep 2
    ```
 
-2. Fill entry fields — select location, weather, temps, activities:
+2. Fill entry fields — location auto-selects first location, weather defaults to Sunny:
    ```bash
-   # Location: tap dropdown to open, then tap the option key (location_option_<locationId>)
+   # Location and weather dropdowns may already have defaults selected.
+   # Verify with /driver/find?key=entry_wizard_location_dropdown before tapping.
+   # If you need to change location:
    curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"entry_wizard_location_dropdown"}'
    sleep 1
    curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"location_option_<ctx.locationIds[0]>"}'
    sleep 1
-   # Weather: tap dropdown to open, then tap the specific weather option key
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"entry_wizard_weather_dropdown"}'
-   sleep 1
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"weather_condition_sunny"}'
-   sleep 1
+   # Temps
    curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"entry_wizard_temp_low","text":"62"}'
    curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"entry_wizard_temp_high","text":"78"}'
-   curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"entry_wizard_activities","text":"VRF-Excavation and grading operations '"${RUN_TAG}"'"}'
+   # Activities — NOTE: key is report_activities_field (not entry_wizard_activities)
+   curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"report_activities_field","text":"VRF-Excavation and grading operations '"${RUN_TAG}"'"}'
    sleep 1
    ```
 
-3. Add 2 entry contractors (toggle from project contractors):
+3. Save as draft first (contractors/equipment/quantities are added from the report screen, not the create wizard):
    ```bash
-   # Scroll down in the entry wizard to reach the contractors section.
-   # Each contractor has a checkbox key: contractor_checkbox_<contractorId>
-   # Tap both checkboxes to associate them with the entry.
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_checkbox_<ctx.contractorIds[0]>"}'
+   # Scroll to save button using the scrollable key
+   curl -s -X POST http://127.0.0.1:4948/driver/scroll-to-key \
+     -d '{"scrollable":"entry_editor_scroll","target":"entry_wizard_save_draft","maxScrolls":10}'
    sleep 1
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_checkbox_<ctx.contractorIds[1]>"}'
-   sleep 1
-   ```
-
-4. Toggle equipment usage:
-   ```bash
-   # Equipment chips are visible after the associated contractor is checked in step 3
-   # Each equipment item has a chip key: equipment_chip_<equipmentId>
-   # Tap to toggle equipment associated with the entry.
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"equipment_chip_<ctx.equipmentIds[0]>"}'
-   sleep 1
-   ```
-
-5. Add personnel counts:
-   ```bash
-   # Personnel counters are scoped per contractor — the contractor section must be expanded/visible first.
-   # Tap the contractor card to expand it before tapping personnel counter buttons.
-   # The contractor_counter_plus_<typeId> keys are rendered inside the expanded contractor widget.
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_card_<ctx.contractorIds[0]>"}'
-   sleep 1
-   # Personnel counts are entered via counter buttons per contractor.
-   # Key pattern: contractor_counter_plus_<typeId> (increments count for that type)
-   # Tap the plus button for each personnel type under the first contractor.
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_counter_plus_<ctx.personnelTypeIds[0]>"}'
-   sleep 1
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_counter_plus_<ctx.personnelTypeIds[0]>"}'
-   sleep 1
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_counter_plus_<ctx.personnelTypeIds[0]>"}'
-   sleep 1
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_counter_plus_<ctx.personnelTypeIds[1]>"}'
-   sleep 1
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"contractor_counter_plus_<ctx.personnelTypeIds[1]>"}'
-   sleep 1
-   ```
-
-6. Add quantity (select bid item via picker, enter value):
-   ```bash
-   # Tap the Add Quantity button to open the bid item picker bottom sheet.
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"quantity_add_button"}'
-   sleep 1
-   # quantity_add_button opens the bid item picker sheet (bid_item_picker_sheet) directly.
-   # Wait for the picker sheet to appear, then tap the bid item row by its ID.
-   # Key pattern: bid_item_picker_<bidItemId>
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"bid_item_picker_<ctx.bidItemIds[0]>"}'
-   sleep 1
-   # Enter the quantity amount and save.
-   curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"quantity_amount_field","text":"125"}'
-   sleep 1
-   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"quantity_dialog_save"}'
-   sleep 1
-   ```
-
-7. Save as draft:
-   ```bash
    curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"entry_wizard_save_draft"}'
    sleep 2
    ```
 
-8. Cross-device sync protocol (4-step).
+4. From the report screen, add 2 entry contractors:
+   ```bash
+   # After saving, the app navigates to the report screen.
+   # Add contractors via the report screen's add contractor button.
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"report_add_contractor_button"}'
+   sleep 1
+   # Tap contractor items in the add-contractor sheet
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"report_add_contractor_item_<ctx.contractorIds[0]>"}'
+   sleep 1
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"report_add_contractor_item_<ctx.contractorIds[1]>"}'
+   sleep 1
+   ```
+
+5. Toggle equipment on report screen:
+   ```bash
+   # Equipment checkboxes appear within each contractor card on the report screen.
+   # Key pattern: report_equipment_checkbox_<equipmentId>
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"report_equipment_checkbox_<ctx.equipmentIds[0]>"}'
+   sleep 1
+   ```
+
+6. Add personnel counts on report screen:
+   ```bash
+   # Personnel counters are scoped per contractor on the report screen.
+   # Key pattern: report_personnel_counter_<contractorId>_<typeId>
+   # These are counter widgets — tap to increment.
+   # NOTE: Verify exact key patterns at runtime with /driver/tree?filter=personnel
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"report_personnel_counter_<ctx.contractorIds[0]>_<ctx.personnelTypeIds[0]>"}'
+   sleep 1
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"report_personnel_counter_<ctx.contractorIds[0]>_<ctx.personnelTypeIds[0]>"}'
+   sleep 1
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"report_personnel_counter_<ctx.contractorIds[0]>_<ctx.personnelTypeIds[1]>"}'
+   sleep 1
+   ```
+
+7. Add quantity on report screen:
+   ```bash
+   # Key: report_add_quantity_button
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"report_add_quantity_button"}'
+   sleep 1
+   # Tap the bid item in the autocomplete/picker
+   # Key pattern: bid_item_option_<bidItemId>
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"bid_item_option_<ctx.bidItemIds[0]>"}'
+   sleep 1
+   # Enter quantity amount — verify field key at runtime
+   curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key":"report_quantity_amount_field_<quantityId>","text":"125"}'
+   sleep 1
+   ```
+
+8. Cross-device sync protocol (4-step). Entry auto-saves on the report screen.
 
 **Supabase Verify:** Query `daily_entries`, `entry_contractors`, `entry_equipment`, `entry_personnel_counts`, `entry_quantities` by project_id.
 

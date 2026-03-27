@@ -6,6 +6,37 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 656 (2026-03-26)
+**Work**: Continued /test sync S07-S09. S09 FAIL — no UI path for cloud cascade delete. Launched 3 exploration agents. Found critical gaps. User approved 5 fixes.
+**Decisions**: Wire up Path C. Add Supabase cascade trigger. Fix daily_entries RLS. Fix fetchRemoteProjects reappearance.
+**Next**: Second exploration wave → /writing-plans → /implement.
+
+## March 2026
+
+### Session 655 (2026-03-26)
+**Work**: Ran /test sync S01 (PASS, tag mvs51), S02 blocked by scroll bug. Fixed by adding 12 ValueKeys. Updated sync guide + test skill.
+**Decisions**: Driver scroll requires ValueKey on scrollable widget itself. Entry contractors/equipment/quantities added from report screen.
+**Next**: Rebuild → /test sync S01-S10.
+
+## March 2026
+
+### Session 654 (2026-03-26)
+**Work**: Attempted /test sync S01. Hit stale SQLite data. Fixed sync guide + added 3 testing keys.
+
+### Session 653 (2026-03-26)
+**Work**: Rebuilt APK, cleaned Supabase. Fixed ADB port conflict + start-driver.ps1.
+
+### Session 652 (2026-03-26)
+**Work**: Started /test sync S01. Found contractor type dropdown bug. Fixed with SegmentedButton.
+
+### Session 651 (2026-03-26)
+**Work**: Brainstorming + writing-plans for 0582B fixes. 4 review rounds. Plan at v5.
+
+### Session 645 (2026-03-25)
+**Work**: Executed /implement for Claude-driven sync verification plan. 4 phases, 3 orchestrator launches, 0 handoffs. Deleted ~105 old JS files, stripped run-tests.js, updated skill/registry refs, created sync-verification-guide.md.
+**Decisions**: supabase-verifier.js setupSharedFixture/teardownFixture removed (no callers).
+**Next**: /test sync → commit.
+
 ### Session 643 (2026-03-25)
 **Work**: Attempted JS integrity suite run — failed (widget timing, ADB hangs, data collisions). Pivoted: 3 opus research agents mapped full system. Brainstorming approved spec for Claude-driven sync verification (S01-S10). Dart: DRIVER_PORT dart-define for dual-device.
 **Decisions**: Scrap JS-driven approach. Claude-driven curl flows like /test skill. Delete old JS infra. Keep cleanup-only utility. Post-run sweep = test failure if leftovers found.

@@ -5,6 +5,11 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [CONFIG] 2026-03-27: MANAGE_EXTERNAL_STORAGE prompts on every app launch
+**Pattern**: `_ensureLogDirectoryWritable()` in `main.dart` requested `Permission.manageExternalStorage` but that permission was never declared in `AndroidManifest.xml`. Android always reported it as `denied`, so the request dialog fired on every launch. Additionally, `_initDebugLogging` opened a `FilePicker.getDirectoryPath()` dialog on mobile when no saved log dir existed.
+**Prevention**: Never request permissions not declared in AndroidManifest.xml. On mobile, use app-specific directories (`getApplicationDocumentsDirectory`) instead of requesting dangerous storage permissions. File logging should silently fall back to app-specific dirs.
+**Ref**: `lib/main.dart:621-631`, `android/app/src/main/AndroidManifest.xml`
+
 ### [CONFIG] 2026-03-18: get_pending_requests_with_profiles RPC varchar/text type mismatch (Session 588)
 **Pattern**: `auth.users.email` is `character varying` but the RPC `RETURNS TABLE` declares `email TEXT`. PostgreSQL rejects the mismatch: "Returned type character varying does not match expected type text in column 10." Same risk for any column sourced from `auth.users` or tables with `varchar` columns.
 **Prevention**: Always cast columns from external tables (especially `auth.users`) to match the declared return type: `COALESCE(au.email, '')::TEXT`. Apply `::TEXT` casts proactively on all `RETURNS TABLE` RPC columns.

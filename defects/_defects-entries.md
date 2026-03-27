@@ -5,6 +5,11 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [E2E] 2026-03-26: Driver scroll fails — scrollable widgets need ValueKey (not GlobalKey)
+**Pattern**: `/driver/scroll` endpoint uses `_findByValueKey()` to locate the scrollable widget. If the scrollable has a `GlobalKey` or no key, the handler returns 404 silently and the page doesn't scroll. Targeting a child widget (TextField, Card) also fails because the child consumes the gesture.
+**Prevention**: All scrollable widgets that E2E tests need to scroll must have `const ValueKey('descriptive_name')`. Add keys to `CustomScrollView`, `SingleChildScrollView`, `ListView` — never to their children. 12 keys were added in S655.
+**Ref**: `lib/core/driver/driver_server.dart:354` (`_handleScroll`), `lib/core/driver/driver_server.dart:1094` (`_findByValueKey`)
+
 ### [E2E] 2026-03-22: Tap-to-edit sections require explicit section tap before field interaction
 **Pattern**: Activities, safety, and temperature sections in the entry editor use tap-to-edit mode (`alwaysEditing: false`). TextFields only render after tapping the section card (setting `_isEditing=true`). Test flows that skip this tap step get 404 (widget not found) because the TextField doesn't exist in the tree yet.
 **Prevention**: E2E flows must tap the section card key (e.g., `report_activities_section`) and wait for the field key (e.g., `report_activities_field`) before attempting text input. The `isViewer` guard also blocks editing for non-creators on safety/temperature sections.

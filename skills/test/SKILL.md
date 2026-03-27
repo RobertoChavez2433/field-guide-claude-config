@@ -75,8 +75,13 @@ navigation   → T92-T96
 
 ## Prerequisites (automated)
 1. Run: `pwsh -File tools/start-driver.ps1 -Platform windows` (or `-Platform android`)
-2. Script handles debug server, app launch, and readiness gate
+2. Script handles: stale process cleanup, debug server, app launch, and readiness gate
 3. No manual setup required
+
+### Pre-flight Cleanup (built into start-driver.ps1)
+- **Android**: Force-stops app on all devices, clears stale ADB forwards/reverses (frees port 4948)
+- **Windows**: Kills `construction_inspector` process
+- **IMPORTANT**: Use `adb forward` (host→device) for driver port, NOT `adb reverse` (which binds the port on-device and conflicts with the driver server)
 
 ## Execution Model
 
@@ -264,8 +269,8 @@ Binds to loopback (127.0.0.1) only — no auth required.
 | GET | /driver/tree?depth=N | — |
 | POST | /driver/tap | {"key": "X"} |
 | POST | /driver/text | {"key": "X", "text": "Y"} |
-| POST | /driver/scroll | {"key": "X", "dx": 0, "dy": -300} |
-| POST | /driver/scroll-to-key | {"scrollable": "X", "target": "Y", "maxScrolls": 20} |
+| POST | /driver/scroll | {"key": "X", "dx": 0, "dy": -300} — **key must be on the scrollable widget itself** |
+| POST | /driver/scroll-to-key | {"scrollable": "X", "target": "Y", "maxScrolls": 20} — scrollable must have a ValueKey |
 | POST | /driver/back | {} |
 | POST | /driver/wait | {"key": "X", "timeoutMs": 10000} |
 | POST | /driver/inject-photo | {"data": "<base64>", "filename": "test.jpg"} |
@@ -274,6 +279,31 @@ Binds to loopback (127.0.0.1) only — no auth required.
 | POST | /driver/hot-restart | {} |
 
 > `/driver/screenshot` returns `image/png` binary. Use `curl --output <path>`.
+
+### Scrollable Keys (for /driver/scroll)
+
+The `key` parameter in `/driver/scroll` and `/driver/scroll-to-key` must target a **ValueKey on the scrollable widget itself** — NOT a child widget. Targeting a child (e.g., a TextField or Card) will cause the child to consume the gesture and the page won't scroll.
+
+| Screen | Scroll Key | Notes |
+|--------|-----------|-------|
+| Entry editor (create/edit) | `entry_editor_scroll` | Main entry form |
+| Entry review/detail | `entry_review_scroll` | Entry report view |
+| Project details form | `project_details_scroll` | Name, number, client fields |
+| Project locations list | `project_locations_list` | Locations tab in project edit |
+| Project contractors list | `project_contractors_list` | Contractors tab |
+| Project bid items list | `project_bid_items_list` | Pay items tab |
+| Project assignments list | `project_assignments_list` | Assignments tab |
+| Settings screen | `settings_list` | Main settings ListView |
+
+**Example — scroll entry editor down 500px:**
+```bash
+curl -s -X POST http://127.0.0.1:4948/driver/scroll -d '{"key":"entry_editor_scroll","dx":0,"dy":-500}'
+```
+
+**Example — scroll-to-key to find save button:**
+```bash
+curl -s -X POST http://127.0.0.1:4948/driver/scroll-to-key -d '{"scrollable":"entry_editor_scroll","target":"entry_wizard_save_draft","maxScrolls":10}'
+```
 
 ## Flow Dependencies
 

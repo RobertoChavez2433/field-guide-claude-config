@@ -5,6 +5,11 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [ASYNC] 2026-03-27: pdfrx rendering fails silently in background isolates (Session 659)
+**Pattern**: `pdfrxFlutterInitialize()` and `PdfDocument.openData()` require the full Flutter engine context, not just `BackgroundIsolateBinaryMessenger`. In a worker isolate, page renders silently return null (caught by try/catch), pipeline completes instantly with 0 items. The `BackgroundIsolateBinaryMessenger.ensureInitialized()` fix from S580 was necessary but not sufficient.
+**Prevention**: Do NOT run pdfrx rendering in background isolates. Either run the full pipeline on the main thread (current fix), or split architecture: render pages on main thread, pass images to worker isolate for OCR/parsing only.
+**Ref**: @lib/features/pdf/services/extraction/stages/page_renderer_v2.dart:229-293, @lib/features/pdf/presentation/helpers/pdf_import_helper.dart
+
 ### [DATA] 2026-03-16: Background isolate missing BackgroundIsolateBinaryMessenger init (Session 580)
 **Pattern**: `ExtractionJobRunner._workerEntryPoint()` did not call `BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken)`. `pdfrx` uses platform channels for page rendering → all 6 pages failed with "Bad state: BackgroundIsolateBinaryMessenger.instance value is invalid". Extraction completed in 246ms with 0 items — silent total failure.
 **Prevention**: ANY isolate that uses platform channels (pdfrx, path_provider, etc.) MUST call `BackgroundIsolateBinaryMessenger.ensureInitialized()` before any work. Pass `RootIsolateToken.instance!` via the init message.
@@ -24,16 +29,6 @@ Archive: .claude/logs/defects-archive.md
 **Pattern**: Grid line removal mask uses detector `widthPixels` from binary threshold (128), but anti-aliased fringe pixels (grayscale 128-200) survive thresholding and remain in OCR crops. Tesseract reads these as `|`, `CB`, `Be`, `®`, etc., creating +150 phantom elements that cascade into item loss (105→82).
 **Prevention**: Measure fringe dynamically from the grayscale image (scan perpendicular to each line, detect 128-200 band pixels), expand removal mask to cover. Use dual-boundary stop (>=200 OR <128) to avoid counting intersection pixels as fringe.
 **Ref**: @lib/features/pdf/services/extraction/stages/grid_line_remover.dart, `.claude/specs/2026-03-14-dynamic-fringe-removal-spec.md`
-
-### [E2E] 2026-03-14: Wave-1 Grid Tuning Must Be Reversible Until Springfield Beats Baseline (Session 566)
-**Pattern**: Conservative fringe-expansion and text-protected removal changes in `GridLineRemover` materially regressed the real Springfield extraction before any upstream gain was proven. The run recovered only after grid-removal behavior was rolled back while leaving diagnostics in place.
-**Prevention**: Treat Stage `2B-ii.6` tuning as experimental until both the cell harness and Springfield improve over the archived pre-wave baseline. Keep diagnostics, but revert behavioral tuning immediately when control columns or item totals regress.
-**Ref**: @lib/features/pdf/services/extraction/stages/grid_line_remover.dart
-
-### [DATA] 2026-03-15: _buildCell() Left-to-Right Sort Scrambles Wrapped Descriptions (Session 574)
-**Pattern**: `CellExtractorV2._buildCell()` sorts OCR fragments by `boundingBox.left` only. When a description wraps to two lines within one grid cell, line 2 words (lower X) interleave before line 1 words, producing scrambled text like `"Allowance) Private Property Landscape Repair (Cash"` instead of `"Private Property Landscape Repair (Cash Allowance)"`.
-**Prevention**: Sort Y-first (using Y-band tolerance = 0.5 * median fragment height), then X within each band. This preserves reading order for multi-line cells without breaking single-line text with baseline jitter.
-**Ref**: @lib/features/pdf/services/extraction/stages/cell_extractor_v2.dart:528
 
 
 <!-- Add defects above this line -->
