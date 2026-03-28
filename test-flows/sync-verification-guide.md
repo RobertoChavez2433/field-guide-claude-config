@@ -135,32 +135,95 @@ curl -s -X POST http://127.0.0.1:4948/driver/scroll -d '{"key":"entry_editor_scr
 > **IMPORTANT:** The `key` must target the scrollable widget, NOT a child widget inside it.
 > Child widgets (TextFields, Cards) consume the gesture and prevent scrolling.
 
+## Navigation Map
+
+### Bottom Nav Keys
+| Key | Destination | Sentinel (verify arrival) |
+|-----|------------|--------------------------|
+| `dashboard_nav_button` | Dashboard/Home | `dashboard_new_entry_button` |
+| `calendar_nav_button` | Calendar view | — |
+| `projects_nav_button` | Projects list | `project_create_button` |
+| `settings_nav_button` | Settings | `settings_sync_button` |
+
+### Canonical Sync-via-UI Sequence
+```bash
+# Admin sync (port 4948)
+curl -s -X POST http://127.0.0.1:4948/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_nav_button"}'
+sleep 1
+curl -s -X POST http://127.0.0.1:4948/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+sleep 3
+
+# Inspector sync (port 4949, 2 rounds for FK deps)
+curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_nav_button"}'
+sleep 1
+curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+sleep 3
+curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+sleep 3
+```
+
+### Toolbox Navigation
+Toolbox sub-screens are TWO levels deep: Dashboard → Toolbox Hub → Sub-screen.
+- `dashboard_toolbox_card` → Toolbox hub
+- `toolbox_todos_card` → Todos
+- `toolbox_calculator_card` → Calculator
+- Back from sub-screen → Toolbox Hub (NOT dashboard)
+- Back from Toolbox Hub → Dashboard
+- Or: tap `dashboard_nav_button` to skip back directly
+
+---
+
+## Android Keyboard Rule
+
+> **WARNING:** After entering text in ANY field on Android, you MUST call `POST /driver/dismiss-keyboard` before tapping buttons. The soft keyboard covers ~40% of the screen. Taps behind it return `{tapped: true}` but never reach the widget. This is the #1 cause of "tap succeeded but nothing happened" failures.
+
+```bash
+# After text entry, always dismiss keyboard first
+curl -s -X POST http://127.0.0.1:4948/driver/dismiss-keyboard -H "Content-Type: application/json" -d '{}'
+sleep 0.3
+# Now safe to tap buttons
+curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"save_button"}'
+```
+
+---
+
 ## Cross-Device Sync Protocol
 
-Use this 4-step pattern after every data mutation:
+Use this 4-step UI-driven pattern after every data mutation:
 
-### Step 1: Admin Sync
+### Step 1: Admin Sync via UI
 ```bash
-curl -s -X POST http://127.0.0.1:4948/driver/sync
+curl -s -X POST http://127.0.0.1:4948/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_nav_button"}'
+sleep 1
+curl -s -X POST http://127.0.0.1:4948/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+sleep 3
 ```
-Wait for response (sync complete on admin).
+Navigate admin to Settings, tap sync button, wait for completion.
 
 ### Step 2: Supabase Verify
 Query Supabase REST API to confirm data arrived in the cloud.
 
-### Step 3: Inspector Sync (2 rounds)
+### Step 3: Inspector Sync via UI (2 rounds)
 ```bash
-curl -s -X POST http://127.0.0.1:4949/driver/sync
-sleep 2
-curl -s -X POST http://127.0.0.1:4949/driver/sync
+curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_nav_button"}'
+sleep 1
+curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+sleep 3
+curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+sleep 3
 ```
 Two rounds ensure any FK-dependent records that failed on first pull (missing parent) succeed on second.
 
-### Step 4: Inspector Local Verify
+### Step 4: Inspector UI Verify
+Navigate the inspector app to the screen where the synced data should appear, then take a screenshot to confirm visually.
 ```bash
-curl -s "http://127.0.0.1:4949/driver/local-record?table=<table>&id=<uuid>"
+# Example: verify project exists on inspector's projects screen
+curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"projects_nav_button"}'
+sleep 1
+curl -s http://127.0.0.1:4949/driver/screenshot --output "$RESULTS_DIR/inspector-verify.png"
 ```
-Confirm the record exists locally on the inspector device.
+
+> **BANNED:** Do NOT use `POST /driver/sync` or `GET /driver/local-record` during sync verification. All sync MUST go through the UI. All verification MUST be visual (navigate + screenshot).
 
 ## Log Scanning
 
@@ -252,7 +315,38 @@ On resume:
 1. Find latest run dir in `.claude/test_results/`
 2. Read `checkpoint.json`
 3. Load `ctx` to restore all entity IDs
-4. Continue from `next_flow`
+4. **Restore screen state** (see Resume Protocol below)
+5. Continue from `next_flow`
+
+## Resume Protocol
+
+After compaction or `--resume`, restore screen state before continuing:
+
+1. **Check both devices are reachable:**
+   ```bash
+   curl -s http://127.0.0.1:4948/driver/ready
+   curl -s http://127.0.0.1:4949/driver/ready
+   ```
+   If unreachable, wait 5s and retry. If still unreachable, ask user to reconnect.
+
+2. **Navigate both to dashboard:**
+   ```bash
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -H "Content-Type: application/json" -d '{"key":"dashboard_nav_button"}'
+   curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"dashboard_nav_button"}'
+   ```
+
+3. **Verify correct project is selected** on both devices (take screenshots).
+
+4. **Check debug server is up:**
+   ```bash
+   curl -s "http://127.0.0.1:3947/logs?limit=1"
+   ```
+
+5. **Dismiss any stale overlays:**
+   ```bash
+   curl -s -X POST http://127.0.0.1:4948/driver/dismiss-overlays -H "Content-Type: application/json" -d '{}'
+   curl -s -X POST http://127.0.0.1:4949/driver/dismiss-overlays -H "Content-Type: application/json" -d '{}'
+   ```
 
 ---
 
@@ -281,9 +375,13 @@ On resume:
    sleep 2
    ```
 
-3. Sync admin and capture project ID from Supabase:
+3. Sync admin via UI and capture project ID from Supabase:
    ```bash
-   curl -s -X POST http://127.0.0.1:4948/driver/sync
+   # Sync via UI (NEVER use POST /driver/sync)
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_nav_button"}'
+   sleep 1
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+   sleep 3
    # Query Supabase for the project
    curl -s "${SUPABASE_URL}/rest/v1/projects?name=like.VRF-Oakridge%20${RUN_TAG}%25&select=id,name" \
      -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
@@ -707,13 +805,10 @@ Update each entity type created in S01-S06:
    sleep 1
    ```
 
-4. **Equipment**: Edit equipment name → save (use `/driver/update-record` for direct mutation if UI navigation is not available):
+4. **Equipment**: Edit equipment name via UI → navigate to project edit → contractors tab → expand contractor card → tap equipment edit → update name → save.
    ```bash
-   # Alternatively, use direct record update:
-   curl -s -X POST http://127.0.0.1:4948/driver/update-record \
-     -H "Content-Type: application/json" \
-     -d '{"table":"equipment","id":"<equipmentId1>","fields":{"name":"VRF-CAT 320 Excavator '"${RUN_TAG}"' XL"}}'
-   sleep 1
+   # Navigate to contractor card, expand it, edit equipment via UI
+   # Key patterns: contractor_card_<id>, equipment_edit_button_<id>, equipment_name_field, equipment_dialog_add
    ```
 
 5. **Bid item**: Edit description → append " (Modified)" → save.
@@ -735,7 +830,7 @@ Update each entity type created in S01-S06:
    sleep 2
    ```
 
-8. **Photo**: Edit description field (use `/driver/update-record` if UI path is unavailable).
+8. **Photo**: Edit description field via UI — navigate to entry → tap photo → edit caption → save.
 
 9. **Entry equipment**: Toggle equipment on/off via entry edit wizard.
 
@@ -831,16 +926,22 @@ After all updates:
 
    Project assignments: query should return 0 rows (hard-deleted).
 
-5. Inspector sync → check for `deletion_notification_banner` → verify project gone from local device:
+5. Inspector sync via UI (2 rounds) → check for `deletion_notification_banner` → verify project gone from local device:
    ```bash
-   curl -s -X POST http://127.0.0.1:4949/driver/sync
-   sleep 2
-   curl -s -X POST http://127.0.0.1:4949/driver/sync
-   sleep 2
+   # Sync via UI (NEVER use POST /driver/sync)
+   curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_nav_button"}'
+   sleep 1
+   curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+   sleep 3
+   curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+   sleep 3
    curl -s http://127.0.0.1:4949/driver/find?key=deletion_notification_banner
    # Response {exists: true} = banner is visible (deletion notification shown correctly).
    # If {exists: false}, the deletion notification was not shown — record as observation or bug.
-   # Verify project is no longer in local list
+   # Navigate to projects list and screenshot to verify project is no longer visible
+   curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"projects_nav_button"}'
+   sleep 1
+   curl -s http://127.0.0.1:4949/driver/screenshot --output "$RESULTS_DIR/S09-inspector-project-deleted.png"
    ```
 
 **--- COMPACTION PAUSE ---**
@@ -853,9 +954,13 @@ After all updates:
 **Depends:** S01
 
 **Inspector (4949):**
-1. Verify project2 exists locally:
+1. Verify project2 exists locally via UI (navigate to projects list and screenshot):
    ```bash
-   curl -s "http://127.0.0.1:4949/driver/local-record?table=projects&id=<ctx.project2Id>"
+   # NEVER use GET /driver/local-record — verify via UI instead
+   curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"projects_nav_button"}'
+   sleep 1
+   curl -s http://127.0.0.1:4949/driver/screenshot --output "$RESULTS_DIR/S10-inspector-project2-exists.png"
+   # Visually confirm project2 (VRF-Unassign Test) is in the list
    ```
 
 **Admin (4948):**
@@ -874,14 +979,20 @@ After all updates:
    ```
 
 **Inspector (4949):**
-4. Sync x2 → verify project2 is removed from local device (unassigned = no longer visible):
+4. Sync x2 via UI → verify project2 is removed from local device (unassigned = no longer visible):
    ```bash
-   curl -s -X POST http://127.0.0.1:4949/driver/sync
-   sleep 2
-   curl -s -X POST http://127.0.0.1:4949/driver/sync
-   sleep 2
-   curl -s "http://127.0.0.1:4949/driver/local-record?table=projects&id=<ctx.project2Id>"
-   # Should return not found / empty
+   # Sync via UI (NEVER use POST /driver/sync)
+   curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_nav_button"}'
+   sleep 1
+   curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+   sleep 3
+   curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+   sleep 3
+   # Verify project2 is gone — navigate to projects list and screenshot
+   curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"projects_nav_button"}'
+   sleep 1
+   curl -s http://127.0.0.1:4949/driver/screenshot --output "$RESULTS_DIR/S10-inspector-project2-removed.png"
+   # Visually confirm project2 (VRF-Unassign Test) is no longer in the list
    ```
 
 **Admin (4948):**

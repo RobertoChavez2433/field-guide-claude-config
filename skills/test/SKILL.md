@@ -24,6 +24,18 @@ After **EVERY tier**, additionally:
 - [ ] `report.md` updated with tier results table
 - [ ] Screenshot review: only view screenshots for FAILED flows
 
+### HARD RULES — SYNC FLOWS
+
+These rules are **non-negotiable** for S01-S10. Violating them wastes cycles and requires user correction.
+
+1. **NEVER use `POST /driver/sync`** — sync ONLY via UI: tap `settings_nav_button` → tap `settings_sync_button`, wait 3s, tap again if needed.
+2. **NEVER use `GET /driver/local-record` for verification** — navigate the inspector app to the screen where the data appears and take a screenshot. Visual verification only.
+3. **After text entry on Android**, call `POST /driver/dismiss-keyboard` before tapping any buttons. The keyboard covers the bottom of the screen and taps return 200 but never reach the widget.
+4. **After every navigation tap**, verify arrival with `/driver/find?key=<sentinel>` where sentinel is a key known to exist on the target screen.
+5. **Read `lib/shared/testing_keys/*.dart` before each flow** — do not waste cycles querying `/driver/tree` for keys that are already documented.
+6. **Check debug server logs after every sync**: `curl -s "http://127.0.0.1:3947/logs?since=<START>&level=error"` AND `curl -s "http://127.0.0.1:3947/logs?since=<START>&category=sync"`.
+7. **Toolbox sub-screens need TWO backs to reach dashboard** — Todos/Calculator/Gallery are inside Toolbox, which is itself a sub-screen of Dashboard. Press back once to reach Toolbox hub, again to reach Dashboard.
+
 ## Credentials
 `.claude/test-credentials.secret` — gitignored JSON with admin + inspector accounts.
 
@@ -169,7 +181,12 @@ On resume (after compaction or `--resume`):
 2. Read `checkpoint.json` from that directory
 3. Read credentials: `.claude/test-credentials.secret`
 4. Read last screenshot path (if failure investigation needed)
-5. Continue from `next_flow`
+5. **Restore screen state on both devices:**
+   - Check both devices are reachable: `curl -s http://127.0.0.1:4948/driver/ready` and `curl -s http://127.0.0.1:4949/driver/ready`
+   - Navigate both to dashboard: tap `dashboard_nav_button`
+   - Verify correct project is selected (screenshot or `/driver/find`)
+   - Check debug server is up: `curl -s http://127.0.0.1:3947/logs?limit=1`
+6. Continue from `next_flow`
 
 **NEVER view screenshots inline unless failure detected.**
 
@@ -336,17 +353,28 @@ Claude drives two devices via HTTP driver endpoints and verifies data in Supabas
 
 ### Driver Endpoints Used
 All standard endpoints (tap, text, wait, scroll, etc.) plus:
-- `POST /driver/sync` — trigger sync on device
-- `GET /driver/local-record?table=X&id=Y` — verify record exists locally on device
+- `POST /driver/dismiss-keyboard` — unfocus + hide soft keyboard (call before tapping buttons after text entry)
+- `POST /driver/dismiss-overlays` — clear snackbars and material banners blocking taps
+- `GET /driver/current-route` — returns `{route, hasBottomNav, canPop}` for navigation verification
+- `GET /driver/find?key=X` — enhanced: now returns `enabled` (bool) and `visible` (bool) fields
 - `POST /driver/remove-from-device` — remove project from device locally
 - `POST /driver/inject-photo-direct` — inject photo with entry/project association
 
-### Cross-Device Sync Protocol (4-Step)
+### BANNED Endpoints (Sync Flows)
+
+These endpoints exist but must **NEVER** be used during sync verification (S01-S10):
+
+| Endpoint | Why Banned | Use Instead |
+|----------|-----------|-------------|
+| `POST /driver/sync` | Bypasses UI, hides sync bugs | Tap `settings_nav_button` → `settings_sync_button` |
+| `GET /driver/local-record` | Bypasses UI verification | Navigate to screen + screenshot |
+
+### Cross-Device Sync Protocol (UI-Driven, 4-Step)
 After every data mutation:
-1. **Admin sync**: `curl -s -X POST http://127.0.0.1:4948/driver/sync`
-2. **Supabase verify**: curl REST API to confirm data arrived
-3. **Inspector sync** (2 rounds): `curl -s -X POST http://127.0.0.1:4949/driver/sync` x2
-4. **Inspector verify**: `curl -s "http://127.0.0.1:4949/driver/local-record?table=X&id=Y"`
+1. **Admin sync via UI**: tap `settings_nav_button` → tap `settings_sync_button` → wait 3s
+2. **Supabase verify**: curl REST API to confirm data arrived in the cloud
+3. **Inspector sync via UI** (2 rounds): tap `settings_nav_button` → tap `settings_sync_button` → wait 3s → tap `settings_sync_button` again → wait 3s
+4. **Inspector UI verify**: navigate the inspector app to the screen where synced data should appear → take screenshot to confirm
 
 ### Supabase Verification Pattern
 ```bash
@@ -388,6 +416,87 @@ Add `-IncludeDebugServer` to also kill the debug server.
 - **CRITICAL**: Always use timestamped project names (e.g., "E2E Test 1711046095") to avoid collisions with prior runs
 - When a prior E2E project already exists, REUSE it instead of creating a new one (tap into it, verify sub-entities)
 - Cleanup: `pwsh -File tools/verify-sync.ps1 -Cleanup -ProjectName "E2E*" -DryRun` (still valid for data cleanup; sync correctness verification is now Claude-driven — see `/test sync` (S01-S10) or run `node tools/debug-server/run-tests.js --cleanup-only` for data cleanup only)
+
+## Android Gotchas
+
+### Keyboard Blocking
+After entering text in any field on Android, the soft keyboard covers the bottom ~40% of the screen. Taps on widgets behind the keyboard return `200 {tapped: true}` but the tap never reaches the widget.
+
+**Fix:** Always call `POST /driver/dismiss-keyboard` before tapping buttons after text entry:
+```bash
+curl -s -X POST http://127.0.0.1:4948/driver/dismiss-keyboard -H "Content-Type: application/json" -d '{}'
+sleep 0.3
+curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"save_button"}'
+```
+
+### Snackbar Blocking
+Persistent snackbars (e.g., sync errors) overlay the bottom of the screen and block taps on project cards and action buttons.
+
+**Fix:** Call `POST /driver/dismiss-overlays` to clear all snackbars and banners:
+```bash
+curl -s -X POST http://127.0.0.1:4948/driver/dismiss-overlays -H "Content-Type: application/json" -d '{}'
+```
+
+### Toolbox Navigation Depth
+Toolbox sub-screens (Todos, Calculator, Gallery, Forms) are **two levels deep** from Dashboard:
+- Dashboard → Toolbox Hub → Sub-screen
+- Back from sub-screen → Toolbox Hub (NOT dashboard)
+- Back from Toolbox Hub → Dashboard
+- Bottom nav is NOT visible inside Toolbox sub-screens
+
+Always use `POST /driver/back` twice, or tap `dashboard_nav_button` to return to dashboard directly.
+
+## Error Recovery Protocol
+
+### Tap returns 200 but nothing happens
+1. Check `GET /driver/current-route` — you may be on the wrong screen
+2. Call `POST /driver/dismiss-keyboard` — keyboard may be blocking
+3. Call `POST /driver/dismiss-overlays` — snackbar may be blocking
+4. Verify widget with `GET /driver/find?key=X` — check `enabled` and `visible` fields
+5. Take screenshot to visually confirm state
+
+### Widget not found (404)
+1. Check you are on the correct screen: `GET /driver/current-route`
+2. Try scrolling: the widget may be off-screen (use `POST /driver/scroll-to-key`)
+3. Read `testing_keys/*.dart` to verify the exact key name
+4. As last resort, use `/driver/tree?filter=<partial>` to discover the actual key
+
+### Sync appears to fail
+1. Check debug server logs: `curl -s "http://127.0.0.1:3947/logs?since=<START>&category=sync"`
+2. Check for error-level logs: `curl -s "http://127.0.0.1:3947/logs?since=<START>&level=error"`
+3. Dismiss any error snackbars: `POST /driver/dismiss-overlays`
+4. Retry sync via UI (settings_nav_button → settings_sync_button)
+5. If still failing, take screenshot and record as bug
+
+## Navigation Reference
+
+### Bottom Nav Destinations
+| Key | Destination | Sentinel Key |
+|-----|------------|--------------|
+| `dashboard_nav_button` | Dashboard/Home | `dashboard_new_entry_button` |
+| `calendar_nav_button` | Calendar view | `calendar_nav_button` (stays highlighted) |
+| `projects_nav_button` | Projects list | `project_create_button` |
+| `settings_nav_button` | Settings | `settings_sync_button` |
+
+### Common Navigation Patterns
+| Action | Sequence |
+|--------|----------|
+| Sync via UI | `settings_nav_button` → `settings_sync_button` (wait 3s) |
+| Create entry | `dashboard_nav_button` → `dashboard_new_entry_button` |
+| Edit project | `projects_nav_button` → `project_edit_menu_item_<id>` |
+| Open toolbox | `dashboard_nav_button` → `dashboard_toolbox_card` |
+| Open todos | Toolbox → `toolbox_todos_card` |
+| Open calculator | Toolbox → `toolbox_calculator_card` |
+| Return to dashboard from toolbox sub-screen | `POST /driver/back` x2, or tap `dashboard_nav_button` |
+
+### Project-Related Key Disambiguation
+| Key Pattern | Purpose |
+|-------------|---------|
+| `project_card_<id>` | Tap to select/open project |
+| `project_edit_menu_item_<id>` | Tap to enter project edit mode |
+| `project_create_button` | Create new project (also aliased as `add_project_fab`) |
+| `project_save_button` | Save project edits |
+| `project_remove_<id>` | Delete project (triggers two-step confirmation) |
 
 ## Windows Bash Constraints
 - **NO `jq`** — use `python3 -c "import json..."` for JSON parsing
