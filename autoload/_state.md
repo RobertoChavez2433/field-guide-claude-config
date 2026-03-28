@@ -1,62 +1,65 @@
 # Session State
 
-**Last Updated**: 2026-03-27 | **Session**: 664
+**Last Updated**: 2026-03-28 | **Session**: 665
 
 ## Current Phase
-- **Phase**: Two implementation plans ready to execute. Sync bugfixes (S663) + Entry wizard unification (S664).
-- **Status**: Both plans written, adversarial-reviewed, all findings addressed. Neither implemented yet. Massive uncommitted backlog.
+- **Phase**: Sync bugfixes implemented. Entry wizard unification plan ready to execute.
+- **Status**: Sync bugfixes plan fully implemented (4 phases, 17 files, all reviews PASS). Entry wizard plan not yet started. Massive uncommitted backlog.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (664)
+### What Was Done This Session (665)
 
-1. **Brainstormed SV-3 + SV-6** (entry wizard + form seeding) — reframed as full entry wizard unification:
-   - 3 opus agents explored: contractor card UI (typography/spacing chaos), entry wizard create vs edit gap, form seeding gap
-   - User decisions: unified screen (no `_isCreateMode`), adaptive header, "Copy from last entry" on safety card, contractor card token migration, rename "Materials Used" → "Pay Items Used", seed 0582B on fresh install
-
-2. **Wrote spec** — `.claude/specs/2026-03-27-entry-wizard-unification-spec.md`
-   - 7 approved sections: Overview, Data Model, User Flow, UI Components, State Management, Edge Cases, Migration/Cleanup
-
-3. **Built dependency graph** — CodeMunch indexing + symbol tracing
-   - `.claude/dependency_graphs/2026-03-27-entry-wizard-unification/analysis.md`
-   - 13 direct files, 0 dependents, 2 test files, 11 dead code items + 1 file deletion
-
-4. **Wrote implementation plan** — `.claude/plans/2026-03-27-entry-wizard-unification.md`
-   - 6 phases, 10 sub-phases, ~40 steps
-   - Agents: backend-data-layer-agent, frontend-flutter-specialist-agent, qa-testing-agent
-
-5. **Adversarial review round 1 (2 opus agents)**:
-   - Code review: REJECT → fixed 4 CRITICAL + 4 HIGH
-   - Security review: APPROVE with 2 HIGH (overlap with code review, fixed)
-   - Key fixes: RepositoryResult.when() removed, repository access via provider getter, getByDate via repository, db.database pattern, null fields on draft, _isEmptyDraft helper, createdByUserId, form seed name
-
-6. **Adversarial review round 2 (3 opus agents)**:
-   - Spec completeness: APPROVE (97%) — 3 minor gaps fixed
-   - Ground truth verification: 11 PASS, 3 FAIL — all fixed (contractorsById, createForm result, entry! promotion)
-   - Code review v2: APPROVE — all prior fixes verified correct, 3 minors fixed (isDraftEntry for reopened drafts, date formatting, personnel wrap spacing)
+1. **Implemented sync verification bugfixes** — `/implement` on `.claude/plans/2026-03-27-sync-verification-bugfixes.md`
+   - 3 orchestrator launches (G1: Phase 1, G2: Phase 2, G3: Phases 3-4), 0 handoffs
+   - All 4 phases DONE, all reviews PASS (completeness, code, security)
+   - Build: PASS, Analyze & test: PASS
+   - 17 files modified (12 source + 4 tests + 1 comment cleanup)
+   - Key decisions:
+     - `projectId`/`createdByUserId` stored as controller fields (avoids modifying 3 call sites)
+     - Dead code deleted: `saveAllCountsForEntry`, `deleteAllForProject`, `replaceAllForProject`
+     - Deterministic equipment IDs (`ee-{entryId}-{equipmentId}`)
+     - `dart:typed_data` import unnecessary — `Uint8List` from `flutter/foundation.dart`
 
 ### What Needs to Happen Next
 
-1. **Implement sync bugfixes plan** — `/implement` on `.claude/plans/2026-03-27-sync-verification-bugfixes.md`
-2. **Re-run S10 + S02** to verify sync bugfixes
-3. **Implement entry wizard plan** — `/implement` on `.claude/plans/2026-03-27-entry-wizard-unification.md`
-4. **Commit** — massive multi-session backlog still uncommitted
-5. **Next round: Brainstorm SV-3 layout differences** (if any remaining after wizard unification)
+1. **Re-run S10 + S02** to verify sync bugfixes work end-to-end
+2. **Implement entry wizard plan** — `/implement` on `.claude/plans/2026-03-27-entry-wizard-unification.md`
+3. **Commit** — massive multi-session backlog still uncommitted
+4. **Next round: Brainstorm SV-3 layout differences** (if any remaining after wizard unification)
 
-### What Was Done Last Session (663)
+### What Was Done Last Session (664)
 
-1. Deep exploration (4 opus agents) → brainstorming → spec → dependency graph → plan → adversarial review. 6 sync bugfixes planned.
-2. Saved deferred context for SV-3 + SV-6 → `.claude/defects/_deferred-sv3-sv6-context.md`
+1. Brainstormed entry wizard unification (SV-3 + SV-6 reframed). 3 opus exploration agents → spec → dependency graph → plan → 2 adversarial review rounds (5 opus agents). All findings fixed.
 
 ### Uncommitted Changes
 
-From this session (S664):
+From this session (S665 — sync bugfixes implementation):
+- `lib/features/contractors/data/models/entry_equipment.dart`
+- `lib/features/contractors/data/datasources/local/entry_personnel_counts_local_datasource.dart`
+- `lib/features/contractors/data/datasources/local/entry_equipment_local_datasource.dart`
+- `lib/features/projects/data/repositories/project_assignment_repository.dart`
+- `lib/features/projects/presentation/providers/project_assignment_provider.dart`
+- `lib/features/entries/presentation/controllers/contractor_editing_controller.dart`
+- `lib/features/entries/presentation/screens/home_screen.dart`
+- `lib/features/entries/presentation/screens/entry_editor_screen.dart`
+- `lib/features/entries/presentation/widgets/entry_contractors_section.dart`
+- `lib/features/projects/presentation/providers/project_provider.dart`
+- `lib/features/projects/presentation/screens/project_list_screen.dart`
+- `lib/core/driver/test_photo_service.dart`
+- `lib/features/sync/engine/integrity_checker.dart`
+- `test/features/projects/data/services/project_lifecycle_service_test.dart`
+- `test/features/projects/integration/project_lifecycle_integration_test.dart`
+- `test/features/projects/presentation/providers/project_assignment_provider_test.dart`
+- `test/features/entries/presentation/controllers/contractor_editing_controller_test.dart`
+
+From S664 (entry wizard planning):
 - `.claude/specs/2026-03-27-entry-wizard-unification-spec.md`
 - `.claude/plans/2026-03-27-entry-wizard-unification.md`
 - `.claude/dependency_graphs/2026-03-27-entry-wizard-unification/analysis.md`
 - `.claude/code-reviews/2026-03-27-entry-wizard-unification-plan-review.md`
 
-From S663 (sync bugfixes):
+From S663 (sync bugfixes planning):
 - `.claude/specs/2026-03-27-sync-verification-bugfixes-spec.md`
 - `.claude/plans/2026-03-27-sync-verification-bugfixes.md`
 - `.claude/dependency_graphs/2026-03-27-sync-verification-bugfixes/analysis.md`
@@ -103,6 +106,11 @@ From prior sessions:
 
 ## Recent Sessions
 
+### Session 665 (2026-03-28)
+**Work**: Implemented sync verification bugfixes plan (6 bugs: SV-1, SV-2a/b/c, SV-4, SV-5). 3 orchestrator launches, 4 phases, 17 files, all reviews PASS.
+**Decisions**: Controller fields for projectId/createdByUserId. Dead code deleted. Deterministic equipment IDs.
+**Next**: Re-run S10 + S02 → /implement entry wizard → commit.
+
 ### Session 664 (2026-03-27)
 **Work**: Brainstormed entry wizard unification (SV-3 + SV-6 reframed). 3 opus exploration agents → spec → dependency graph → plan → 2 adversarial review rounds (5 opus agents total). All findings fixed.
 **Decisions**: Unified screen (no _isCreateMode). Immediate draft persistence. Adaptive header (expanded → collapsed). "Copy from last entry" fills empty safety fields only. Contractor card migrated to textTheme tokens. "Pay Items Used" rename. 0582B seeded on fresh install.
@@ -117,10 +125,6 @@ From prior sessions:
 **Work**: Bug triage — verified all bugs from 3 sync test reports using 3 opus agents. 9 FIXED, 6 OPEN. Added contractor card collapse + wizard consistency bugs. Updated brainstorming skill with zero-ambiguity gate.
 **Next**: /brainstorming → read bug report → ask questions → spec → /writing-plans → /implement.
 
-### Session 661 (2026-03-27)
-**Work**: Re-ran S09 and S10 sync verification. Fixed 6 bugs blocking delete cascade propagation.
-**Next**: Fix BUG-S01-2 → re-run S10 → commit.
-
 ## Active Debug Session
 
 None active.
@@ -128,28 +132,28 @@ None active.
 ## Test Results
 
 ### Flutter Unit Tests
-- **Full suite**: 3141/3141 PASSING (S658 baseline, not re-run this session)
+- **Full suite**: PASSING (S665 — verified by orchestrator Phase 4)
 - **PDF tests**: 911/911 PASSING
-- **Analyze**: PASSING (0 errors, 115 info)
+- **Analyze**: PASSING
 
 ### Sync Verification (Current Run — tag `2mthw`)
 - **S01**: PASS — 7 tables, 16 records synced
-- **S02**: PASS — Entry + contractors + quantity synced. BUG-S02-1: personnel/equipment not persisted.
-- **S03**: SKIP — inject-photo-direct HTTP 500 (driver bug)
+- **S02**: PASS — Entry + contractors + quantity synced. BUG-S02-1: personnel/equipment not persisted. **FIX IMPLEMENTED (S665)**
+- **S03**: SKIP — inject-photo-direct HTTP 500 (driver bug). **FIX IMPLEMENTED (S665)**
 - **S04**: SKIP — No inspector_forms in database
 - **S05**: PASS — Todo synced clean
 - **S06**: PASS — HMA calc 58 tons synced clean
 - **S07**: PASS — 5/8 entities updated via UI, synced, verified on inspector
 - **S08**: PASS — PDF exported (436KB), ADB pulled
 - **S09**: PASS — RPC + cascade trigger + RLS fix + orphan cleaner
-- **S10**: FAIL — BUG-S01-2: Assignment toggle doesn't persist soft-delete. Pre-existing.
+- **S10**: FAIL — BUG-S01-2: Assignment toggle doesn't persist soft-delete. **FIX IMPLEMENTED (S665)**
 
 ## Reference
 - **Entry Wizard Spec**: `.claude/specs/2026-03-27-entry-wizard-unification-spec.md`
 - **Entry Wizard Plan (READY)**: `.claude/plans/2026-03-27-entry-wizard-unification.md`
 - **Entry Wizard Review**: `.claude/code-reviews/2026-03-27-entry-wizard-unification-plan-review.md`
 - **Sync Bugfixes Spec**: `.claude/specs/2026-03-27-sync-verification-bugfixes-spec.md`
-- **Sync Bugfixes Plan (READY)**: `.claude/plans/2026-03-27-sync-verification-bugfixes.md`
+- **Sync Bugfixes Plan (IMPLEMENTED)**: `.claude/plans/2026-03-27-sync-verification-bugfixes.md`
 - **Sync Bugfixes Review**: `.claude/code-reviews/2026-03-27-sync-verification-bugfixes-plan-review.md`
 - **Deferred Bugs Context**: `.claude/defects/_deferred-sv3-sv6-context.md`
 - **Delete Flow Fix Plan (IMPLEMENTED)**: `.claude/plans/2026-03-26-delete-flow-fix.md`
