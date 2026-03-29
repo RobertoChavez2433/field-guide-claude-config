@@ -1,4 +1,4 @@
-# Sync Verification Guide (S01-S10)
+# Sync Verification Guide (S01-S11)
 
 > Claude-driven dual-device sync verification. This guide is the primary reference
 > for executing `/test sync`. Read it fully before starting a sync verification run.
@@ -249,18 +249,21 @@ When hard-deleting test data from Supabase, delete in this order to avoid FK vio
 3. `entry_quantities`
 4. `entry_contractors`
 5. `photos`
-6. `calculation_history`
-7. `todo_items`
-8. `form_responses`
-9. `daily_entries`
-10. `equipment`
-11. `personnel_types`
-12. `bid_items`
-13. `contractors`
-14. `locations`
-15. `inspector_forms`
-16. `project_assignments`
-17. `projects`
+6. `form_exports` (FK: form_response_id → before form_responses)
+7. `calculation_history`
+8. `todo_items`
+9. `form_responses`
+10. `entry_exports` (FK: entry_id → before daily_entries)
+11. `documents` (FK: entry_id → before daily_entries)
+12. `daily_entries`
+13. `equipment`
+14. `personnel_types`
+15. `bid_items`
+16. `contractors`
+17. `locations`
+18. `inspector_forms`
+19. `project_assignments`
+20. `projects`
 
 ## Checkpoint Schema
 
@@ -290,6 +293,9 @@ Write `.claude/test_results/<run>/checkpoint.json` after every flow:
     "entryQuantityIds": ["uuid"],
     "photoIds": ["uuid"],
     "formResponseIds": ["uuid"],
+    "formExportIds": ["uuid"],
+    "entryExportIds": ["uuid"],
+    "documentIds": ["uuid"],
     "todoIds": ["uuid"],
     "calculationIds": ["uuid"],
     "assignmentId": "uuid"
@@ -920,9 +926,16 @@ After all updates:
 
 3. Sync admin.
 
-4. **Supabase verify cascade**: Query all 14 child tables — every record with `project_id=<projectId>` should have `is_deleted=true`. Project assignments should be hard-deleted.
+4. **Supabase verify cascade**: Query all 17 child tables — every record with `project_id=<projectId>` should have `is_deleted=true`. Project assignments should be hard-deleted.
 
-   Tables to check: entry_personnel_counts, entry_equipment, entry_quantities, entry_contractors, photos, calculation_history, todo_items, form_responses, daily_entries, equipment, personnel_types, bid_items, contractors, locations, inspector_forms.
+   Tables to check: entry_personnel_counts, entry_equipment, entry_quantities, entry_contractors, photos, calculation_history, todo_items, form_responses, form_exports, entry_exports, documents, daily_entries, equipment, personnel_types, bid_items, contractors, locations, inspector_forms.
+
+   ```bash
+   # Additional 3 new table checks
+   curl -s "${SUPABASE_URL}/rest/v1/form_exports?project_id=eq.<projectId>&deleted_at=is.null&select=id" ... # expect 0 rows
+   curl -s "${SUPABASE_URL}/rest/v1/entry_exports?project_id=eq.<projectId>&deleted_at=is.null&select=id" ... # expect 0 rows
+   curl -s "${SUPABASE_URL}/rest/v1/documents?project_id=eq.<projectId>&deleted_at=is.null&select=id" ...    # expect 0 rows
+   ```
 
    Project assignments: query should return 0 rows (hard-deleted).
 
@@ -1002,7 +1015,14 @@ After all updates:
    ```
 
 **Post-Run Sweep:**
-Query all 17 synced tables for any records with `VRF-` in name/description fields. Any remaining records = FAIL.
+Query all 20 synced tables for any records with `VRF-` in name/description fields. Any remaining records = FAIL.
+
+Also check the 3 new tables:
+```bash
+curl -s "${SUPABASE_URL}/rest/v1/form_exports?project_id=eq.<project2Id>&select=id" ...
+curl -s "${SUPABASE_URL}/rest/v1/entry_exports?project_id=eq.<project2Id>&select=id" ...
+curl -s "${SUPABASE_URL}/rest/v1/documents?project_id=eq.<project2Id>&select=id" ...
+```
 
 ```bash
 # Check projects
@@ -1015,6 +1035,91 @@ curl -s "${SUPABASE_URL}/rest/v1/contractors?name=like.VRF-%25&select=id,name" .
 ```
 
 If any VRF records remain, record them in the report as FAIL.
+
+---
+
+### S11: Documents Sync Verification
+
+**Tables:** documents
+**Bucket:** entry-documents
+**Depends:** S02 (needs existing entry)
+
+**Protocol:**
+
+1. Admin (4948): inject document via `inject-document-direct`:
+   ```bash
+   # Encode a small test PDF to base64
+   BASE64_DOC=$(python3 -c "import base64; print(base64.b64encode(b'%PDF-1.4 test document content').decode())")
+   curl -s -X POST http://127.0.0.1:4948/driver/inject-document-direct \
+     -H "Content-Type: application/json" \
+     -d "{\"base64Data\":\"${BASE64_DOC}\",\"filename\":\"vrf-test-doc-${RUN_TAG}.pdf\",\"entryId\":\"<entryId>\",\"projectId\":\"<projectId>\"}"
+   # Capture documentId from response
+   ```
+
+2. Admin sync via UI:
+   ```bash
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_nav_button"}'
+   sleep 1
+   curl -s -X POST http://127.0.0.1:4948/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+   sleep 3
+   ```
+
+3. **Supabase REST verify:**
+   ```bash
+   curl -s "${SUPABASE_URL}/rest/v1/documents?entry_id=eq.<entryId>&deleted_at=is.null&select=id,filename,remote_path" \
+     -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+     -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}"
+   # Expect 1 row with remote_path non-null
+   ```
+
+4. **Storage verify:**
+   ```bash
+   curl -s -X POST "${SUPABASE_URL}/storage/v1/object/list/entry-documents" \
+     -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+     -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+     -H "Content-Type: application/json" \
+     -d "{\"prefix\":\"<companyId>/<projectId>/\",\"limit\":100}"
+   # Expect at least 1 file matching the injected document
+   ```
+
+5. Inspector (4949) sync x2 via UI:
+   ```bash
+   curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_nav_button"}'
+   sleep 1
+   curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+   sleep 3
+   curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
+   sleep 3
+   ```
+
+6. Inspector UI verify: navigate to entry → verify document attachment visible → screenshot.
+
+7. Capture `ctx.documentIds` for use in S09 cascade verification.
+
+**If document UI not yet wired:** Record as OBSERVATION (not FAIL), continue to S09.
+
+---
+
+## Storage Bucket Verification Pattern
+
+Use this pattern to verify files were uploaded to a storage bucket:
+
+```bash
+# Verify file exists in bucket
+curl -s -X POST "${SUPABASE_URL}/storage/v1/object/list/<bucket>" \
+  -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+  -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+  -H "Content-Type: application/json" \
+  -d '{"prefix":"<companyId>/<projectId>/","limit":100}'
+```
+
+### Bucket Names
+| Table | Bucket |
+|-------|--------|
+| photos | entry-photos |
+| form_exports | form-exports |
+| entry_exports | entry-exports |
+| documents | entry-documents |
 
 ---
 

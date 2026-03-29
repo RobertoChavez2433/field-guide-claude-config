@@ -26,7 +26,7 @@ After **EVERY tier**, additionally:
 
 ### HARD RULES — SYNC FLOWS
 
-These rules are **non-negotiable** for S01-S10. Violating them wastes cycles and requires user correction.
+These rules are **non-negotiable** for S01-S11. Violating them wastes cycles and requires user correction.
 
 1. **NEVER use `POST /driver/sync`** — sync ONLY via UI: tap `settings_nav_button` → tap `settings_sync_button`, wait 3s, tap again if needed.
 2. **NEVER use `GET /driver/local-record` for verification** — navigate the inspector app to the screen where the data appears and take a screenshot. Visual verification only.
@@ -53,7 +53,7 @@ These rules are **non-negotiable** for S01-S10. Violating them wastes cycles and
 /test admin                        # T53-T58 (Admin Operations)
 /test edits                        # T59-T67 (Edit Mutations)
 /test deletes                      # T68-T77 (Delete Operations)
-/test sync                         # S01-S10 (Claude-driven dual-device)
+/test sync                         # S01-S11 (Claude-driven dual-device)
 /test S01                          # Single sync flow
 /test S01-S03                      # Range of sync flows
 /test sync --resume                # Resume from checkpoint
@@ -80,7 +80,7 @@ settings     → T44-T52
 admin        → T53-T58
 edits        → T59-T67
 deletes      → T68-T77
-sync         → S01-S10 (Claude-driven dual-device verification)
+sync         → S01-S11 (Claude-driven dual-device verification)
 permissions  → T85-T91
 navigation   → T92-T96
 ```
@@ -346,12 +346,12 @@ curl -s -X POST http://127.0.0.1:4948/driver/scroll-to-key -d '{"scrollable":"en
 **Tier 7 (T53-T58)** — Admin Operations
 **Tier 8 (T59-T67)** — Edit Mutations: Edit entities from earlier tiers
 **Tier 9 (T68-T77)** — Delete Operations: Delete entities (run last before cleanup)
-**Sync (S01-S10)** — Claude-driven dual-device sync verification (admin:4948, inspector:4949)
+**Sync (S01-S11)** — Claude-driven dual-device sync verification (admin:4948, inspector:4949)
   S01 (Project Setup) → S02 (Daily Entry) → S03 (Photos) → S04 (Forms) → S05 (Todos) → S06 (Calculator) → S07 (Update All) → S08 (PDF Export) → S09 (Delete Cascade) → S10 (Unassignment + Cleanup)
 **Tier 11 (T85-T91)** — Role Verification (inspector role)
 **Tier 12 (T92-T96)** — Nav & Dashboard
 
-## Sync Verification (Dual-Device) — S01-S10
+## Sync Verification (Dual-Device) — S01-S11
 
 Claude drives two devices via HTTP driver endpoints and verifies data in Supabase via REST API.
 
@@ -374,7 +374,7 @@ All standard endpoints (tap, text, wait, scroll, etc.) plus:
 
 ### BANNED Endpoints (Sync Flows)
 
-These endpoints exist but must **NEVER** be used during sync verification (S01-S10):
+These endpoints exist but must **NEVER** be used during sync verification (S01-S11):
 
 | Endpoint | Why Banned | Use Instead |
 |----------|-----------|-------------|
@@ -427,7 +427,7 @@ Add `-IncludeDebugServer` to also kill the debug server.
 - All test projects use "E2E " prefix
 - **CRITICAL**: Always use timestamped project names (e.g., "E2E Test 1711046095") to avoid collisions with prior runs
 - When a prior E2E project already exists, REUSE it instead of creating a new one (tap into it, verify sub-entities)
-- Cleanup: `pwsh -File tools/verify-sync.ps1 -Cleanup -ProjectName "E2E*" -DryRun` (still valid for data cleanup; sync correctness verification is now Claude-driven — see `/test sync` (S01-S10) or run `node tools/debug-server/run-tests.js --cleanup-only` for data cleanup only)
+- Cleanup: `pwsh -File tools/verify-sync.ps1 -Cleanup -ProjectName "E2E*" -DryRun` (still valid for data cleanup; sync correctness verification is now Claude-driven — see `/test sync` (S01-S11) or run `node tools/debug-server/run-tests.js --cleanup-only` for data cleanup only)
 
 ## Android Gotchas
 

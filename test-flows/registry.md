@@ -163,13 +163,14 @@
 | S01 | Project Setup | projects, project_assignments, locations, contractors, equipment, bid_items, personnel_types | Admin: create project + sub-entities + assignment → sync → Inspector: sync x2 → verify locally | sync,db | UNTESTED | - | Creates 2 projects (main + unassign test); captures all entity IDs |
 | S02 | Daily Entry | daily_entries, entry_contractors, entry_equipment, entry_personnel_counts, entry_quantities | Admin: create full entry → sync → Inspector: sync x2 → verify locally | sync,db | UNTESTED | - | Depends: S01 |
 | S03 | Photos | photos | Admin: inject-photo-direct → sync → Inspector: sync x2 → verify locally | sync,photo | UNTESTED | - | Depends: S02; COMPACTION PAUSE after |
-| S04 | Forms | inspector_forms, form_responses | Admin: create 0582B response → sync → Inspector: sync x2 → verify locally | sync,db | UNTESTED | - | Depends: S02 |
+| S04 | Forms | inspector_forms, form_responses, form_exports | Admin: create 0582B response → export PDF → sync → Inspector: sync x2 → verify locally; verify inspector_forms builtins exist via REST | sync,db | UNTESTED | - | Depends: S02 |
 | S05 | Todos | todo_items | Admin: create todo → sync → Inspector: sync x2 → verify locally | sync,db | UNTESTED | - | Depends: S01 |
 | S06 | Calculator | calculation_history | Admin: HMA calculation → save → sync → Inspector: sync x2 → verify locally | sync,db | UNTESTED | - | Depends: S01; COMPACTION PAUSE after |
-| S07 | Update All | All updatable tables | Admin: update project, location, contractor, equipment, bid_item, personnel_type, entry fields, photo, form, todo, calculator → sync → Inspector: verify | sync,db | UNTESTED | - | Depends: S01-S06 |
-| S08 | PDF Export | N/A (output artifact) | Admin: export IDR + 0582B PDFs → ADB pull → pdftk verify fields | pdf | UNTESTED | - | Depends: S07; ADB timeout → FAIL S08, continue to S09 |
-| S09 | Delete Cascade | All child tables of project 1 | Admin: two-step delete → sync → Supabase: verify 14 child tables soft-deleted → Inspector: deletion banner → verify gone | sync,db | PASS | 2026-03-27 | RPC + cascade trigger + RLS fix + orphan cleaner all working. Inspector pulls 21 tombstones, shows deletion banner, project auto-evicted on 2nd sync. |
-| S10 | Unassignment + Cleanup | project_assignments, projects | Admin: unassign inspector from project 2 → sync → Inspector: verify project 2 removed → Admin: delete project 2 → post-run VRF sweep | sync,db | FAIL | 2026-03-27 | BUG-S01-2: Assignment toggle doesn't persist soft-delete to SQLite/change_log. Pre-existing bug. |
+| S07 | Update All | All updatable tables, documents, form_exports, entry_exports | Admin: update project, location, contractor, equipment, bid_item, personnel_type, entry fields, photo, form, todo, calculator, document notes → sync → Inspector: verify | sync,db | UNTESTED | - | Depends: S01-S06 |
+| S08 | PDF Export | entry_exports | Admin: export IDR + 0582B PDFs → verify entry_exports row with remote_path → ADB pull → pdftk verify fields | pdf | UNTESTED | - | Depends: S07; ADB timeout → FAIL S08, continue to S09 |
+| S09 | Delete Cascade | All child tables of project 1 | Admin: two-step delete → sync → Supabase: verify 17 child tables soft-deleted → Inspector: deletion banner → verify gone | sync,db | PASS | 2026-03-27 | RPC + cascade trigger + RLS fix + orphan cleaner all working. Inspector pulls 21 tombstones, shows deletion banner, project auto-evicted on 2nd sync. |
+| S10 | Unassignment + Cleanup | project_assignments, projects | Admin: unassign inspector from project 2 → sync → Inspector: verify project 2 removed → Admin: delete project 2 → post-run VRF sweep (20 synced tables) | sync,db | FAIL | 2026-03-27 | BUG-S01-2: Assignment toggle doesn't persist soft-delete to SQLite/change_log. Pre-existing bug. |
+| S11 | Documents | documents | Admin: inject-document-direct → sync → Supabase: verify documents row + storage file → Inspector: sync x2 → verify document visible | sync,db | UNTESTED | - | Depends: S02; bucket: entry-documents |
 
 ## Tier 11: Role & Permission Verification (T85-T91)
 
@@ -232,11 +233,11 @@
 | Tier 7 | T53-T58 | 6 | Admin Operations |
 | Tier 8 | T59-T67 | 9 | Edit & Update Mutations |
 | Tier 9 | T68-T77 | 10 | Delete Operations |
-| Sync | S01-S10 | 10 | Sync Verification (Claude-driven, dual-device) |
+| Sync | S01-S11 | 11 | Sync Verification (Claude-driven, dual-device) |
 | Tier 11 | T85-T91 | 7 | Role & Permission Verification |
 | Tier 12 | T92-T96 | 5 | Navigation & Dashboard |
 | Manual | M01-M13 | 12 | Manual-Only Flows (M06 removed — offline-reconnect covered by S01-S10 sync verification) |
-| **Total** | | **105** | **83 automated + 12 manual + 10 sync verification (Claude-driven)** |
+| **Total** | | **106** | **83 automated + 12 manual + 11 sync verification (Claude-driven)** |
 
 ## Dependency Chain (Execution Order)
 
@@ -285,7 +286,7 @@ S01 (Project Setup) — dual-device session (admin:4948, inspector:4949)
  ├── S04 (Forms)
  ├── S05 (Todos)
  ├── S06 (Calculator) [COMPACTION]
- ├── S07 (Update All) → S08 (PDF Export) → S09 (Delete Cascade) [COMPACTION]
+ ├── S07 (Update All) → S08 (PDF Export) → S11 (Documents) → S09 (Delete Cascade) [COMPACTION]
  └── S10 (Unassignment + Cleanup)
 ```
 
