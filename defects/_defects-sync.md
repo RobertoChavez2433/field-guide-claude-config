@@ -5,6 +5,11 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [SYNC] 2026-03-28: Unconditional change_log wipe after soft-delete cascade loses deletions when RPC fails (BUG-S09)
+**Pattern**: `cascadeSoftDeleteProject()` deleted ALL unprocessed change_log entries and removed from synced_projects unconditionally. When the Supabase RPC failed (offline, JWT expiry), the change_log entries created by UPDATE triggers were wiped, leaving no mechanism to sync the deletion.
+**Prevention**: Any cleanup of change_log or synced_projects after a server-dependent operation must be conditional on the server call succeeding. Use a `rpcSucceeded` flag to gate cleanup.
+**Ref**: @lib/services/soft_delete_service.dart:132-143
+
 ### [SYNC] 2026-03-28: ConflictAlgorithm.ignore silently drops valid records on UNIQUE slot collision (BUG-S10-1)
 **Pattern**: Pull path uses `ConflictAlgorithm.ignore` which silently drops INSERTs when a soft-deleted local record occupies the same UNIQUE slot (not just PK). Affects project_assignments (UNIQUE on project_id+user_id) and any table with multi-column UNIQUE constraints.
 **Prevention**: When insert returns rowId==0, fall back to UPDATE by PK. Added in S667 at sync_engine.dart:1530.

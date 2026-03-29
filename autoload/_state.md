@@ -1,41 +1,48 @@
 # Session State
 
-**Last Updated**: 2026-03-28 | **Session**: 667
+**Last Updated**: 2026-03-29 | **Session**: 672
 
 ## Current Phase
-- **Phase**: 7 of 8 S666 bugs fixed. All tests passing (3175/3175). Needs commit + retest S02/S03/S10.
-- **Status**: Code changes complete, NOT YET COMMITTED. BUG-S02-3 (UX) deferred — design preference, not a code bug.
+- **Phase**: Forms infrastructure plan complete (12 phases) with Phase 12 (test/sync verification) added. Ready for `/implement`.
+- **Status**: 4 bug fixes from S669 still uncommitted. Plan expanded from 11→12 phases. Addendums A-E inlined. 2 adversarial review sweeps passed.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (667)
+### What Was Done This Session (672)
 
-1. **Full bug investigation** — 5 parallel opus agents mapped all 8 bugs from S666 sync verification
-2. **Fixed 7 bugs** across 13 files with hypothesis verification:
-   - **BUG-S02-1/2** (DATA): Added `projectId` field to `EntryContractor` and `EntryQuantity` models + `toMap()`. Auto-resolve from parent entry on insert. v42 migration backfills existing NULLs.
-   - **BUG-S09-1** (SECURITY): Trash screen now filters by `deleted_by = currentUserId` for non-admins. Inspector table list excludes project-level resources. Empty Trash scoped per role.
-   - **BUG-S03-1** (SYNC): `photos.file_path` now nullable in SQLite (matching Supabase). v42 migration recreates table.
-   - **BUG-S10-2** (SYNC): Change tracker now skips exhausted entries (`retry_count >= maxRetryCount`). PK collision guard in ID remap. v42 migration cleans corrupted entries + resets stuck pulling flag.
-   - **BUG-S10-1** (SYNC): Pull path now falls back to UPDATE when INSERT is ignored (handles soft-deleted UNIQUE slot occupants).
-   - **BUG-S02-4** (UX): Location text + contractor summary wrapped in `Flexible` with `TextOverflow.ellipsis`.
-   - Added `entry_contractors`, `entry_quantities`, `entry_equipment` to `tablesWithDirectProjectId` + reinstalled triggers in v42.
-3. **DB version 41→42**, 2 version test files updated
-4. **3175/3175 tests PASS, 0 analysis errors**
+1. **Gap analysis** — 4 parallel opus agents mapped all test/sync coverage gaps for 3 new tables (form_exports, entry_exports, documents) + 3 new storage buckets:
+   - Agent 1: S01-S10 sync flow gaps (S04/S07/S08/S09/S10 expansions + new S11)
+   - Agent 2: T-flow gaps (10 new T-flows, 4 modified, delete cascade coverage)
+   - Agent 3: Test skill + driver gaps (inject-document-direct endpoint, testing keys, verification patterns)
+   - Agent 4: Soft-delete cascade + RLS test gaps (unit tests, storage cleanup plan gap)
+2. **Phase 12 added** to plan — 8 sub-phases covering storage cleanup multi-bucket, driver endpoint, testing keys, unit tests, sync flow expansions (S04/S07/S08/S09/S10), new S11 (documents), registry/guide updates, verification
+3. **Addendums A-E inlined** into correct phases and removed:
+   - A→P9.1/9.2 (export flow metadata rows)
+   - B→P9.3/9.5/9.6 (document attachment flow)
+   - C→removed (already fixed)
+   - D→P8 NOTE (retained 0582B references)
+   - E→P4.3c (filename sanitization)
+4. **2 adversarial review sweeps**:
+   - Sweep 1: 3 CRITICAL + 8 HIGH found → all fixed
+   - Sweep 2: 1 HIGH found (_entryJunctionTables) → fixed. Both reviewers APPROVED.
+5. **Plan gap discovered**: StorageCleanup hardcoded to entry-photos bucket. Fixed in Phase 12.1 with multi-bucket generalization.
 
 ### What Needs to Happen Next
 
-1. **Commit changes** — all fixes are uncommitted
-2. **Retest S02, S03, S10** on device to verify fixes in practice
-3. **Push to remote** when sync verification passes
-4. **BUG-S02-3** (location/weather header UX) — deferred, needs design discussion
+1. **Commit** S669 fixes (4 bugs across 5 files) — still uncommitted from S669
+2. **`/implement`** forms infrastructure plan — `.claude/plans/2026-03-28-forms-infrastructure.md` (12 phases)
+3. **Retest S04 + S09 + S11** after implementation
+4. **Resume 0582B + IDR fixes** — Plan v5 paused
 
-### What Was Done Last Session (666)
-Full S01-S10 sync verification. 8 bugs found (1 security, 2 data integrity, 3 sync, 2 UX). Test skill post-mortem + 4 driver endpoints + helpers script. S10 BLOCKED by corrupted change_log.
+### What Was Done Last Session (671)
+Full brainstorming → spec → plan pipeline for forms infrastructure. 3 parallel plan-writers + 3 adversarial reviews + 2 fix sweeps. Plan: 5040 lines, 11 phases. Spec + plan APPROVED.
 
 ### Committed Changes
-- `1694958` — test: add and update tests for sync fixes and entry wizard
-- `0f85262` — feat(entries): unified draft-based editor with safety copy and form seeding
-- `28f1a49` — fix(sync): soft-delete conversions, inspector filter, driver fallback
+- `563d0ec` — feat(driver): add keyboard dismiss, overlay clear, route query, and widget state endpoints
+- `e0a5d5b` — fix(ui): text overflow in entry header and contractor summary, form validation guard
+- `bf37c49` — fix(security): scope trash screen by user role and ownership
+- `259b259` — fix(data): add projectId to entry child models, nullable photo file_path, v42 migration
+- `961401f` — fix(sync): skip exhausted entries, PK collision guard, and insert-to-update fallback
 
 ## Blockers
 
@@ -53,30 +60,28 @@ Full S01-S10 sync verification. 8 bugs found (1 security, 2 data integrity, 3 sy
 
 ## Recent Sessions
 
+### Session 672 (2026-03-29)
+**Work**: Added Phase 12 (test/sync verification) to forms plan. 4 opus gap-analysis agents → plan-writer → 2 review sweeps (12 findings fixed). Inlined Addendums A-E. Plan gap: storage cleanup multi-bucket.
+**Decisions**: S11 (documents) slots between S08 and S09. StorageCleanup generalized to multi-bucket. inject-document-direct mirrors inject-photo-direct pattern.
+**Next**: Commit S669 fixes → /implement 12-phase plan → retest S04+S09+S11.
+
+### Session 671 (2026-03-28)
+**Work**: Full brainstorming → spec → plan pipeline for forms infrastructure. 3 parallel plan-writers + 3 adversarial reviews + 2 fix sweeps. Plan: 5040 lines, 11 phases.
+**Decisions**: 3 separate buckets (not shared). 5 form registries. Ownership-scoped RLS (own records only). Entry exports + document attachments in scope.
+**Next**: Commit S669 fixes → /implement → retest S04+S09.
+
+### Session 670 (2026-03-28)
+**Work**: Cleaned up VRF- data. Started S04+S09 retest. Discovered inspector_forms RLS bug (NOT NULL + policy). Saved forms & documents intent.
+**Decisions**: Don't work around RLS — fix properly. Forms expanding to documents.
+**Next**: /brainstorming for forms+documents.
+
+### Session 669 (2026-03-28)
+**Work**: Verified 10 S668 bugs (4 confirmed, 3 dismissed, 3 skipped). Fixed all 4. 3175 tests pass.
+**Decisions**: S09 root cause was unconditional change_log wipe — gated on rpcSucceeded flag.
+**Next**: Commit → retest.
+
 ### Session 667 (2026-03-28)
-**Work**: Fixed 7/8 S666 bugs (1 security, 2 data, 3 sync, 1 UX). 5 opus investigation agents → 13 files changed. DB v41→42. 3175/3175 tests pass.
-**Decisions**: Non-admin trash filtered by deleted_by. entry_contractors/quantities/equipment added to tablesWithDirectProjectId. Change tracker skips exhausted entries. Pull path falls back to UPDATE on insert-ignored.
-**Next**: Commit → retest S02/S03/S10 → push.
-
-### Session 666 (2026-03-28)
-**Work**: Full S01-S10 sync verification. 8 bugs found (1 security, 2 data integrity, 3 sync, 2 UX). Test skill post-mortem + 4 driver endpoints + helpers script. S10 BLOCKED by corrupted change_log.
-**Decisions**: All sync/verify must be UI-driven (ban POST /driver/sync, GET /driver/local-record). Inspector trash should show own items only, not admin-deleted projects.
-**Next**: /systematic-debugging on bugs → retest S10 + S02 + S03 → push.
-
-### Session 665 (2026-03-28)
-**Work**: Implemented both plans (sync bugfixes + entry wizard). 7 orchestrator launches, 0 handoffs, 33 files. 3-wave review. Fixed 5 HIGH + 7 MEDIUM. 3175 tests passing. Committed 3 logical commits.
-**Decisions**: Cache provider refs for pop/lifecycle callbacks. Sentinel copyWith for clearable text fields.
-**Next**: Re-run S10 + S02 + S03 → brainstorm SV-3 → push.
-
-### Session 664 (2026-03-27)
-**Work**: Brainstormed entry wizard unification (SV-3 + SV-6 reframed). 3 opus exploration agents → spec → plan → 2 adversarial review rounds.
-**Decisions**: Unified screen. Immediate draft persistence. Adaptive header.
-**Next**: /implement sync bugfixes → /implement entry wizard → commit.
-
-### Session 663 (2026-03-27)
-**Work**: Deep exploration (4 opus agents) → brainstorming → spec → plan → adversarial review. 6 bugfixes planned.
-**Decisions**: Remove sync_control entirely. Delete dead code. Deterministic IDs for equipment.
-**Next**: /implement → re-run S10 + S02 → commit.
+**Work**: Fixed 7/8 S666 bugs. DB v41→42. 3175/3175 tests pass.
 
 ## Active Debug Session
 
@@ -85,24 +90,33 @@ None active.
 ## Test Results
 
 ### Flutter Unit Tests
-- **Full suite**: 3175/3175 PASSING (S667)
+- **Full suite**: 3175/3175 PASSING (S669)
 - **PDF tests**: 911/911 PASSING
 - **Analyze**: PASSING (0 errors)
 
-### Sync Verification (S666 — 2026-03-28)
-- **S01**: PASS | **S02**: PASS (bugs noted) | **S03**: PASS (constraint conflict)
-- **S04**: SKIP | **S05**: PASS | **S06**: PASS
-- **S07**: PASS | **S08**: PASS | **S09**: PASS (security bug)
-- **S10**: BLOCKED (corrupted change_log)
+### Sync Verification (S668 — 2026-03-28, run ididd)
+- **S01**: PASS | **S02**: PASS | **S03**: PASS
+- **S04**: BLOCKED (no form seed) | **S05**: PASS | **S06**: PASS
+- **S07**: PASS | **S08**: PASS | **S09**: FAIL (delete no push) | **S10**: PASS
+- **Report**: `.claude/test_results/2026-03-28_15-46/report.md`
+- **Checkpoint**: `.claude/test_results/2026-03-28_15-46/checkpoint.json`
+
+### Sync Verification (S666 — 2026-03-28, first run)
 - **Report**: `.claude/test_results/2026-03-28_sync/report.md`
 
 ## Reference
-- **Sync Test Report**: `.claude/test_results/2026-03-28_sync/report.md`
-- **Sync Test Checkpoint**: `.claude/test_results/2026-03-28_sync/checkpoint.json`
+- **Latest Sync Report**: `.claude/test_results/2026-03-28_15-46/report.md`
+- **Latest Checkpoint**: `.claude/test_results/2026-03-28_15-46/checkpoint.json`
+- **Prior Sync Report**: `.claude/test_results/2026-03-28_sync/report.md`
 - **Session Failures Analysis**: `.claude/test_results/2026-03-28_sync/session-failures-analysis.md`
 - **Test Skill Improvements**: `.claude/test_results/2026-03-28_sync/analysis-skill-improvements.md`
 - **Entry Wizard Spec**: `.claude/specs/2026-03-27-entry-wizard-unification-spec.md`
 - **Sync Bugfixes Plan (IMPLEMENTED)**: `.claude/plans/2026-03-27-sync-verification-bugfixes.md`
 - **Delete Flow Fix Plan (IMPLEMENTED)**: `.claude/plans/2026-03-26-delete-flow-fix.md`
 - **Test Registry**: `.claude/test-flows/registry.md`
+- **Forms Infrastructure Spec**: `.claude/specs/2026-03-28-forms-infrastructure-spec.md`
+- **Forms Infrastructure Plan**: `.claude/plans/2026-03-28-forms-infrastructure.md`
+- **Plan Review (Round 1)**: `.claude/code-reviews/2026-03-28-forms-infrastructure-plan-review.md`
+- **Plan Review (Phase 12)**: `.claude/code-reviews/2026-03-29-forms-phase12-plan-review.md`
+- **Dependency Graph (Phase 12)**: `.claude/dependency_graphs/2026-03-29-forms-phase12-test-sync/analysis.md`
 - **Defects**: `.claude/defects/_defects-{feature}.md`

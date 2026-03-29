@@ -5,6 +5,11 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
+### [DATA] 2026-03-28: loadUserProfile network failure leaves _userProfile null — admin UI degrades (BUG-S01-PROFILE)
+**Pattern**: `loadUserProfile()` fetched only from Supabase remote. On cold start without connectivity, the catch block logged but left `_userProfile` null. `canManageProjects` returned false, hiding admin features.
+**Prevention**: Always fall back to local SQLite cache (`user_profiles` table) when remote profile fetch fails. Local cache is populated by sync and previous successful loads.
+**Ref**: @lib/features/auth/presentation/providers/auth_provider.dart:656
+
 ### [FLUTTER] 2026-03-13: Router redirects auth routes to `/` before profile loads — flash of wrong screen
 **Pattern**: `isAuthenticated && isAuthRoute → return '/'` fires before `isLoadingProfile` guard. New users see project screen flash before company setup.
 **Prevention**: Check `isLoadingProfile` BEFORE redirecting authenticated users off auth routes. Return `null` to stay put while profile loads.

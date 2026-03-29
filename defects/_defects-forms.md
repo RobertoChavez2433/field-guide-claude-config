@@ -2,6 +2,11 @@
 
 ## Active Patterns
 
+### [CONFIG] 2026-03-28: main_driver.dart missing seedBuiltinForms() — inspector_forms empty in E2E tests (BUG-S04)
+**Pattern**: `_seedBuiltinForms()` was private to `main.dart` and never called in `main_driver.dart`. In driver/E2E mode, `inspector_forms` table stayed empty, blocking all form-related test scenarios.
+**Prevention**: Any startup initialization in `main.dart` that is required for app functionality must also exist in `main_driver.dart`. Keep seed functions public so both entrypoints can share them.
+**Ref**: @lib/main_driver.dart:228, @lib/main.dart:565
+
 ### [DATA] 2026-03-27: _sendTest uses '--' sentinel string in numeric field of legal form
 **Pattern**: When `_test['moisture_pcf']` is empty, `percent_compaction` is set to the string `'--'` in the submitted test row JSON. This propagates into PDF rendering and sync payload — a sentinel value in a legally certified MDOT density test form.
 **Prevention**: Use `null` instead of `'--'` in row construction. The `_fmt()` helper already handles `null → '--'` for display-only contexts.
