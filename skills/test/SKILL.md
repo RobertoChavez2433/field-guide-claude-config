@@ -90,6 +90,18 @@ navigation   → T92-T96
 2. Script handles: stale process cleanup, debug server, app launch, and readiness gate
 3. No manual setup required
 
+### Mid-Test Rebuilds (after code fixes)
+
+**CRITICAL: NEVER call `build.ps1` without `-Driver` during testing.** The default is `-BuildType release`, which triggers `flutter clean` + full release build (10+ minutes wasted).
+
+| Scenario | Command |
+|----------|---------|
+| Android rebuild + reinstall | `pwsh -File tools/build.ps1 -Platform android -Driver` then `adb install -r <apk>` |
+| Windows rebuild | Kill app → `pwsh -File tools/start-driver.ps1 -Platform windows` |
+| Hot restart (no rebuild) | `curl -s -X POST http://127.0.0.1:4948/driver/hot-restart -d '{}'` |
+
+**Prefer hot restart** when changes are hot-reloadable (UI, widget keys). Only rebuild when changes touch native code, entrypoints, or dependencies.
+
 ### Pre-flight Cleanup (built into start-driver.ps1)
 - **Android**: Force-stops app on all devices, clears stale ADB forwards/reverses (frees port 4948)
 - **Windows**: Kills `construction_inspector` process
