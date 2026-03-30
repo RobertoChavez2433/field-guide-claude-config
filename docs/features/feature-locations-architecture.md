@@ -1,258 +1,189 @@
 ---
 feature: locations
 type: architecture
-scope: Job Site Location Management with GPS
-updated: 2026-02-13
+scope: Job Site Location Management
+updated: 2026-03-30
 ---
 
 # Locations Feature Architecture
 
-## Data Model
+## Overview
 
-### Core Entities
+Simple CRUD feature that manages named job-site locations scoped to a project. No dedicated screens — UI is embedded in entries and projects features. Single model, single repository.
 
-| Entity | Fields | Type | Notes |
-|--------|--------|------|-------|
-| **Location** | id, projectId, name, description, address, latitude, longitude, createdAt, updatedAt | Model | Job site location with GPS |
-
-### Key Models
-
-**Location**:
-- `projectId`: Required; locations scoped to projects
-- `name`: Display name (e.g., "Station 12+50", "Bridge Approach")
-- `description`: Optional additional details (e.g., "Right of way work area")
-- `address`: Optional street address or landmark
-- `latitude/longitude`: Optional GPS coordinates (nullable if GPS unavailable)
-- `createdAt/updatedAt`: Lifecycle timestamps
-
-## Relationships
-
-### Project → Locations (1-N)
-```
-Project (1)
-    ↓
-Location[] (multiple job site locations within project)
-    ├─→ Referenced in DailyEntry (entryId → locationId)
-    ├─→ Tagged in Photo (photoId → locationId)
-    └─→ Metadata: address, GPS, description
-```
-
-### Entry → Location (N-1)
-```
-DailyEntry
-    ├─→ locationId (required; which site this entry covers)
-    ↓
-Location (specific job site)
-    └─→ GPS, address, name
-```
-
-## Repository Pattern
-
-### LocationRepository
-
-**Location**: `lib/features/locations/data/repositories/location_repository.dart`
-
-```dart
-class LocationRepository {
-  // CRUD
-  Future<Location> create(Location location)
-  Future<Location?> getById(String id)
-  Future<List<Location>> listByProject(String projectId)
-  Future<void> update(Location location)
-  Future<void> delete(String id)
-
-  // Specialized Queries
-  Future<int> countByProject(String projectId)
-  Future<Location?> findNearest(double latitude, double longitude, {double radiusKm = 1})
-}
-```
-
-## State Management
-
-### Provider Type: ChangeNotifier
-
-**LocationProvider** (`lib/features/locations/presentation/providers/location_provider.dart`):
-
-```dart
-class LocationProvider extends ChangeNotifier {
-  // State
-  List<Location> _locations = [];
-  Location? _currentLocation;
-  bool _isLoading = false;
-  String? _error;
-
-  // Getters
-  List<Location> get locations => _locations;
-  Location? get currentLocation => _currentLocation;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-
-  // Methods
-  Future<void> loadByProject(String projectId)
-  Future<void> createLocation(Location location)
-  Future<void> updateLocation(Location location)
-  Future<void> deleteLocation(String id)
-  Future<Location?> captureCurrentLocation(String projectId)
-}
-```
-
-### Initialization Lifecycle
-
-```
-Project Setup Screen Loaded
-    ↓
-initState() calls LocationProvider.loadByProject(projectId)
-    ├─→ _isLoading = true → shows skeleton
-    │
-    ├─→ Repository.listByProject(projectId)
-    │   └─→ SQLite query with projectId = ?
-    │
-    └─→ _locations = results
-        _isLoading = false
-        notifyListeners() → displays location list
-```
-
-### Location Creation Flow
-
-```
-User taps "Add Location" button
-    ↓
-Location creation dialog opened
-    ├─→ User enters: name, description, address
-    │
-    ├─→ Optional: User taps "Capture GPS"
-    │   ├─→ Device GPS service queries current position
-    │   ├─→ latitude/longitude populated from GPS
-    │   └─→ User can confirm or edit coordinates
-    │
-    ├─→ createLocation(location) called
-    │   ├─→ LocationRepository.create()
-    │   │   └─→ SQLite INSERT
-    │   │
-    │   ├─→ _locations.add(newLocation)
-    │   └─→ notifyListeners() → list refreshes
-    │
-    └─→ Dialog closes → location visible in list
-```
-
-## Offline Behavior
-
-**Fully offline**: Location creation, editing, GPS capture, and queries happen entirely offline. GPS coordinate capture requires device GPS (not cloud-dependent).
-
-### Read Path (Offline)
-- Location list queries SQLite by projectId
-- No cloud dependency
-
-### Write Path (Offline)
-- Location creation/updates written immediately to SQLite
-- GPS coordinates persisted locally
-- No sync status tracking (locations are static reference data)
-
-## Testing Strategy
-
-### Unit Tests (Model-level)
-- **Location**: Constructor, copyWith, toMap/fromMap
-- **GPS coordinates**: Nullable fields, decimal precision
-- **Address handling**: Optional field serialization
-
-Location: `test/features/locations/data/models/location_test.dart`
-
-### Repository Tests (Data-level)
-- **CRUD operations**: Create, read, update, delete locations
-- **Query filters**: List by projectId, count by project
-- **GPS queries**: Find nearest location (radius-based)
-- **Offline behavior**: All tests mock database
-
-Location: `test/features/locations/data/repositories/location_repository_test.dart`
-
-### Widget Tests (Provider-level)
-- **LocationProvider**: Mock repository, trigger operations, verify state
-- **Location list**: Verify locations displayed by project
-- **GPS capture**: Mock GPS service, verify coordinates captured
-- **Selection**: Tap location → currentLocation updated
-
-Location: `test/features/locations/presentation/providers/location_provider_test.dart`
-
-### Integration Tests
-- **Create with GPS**: Add location → capture GPS → save → verify in database
-- **Edit**: Load location → change address → save → verify persisted
-- **Navigation**: Locations screen → entry wizard → select location → verify selected
-
-Location: `test/features/locations/presentation/integration/`
-
-### Test Coverage
-- ≥ 90% for repository (critical data)
-- ≥ 85% for provider (state management)
-- 70% for screens (navigation testing)
-
-## Performance Considerations
-
-### Target Response Times
-- Load 10 locations: < 300 ms
-- Create location: < 100 ms
-- Capture GPS: 1-3 seconds (device-dependent)
-- Find nearest: < 500 ms (Haversine calculation)
-
-### Memory Constraints
-- Location in memory: ~200 bytes per location
-- Location list: ~2 KB for 10 locations
-
-### Optimization Opportunities
-- Cache locations list (avoid repeated queries)
-- Batch GPS updates (if capture multiple locations)
-- Index on projectId (fast project-scoped queries)
-- Lazy-load GPS details (only when viewing location)
-
-## File Locations
+## Directory Structure
 
 ```
 lib/features/locations/
 ├── data/
 │   ├── models/
-│   │   ├── models.dart
-│   │   └── location.dart
-│   │
+│   │   ├── location.dart
+│   │   └── models.dart
 │   ├── datasources/
 │   │   ├── local/
-│   │   │   ├── local.dart
-│   │   │   └── location_local_datasource.dart
-│   │   └── remote/
-│   │       ├── remote.dart
-│   │       └── location_remote_datasource.dart
-│   │
-│   └── repositories/
-│       ├── repositories.dart
-│       └── location_repository.dart
-│
+│   │   │   ├── location_local_datasource.dart
+│   │   │   └── local.dart
+│   │   ├── remote/
+│   │   │   ├── location_remote_datasource.dart
+│   │   │   └── remote.dart
+│   │   └── datasources.dart
+│   ├── repositories/
+│   │   ├── location_repository_impl.dart
+│   │   └── repositories.dart
+│   └── data.dart
+├── domain/
+│   ├── repositories/
+│   │   ├── location_repository.dart      # Abstract interface
+│   │   └── repositories.dart
+│   └── domain.dart
 ├── presentation/
 │   ├── providers/
-│   │   ├── providers.dart
-│   │   └── location_provider.dart
-│   │
+│   │   ├── location_provider.dart
+│   │   └── providers.dart
 │   └── presentation.dart
-│
-└── locations.dart                    # Feature entry point
-
-lib/core/database/
-└── database_service.dart             # SQLite schema for locations table
-
-services/
-└── location/                         # GPS/location service (cross-cutting)
-    └── location_service.dart
+├── di/
+│   └── locations_providers.dart
+└── locations.dart                        # Barrel: re-exports data + domain + presentation
 ```
 
-### Import Pattern
+## Data Layer
+
+### Model: `Location`
+
+File: `lib/features/locations/data/models/location.dart`
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | `String` | UUID, auto-generated |
+| `projectId` | `String` | Required; scopes location to a project |
+| `name` | `String` | Required display name |
+| `description` | `String?` | Optional details |
+| `latitude` | `double?` | Nullable GPS coordinate |
+| `longitude` | `double?` | Nullable GPS coordinate |
+| `createdAt` | `DateTime` | Auto-set on construction |
+| `updatedAt` | `DateTime` | Auto-set; refreshed in `copyWith` |
+| `createdByUserId` | `String?` | Supabase auth user ID |
+
+No `address` field — the old doc was inaccurate. GPS coordinates are optional (device GPS may be unavailable).
+
+### Datasources
+
+**`LocationLocalDatasource`** (`data/datasources/local/location_local_datasource.dart`)
+- Extends `ProjectScopedDatasource<Location>`
+- Table: `locations`, ordered `name ASC`
+- Extra method: `search(String projectId, String query)` — name LIKE query within project
+- Inherits: `getById`, `getAll`, `getByProjectId`, `insert`, `update`, `delete`, `deleteByProjectId`, `getCountByProject`, `insertAll`, `getCount`, `getPaged`, `getByProjectIdPaged`
+
+**`LocationRemoteDatasource`** (`data/datasources/remote/location_remote_datasource.dart`)
+- Extends `BaseRemoteDatasource<Location>`
+- Table: `locations`
+- Extra method: `getByProjectId(String projectId)` — Supabase query ordered by name
+- Currently unused at runtime (sync is change-log driven); wired for future direct-fetch
+
+## Domain Layer
+
+### Repository Interface: `LocationRepository`
+
+File: `lib/features/locations/domain/repositories/location_repository.dart`
 
 ```dart
-// Within locations feature
-import 'package:construction_inspector/features/locations/data/models/location.dart';
-import 'package:construction_inspector/features/locations/data/repositories/location_repository.dart';
-import 'package:construction_inspector/features/locations/presentation/providers/location_provider.dart';
-
-// Cross-cutting service
-import 'package:construction_inspector/services/location/location_service.dart';
-
-// Barrel export
-import 'package:construction_inspector/features/locations/locations.dart';
+abstract class LocationRepository implements ProjectScopedRepository<Location> {
+  Future<List<Location>> search(String projectId, String query);
+  Future<RepositoryResult<Location>> updateLocation(Location location);
+  Future<void> deleteByProjectId(String projectId);
+  Future<void> insertAll(List<Location> locations);
+}
 ```
 
+Inherits from `ProjectScopedRepository<Location>` (shared base), which provides: `getById`, `getAll`, `getByProjectId`, `save`, `create`, `update`, `delete`, `getCountByProject`, `getCount`, `getPaged`, `getByProjectIdPaged`.
+
+No use cases — operations are simple enough to call the repository directly from the provider.
+
+### Repository Implementation: `LocationRepositoryImpl`
+
+File: `lib/features/locations/data/repositories/location_repository_impl.dart`
+
+- Implements `LocationRepository`
+- Constructor: `LocationRepositoryImpl(LocationLocalDatasource _localDatasource)`
+- `create`: enforces unique name per project via `UniqueNameValidator.isNameDuplicate`
+- `updateLocation`: enforces unique name per project (excluding the item being renamed) via `UniqueNameValidator.isNameDuplicateExcluding`
+- `update`: delegates to `updateLocation`
+- `save`: upsert — checks `getById`, calls `insert` or `update` accordingly
+- Returns `RepositoryResult<Location>` for write operations (carries error message on failure)
+
+## Presentation Layer
+
+### Provider: `LocationProvider`
+
+File: `lib/features/locations/presentation/providers/location_provider.dart`
+
+```dart
+class LocationProvider extends BaseListProvider<Location, LocationRepository>
+```
+
+- Extends `BaseListProvider` (shared base); holds `List<Location> items`
+- Sorted alphabetically by `name`
+- Write operations guarded by `canWrite()` callback (set at DI time)
+
+Key members:
+
+| Member | Notes |
+|--------|-------|
+| `locations` | Alias for `items` |
+| `hasLocations` | Alias for `hasItems` |
+| `locationCount` | Alias for `itemCount` |
+| `loadLocations(String projectId)` | Alias for `loadItems(projectId)` |
+| `createLocation(Location)` | Guarded; calls `createItem` |
+| `updateLocation(Location)` | Guarded; calls `updateItem` |
+| `deleteLocation(String id)` | Guarded; calls `deleteItem` |
+| `getLocationById(String id)` | Read-only lookup; no state change |
+
+No screens owned by this feature — `LocationProvider` is consumed by entries and projects UIs.
+
+## Dependency Injection
+
+File: `lib/features/locations/di/locations_providers.dart`
+
+```dart
+List<SingleChildWidget> locationProviders({
+  required LocationRepository locationRepository,
+  required AuthProvider authProvider,
+}) {
+  return [
+    ChangeNotifierProvider(
+      create: (_) {
+        final p = LocationProvider(locationRepository);
+        p.canWrite = () => authProvider.canEditFieldData;
+        return p;
+      },
+    ),
+  ];
+}
+```
+
+- Tier 4 provider (depends on repository + auth)
+- Write guard wired to `authProvider.canEditFieldData`
+
+## Relationships
+
+### Depends On
+- **projects** — `projectId` is a required FK; locations are project-scoped
+- **auth** — `canEditFieldData` guard via `AuthProvider`
+- **shared** — `ProjectScopedRepository`, `BaseListProvider`, `ProjectScopedDatasource`, `BaseRemoteDatasource`, `RepositoryResult`, `UniqueNameValidator`
+- **core/database** — `DatabaseService` injected into `LocationLocalDatasource`
+
+### Required By
+- **entries** — entry forms embed location selection (picks from `LocationProvider.locations`)
+- **projects** — project setup/detail screens manage the location list for a project
+
+## Patterns
+
+- **Simple CRUD**: no use cases, repository called directly from provider
+- **Unique name enforcement**: handled in `LocationRepositoryImpl`, not in UI
+- **Offline-first**: all reads/writes go to SQLite; sync is change-log driven (no per-record sync status)
+- **No dedicated screens**: UI is hosted entirely in entries and projects features
+- **Write guard**: viewer-role users cannot create/update/delete locations (`canWrite` callback)
+
+## Offline Behavior
+
+All operations are local-only at runtime. Supabase propagation is handled by the sync engine reading the `change_log` table (populated by SQLite triggers on INSERT/UPDATE/DELETE to `locations`). `LocationRemoteDatasource` exists for future direct-fetch scenarios.

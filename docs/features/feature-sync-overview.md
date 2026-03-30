@@ -2,7 +2,7 @@
 feature: sync
 type: overview
 scope: Cloud Synchronization & Multi-Backend Support
-updated: 2026-02-13
+updated: 2026-03-30
 ---
 
 # Sync Feature Overview
@@ -23,36 +23,94 @@ The Sync feature enables offline-first data synchronization between the local SQ
 
 ## Key Files
 
+### Engine Components
+
+| File Path | Class | Purpose |
+|-----------|-------|---------|
+| `lib/features/sync/engine/sync_engine.dart` | `SyncEngine` | Core sync engine — orchestrates push/pull cycle |
+| `lib/features/sync/engine/change_tracker.dart` | `ChangeTracker` | Tracks local changes pending sync |
+| `lib/features/sync/engine/conflict_resolver.dart` | `ConflictResolver` | Conflict resolution logic (last-write-wins + merging) |
+| `lib/features/sync/engine/integrity_checker.dart` | `IntegrityChecker` | Validates referential integrity after sync |
+| `lib/features/sync/engine/sync_mutex.dart` | `SyncMutex` | Prevents concurrent sync runs |
+| `lib/features/sync/engine/sync_registry.dart` | `SyncRegistry` | Registers and routes to table adapters |
+| `lib/features/sync/engine/orphan_scanner.dart` | `OrphanScanner` | Detects orphaned storage objects |
+| `lib/features/sync/engine/storage_cleanup.dart` | `StorageCleanup` | Cleans up orphaned Supabase storage files |
+| `lib/features/sync/engine/sync_control_service.dart` | `SyncControlService` | Pause/resume and circuit-breaker controls |
+
+### Application Layer
+
+| File Path | Class | Purpose |
+|-----------|-------|---------|
+| `lib/features/sync/application/sync_orchestrator.dart` | `SyncOrchestrator` | Multi-backend router (ProjectMode → adapter); top-level sync entry point |
+| `lib/features/sync/application/sync_lifecycle_manager.dart` | `SyncLifecycleManager` | App lifecycle observer; triggers sync on foreground |
+| `lib/features/sync/application/background_sync_handler.dart` | `BackgroundSyncHandler` | Handles workmanager background sync tasks |
+| `lib/features/sync/application/fcm_handler.dart` | `FcmHandler` | Handles FCM push notifications to trigger sync |
+
+### Adapters (22 concrete, 1 base)
+
 | File Path | Purpose |
 |-----------|---------|
-| `lib/features/sync/engine/sync_engine.dart` | Core sync engine [BRANCH: feat/sync-engine-rewrite] |
-| `lib/features/sync/application/sync_orchestrator.dart` | Multi-backend router (ProjectMode → adapter) |
-| `lib/features/sync/adapters/table_adapter.dart` | Base table adapter (17 concrete adapters) [BRANCH: feat/sync-engine-rewrite] |
-| `lib/features/sync/domain/sync_adapter.dart` | SyncAdapter interface & value objects |
-| `lib/features/sync/data/adapters/supabase_sync_adapter.dart` | Supabase implementation |
-| `lib/features/sync/presentation/providers/sync_provider.dart` | UI provider for sync state/actions |
-| `lib/features/sync/engine/change_tracker.dart` | Tracks local changes for sync [BRANCH: feat/sync-engine-rewrite] |
-| `lib/features/sync/engine/conflict_resolver.dart` | Conflict resolution logic [BRANCH: feat/sync-engine-rewrite] |
-| `lib/core/database/database_service.dart` | SQLite schema and local persistence |
+| `lib/features/sync/adapters/table_adapter.dart` | Base `TableAdapter` class for all concrete adapters |
+| `lib/features/sync/adapters/project_adapter.dart` | Projects |
+| `lib/features/sync/adapters/daily_entry_adapter.dart` | Daily entries |
+| `lib/features/sync/adapters/photo_adapter.dart` | Photos (with Supabase Storage) |
+| `lib/features/sync/adapters/contractor_adapter.dart` | Contractors |
+| `lib/features/sync/adapters/location_adapter.dart` | Locations |
+| `lib/features/sync/adapters/bid_item_adapter.dart` | Bid items |
+| `lib/features/sync/adapters/calculation_history_adapter.dart` | Calculator history |
+| `lib/features/sync/adapters/consent_record_adapter.dart` | Consent records |
+| `lib/features/sync/adapters/document_adapter.dart` | Documents |
+| `lib/features/sync/adapters/entry_contractors_adapter.dart` | Entry↔contractor junction |
+| `lib/features/sync/adapters/entry_equipment_adapter.dart` | Entry equipment |
+| `lib/features/sync/adapters/entry_export_adapter.dart` | Entry exports |
+| `lib/features/sync/adapters/entry_personnel_counts_adapter.dart` | Entry personnel counts |
+| `lib/features/sync/adapters/entry_quantities_adapter.dart` | Entry quantities |
+| `lib/features/sync/adapters/equipment_adapter.dart` | Equipment |
+| `lib/features/sync/adapters/form_export_adapter.dart` | Form exports |
+| `lib/features/sync/adapters/form_response_adapter.dart` | Form responses |
+| `lib/features/sync/adapters/inspector_form_adapter.dart` | Inspector forms |
+| `lib/features/sync/adapters/personnel_type_adapter.dart` | Personnel types |
+| `lib/features/sync/adapters/project_assignment_adapter.dart` | Project assignments |
+| `lib/features/sync/adapters/support_ticket_adapter.dart` | Support tickets |
+| `lib/features/sync/adapters/todo_item_adapter.dart` | Todo items |
+
+### Configuration & Domain
+
+| File Path | Class | Purpose |
+|-----------|-------|---------|
+| `lib/features/sync/config/sync_config.dart` | `SyncEngineConfig` | Sync tuning (intervals, retries, debounce) |
+| `lib/features/sync/domain/sync_types.dart` | — | Value objects and enums (SyncStatus, SyncResult, etc.) |
+| `lib/features/sync/data/adapters/mock_sync_adapter.dart` | — | Mock adapter for testing |
+
+### Presentation
+
+| File Path | Class | Purpose |
+|-----------|-------|---------|
+| `lib/features/sync/presentation/screens/sync_dashboard_screen.dart` | `SyncDashboardScreen` | Full sync status dashboard |
+| `lib/features/sync/presentation/screens/conflict_viewer_screen.dart` | `ConflictViewerScreen` | Conflict review and resolution UI |
+| `lib/features/sync/presentation/providers/sync_provider.dart` | `SyncProvider` | UI state provider for sync status and actions |
+| `lib/features/sync/presentation/widgets/sync_status_icon.dart` | `SyncStatusIcon` | Icon widget showing current sync state |
+| `lib/features/sync/presentation/widgets/deletion_notification_banner.dart` | `DeletionNotificationBanner` | Banner alerting user to server-side deletions |
 
 ## Data Sources
 
-- **SQLite**: Local database with projects, entries, photos, contractors, locations
-- **Supabase**: Cloud backend for Local Agency mode (push/pull via REST API)
+- **SQLite**: Local database with all syncable entities
+- **Supabase**: Cloud backend for Local Agency mode (push/pull via REST API + Storage for photos)
 - **AASHTOWare** (future): OpenAPI endpoint for MDOT mode
 - **Connectivity Service**: Device connectivity status for online/offline detection
+- **FCM**: Push notifications to wake sync on remote changes
 
 ## Integration Points
 
 **Depends on:**
-- `core/database` - SQLite tables for all entities
-- `projects`, `entries`, `photos`, `contractors`, `locations` - Entities to sync
-- `auth` - Authentication status (required before syncing to Supabase)
+- `core/database` — SQLite tables for all entities
+- `projects`, `entries`, `photos`, `contractors`, `locations`, `todos`, `forms`, `quantities`, `calculator`, `auth` — All syncable feature entities
+- `auth` — Authentication status (required before syncing to Supabase)
 
 **Required by:**
-- `settings` - Manual sync trigger UI
-- `dashboard` - Sync status display and indicators
-- All data features - Offline/online behavior configuration
+- `settings` — Manual sync trigger UI and sync configuration
+- `projects` — Sync status display per project
+- All data features — Offline/online behavior configuration
 
 ## Offline Behavior
 
@@ -71,6 +129,7 @@ Sync is **fully offline-capable**. All local operations queue changes to SQLite 
 ### Sync on Reconnect
 - Connectivity service detects online transition
 - Auto-triggers `syncAll()` if enabled in app settings
+- FCM push can also wake sync remotely
 - User can also manually trigger from Settings screen
 
 ## Edge Cases & Limitations
@@ -81,6 +140,7 @@ Sync is **fully offline-capable**. All local operations queue changes to SQLite 
 - **No Bandwidth Limits**: Large photo syncs may consume significant bandwidth on metered connections
 - **Auth Required**: Supabase adapter requires authentication; offline-only works for local inspection workflows
 - **Debounce Window**: Rapid sync requests debounced (coalesced) to reduce server load
+- **Circuit Breaker**: `SyncControlService` can pause sync after repeated failures; visible in `SyncDashboardScreen`
 
 ## Detailed Specifications
 
@@ -92,5 +152,5 @@ See `architecture-decisions/sync-constraints.md` for:
 See `rules/sync/sync-patterns.md` for:
 - SyncAdapter interface documentation
 - Multi-backend routing patterns
-- Table adapter patterns [BRANCH: feat/sync-engine-rewrite]
+- Table adapter patterns
 - Offline queue management

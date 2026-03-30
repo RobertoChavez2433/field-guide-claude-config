@@ -1,287 +1,214 @@
 ---
 feature: settings
 type: architecture
-scope: User Preferences & Theme Management
-updated: 2026-02-13
+scope: User Preferences, Consent, Support, Admin & Legal
+updated: 2026-03-30
 ---
 
 # Settings Feature Architecture
 
-## Data Model
+Settings has grown well beyond theme management. It now owns consent/legal compliance,
+support ticket submission, admin company management, soft-delete trash recovery, and
+user profile editing. It is one of the larger feature modules.
 
-### Core Entities
-
-Settings has **minimal persistent models**. Most data is UI state or references from other features.
-
-| Entity | Fields | Type | Notes |
-|--------|--------|------|-------|
-| **ThemeMode** | light, dark, system | Enum | App theme preference |
-| **InspectorProfile** | name, email, phone, organization | Value Object | User profile (from auth + local cache) |
-
-### Key Models
-
-**ThemeMode**:
-- `light` - Always light theme
-- `dark` - Always dark theme
-- `system` - Follow device system theme (default)
-
-**InspectorProfile** (cached from auth):
-- `name`: Inspector display name
-- `email`: From auth provider
-- `phone`: Optional contact phone
-- `organization`: Optional organization/company name
-
-## Relationships
-
-```
-SettingsScreen (read-only aggregation)
-    ├─→ ThemeProvider (theme preference)
-    ├─→ AuthProvider (current user, sign-out)
-    ├─→ SyncProvider (pending data count, sync history)
-    ├─→ ContractorProvider (personnel types for project)
-    └─→ Shared Preferences (theme persistence, user metadata)
-```
-
-## State Management
-
-### Provider Type: ChangeNotifier
-
-**ThemeProvider** (`lib/features/settings/presentation/providers/theme_provider.dart`):
-
-```dart
-class ThemeProvider extends ChangeNotifier {
-  // State
-  ThemeMode _themeMode = ThemeMode.system;
-
-  // Getters
-  ThemeMode get themeMode => _themeMode;
-  ThemeData get lightTheme => AppTheme.lightTheme;
-  ThemeData get darkTheme => AppTheme.darkTheme;
-
-  // Methods
-  Future<void> setThemeMode(ThemeMode mode)
-  Future<void> loadSavedTheme()
-  bool get isDarkMode => _themeMode == ThemeMode.dark ||
-      (_themeMode == ThemeMode.system && _isSystemDark);
-}
-```
-
-### Initialization Lifecycle
-
-```
-App Start
-    ↓
-main() initializes providers
-    ├─→ ThemeProvider.loadSavedTheme()
-    │   ├─→ Reads Shared Preferences for saved theme
-    │   ├─→ If not found: defaults to system theme
-    │   ├─→ _themeMode = savedMode
-    │   └─→ notifyListeners() → MaterialApp rebuilds with theme
-    │
-    └─→ SettingsProvider (lazy-loaded when navigating to settings)
-        └─→ Loads user profile, sync status on demand
-```
-
-### Theme Change Flow
-
-```
-Settings Screen Loaded
-    ↓
-User toggles theme
-    ├─→ ThemeProvider.setThemeMode(newMode) called
-    │   ├─→ _themeMode = newMode
-    │   ├─→ Saves to Shared Preferences
-    │   └─→ notifyListeners() → MaterialApp rebuilds with new theme
-    │
-    └─→ App immediately reflects theme change
-        └─→ All screens rebuild with new colors
-```
-
-### Settings UI Pattern
-
-**SettingsScreen** (StatefulWidget, no dedicated provider):
-
-```dart
-class SettingsScreen extends StatefulWidget {
-  @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  // Depends on other features' providers
-  late AuthProvider _authProvider;
-  late SyncProvider _syncProvider;
-  late ThemeProvider _themeProvider;
-
-  @override
-  void initState() {
-    super.initState();
-    _authProvider = context.read<AuthProvider>();
-    _syncProvider = context.read<SyncProvider>();
-    _themeProvider = context.read<ThemeProvider>();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      children: [
-        // Profile section (from auth)
-        Consumer<AuthProvider>(
-          builder: (context, auth, _) {
-            return InspectorProfileSection(
-              name: auth.user?.email ?? 'Unknown',
-              email: auth.user?.email,
-            );
-          },
-        ),
-
-        // Theme section (from theme provider)
-        Consumer<ThemeProvider>(
-          builder: (context, theme, _) {
-            return ThemeSection(
-              selectedTheme: theme.themeMode,
-              onThemeChanged: _themeProvider.setThemeMode,
-            );
-          },
-        ),
-
-        // Sync status section (from sync provider)
-        Consumer<SyncProvider>(
-          builder: (context, sync, _) {
-            return SyncSection(
-              pendingCount: sync.pendingItemCount,
-              lastSyncTime: sync.lastSyncTime,
-            );
-          },
-        ),
-
-        // Actions
-        SignOutButton(),
-        ClearCacheButton(),
-      ],
-    );
-  }
-}
-```
-
-## Offline Behavior
-
-**Mostly offline**: Theme changes and profile display happen offline. Sign-out and cache operations have network/local trade-offs.
-
-### Read Path (Offline)
-- Theme preference read from Shared Preferences
-- User profile read from auth provider (cached in memory)
-- Sync status read from sync provider
-- All operations local
-
-### Write Path (Offline)
-- Theme changes written immediately to Shared Preferences
-- Profile edits cached locally; sync to cloud deferred
-- Cache clear is immediate (destructive)
-
-### Theme Persistence
-- Saved to Shared Preferences on every change
-- Survives app kill/restart
-- Default is system theme if not explicitly set
-
-## Testing Strategy
-
-### Unit Tests (Provider-level)
-- **ThemeProvider**: Save/load theme, toggle modes, verify notifications
-- **Theme persistence**: Write to Shared Preferences, read back
-- **Default theme**: System theme applied if not saved
-
-Location: `test/features/settings/presentation/providers/theme_provider_test.dart`
-
-### Widget Tests (Screen-level)
-- **SettingsScreen**: Verify sections displayed (profile, theme, sync, actions)
-- **Theme toggle**: Change theme → verify MaterialApp rebuilds
-- **Profile display**: Verify user email shown
-- **Sign-out button**: Tap → calls AuthProvider.signOut()
-
-Location: `test/features/settings/presentation/screens/settings_screen_test.dart`
-
-### Integration Tests
-- **Theme persistence**: Change theme → restart app → theme persists
-- **Profile editing**: Edit name → save → verify persisted
-- **Sync status**: Pending items shown, refresh updates count
-
-Location: `test/features/settings/presentation/integration/`
-
-### Test Coverage
-- ≥ 90% for provider (theme persistence is critical)
-- ≥ 80% for screens (UI layer)
-- Mock auth, sync, and other feature providers
-
-## Performance Considerations
-
-### Target Response Times
-- Load settings screen: < 300 ms (read from Shared Preferences)
-- Change theme: < 100 ms (save + notify listeners)
-- Clear cache: < 1 second (depends on cache size)
-
-### Memory Constraints
-- Theme preference: ~50 bytes
-- User profile cache: ~500 bytes
-- Settings state: minimal
-
-### Optimization Opportunities
-- Lazy-load sync status (not needed immediately)
-- Batch profile updates (if fields editable)
-- Background cache cleanup (if cache clearing added)
-
-## File Locations
+## Directory Structure
 
 ```
 lib/features/settings/
+├── data/
+│   ├── datasources/
+│   │   ├── consent_local_datasource.dart       # SQLite CRUD for consent_records
+│   │   ├── support_local_datasource.dart        # SQLite CRUD for support_tickets
+│   │   ├── local/
+│   │   │   └── user_certification_local_datasource.dart
+│   │   └── remote/
+│   │       └── log_upload_remote_datasource.dart  # Supabase Storage upload
+│   ├── models/
+│   │   ├── models.dart
+│   │   ├── consent_record.dart     # ConsentRecord, ConsentAction, ConsentPolicyType
+│   │   ├── support_ticket.dart     # SupportTicket, SupportTicketStatus
+│   │   └── user_certification.dart # UserCertification (read-only sync mirror)
+│   └── repositories/
+│       ├── admin_repository_impl.dart  # Supabase RPC-backed admin ops
+│       ├── consent_repository.dart     # Thin wrapper over ConsentLocalDatasource
+│       ├── support_repository.dart     # Thin wrapper over SupportLocalDatasource
+│       └── trash_repository.dart       # Soft-deleted record queries (SQLite)
+├── domain/
+│   ├── domain.dart
+│   └── repositories/
+│       └── admin_repository.dart    # Abstract interface for admin operations
 ├── presentation/
+│   ├── providers/
+│   │   ├── providers.dart
+│   │   ├── theme_provider.dart      # ThemeProvider (AppThemeMode: light/dark/highContrast)
+│   │   ├── admin_provider.dart      # AdminProvider (join requests, member management)
+│   │   ├── consent_provider.dart    # ConsentProvider (GDPR consent gating)
+│   │   └── support_provider.dart    # SupportProvider (ticket form + log upload)
 │   ├── screens/
 │   │   ├── screens.dart
 │   │   ├── settings_screen.dart
+│   │   ├── trash_screen.dart
+│   │   ├── admin_dashboard_screen.dart
 │   │   ├── personnel_types_screen.dart
 │   │   ├── edit_profile_screen.dart
-│   │   ├── admin_dashboard_screen.dart
-│   │   └── trash_screen.dart
-│   │
+│   │   ├── consent_screen.dart
+│   │   ├── legal_document_screen.dart
+│   │   ├── oss_licenses_screen.dart
+│   │   └── help_support_screen.dart
 │   ├── widgets/
 │   │   ├── widgets.dart
 │   │   ├── theme_section.dart
 │   │   ├── sync_section.dart
-│   │   ├── member_detail_sheet.dart
-│   │   ├── section_header.dart
 │   │   ├── clear_cache_dialog.dart
-│   │   └── sign_out_dialog.dart
-│   │
-│   ├── providers/
-│   │   ├── providers.dart
-│   │   └── theme_provider.dart
-│   │
+│   │   ├── sign_out_dialog.dart
+│   │   ├── section_header.dart
+│   │   └── member_detail_sheet.dart
 │   └── presentation.dart
-│
-└── settings.dart                     # Feature entry point
-
-lib/core/theme/
-├── app_theme.dart                    # Theme constants and ThemeData
-└── colors.dart                       # Color palette
-
-lib/core/config/
-└── supabase_config.dart              # Supabase configuration
+├── di/
+│   ├── settings_providers.dart        # Tier-4 provider list
+│   └── consent_support_factory.dart   # Factory for ConsentProvider + SupportProvider
+└── settings.dart
 ```
 
-### Import Pattern
+## Data Layer
 
-```dart
-// Within settings feature
-import 'package:construction_inspector/features/settings/presentation/providers/theme_provider.dart';
+### Models
 
-// Theme constants
-import 'package:construction_inspector/core/theme/app_theme.dart';
+| Class | File | Notes |
+|-------|------|-------|
+| `ConsentRecord` | `consent_record.dart` | Append-only audit record. Fields: id, userId, policyType, policyVersion, acceptedAt, appVersion, action. Table: `user_consent_records`. |
+| `ConsentAction` | `consent_record.dart` | Enum: `accepted`, `revoked`. Used for GDPR audit trail. |
+| `ConsentPolicyType` | `consent_record.dart` | Enum: `privacyPolicy`, `termsOfService`. |
+| `SupportTicket` | `support_ticket.dart` | Fields: id, userId, subject, message, appVersion, platform, logFilePath, createdAt, status. Table: `support_tickets`. No `copyWith` — status is server-managed. |
+| `SupportTicketStatus` | `support_ticket.dart` | Enum: `open`, `acknowledged`, `resolved`. |
+| `UserCertification` | `user_certification.dart` | Read-only sync mirror. Fields: id, userId, certType, certNumber, expiryDate, createdAt, updatedAt. Managed server-side; client is view-only. |
 
-// From other features (read-only)
-import 'package:construction_inspector/features/auth/auth.dart';
-import 'package:construction_inspector/features/sync/sync.dart';
+### Datasources
 
-// Barrel export
-import 'package:construction_inspector/features/settings/settings.dart';
+| Class | Location | Backend |
+|-------|----------|---------|
+| `ConsentLocalDatasource` | `datasources/` (flat) | SQLite |
+| `SupportLocalDatasource` | `datasources/` (flat) | SQLite |
+| `UserCertificationLocalDatasource` | `datasources/local/` | SQLite |
+| `LogUploadRemoteDatasource` | `datasources/remote/` | Supabase Storage (`support-logs` bucket) |
+
+Note: The datasource directory is mixed — `ConsentLocalDatasource` and
+`SupportLocalDatasource` sit flat in `datasources/`, while `UserCertificationLocalDatasource`
+is under `datasources/local/` and `LogUploadRemoteDatasource` under `datasources/remote/`.
+
+### Repositories
+
+| Class | Interface | Notes |
+|-------|-----------|-------|
+| `TrashRepository` | None (concrete only) | Queries soft-deleted rows across SQLite tables. Takes `DatabaseService`. Supports admin mode (all deleted) and user mode (deleted_by filter). |
+| `AdminRepository` | `domain/repositories/admin_repository.dart` | Abstract interface. Operations: getPendingJoinRequests, approveJoinRequest, rejectJoinRequest, getCompanyMembers, updateMemberRole, deactivateMember, reactivateMember, promoteToAdmin. |
+| `AdminRepositoryImpl` | Implements `AdminRepository` | Supabase-backed. All mutating operations use SECURITY DEFINER RPCs — no direct table writes. Requires `companyId` for runtime privilege guard. |
+| `ConsentRepository` | None (concrete only) | Thin wrapper over `ConsentLocalDatasource`. Append-only (no update/delete). Methods: recordConsent, getConsentHistory, hasAcceptedPolicy, getLatestConsent. |
+| `SupportRepository` | None (concrete only) | Thin wrapper over `SupportLocalDatasource`. Methods: submitTicket, getTickets, getTicketById, getTicketsByStatus, updateTicketStatus. |
+
+## Presentation Layer
+
+### Providers
+
+| Class | Type | Key Responsibilities |
+|-------|------|---------------------|
+| `ThemeProvider` | `ChangeNotifier` | Manages `AppThemeMode` (light / dark / highContrast). Persists to SharedPreferences. Default: dark. Exposes `currentTheme`, `isDark`, `isLight`, `isHighContrast`, `cycleTheme()`. |
+| `AdminProvider` | `ChangeNotifier` | Loads pending join requests and company members via `AdminRepository`. Lazy repository creation keyed by `companyId` (solves stale-ID bug). Exposes approve/reject/role/deactivate/reactivate/promoteToAdmin actions. Also exposes static `syncHealth(UserProfile)`. |
+| `ConsentProvider` | `ChangeNotifier` | GDPR-compliant consent gating. Stores consent in SharedPreferences (fast gate checks) AND `ConsentRepository` (SQLite audit trail). Supports `acceptConsent`, `revokeConsent`, `clearOnSignOut`, `writeDeferredAuditRecordsIfNeeded`. Policy version sourced from `AppConfigProvider` (remote config), falls back to `'1.0.0'`. |
+| `SupportProvider` | `ChangeNotifier` | Support ticket form state. On submit: optionally zips and uploads log files via `LogUploadRemoteDatasource`, then inserts a `SupportTicket` into local SQLite via `SupportRepository`. PII scrubbing via `Logger.scrubString()` before upload. |
+
+### Screens
+
+| Screen | Purpose |
+|--------|---------|
+| `SettingsScreen` | Main hub; surfaces profile, theme, sync, legal, admin entry points, sign-out |
+| `TrashScreen` | Browse and restore soft-deleted records |
+| `AdminDashboardScreen` | Company admin: pending join requests + member management |
+| `PersonnelTypesScreen` | Manage inspector personnel type taxonomy |
+| `EditProfileScreen` | User profile editing |
+| `ConsentScreen` | Privacy policy / ToS consent gate shown pre-app-use |
+| `LegalDocumentScreen` | Renders a named legal document (ToS / Privacy Policy) |
+| `OssLicensesScreen` | Open-source license listing |
+| `HelpSupportScreen` | Support ticket submission form (driven by SupportProvider) |
+
+### Widgets
+
+| Widget | Purpose |
+|--------|---------|
+| `ThemeSection` | Theme picker (light / dark / high contrast) |
+| `SyncSection` | Sync status display with trigger button |
+| `ClearCacheDialog` | Confirmation dialog for cache clearing |
+| `SignOutDialog` | Confirmation dialog for sign-out |
+| `SectionHeader` | Consistent styled section label |
+| `MemberDetailSheet` | Bottom sheet for viewing/managing a company member's details |
+
+## Dependency Injection
+
+Two DI files handle settings registration:
+
+### `di/settings_providers.dart` — Tier 4 provider list
+Registers: `PreferencesService` (value), `ThemeProvider` (created), `TrashRepository` (value), `SoftDeleteService` (value).
+Called from `main.dart` / `main_driver.dart` as part of the top-level `MultiProvider`.
+
+### `di/consent_support_factory.dart` — Consent + Support factory
+Exports `ConsentSupportResult` (holds `ConsentProvider` + `SupportProvider`) and the factory function `createConsentAndSupportProviders(dbService, preferencesService, authProvider)`.
+Wires the full chain: `ConsentLocalDatasource` → `ConsentRepository` → `ConsentProvider` and
+`SupportLocalDatasource` + `LogUploadRemoteDatasource` → `SupportRepository` → `SupportProvider`.
+Called once from `main.dart` / `main_driver.dart` before provider registration. Eliminates wiring duplication between entrypoints.
+
+`AdminProvider` is registered separately (not in settings_providers.dart) because it requires a repository factory that depends on `SupabaseClient` and `AuthProvider`, which are wired at app startup.
+
+## Key Patterns
+
+### Consent Gating
+`ConsentProvider.hasConsented` is checked by the router guard before granting access to
+the main app shell. If false, the router redirects to `ConsentScreen`. Consent is dual-stored:
+SharedPreferences for in-process gate speed, SQLite (`user_consent_records`) for GDPR audit trail.
+
+### Append-Only Audit Trail
+`ConsentRecord` and `SupportTicket` are append-only — no UPDATE or DELETE from the client.
+Revocations are new rows with `action: ConsentAction.revoked`, not modifications to existing rows.
+
+### Admin Security
+All mutating admin operations go through Supabase SECURITY DEFINER RPCs, not direct table writes.
+`AdminRepositoryImpl` performs a runtime `companyId` null-check before every call (`_requireCompanyId()`).
+RLS enforces the same constraints server-side as a defense-in-depth measure.
+
+### Theme: 3 Modes
+`AppThemeMode` (defined in `theme_provider.dart`) has three values: `light`, `dark`, `highContrast`.
+This replaces the old Flutter `ThemeMode` (which only had light/dark/system). Default is `dark`
+for outdoor field use.
+
+### Offline Behavior
+- Theme: fully local (SharedPreferences), no network required.
+- Consent: accept/revoke writes to SQLite locally; sync to Supabase via `ConsentRecordAdapter` in SyncRegistry (push-only, no pull/conflict).
+- Support tickets: inserted into local SQLite first (offline-first); Supabase sync deferred via SyncRegistry `SupportTicketAdapter`.
+- Log upload: direct to Supabase Storage at submit time; skipped gracefully if offline or no auth session.
+- Admin operations: require network (Supabase RPC calls); errors surfaced via `AdminProvider.error`.
+
+## Relationships
+
+```
+Settings depends on:
+    auth/            — AuthProvider (user identity, sign-out), AppConfigProvider (policy version)
+    sync/            — SyncProvider (sync section status display)
+    photos/          — SoftDeleteService, cache clearing
+    shared/          — PreferencesService
+
+Settings is required by:
+    core/router/     — ConsentProvider (consent gate redirect)
+    main.dart        — ThemeProvider (MaterialApp theme), ConsentProvider (startup gate)
 ```
 
+## File Locations (Quick Reference)
+
+| Category | Path |
+|----------|------|
+| Models | `lib/features/settings/data/models/` |
+| Datasources | `lib/features/settings/data/datasources/` |
+| Repositories (impl) | `lib/features/settings/data/repositories/` |
+| Repository interfaces | `lib/features/settings/domain/repositories/` |
+| Providers | `lib/features/settings/presentation/providers/` |
+| Screens | `lib/features/settings/presentation/screens/` |
+| Widgets | `lib/features/settings/presentation/widgets/` |
+| DI | `lib/features/settings/di/` |

@@ -2,7 +2,7 @@
 feature: quantities
 type: overview
 scope: Bid Items & Quantity Tracking
-updated: 2026-02-13
+updated: 2026-03-30
 ---
 
 # Quantities Feature Overview
@@ -19,42 +19,83 @@ The Quantities feature manages bid items extracted from project bid documents an
 - **Quantity Queries**: Filter and search bid items by project, status, category
 - **Progress Summaries**: Calculate total quantities completed, percentage complete, budget metrics
 - **Quantity Editing**: Manually create or edit bid items if PDF extraction unavailable
+- **Budget Sanity Checking**: Validate budget figures via `BudgetSanityChecker`
 
 ## Key Files
 
-| File Path | Purpose |
-|-----------|---------|
-| `lib/features/quantities/data/models/bid_item.dart` | Bid item model with pricing and quantity |
-| `lib/features/quantities/data/models/entry_quantity.dart` | Entry-specific quantity tracking |
-| `lib/features/quantities/data/repositories/bid_item_repository.dart` | Bid item CRUD operations |
-| `lib/features/quantities/data/repositories/entry_quantity_repository.dart` | Quantity tracking |
-| `lib/features/quantities/presentation/providers/bid_item_provider.dart` | Bid item state management |
-| `lib/features/quantities/presentation/providers/entry_quantity_provider.dart` | Quantity state management |
-| `lib/features/quantities/presentation/screens/quantities_screen.dart` | Quantity tracking UI |
-| `lib/features/quantities/presentation/screens/quantity_calculator_screen.dart` | Budget calculator |
+### Domain Models
+| File Path | Class | Purpose |
+|-----------|-------|---------|
+| `lib/features/quantities/data/models/bid_item.dart` | `BidItem` | Bid item with pricing and quantity fields |
+| `lib/features/quantities/data/models/entry_quantity.dart` | `EntryQuantity` | Entry-specific quantity tracking model |
+| `lib/features/quantities/domain/models/import_batch_result.dart` | `ImportBatchResult` | Result of a batch bid-item import operation |
+
+### Data Sources (4 total)
+| File Path | Class | Purpose |
+|-----------|-------|---------|
+| `lib/features/quantities/data/datasources/local/bid_item_local_datasource.dart` | `BidItemLocalDatasource` | SQLite reads/writes for bid items |
+| `lib/features/quantities/data/datasources/local/entry_quantity_local_datasource.dart` | `EntryQuantityLocalDatasource` | SQLite reads/writes for entry quantities |
+| `lib/features/quantities/data/datasources/remote/bid_item_remote_datasource.dart` | `BidItemRemoteDatasource` | Supabase sync for bid items |
+| `lib/features/quantities/data/datasources/remote/entry_quantity_remote_datasource.dart` | `EntryQuantityRemoteDatasource` | Supabase sync for entry quantities |
+
+### Domain Repository Interfaces (2 total)
+| File Path | Class | Purpose |
+|-----------|-------|---------|
+| `lib/features/quantities/domain/repositories/bid_item_repository.dart` | `BidItemRepository` | Abstract contract for bid item persistence |
+| `lib/features/quantities/domain/repositories/entry_quantity_repository.dart` | `EntryQuantityRepository` | Abstract contract for entry quantity persistence |
+
+### Repository Implementations (2 total)
+| File Path | Class | Purpose |
+|-----------|-------|---------|
+| `lib/features/quantities/data/repositories/bid_item_repository_impl.dart` | `BidItemRepositoryImpl` | Concrete bid item repository |
+| `lib/features/quantities/data/repositories/entry_quantity_repository_impl.dart` | `EntryQuantityRepositoryImpl` | Concrete entry quantity repository |
+
+### Providers (2 total)
+| File Path | Class | Purpose |
+|-----------|-------|---------|
+| `lib/features/quantities/presentation/providers/bid_item_provider.dart` | `BidItemProvider` | Bid item state management |
+| `lib/features/quantities/presentation/providers/entry_quantity_provider.dart` | `EntryQuantityProvider` | Entry quantity state management |
+
+### Screens (2 total)
+| File Path | Class | Purpose |
+|-----------|-------|---------|
+| `lib/features/quantities/presentation/screens/quantities_screen.dart` | `QuantitiesScreen` | Quantity tracking and bid item list UI |
+| `lib/features/quantities/presentation/screens/quantity_calculator_screen.dart` | `QuantityCalculatorScreen` | Budget/quantity calculator UI |
+
+### Widgets (3 total)
+| File Path | Class | Purpose |
+|-----------|-------|---------|
+| `lib/features/quantities/presentation/widgets/bid_item_card.dart` | `BidItemCard` | Card displaying a single bid item |
+| `lib/features/quantities/presentation/widgets/bid_item_detail_sheet.dart` | `BidItemDetailSheet` | Bottom sheet with full bid item details |
+| `lib/features/quantities/presentation/widgets/quantity_summary_header.dart` | `QuantitySummaryHeader` | Summary header showing totals and progress |
+
+### Utilities
+| File Path | Class | Purpose |
+|-----------|-------|---------|
+| `lib/features/quantities/utils/budget_sanity_checker.dart` | `BudgetSanityChecker` | Validates budget figures for consistency |
 
 ## Data Sources
 
-- **SQLite**: Persists bid items and entry-specific quantities
-- **PDF Extraction**: Bid items extracted from project PDFs (via `pdf` feature)
+- **SQLite**: Persists bid items and entry-specific quantities via local datasources
+- **Supabase**: Remote datasources sync bid items and entry quantities to cloud
+- **PDF Extraction**: Bid items extracted from project PDFs (via `pdf` feature), result wrapped in `ImportBatchResult`
 - **Daily Entries**: Quantities completed recorded in entries (via `entries` feature)
 
 ## Integration Points
 
-**Depends on:**
-- `core/database` - SQLite schema for bid_items and entry_quantities tables
-- `pdf` - Extracted bid items from PDF documents
-- `entries` - Quantity completion data recorded in entries
-- `projects` - Bid items scoped to projects
-
 **Required by:**
-- `dashboard` - Budget and quantity metrics for project overview
-- `entries` - Entry detail screen references bid items for quantity entry
-- `sync` - Quantity data synced to Supabase
+- `entries` — Entry detail screen references bid items for quantity entry
+- `dashboard` — Budget and quantity metrics for project overview
+- `projects` — Bid items are scoped to projects; project context drives all queries
+
+**Depends on:**
+- `core/database` — SQLite schema for `bid_items` and `entry_quantities` tables
+- `projects` — Bid items are project-scoped
+- `pdf` — Extracted bid items imported from PDF documents
 
 ## Offline Behavior
 
-Quantities are **fully offline-capable**. Bid item creation, quantity tracking, and budget calculations occur entirely offline. All data persists in SQLite. Cloud sync handles async push. Inspectors can track quantities entirely offline; sync happens during dedicated sync operations.
+Quantities are **fully offline-capable**. Bid item creation, quantity tracking, and budget calculations occur entirely offline. All data persists in SQLite. Cloud sync handles async push via the remote datasources. Inspectors can track quantities entirely offline; sync happens during dedicated sync operations.
 
 ## Edge Cases & Limitations
 
@@ -76,4 +117,3 @@ See `architecture-decisions/quantities-constraints.md` for:
 See `rules/database/schema-patterns.md` for:
 - SQLite schema for bid_items and entry_quantities tables
 - Indexing for efficient project-scoped queries
-

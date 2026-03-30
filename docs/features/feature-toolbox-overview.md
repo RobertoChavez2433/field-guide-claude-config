@@ -1,87 +1,58 @@
 ---
 feature: toolbox
 type: overview
-scope: Inspector Forms, Calculations, Todos, and Media Gallery
-updated: 2026-02-13
+scope: Navigation hub for calculator, forms, gallery, and todos
+updated: 2026-03-30
 ---
 
 # Toolbox Feature Overview
 
 ## Purpose
 
-The Toolbox feature provides construction inspectors with a suite of productivity tools including inspector forms (dynamic questionnaires), calculation utilities (density calculations, material estimates), todo list management, and photo gallery. These tools enable specialized workflows not covered by daily entries, such as material testing, equipment diagnostics, and custom field documentation.
-
-## Key Responsibilities
-
-- **Inspector Forms**: Create and fill dynamic forms with field validation and auto-fill logic
-- **Form Parsing**: Parse form templates, discover fields, and extract responses
-- **Form Calculations**: Auto-calculate derived fields based on user input (e.g., density from weight/volume)
-- **Material Calculator**: Density, tonnage, and material estimate calculations
-- **Todo Management**: Create, track, and complete todo items with priority and due dates
-- **Photo Gallery**: Browse all project photos with filtering and tagging
-- **Calculation History**: Persist calculation results for reference
-- **Field Mapping**: Manage semantic field aliases for form field discovery
+The Toolbox feature is a pure navigation hub. It provides a 2x2 grid of cards that route inspectors to the four productivity sub-features: Forms, Calculator, Gallery, and To-Do's. It owns no business logic, no state, and no data layer — all of that lives in the respective sub-feature directories.
 
 ## Key Files
 
-The toolbox is a hub; sub-feature code lives in separate feature directories:
-
 | File Path | Purpose |
 |-----------|---------|
-| `lib/features/toolbox/presentation/screens/toolbox_home_screen.dart` | Toolbox hub (navigation to sub-features) |
-| `lib/features/forms/data/models/inspector_form.dart` | Inspector form model |
-| `lib/features/forms/data/models/form_response.dart` | Form submission and response data |
-| `lib/features/forms/presentation/screens/forms_list_screen.dart` | Form listing and selection |
-| `lib/features/forms/presentation/screens/form_fill_screen.dart` | Form filling UI |
-| `lib/features/forms/presentation/screens/form_viewer_screen.dart` | Form viewer |
-| `lib/features/todos/data/models/todo_item.dart` | Todo item model |
-| `lib/features/todos/presentation/providers/todo_provider.dart` | Todo state management |
-| `lib/features/calculator/data/models/calculation_history.dart` | Calculation result history |
-| `lib/features/calculator/presentation/providers/calculator_provider.dart` | Calculator state |
-| `lib/features/calculator/presentation/screens/calculator_screen.dart` | Calculator UI |
-| `lib/features/gallery/presentation/screens/gallery_screen.dart` | Photo gallery |
+| `lib/features/toolbox/presentation/screens/toolbox_home_screen.dart` | `ToolboxHomeScreen` — hub screen with grid navigation |
+| `lib/features/toolbox/domain/domain.dart` | Domain barrel (placeholder; no exported symbols yet) |
+| `lib/features/toolbox/toolbox.dart` | Feature barrel — re-exports domain and screen |
 
-## Data Sources
+## Screens
 
-- **SQLite**: Persists inspector forms, form responses, todos, calculation history
-- **Photos**: Gallery displays photos from `photos` feature
-- **Form Templates**: JSON/YAML form definitions (bundled or downloaded)
-- **Calculation Services**: Built-in calculators for density, material estimates
+**ToolboxHomeScreen** (`StatelessWidget`)
+
+Renders a `GridView.count(crossAxisCount: 2)` with four `_ToolboxCard` entries:
+
+| Card | Route name pushed |
+|------|-------------------|
+| Forms | `forms` |
+| Calculator | `calculator` |
+| Gallery | `gallery` |
+| To-Do's | `todos` |
+
+The screen has no providers, no async data loading, and no local state. It uses `safeGoBack` with `fallbackRouteName: 'dashboard'` for the back button.
+
+## Architecture Notes
+
+- **No providers** — toolbox has no `ChangeNotifier` or DI registration.
+- **No data layer** — no models, repositories, or datasources exist under `lib/features/toolbox/`.
+- **No use cases** — the domain barrel is an empty placeholder for future cross-feature use cases.
+- The feature barrel (`toolbox.dart`) exports only the domain barrel and the home screen.
 
 ## Integration Points
 
-**Depends on:**
-- `core/database` - SQLite schema for forms, responses, todos, calculations
-- `photos` - Photo gallery references
-- `entries` - Forms linked to entries (optional)
-- `projects` - Forms scoped to projects
+**Depends on (navigation targets only):**
+- `calculator` — routed via `context.pushNamed('calculator')`
+- `forms` — routed via `context.pushNamed('forms')`
+- `gallery` — routed via `context.pushNamed('gallery')`
+- `todos` — routed via `context.pushNamed('todos')`
 
 **Required by:**
-- `entries` - Entry detail may reference form responses
-- `dashboard` - Pending forms or todos displayed
-- All features - Toolbox accessible from main menu
+- `core/router` — `ToolboxHomeScreen` registered as a named route (`toolbox`)
+- `dashboard` — Toolbox entry point accessible from main navigation
 
 ## Offline Behavior
 
-Toolbox is **fully offline-capable**. Form creation, filling, calculation, todo management, and gallery browsing occur entirely offline. All data persists in SQLite. Cloud sync handles async push of form responses. Inspectors can use all toolbox features entirely offline; sync happens during dedicated sync operations.
-
-## Edge Cases & Limitations
-
-- **Dynamic Fields**: Form field discovery relies on semantic aliases; new field types require manual mapping
-- **Complex Calculations**: Density and tonnage calculations assume standard material properties (no custom material database)
-- **Form Versioning**: No form version tracking; form updates overwrite previous versions
-- **Todo Recurrence**: No recurring todos; manual creation required for repeated tasks
-- **Gallery Performance**: Large galleries (1000+ photos) may load slowly; pagination recommended
-- **Calculation Precision**: Floating-point calculations may have rounding errors (display to 2 decimals)
-
-## Detailed Specifications
-
-See `architecture-decisions/toolbox-constraints.md` for:
-- Hard rules on form field discovery and semantic mapping
-- Calculator precision requirements and material assumptions
-- Todo lifecycle and completion semantics
-
-See `rules/database/schema-patterns.md` for:
-- SQLite schema for forms, responses, todos, calculations
-- Indexing for efficient form/todo queries
-
+Not applicable. The screen is stateless and performs no I/O. Offline behavior is fully determined by each sub-feature.

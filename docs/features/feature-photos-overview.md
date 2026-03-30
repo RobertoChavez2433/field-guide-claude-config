@@ -2,7 +2,7 @@
 feature: photos
 type: overview
 scope: Photo Capture & Management with Sync Tracking
-updated: 2026-02-13
+updated: 2026-03-30
 ---
 
 # Photos Feature Overview
@@ -25,38 +25,49 @@ The Photos feature enables construction inspectors to capture, store, and manage
 
 | File Path | Purpose |
 |-----------|---------|
-| `lib/features/photos/data/models/photo.dart` | Photo model with metadata, GPS, sync status |
-| `lib/features/photos/data/repositories/photo_repository.dart` | CRUD and query operations |
-| `lib/features/photos/presentation/providers/photo_provider.dart` | Photo state management |
-| `lib/features/photos/presentation/widgets/photo_thumbnail.dart` | Thumbnail display widget |
-| `services/photo/photo_service.dart` | Cross-cutting photo capture and storage service |
-| `lib/features/photos/data/datasources/local/photo_local_datasource.dart` | SQLite persistence |
+| `lib/features/photos/data/models/photo.dart` | `Photo` model with metadata, GPS, sync status |
+| `lib/features/photos/data/datasources/local/photo_local_datasource.dart` | `PhotoLocalDatasource` — SQLite persistence |
+| `lib/features/photos/data/datasources/remote/photo_remote_datasource.dart` | `PhotoRemoteDatasource` — Supabase sync |
+| `lib/features/photos/domain/repositories/photo_repository.dart` | `PhotoRepository` abstract interface |
+| `lib/features/photos/data/repositories/photo_repository_impl.dart` | `PhotoRepositoryImpl` — concrete implementation |
+| `lib/features/photos/presentation/providers/photo_provider.dart` | `PhotoProvider` — photo state management |
+| `lib/features/photos/presentation/widgets/photo_source_dialog.dart` | `PhotoSourceDialog` — camera vs. gallery picker |
+| `lib/features/photos/presentation/widgets/photo_thumbnail.dart` | `PhotoThumbnail` — thumbnail display widget |
+| `lib/features/photos/presentation/widgets/photo_name_dialog.dart` | `PhotoNameDialog` — name/caption input dialog |
+| `lib/features/photos/di/photos_providers.dart` | DI registrations for photos feature |
+
+## Screens
+
+None. The Photos feature has no standalone screens. Its widgets (`PhotoSourceDialog`, `PhotoThumbnail`, `PhotoNameDialog`) are embedded within the entries and gallery features.
+
+## Providers
+
+| Provider | Type | Description |
+|----------|------|-------------|
+| `PhotoProvider` | `ChangeNotifier` | Manages photo list state; load, add, delete, and sync-status updates |
 
 ## Data Sources
 
 - **Device Camera/Gallery**: Photo capture via camera plugin or gallery picker
-- **SQLite**: Photo metadata persisted locally (path, captions, GPS, sync status)
+- **SQLite**: Photo metadata persisted locally via `PhotoLocalDatasource` (path, captions, GPS, sync status)
 - **Device File System**: Photo files stored locally with project/entry organization
-- **Cloud Storage** (sync): Photos uploaded to Supabase during sync operations (future)
+- **Supabase** (sync): Photos uploaded via `PhotoRemoteDatasource` during sync operations
 
 ## Integration Points
 
 **Depends on:**
-- `core/database` - SQLite schema for photos and metadata
-- `entries` - Photo entry linking via `entryId` foreign key
-- `projects` - Photo project linking via `projectId` foreign key
-- `locations` - Optional location tagging via `locationId` foreign key
-- `services/photo` - Device camera/gallery access and storage
+- `core/database` — SQLite schema for photos and metadata
+- `projects` — Photo project linking via `projectId` foreign key
+- `services/photo` — Device camera/gallery access and file storage
 
 **Required by:**
-- `entries` - Entry detail screen displays linked photos
-- `dashboard` - Photo count and recent photos for project summary
-- `sync` - Photo files and metadata synced to Supabase
-- `toolbox` - Gallery screen displays all photos with filtering
+- `entries` — Entry detail screen embeds `PhotoThumbnail` for linked photos
+- `gallery` — Gallery screen displays all photos using `PhotoThumbnail`
+- `settings` — Photo storage management and cleanup options
 
 ## Offline Behavior
 
-Photos are **fully offline-capable**. Capture, storage, and metadata management occur entirely locally. Photos are stored on device file system with metadata in SQLite. Cloud sync (if implemented) handles async upload of photo files and metadata updates. Inspectors can work with photos entirely offline; synchronization happens asynchronously during dedicated sync operations.
+Photos are **fully offline-capable**. Capture, storage, and metadata management occur entirely locally. Photos are stored on device file system with metadata in SQLite. Cloud sync handles async upload of photo files and metadata updates via `PhotoRemoteDatasource`. Inspectors can work with photos entirely offline; synchronization happens asynchronously during dedicated sync operations.
 
 ## Edge Cases & Limitations
 
@@ -70,13 +81,6 @@ Photos are **fully offline-capable**. Capture, storage, and metadata management 
 
 ## Detailed Specifications
 
-See `architecture-decisions/photos-constraints.md` for:
-- Hard rules on photo file naming and organization
-- Storage quotas and cleanup policies
-- Metadata validation and nullable field guidelines
-- Sync status semantics and conflict resolution
-
 See `rules/database/schema-patterns.md` for:
 - SQLite schema for photos table and foreign key relationships
 - Indexing on entryId, projectId, date for efficient queries
-

@@ -1,71 +1,54 @@
 ---
 feature: weather
 type: overview
-scope: Weather Integration & Condition Tracking (Placeholder)
-updated: 2026-02-13
+scope: Weather Integration & Condition Tracking
+updated: 2026-03-30
 ---
 
 # Weather Feature Overview
 
 ## Purpose
 
-The Weather feature provides weather information and tracking for construction projects. It enables inspectors to view current weather conditions, forecast, and historical weather data for project locations. Weather information is captured as part of daily entries and used to contextualize site work and safety decisions.
+The Weather feature fetches current weather conditions (temperature, condition string) for a given GPS coordinate and date. It is a thin service-only feature with no screens, no local data layer, and no sync involvement. Weather data is fetched on demand via the Open-Meteo API and surfaced to the entries feature when an inspector creates or edits a daily entry.
 
 ## Key Responsibilities
 
-- **Weather Service**: Fetch current weather conditions and forecasts from weather API
-- **Weather Display**: Show temperature, precipitation, wind, and conditions on dashboard
-- **Weather Linking**: Associate weather conditions with daily entries
-- **Weather History**: Store historical weather data with entries for reference
-- **Location Weather**: Fetch weather for specific project locations (via GPS coordinates)
-- **Weather Alerts**: Optional alerts for severe weather conditions (future)
+- **Weather Fetching**: Retrieve condition, high temperature, and low temperature from Open-Meteo for a given lat/lon and date
+- **GPS Resolution**: Obtain the device's current position via `geolocator` and pass coordinates to the API call
+- **Unit Conversion**: Convert Celsius API values to Fahrenheit and WMO weather codes to human-readable strings
+- **Test Mode Support**: Return mock weather data when `TestModeConfig.useMockWeather` is true, bypassing network and GPS permissions
 
 ## Key Files
 
 | File Path | Purpose |
 |-----------|---------|
-| `lib/features/weather/services/weather_service.dart` | Weather API integration (placeholder) |
-| `lib/features/weather/weather.dart` | Feature entry point |
+| `lib/features/weather/domain/weather_service_interface.dart` | Domain contract — `WeatherServiceInterface` abstract class |
+| `lib/features/weather/services/weather_service.dart` | Concrete implementation — `WeatherService` + `WeatherData` model |
+| `lib/features/weather/di/weather_providers.dart` | DI wiring — `weatherProviders()` registers `WeatherService` via Provider |
+| `lib/features/weather/weather.dart` | Feature barrel export |
 
-## Data Sources
+### Class Summary
 
-- **Weather API**: OpenWeatherMap, Weather.com, or similar (future implementation)
-- **GPS Coordinates**: From project locations for location-specific weather
-- **Daily Entries**: Weather conditions captured with entries
+- `WeatherServiceInterface` — abstract; declares `fetchWeather(lat, lon, date)` and `fetchWeatherForCurrentLocation(date)`
+- `WeatherService implements WeatherServiceInterface` — concrete service backed by Open-Meteo REST API
+- `WeatherData` — simple value object with `condition`, `tempHigh`, `tempLow`
+- `weatherProviders({required WeatherService weatherService})` — returns a `List<SingleChildWidget>` registering `WeatherService` as a `Provider<WeatherService>.value`
 
 ## Integration Points
 
-**Depends on:**
-- `locations` - GPS coordinates for location-specific weather
-- `entries` - Daily entries reference weather conditions
+**Depends on:** nothing (no cross-feature dependencies at runtime)
 
 **Required by:**
-- `dashboard` - Weather display on project overview
-- `entries` - Entry form displays current weather conditions
+- `entries` — `entry_editor_screen.dart` reads `WeatherService` to auto-populate weather fields when creating/editing a daily entry
 
 ## Offline Behavior
 
-Weather is **NOT offline-capable**. It requires network access to fetch data from weather APIs. When offline, cached weather data (if available) may be displayed, but real-time updates unavailable. The feature gracefully degrades when network unavailable, showing cached data or "offline" indicator.
+Weather fetching is **not offline-capable**. The service returns `null` when the network is unavailable or GPS is denied. Callers are expected to handle null gracefully. No caching layer exists; weather data is not stored in SQLite.
 
 ## Edge Cases & Limitations
 
-- **Network Dependency**: Requires internet connection for current weather and forecasts
-- **API Rate Limits**: Weather APIs typically have rate limits; caching recommended
-- **Location Precision**: Weather accuracy depends on GPS coordinates; may not be precise for large job sites
-- **Offline Fallback**: Historical weather from entries can be displayed when API unavailable
-- **Forecast Accuracy**: Forecasts degrade over time; not suitable for long-term planning
-- **Severe Weather**: No automated alerts; manual monitoring required
-- **Data Retention**: Weather data cached locally; historical data from entries persists
-- **Placeholder Status**: Currently minimal implementation; full weather features TBD
-
-## Detailed Specifications
-
-See `architecture-decisions/weather-constraints.md` for:
-- Hard rules on API selection and rate limiting
-- Caching strategies for offline display
-- Weather data retention policies
-
-See `rules/` for:
-- Integration patterns with location and entry features
-- Weather display and error handling standards
-
+- **Network Dependency**: Requires internet connection; silently returns `null` on timeout or non-200 responses (10-second timeout)
+- **GPS Permissions**: Returns `null` if location services are disabled or permission denied/denied-forever
+- **Test Mode**: `TestModeConfig.useMockWeather` bypasses both GPS and network, returning a fixed mock location (Denver, CO) and configurable mock weather values
+- **No Dashboard Integration**: Dashboard does not currently consume the weather service
+- **No Data Persistence**: `WeatherData` is ephemeral; it is not written to SQLite or Supabase

@@ -2,400 +2,223 @@
 feature: auth
 type: architecture
 scope: User Authentication & Session Management
-updated: 2026-02-13
+updated: 2026-03-30
 ---
 
 # Auth Feature Architecture
 
-## Data Model
-
-### Core Entities
-
-| Entity | Fields | Type | Notes |
-|--------|--------|------|-------|
-| **User** | id, email, emailConfirmed, createdAt, userMetadata | Supabase | Built-in user record |
-| **AuthState** | session, user, error | Value Object | Current authentication state |
-| **AuthSession** | accessToken, refreshToken, expiresIn, expiresAt | Supabase | Token management |
-
-### Key Models
-
-**User** (from Supabase):
-- `id`: Unique user UUID
-- `email`: User email address (unique)
-- `emailConfirmed`: Boolean indicating email verification status
-- `createdAt`: Account creation timestamp
-- `userMetadata`: JSON object for custom user data (full_name, etc.)
-
-**AuthSession**:
-- `accessToken`: JWT for authenticated API requests
-- `refreshToken`: Used to obtain new access token when expired
-- `expiresIn`: Seconds until access token expires (typically 3600)
-- `expiresAt`: Absolute expiration timestamp
-
-**AuthState**:
-- `session`: Current AuthSession (null if unauthenticated)
-- `user`: Current User (null if unauthenticated)
-- `error`: Error message from last failed operation
-
-## Relationships
-
-### Supabase Auth → App User (1-1)
-```
-Supabase Auth (remote)
-    │
-    ├─→ User record (id, email, emailConfirmed, metadata)
-    │
-    └─→ Session (access_token, refresh_token, expires_at)
-        │
-        ↓
-    In-App User (AuthProvider)
-        ├─→ currentUser: User?
-        ├─→ isAuthenticated: bool
-        └─→ authState: Stream<AuthState>
-```
-
-### Authentication Flow
-```
-Sign-In Form
-    ↓
-AuthService.signIn(email, password)
-    ├─→ Supabase.auth.signInWithPassword()
-    ├─→ Returns AuthResponse (session, user, error)
-    │
-    └─→ If success:
-        ├─→ AuthProvider._user = user
-        ├─→ AuthProvider._isLoading = false
-        └─→ notifyListeners() → UI rebuilds
-
-    └─→ If error:
-        ├─→ AuthProvider._error = error message
-        ├─→ AuthProvider._isLoading = false
-        └─→ UI displays error to user
-```
-
-### Email Verification Flow
-```
-User clicks verification link in email
-    │
-    ├─→ Deep link: com.fvconstruction.construction_inspector://login-callback
-    │   └─→ Query params include: access_token, refresh_token, expires_in
-    │
-    ├─→ App launched (or brought to foreground)
-    │   └─→ DeepLinkHandler._handleDeepLink(uri)
-    │
-    ├─→ Supabase.auth.recoverSession(fragment)
-    │   └─→ Extracts tokens from URL fragment
-    │
-    └─→ AuthProvider notified of session change
-        └─→ user.emailConfirmed = true
-```
-
-## Repository Pattern
-
-### AuthService
-
-**Location**: `lib/features/auth/services/auth_service.dart`
-
-```dart
-class AuthService {
-  final SupabaseClient? _client;
-
-  // Properties
-  bool get isConfigured
-  User? get currentUser
-  Stream<AuthState> get authStateChanges
-
-  // Methods
-  Future<AuthResponse> signUp({
-    required String email,
-    required String password,
-    String? fullName,
-  })
-
-  Future<AuthResponse> signIn({
-    required String email,
-    required String password,
-  })
-
-  Future<void> signOut()
-
-  Future<void> resetPassword(String email)
-}
-```
-
-**Key Behavior**:
-- `isConfigured`: Returns true only if SupabaseClient is initialized
-- `signUp()`: Sends verification email (user must click link to confirm)
-- `signIn()`: Returns session on success or throws AuthException on failure
-- `resetPassword()`: Sends reset email with deep link callback
-- All methods throw `StateError` if Supabase not configured
-
-### Error Handling
-
-**AuthException** (from Supabase):
-- `message: String` - Supabase error message
-- Common errors:
-  - "Invalid login credentials" → "Invalid email or password" (user-friendly)
-  - "Email not confirmed" → "Please verify your email first"
-  - "User already registered" → "Email already in use"
-
-**Parsing Pattern**:
-```dart
-try {
-  await _authService.signIn(email, password);
-} on AuthException catch (e) {
-  final userMessage = _parseAuthError(e.message);
-  _error = userMessage;
-  notifyListeners();
-}
-
-String _parseAuthError(String message) {
-  if (message.contains('Invalid login'))
-    return 'Invalid email or password';
-  if (message.contains('Email not confirmed'))
-    return 'Please verify your email';
-  return 'Authentication failed';
-}
-```
-
-## State Management
-
-### Provider Type: ChangeNotifier
-
-**AuthProvider** (`lib/features/auth/presentation/providers/auth_provider.dart`):
-
-```dart
-class AuthProvider extends ChangeNotifier {
-  final AuthService _authService;
-
-  // State
-  User? _user;
-  bool _isLoading = false;
-  String? _error;
-
-  // Getters
-  User? get user => _user;
-  bool get isAuthenticated => _user != null;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-
-  // Methods
-  Future<void> signUp(String email, String password, String fullName)
-  Future<void> signIn(String email, String password)
-  Future<void> signOut()
-  Future<void> resetPassword(String email)
-  Future<void> clearError()
-}
-```
-
-### Initialization Lifecycle
-
-```
-App Start
-    ↓
-AuthProvider instantiated
-    ├─→ Listens to authService.authStateChanges stream
-    │   └─→ onAuthStateChange event for each status change
-    │
-    └─→ AuthService initializes Supabase session
-        ├─→ If token exists on device: Refresh and restore
-        ├─→ If token expired: Request new token
-        └─→ If no token: User is unauthenticated
-
-App Initialization
-    ↓
-Check isAuthenticated
-    ├─→ true: Navigate to Dashboard
-    └─→ false: Navigate to LoginScreen
-```
-
-### Sign-In Flow
-
-```
-LoginScreen → User enters email, password
-    ↓
-User taps "Sign In"
-    ├─→ authProvider._isLoading = true
-    ├─→ notifyListeners() → UI shows loading spinner
-    │
-    ├─→ authService.signIn(email, password)
-    │   └─→ POST /auth/v1/token (Supabase)
-    │
-    ├─→ If success:
-    │   ├─→ authProvider._user = user
-    │   ├─→ authProvider._error = null
-    │   ├─→ authProvider._isLoading = false
-    │   ├─→ notifyListeners()
-    │   └─→ Router navigates to Dashboard
-    │
-    └─→ If error:
-        ├─→ authProvider._error = parsed message
-        ├─→ authProvider._isLoading = false
-        ├─→ notifyListeners()
-        └─→ UI displays error snackbar
-```
-
-### Session Persistence
-
-```
-App Killed
-    │
-    └─→ Access token lost from memory
-        But refresh token persists in secure storage
-
-App Relaunched
-    │
-    ├─→ SupabaseClient initializes
-    ├─→ Reads refresh token from secure storage
-    ├─→ Calls auth.refreshSession()
-    │   └─→ POST /auth/v1/token with refresh_token
-    │
-    ├─→ If success:
-    │   ├─→ New access token obtained
-    │   └─→ Session restored
-    │
-    └─→ If refresh fails:
-        └─→ User prompted to re-authenticate
-```
-
-## Offline Behavior
-
-### During Authentication (Requires Network)
-- All auth operations require connectivity
-- Offline sign-in not supported (no biometric or cached password)
-- Error handling: Display "No internet connection" message
-
-### After Authentication (Offline-Safe)
-- **Session in Memory**: Access token cached in AuthProvider
-- **Token Refresh Deferred**: If token expires offline, refresh attempted on reconnect
-- **Session Info Accessible**: currentUser, isAuthenticated accessible offline
-
-### On Reconnect
-- Automatic token refresh if close to expiration
-- Silent refresh (no user interruption)
-- If refresh fails: User signed out and prompted to re-authenticate
-
-## Testing Strategy
-
-### Unit Tests (Service-level)
-- **AuthService**: Mock SupabaseClient, verify method calls + error handling
-- **Password reset**: Verify email sent correctly with redirect URL
-- **Session recovery**: Mock token storage, verify refresh logic
-
-Location: `test/features/auth/services/`
-
-### Widget Tests (Provider-level)
-- **AuthProvider**: Mock AuthService, trigger sign-in/out, verify state updates
-- **Error display**: Verify error messages shown correctly
-- **Loading state**: Verify spinner displays during async operations
-
-Location: `test/features/auth/presentation/`
-
-### Integration Tests (Deep Linking)
-- **Email verification link**: Simulate deep link callback, verify session restored
-- **Password reset link**: Simulate reset flow, verify user able to set new password
-
-Location: `test/features/auth/integration/`
-
-### Test Coverage
-- ≥ 85% for AuthService (high-criticality security code)
-- 100% for error parsing logic (must handle all Supabase errors)
-- 80% for UI layer (widget tests only needed for critical flows)
-
-## Performance Considerations
-
-### Target Response Times
-- Sign-in: < 3 seconds (network-dependent)
-- Token refresh: < 1 second (cached token available)
-- Sign-out: < 500 ms (local operation only)
-
-### Memory Constraints
-- Session in memory: ~1-2 KB (token strings + user metadata)
-- Secure storage: ~4-5 KB (tokens)
-
-### Optimization Opportunities
-- Pre-emptive token refresh (refresh 1 minute before expiration)
-- Session caching in SQLite (optional, for offline recovery)
-- Lazy load user metadata (if heavy custom data added to userMetadata)
-
-## File Locations
+## Directory Structure
 
 ```
 lib/features/auth/
+├── auth.dart                          # Feature barrel export
+├── di/
+│   └── auth_providers.dart            # DI wiring (Tier 3-4 providers)
 ├── services/
-│   ├── services.dart               # Barrel export
-│   └── auth_service.dart           # Supabase authentication service
-│
-├── presentation/
-│   ├── providers/
-│   │   ├── providers.dart          # Barrel export
-│   │   └── auth_provider.dart      # ChangeNotifier for UI state
-│   │
-│   └── screens/
-│       ├── screens.dart            # Barrel export
-│       ├── login_screen.dart       # Sign-in UI
-│       ├── register_screen.dart    # Sign-up UI
-│       └── forgot_password_screen.dart  # Password reset UI
-│
-└── auth.dart                       # Feature entry point (barrel export)
-
-lib/core/config/
-└── supabase_config.dart           # SupabaseClient initialization
-
-lib/core/router/
-└── app_router.dart                # Deep link handling for auth callbacks
+│   ├── services.dart
+│   ├── auth_service.dart              # Supabase auth wrapper
+│   └── password_validator.dart        # Password strength/rules validator
+├── data/
+│   ├── data.dart
+│   ├── models/
+│   │   ├── models.dart
+│   │   ├── company.dart
+│   │   ├── company_join_request.dart
+│   │   ├── user_role.dart
+│   │   └── user_profile.dart
+│   ├── datasources/
+│   │   ├── datasources.dart
+│   │   ├── local/
+│   │   │   ├── local_datasources.dart
+│   │   │   ├── company_local_datasource.dart
+│   │   │   └── user_profile_local_datasource.dart
+│   │   └── remote/
+│   │       ├── remote_datasources.dart
+│   │       ├── company_remote_datasource.dart
+│   │       ├── join_request_remote_datasource.dart
+│   │       ├── user_profile_remote_datasource.dart
+│   │       └── user_profile_sync_datasource.dart
+│   └── repositories/
+│       ├── repositories.dart
+│       ├── app_config_repository.dart
+│       ├── company_repository.dart
+│       ├── user_attribution_repository.dart
+│       └── user_profile_repository.dart
+├── domain/
+│   ├── exceptions/
+│   │   └── password_update_exception.dart
+│   ├── usecases/
+│   │   ├── check_inactivity_use_case.dart
+│   │   ├── load_profile_use_case.dart
+│   │   ├── migrate_preferences_use_case.dart
+│   │   ├── sign_in_use_case.dart
+│   │   ├── sign_out_use_case.dart
+│   │   ├── sign_up_use_case.dart
+│   │   └── switch_company_use_case.dart
+│   └── utils/
+│       └── auth_error_parser.dart
+└── presentation/
+    ├── providers/
+    │   ├── providers.dart
+    │   ├── auth_provider.dart
+    │   └── app_config_provider.dart
+    ├── screens/
+    │   ├── screens.dart
+    │   ├── account_status_screen.dart
+    │   ├── company_setup_screen.dart
+    │   ├── forgot_password_screen.dart
+    │   ├── login_screen.dart
+    │   ├── otp_verification_screen.dart
+    │   ├── pending_approval_screen.dart
+    │   ├── profile_setup_screen.dart
+    │   ├── register_screen.dart
+    │   ├── update_password_screen.dart
+    │   └── update_required_screen.dart
+    └── widgets/
+        ├── widgets.dart
+        └── user_attribution_text.dart
 ```
 
-### Import Pattern
+## Data Layer
 
-```dart
-// Within auth feature
-import 'package:construction_inspector/features/auth/services/auth_service.dart';
-import 'package:construction_inspector/features/auth/presentation/providers/auth_provider.dart';
+### Models
 
-// From other features
-import 'package:construction_inspector/features/auth/presentation/providers/auth_provider.dart';
+| Model | Purpose |
+|-------|---------|
+| `Company` | Company record — id, name, metadata |
+| `CompanyJoinRequest` | Pending request to join a company — status, requestor, company |
+| `UserRole` | Enum — roles assignable to company members (e.g., admin, inspector) |
+| `UserProfile` | Extended user record — display name, company, role, avatar |
 
-// Barrel export
-import 'package:construction_inspector/features/auth/auth.dart';
-```
+### Local Datasources
 
-### Deep Linking Configuration
+| Class | Responsibility |
+|-------|---------------|
+| `CompanyLocalDatasource` | SQLite CRUD for company records |
+| `UserProfileLocalDatasource` | SQLite CRUD for user profile records |
 
-**Android** (`android/app/src/main/AndroidManifest.xml`):
-```xml
-<intent-filter>
-  <action android:name="android.intent.action.VIEW"/>
-  <category android:name="android.intent.category.DEFAULT"/>
-  <category android:name="android.intent.category.BROWSABLE"/>
-  <data
-    android:scheme="com.fvconstruction.construction_inspector"
-    android:host="login-callback"/>
-</intent-filter>
-```
+### Remote Datasources
 
-**iOS** (`ios/Runner/Info.plist`):
-```xml
-<key>CFBundleURLTypes</key>
-<array>
-  <dict>
-    <key>CFBundleURLSchemes</key>
-    <array>
-      <string>com.fvconstruction.construction_inspector</string>
-    </array>
-  </dict>
-</array>
-```
+| Class | Responsibility |
+|-------|---------------|
+| `CompanyRemoteDatasource` | Supabase reads/writes for company records |
+| `JoinRequestRemoteDatasource` | Supabase reads/writes for join requests |
+| `UserProfileRemoteDatasource` | Supabase reads/writes for user profiles |
+| `UserProfileSyncDatasource` | Supabase sync operations for user profile (push/pull change log) |
 
-**Callback Handler** (in app_router.dart):
-```dart
-void _handleDeepLink(Uri uri) async {
-  if (uri.scheme == 'com.fvconstruction.construction_inspector' &&
-      uri.host == 'login-callback') {
-    final fragment = uri.fragment;
-    if (fragment.contains('access_token')) {
-      await Supabase.instance.client.auth.recoverSession(fragment);
-    }
-  }
-}
-```
+### Repositories
+
+| Class | Responsibility |
+|-------|---------------|
+| `AppConfigRepository` | Fetches key-value config from the Supabase `app_config` table; returns empty map when offline |
+| `CompanyRepository` | Coordinates local + remote datasources for company data |
+| `UserAttributionRepository` | Provides display name/attribution for log entries and records |
+| `UserProfileRepository` | Coordinates local + remote datasources for user profile data |
+
+## Domain Layer
+
+### Use Cases
+
+| Class | Responsibility |
+|-------|---------------|
+| `SignInUseCase` | Orchestrates Supabase sign-in and post-login profile loading |
+| `SignUpUseCase` | Orchestrates Supabase sign-up, profile creation, and onboarding routing |
+| `SignOutUseCase` | Clears session, local state, and navigates to login |
+| `LoadProfileUseCase` | Loads user profile from local cache or remote, hydrating provider state |
+| `CheckInactivityUseCase` | Determines whether the session has expired due to inactivity |
+| `SwitchCompanyUseCase` | Switches the active company context for multi-company users |
+| `MigratePreferencesUseCase` | Migrates legacy user preferences into the new profile model |
+
+### Utils
+
+| Class | Responsibility |
+|-------|---------------|
+| `AuthErrorParser` | Maps raw Supabase `AuthException` messages to user-friendly strings |
+
+### Exceptions
+
+| Class | Responsibility |
+|-------|---------------|
+| `PasswordUpdateException` | Domain exception for password update failures; wraps `isExpired` flag so screens don't import `supabase_flutter` directly |
+
+## Presentation Layer
+
+### Providers
+
+| Class | Type | Responsibility |
+|-------|------|---------------|
+| `AuthProvider` | `ChangeNotifier` | Current user, authentication state, sign-in/out/up actions |
+| `AppConfigProvider` | `ChangeNotifier` | Fetches and holds remote app config (e.g., minimum version, feature flags) |
+
+Both providers are instantiated in `_runApp` (before the widget tree) for async init, then registered via `.value` in `auth_providers.dart`.
+
+### Screens (10 total)
+
+| Screen | Purpose |
+|--------|---------|
+| `LoginScreen` | Email + password sign-in |
+| `RegisterScreen` | New account sign-up |
+| `ForgotPasswordScreen` | Trigger password reset email |
+| `OtpVerificationScreen` | OTP entry for email/phone verification |
+| `ProfileSetupScreen` | Onboarding — enter display name and profile details |
+| `CompanySetupScreen` | Onboarding — create or join a company |
+| `PendingApprovalScreen` | Shown while join request awaits admin approval |
+| `AccountStatusScreen` | Displays deactivated/suspended account state |
+| `UpdatePasswordScreen` | Set a new password (post-reset or forced rotation) |
+| `UpdateRequiredScreen` | Shown when app version is below minimum required version |
+
+### Widgets
+
+| Widget | Purpose |
+|--------|---------|
+| `UserAttributionText` | Displays attributed user display name for log entries |
+
+## Services
+
+| Class | Location | Responsibility |
+|-------|----------|---------------|
+| `AuthService` | `services/auth_service.dart` | Thin wrapper around `SupabaseClient.auth` — sign-in, sign-up, sign-out, password reset, auth state stream |
+| `PasswordValidator` | `services/password_validator.dart` | Enforces password strength rules (length, complexity) |
+
+## DI Wiring (`di/auth_providers.dart`)
+
+`authProviders(...)` returns a `List<SingleChildWidget>` registered at app startup (Tier 3-4):
+
+- `ChangeNotifierProvider.value` for `AuthProvider` (pre-constructed, hoisted)
+- `ChangeNotifierProvider.value` for `AppConfigProvider` (pre-constructed, hoisted)
+- `Provider.value` for `AuthService`
+- `ChangeNotifierProvider` for `AdminProvider` — lazily constructs `AdminRepositoryImpl` when Supabase is configured, or a `_UnconfiguredAdminRepository` stub that throws `StateError` with a diagnostic message when not configured
+
+`AdminProvider` and `AdminRepository` are defined in the settings feature but wired here because admin operations are gated by auth context (company ID from the active session).
+
+## Architectural Patterns
+
+### Multi-Company Support
+Users may belong to more than one company. `SwitchCompanyUseCase` switches the active `companyId` stored in `UserProfile`, which is then propagated to all downstream features (sync, entries, attribution) via `AuthProvider`.
+
+### Supabase Auth Integration
+`AuthService` wraps `Supabase.instance.client.auth` and exposes a `Stream<AuthState>` that `AuthProvider` subscribes to at startup. Session persistence (token refresh, secure storage) is handled by the Supabase Flutter SDK automatically.
+
+### Inactivity Checking
+`CheckInactivityUseCase` is called on app resume (via `WidgetsBindingObserver`). If the session has been idle beyond the configured threshold, `AuthProvider` signs the user out and routes to `LoginScreen`.
+
+### OTP Verification Flow
+After sign-up (or phone/email change), the user is routed to `OtpVerificationScreen`. On successful OTP entry, `AuthProvider` loads the user profile and routes to the appropriate next step in onboarding.
+
+### Company Onboarding Flow
+New users pass through: `ProfileSetupScreen` → `CompanySetupScreen` → either `PendingApprovalScreen` (join request) or dashboard (new company created). Admin approvals are managed via `AdminProvider` (settings feature, wired in auth DI).
+
+### App Config / Force Update Gate
+`AppConfigProvider` fetches the `app_config` table on startup. If the remote `min_version` exceeds the running app version, the router redirects all navigation to `UpdateRequiredScreen` until the app is updated.
+
+### Error Parsing
+`AuthErrorParser` translates opaque Supabase error strings into user-facing messages. All auth error handling in providers and use cases delegates to this utility rather than string-matching inline.
+
+## Relationships to Other Features
+
+| Feature | Relationship |
+|---------|-------------|
+| **Sync** | Auth provides user context (`userId`, `companyId`) required by the sync orchestrator for row-level ownership and filtering |
+| **Settings** | Settings screens display and edit user profile fields; `AdminProvider` (wired here) drives the company member management UI |
+| **Entries** | `UserAttributionRepository` + `UserAttributionText` widget provide display names for log entry attribution |
+| **All features** | `AuthProvider.isAuthenticated` gates navigation — unauthenticated users are redirected to `LoginScreen` by the router |

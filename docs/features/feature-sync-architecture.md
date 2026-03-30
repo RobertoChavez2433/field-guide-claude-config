@@ -2,331 +2,319 @@
 feature: sync
 type: architecture
 scope: Cloud Synchronization & Multi-Backend Support
-updated: 2026-03-08
+updated: 2026-03-30
 ---
 
 # Sync Feature Architecture
 
-## Data Model
+## Layer Overview
 
-### Core Entities
-
-| Entity | Fields | Type | Notes |
-|--------|--------|------|-------|
-| **SyncResult** | pushed, pulled, errors, errorMessages | Value Object | Result of sync operation |
-| **SyncAdapterStatus** | idle, syncing, success, error, offline, authRequired | Enum | Current adapter state |
-| **PendingOperation** | entityId, entityType, operationType, timestamp, retryCount | Internal | Queued operation in sync queue |
-
-### Key Models
-
-**SyncResult**:
-- Returns from all sync operations
-- `pushed`: count of items sent to backend
-- `pulled`: count of items received from backend
-- `errors`: count of failed operations
-- `errorMessages`: list of error details
-- Helper: `isSuccess` (errors == 0), `hasErrors` (errors > 0), `total` (pushed + pulled)
-
-**SyncAdapterStatus**:
-- `idle`: No sync in progress, ready for next operation
-- `syncing`: Sync operation currently in progress
-- `success`: Last sync completed without errors
-- `error`: Last sync had failures
-- `offline`: No network connectivity
-- `authRequired`: Authentication needed (Supabase only)
-
-**SyncAdapter Interface** (implemented by all backends):
-- `name: String` - "Supabase", "AASHTOWare", etc.
-- `status: SyncAdapterStatus` - Current state
-- `isOnline: bool` - Network reachability
-- `lastSyncTime: DateTime?` - Last successful sync timestamp
-- `requiresAuthentication: bool` - Auth mandatory before sync
-
-## Relationships
-
-### ProjectMode → SyncAdapter (1-1)
 ```
-Project (mode: ProjectMode)
-    ├─→ ProjectMode.localAgency
-    │   └─→ SupabaseSyncAdapter
-    │       └─→ Supabase Backend
-    │
-    └─→ ProjectMode.mdot
-        └─→ AASHTOWareSyncAdapter (future)
-            └─→ AASHTOWare OpenAPI
-```
-
-### SyncEngine → TableAdapters (1-N) [BRANCH: feat/sync-engine-rewrite]
-```
-SyncEngine.syncAll()
-    ├─→ SyncRegistry provides ordered list of TableAdapters
-    ├─→ ChangeTracker identifies pending changes per table
-    ├─→ For each TableAdapter:
-    │   ├─→ Push local changes to remote
-    │   ├─→ Pull remote changes to local
-    │   └─→ ConflictResolver handles conflicts
-    └─→ IntegrityChecker validates post-sync consistency
+┌─────────────────────────────────────────────────────────────┐
+│                    PRESENTATION LAYER                        │
+│  SyncProvider (ChangeNotifier)                               │
+│  Screens: SyncDashboardScreen, ConflictViewerScreen          │
+│  Widgets: SyncStatusIcon, DeletionNotificationBanner         │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                   APPLICATION LAYER                          │
+│  SyncOrchestrator — multi-backend router                     │
+│  SyncLifecycleManager — app lifecycle triggers               │
+│  BackgroundSyncHandler — WorkManager background tasks        │
+│  FcmHandler — FCM push notification handler                  │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      ENGINE LAYER                            │
+│  SyncEngine — core push/pull orchestration                   │
+│  ChangeTracker, ConflictResolver, IntegrityChecker           │
+│  SyncMutex, SyncRegistry, OrphanScanner, StorageCleanup      │
+│  ScopeType, SyncControlService                               │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                 TABLE ADAPTERS (22 concrete)                 │
+│  TableAdapter (abstract base)                                │
+│  One adapter per syncable table                              │
+│  TypeConverters (shared column-level utility)                │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      DOMAIN LAYER                            │
+│  SyncResult, SyncAdapterStatus (sync_types.dart)             │
+└────────────────────────┬────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      DATA LAYER                              │
+│  SyncEngine handles all Supabase I/O directly                │
+│  MockSyncAdapter — test environments (no-network mock)       │
+│  ConflictRepository + DeletionNotificationRepository         │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### TableAdapters (17 concrete) [BRANCH: feat/sync-engine-rewrite]
-```
-TableAdapter (base)
-    ├─→ ProjectAdapter
-    ├─→ LocationAdapter
-    ├─→ ContractorAdapter
-    ├─→ EquipmentAdapter
-    ├─→ PersonnelTypeAdapter
-    ├─→ BidItemAdapter
-    ├─→ DailyEntryAdapter
-    ├─→ EntryContractorsAdapter
-    ├─→ EntryEquipmentAdapter
-    ├─→ EntryPersonnelCountsAdapter
-    ├─→ EntryQuantitiesAdapter
-    ├─→ InspectorFormAdapter
-    ├─→ FormResponseAdapter
-    ├─→ TodoItemAdapter
-    ├─→ CalculationHistoryAdapter
-    ├─→ PhotoAdapter
-    └─→ TypeConverters (shared utility)
-```
+## Engine Layer
 
-### Entity → SyncStatus (1-1)
-```
-Entity (Project, DailyEntry, Photo, etc.)
-    └─→ syncStatus: enum
-        ├─ pending (queued for next sync)
-        ├─ synced (in sync with remote)
-        └─ error (last sync failed)
-```
+**Location**: `lib/features/sync/engine/`
 
-### Sync Operation Flow [BRANCH: feat/sync-engine-rewrite]
+| Class | File | Purpose |
+|-------|------|---------|
+| `SyncEngine` | `sync_engine.dart` | Core orchestration: push/pull loop, conflict dispatch, circuit breaker |
+| `ChangeTracker` | `change_tracker.dart` | Reads `change_log` table; groups pending changes by table |
+| `ConflictResolver` | `conflict_resolver.dart` | Last-writer-wins + manual resolution support |
+| `IntegrityChecker` | `integrity_checker.dart` | Post-sync FK consistency validation |
+| `SyncMutex` | `sync_mutex.dart` | Prevents concurrent sync runs |
+| `SyncRegistry` | `sync_registry.dart` | Ordered list of all active `TableAdapter` instances |
+| `OrphanScanner` | `orphan_scanner.dart` | Detects local records with no valid FK parent |
+| `StorageCleanup` | `storage_cleanup.dart` | Deletes local files after successful remote upload |
+| `ScopeType` | `scope_type.dart` | Enum: `direct`, `viaProject`, `viaEntry`, `viaContractor` |
+| `SyncControlService` | `sync_control_service.dart` | Suppresses `change_log` triggers during pull/draft-save operations |
+
+`SyncEngineResult` is the internal result type returned by `SyncEngine.pushAndPull()`. It is mapped to `SyncResult` by `SyncOrchestrator` before propagating to the UI.
+
+## Application Layer
+
+**Location**: `lib/features/sync/application/`
+
+| Class | File | Purpose |
+|-------|------|---------|
+| `SyncOrchestrator` | `sync_orchestrator.dart` | Routes sync to `SyncEngine` (real) or `MockSyncAdapter` (test). Handles retry with exponential backoff, auth context polling, background retry timer, and post-sync profile pulls. |
+| `SyncLifecycleManager` | `sync_lifecycle_manager.dart` | `WidgetsBindingObserver`. Triggers debounced sync on `paused`/`detached`; checks staleness on `resumed`. |
+| `BackgroundSyncHandler` | `background_sync_handler.dart` | WorkManager task runner. Runs in a fresh Dart isolate on Android/iOS. |
+| `FcmHandler` | `fcm_handler.dart` | Initializes Firebase Messaging, stores FCM tokens, and dispatches foreground `daily_sync` messages to `SyncOrchestrator`. Rate-limited to 60s between triggers. |
+
+`BucketCount` is a value class defined alongside `SyncOrchestrator`. It holds `total` and a per-table `breakdown` map for grouped pending-count display on the dashboard.
+
+## Table Adapters
+
+**Location**: `lib/features/sync/adapters/`
+
+All adapters extend `TableAdapter` (abstract base class). They are pure configuration + conversion objects; `SyncEngine` handles all Supabase I/O.
+
+Key `TableAdapter` properties:
+- `tableName` — must match SQLite/Supabase table name exactly
+- `scopeType` — tenant scoping strategy (`ScopeType`)
+- `fkDependencies` — tables that must be pushed first
+- `converters` — column-level `TypeConverter` instances
+- `localOnlyColumns` / `remoteOnlyColumns` — stripped during conversion
+- `insertOnly` — true for append-only tables (e.g., `consent_records`)
+- `isFileAdapter` — true for photo/document/export adapters (3-phase storage push)
+- `naturalKeyColumns` — used for UNIQUE constraint pre-check before upsert
+
+### Concrete Adapters (22)
+
+| Adapter | Table |
+|---------|-------|
+| `ProjectAdapter` | `projects` |
+| `LocationAdapter` | `locations` |
+| `ContractorAdapter` | `contractors` |
+| `EquipmentAdapter` | `equipment` |
+| `PersonnelTypeAdapter` | `personnel_types` |
+| `BidItemAdapter` | `bid_items` |
+| `DailyEntryAdapter` | `daily_entries` |
+| `EntryContractorsAdapter` | `entry_contractors` |
+| `EntryEquipmentAdapter` | `entry_equipment` |
+| `EntryPersonnelCountsAdapter` | `entry_personnel_counts` |
+| `EntryQuantitiesAdapter` | `entry_quantities` |
+| `PhotoAdapter` | `photos` |
+| `InspectorFormAdapter` | `inspector_forms` |
+| `FormResponseAdapter` | `form_responses` |
+| `FormExportAdapter` | `form_exports` |
+| `EntryExportAdapter` | `entry_exports` |
+| `DocumentAdapter` | `documents` |
+| `TodoItemAdapter` | `todo_items` |
+| `ProjectAssignmentAdapter` | `project_assignments` |
+| `CalculationHistoryAdapter` | `calculation_history` |
+| `ConsentRecordAdapter` | `user_consent_records` |
+| `SupportTicketAdapter` | `support_tickets` |
+
+`TypeConverters` (`type_converters.dart`) is a shared utility, not a table adapter.
+
+## Config
+
+**Location**: `lib/features/sync/config/sync_config.dart`
+
+Thresholds, retry limits, batch sizes, and feature flags for the sync engine.
+
+## Domain
+
+**Location**: `lib/features/sync/domain/sync_types.dart`
+
+- `SyncResult` — immutable value object: `pushed`, `pulled`, `errors`, `errorMessages`, `rlsDenials`, `skippedPush`. Supports `+` operator for combining results.
+- `SyncAdapterStatus` — enum: `idle`, `syncing`, `success`, `error`, `offline`, `authRequired`
+
+## Data Layer
+
+**Location**: `lib/features/sync/data/`
+
+| Class | File | Purpose |
+|-------|------|---------|
+| `MockSyncAdapter` | `data/adapters/mock_sync_adapter.dart` | No-network mock for test mode (`TestModeConfig.useMockData=true`) |
+| `ConflictRepository` | `data/repositories/conflict_repository.dart` | Thin wrapper around `ConflictLocalDatasource` |
+| `DeletionNotificationRepository` | `data/repositories/deletion_notification_repository.dart` | Thin wrapper around `DeletionNotificationLocalDatasource` |
+| `ConflictLocalDatasource` | `data/datasources/local/conflict_local_datasource.dart` | SQLite reads from `conflict_log` |
+| `DeletionNotificationLocalDatasource` | `data/datasources/local/deletion_notification_local_datasource.dart` | SQLite reads from deletion notification table |
+
+## Presentation Layer
+
+**Location**: `lib/features/sync/presentation/`
+
+### SyncProvider
+
+`lib/features/sync/presentation/providers/sync_provider.dart` — `ChangeNotifier`.
+
+Key state:
+- `status: SyncAdapterStatus`
+- `pendingCount: int`
+- `pendingBuckets: Map<String, BucketCount>`
+- `lastSyncTime: DateTime?`
+- `lastError: String?`
+- `isSyncing: bool`
+- `isStaleDataWarning: bool`
+- `isForcedSyncInProgress: bool`
+- `circuitBreakerTripped: bool` + `circuitBreakerTrips` list
+- `pendingNotifications: List<String>` — queued assignment messages
+
+Key methods:
+- `syncAll()` — trigger full sync via `SyncOrchestrator`
+- `refreshStatus()` — refresh pending counts
+- `setStaleDataWarning(bool)` — wired from `SyncLifecycleManager`
+- `setForcedSyncInProgress(bool)` — wired from `SyncLifecycleManager`
+- `addNotification(String)` — called by auto-enrollment on assignment pull
+
+### Screens
+
+| Screen | File |
+|--------|------|
+| `SyncDashboardScreen` | `screens/sync_dashboard_screen.dart` |
+| `ConflictViewerScreen` | `screens/conflict_viewer_screen.dart` |
+
+### Widgets
+
+| Widget | File |
+|--------|------|
+| `SyncStatusIcon` | `widgets/sync_status_icon.dart` |
+| `DeletionNotificationBanner` | `widgets/deletion_notification_banner.dart` |
+
+## DI Wiring
+
+**Location**: `lib/features/sync/di/sync_providers.dart` — `SyncProviders` class.
+
+`SyncProviders.initialize()` runs before `runApp()`:
+1. Creates `SyncOrchestrator` and calls `initialize()`
+2. Injects `UserProfileSyncDatasource` for post-sync member pulls
+3. Creates `SyncLifecycleManager` and wires auth-readiness check
+4. Wires `AuthProvider` listener to update company/user context on auth changes
+5. Wires `onPullComplete` for auto-enrollment on `project_assignments` pull
+6. Initializes `FcmHandler` on mobile (fire-and-forget)
+7. Wires `AppConfigProvider` for stale-banner clearance on sync success
+
+`SyncProviders.providers()` returns the `MultiProvider` list:
+- `Provider<SyncRegistry>` (singleton, value)
+- `Provider<SyncOrchestrator>` (value)
+- `Provider<DeletionNotificationRepository>`
+- `Provider<ConflictRepository>`
+- `ChangeNotifierProvider<SyncProvider>` (wires lifecycle callbacks and health provider update)
+
+## Sync Operation Flow
+
 ```
 User triggers sync (Settings screen, Dashboard, or auto-reconnect)
     ↓
 SyncProvider.syncAll()
     ↓
-SyncOrchestrator.syncProject(project)
+SyncOrchestrator.syncLocalAgencyProjects()
     ↓
-SyncEngine.syncAll()
+  [DNS reachability check]  ← HTTP HEAD to Supabase health endpoint
+    ↓
+SyncEngine.pushAndPull()
     ↓
 SyncMutex.acquire()                         # Prevents concurrent syncs
     ↓
-ChangeTracker.getPendingChanges()           # Identifies dirty records
+ChangeTracker.getPendingChanges()           # Reads change_log (processed=0)
     ↓
 For each TableAdapter (ordered by SyncRegistry):
-    ├─→ adapter.push(pendingRecords)        # Push local changes
-    ├─→ adapter.pull(lastSyncTimestamp)      # Pull remote changes
-    └─→ ConflictResolver.resolve(conflicts) # Handle conflicts
+    ├─→ adapter.convertForRemote(localRecord)
+    ├─→ push local changes to Supabase
+    ├─→ pull remote changes
+    ├─→ adapter.convertForLocal(remoteRecord)
+    └─→ ConflictResolver.resolve(conflicts)
     ↓
-IntegrityChecker.validate()                 # Post-sync consistency check
+IntegrityChecker.validate()                 # Post-sync FK consistency
     ↓
 SyncMutex.release()
     ↓
-SyncResult returned
+SyncEngineResult → mapped to SyncResult
+    ↓
+onSyncComplete callback fires
+    ↓
+SyncProvider.notifyListeners() → UI rebuilds
 ```
 
-## Repository Pattern
+## Change Tracking Pattern
 
-### SyncAdapter Interface
-
-**Abstract Methods**:
-```dart
-Future<SyncResult> syncAll()                  // Full sync (all entities)
-Future<SyncResult> syncProject(Project p)     // Single project + children
-Future<SyncResult> syncEntry(DailyEntry e)    // Single entry + photos
-Future<SyncResult> syncPhoto(Photo p)         // Single photo
-Future<int> getPendingCount()                 // Count pending operations
-```
-
-**Callbacks**:
-```dart
-void Function(SyncAdapterStatus)? onStatusChanged      // Status transitions
-void Function(SyncResult)? onSyncComplete              // Sync finished
-void Function(int, int?)? onProgressUpdate             // Progress (processed, total)
-```
-
-### SupabaseSyncAdapter
-
-**Location**: `lib/features/sync/data/adapters/supabase_sync_adapter.dart`
-
-- Implements SyncAdapter interface for Supabase backend
-- Returns SyncResult for each operation
-- Callbacks invoke on status/progress changes
-
-### SyncOrchestrator
-
-**Location**: `lib/features/sync/application/sync_orchestrator.dart`
-
-- Routes based on `ProjectMode`
-- Maintains adapter instances per mode
-- Handles auth verification before sync operations
-
-### SyncEngine [BRANCH: feat/sync-engine-rewrite]
-
-**Location**: `lib/features/sync/engine/sync_engine.dart`
-
-- Core sync engine coordinating all sync operations
-- Uses SyncRegistry for ordered table adapter execution
-- Delegates to ChangeTracker, ConflictResolver, IntegrityChecker
-- SyncMutex prevents concurrent sync operations
-
-### BackgroundSyncHandler [BRANCH: feat/sync-engine-rewrite]
-
-**Location**: `lib/features/sync/application/background_sync_handler.dart`
-
-- Handles background sync triggers (connectivity changes, app lifecycle)
-- Coordinates with SyncOrchestrator for deferred syncs
-
-## State Management
-
-### Provider Type: ChangeNotifier
-
-**SyncProvider** (`lib/features/sync/presentation/providers/sync_provider.dart`):
-
-```dart
-class SyncProvider extends ChangeNotifier {
-  SyncAdapterStatus _status = SyncAdapterStatus.idle;
-  SyncResult? _lastResult;
-  double _progress = 0.0;
-  bool _isOnline = true;
-  int _pendingCount = 0;
-  String? _error;
-
-  // Getters
-  SyncAdapterStatus get status
-  SyncResult? get lastResult
-  double get progress              // 0.0-1.0 progress bar
-  bool get isOnline
-  int get pendingCount
-  String? get error
-}
-```
-
-### Key Methods
-
-```dart
-Future<void> syncAll()             // Trigger full sync
-Future<void> syncProject(p)        // Sync specific project
-Future<void> syncEntry(e)          // Sync specific entry
-Future<void> refreshStatus()       // Update isOnline, pendingCount
-void _onStatusChanged(status)      // Internal: adapter status callback
-void _onProgressUpdate(p, t)       // Internal: progress callback
-```
-
-### Lifecycle
+SQLite triggers automatically insert into `change_log` on every INSERT, UPDATE, and DELETE to tracked tables. `ChangeTracker` reads unprocessed entries (`processed=0`) to determine what to push. There is no `sync_queue` table.
 
 ```
-App Start
+Local Write (any tracked table)
+    ↓  [SQLite trigger fires]
+change_log row inserted (table, record_id, operation, processed=0)
+    ↓  [next sync cycle]
+ChangeTracker.getPendingChanges() → grouped by table
     ↓
-SyncProvider initialized (status=idle, isOnline=true)
-    ↓
-Connectivity service detects online/offline transition
-    ↓
-_onConnectivityChanged() called
-    ↓
-If online: scheduleDebouncedSync() queues sync
-    ↓
-User returns to app (AppLifecycle.resumed)
-    ↓
-Deferred sync executes → syncAll()
-    ↓
-SyncAdapter callbacks trigger
-    ├─→ onStatusChanged(syncing)
-    ├─→ onProgressUpdate(processed, total)
-    └─→ onSyncComplete(result)
-    ↓
-SyncProvider._updateUI() called
-    ├─→ status = success/error
-    ├─→ lastResult = result
-    └─→ notifyListeners()
-    ↓
-UI rebuilds with success/error state
+SyncEngine pushes records, marks entries processed=1
 ```
+
+`SyncControlService.runSuppressed()` temporarily sets `sync_control.pulling = '1'`, which causes triggers to skip `change_log` inserts. Used during pull writes and draft saves to prevent false dirty-records.
 
 ## Offline Behavior
 
-### Push Operations
-- **Online**: Changes pushed to backend immediately (or debounced)
-- **Offline**: Changes queued in SQLite with `syncStatus: pending`
-- **On Reconnect**: Queued changes pushed automatically
+- **Push (offline)**: Changes stay in `change_log` with `processed=0`. On reconnect, next sync cycle pushes them.
+- **Pull (offline)**: Skipped. Local data unchanged.
+- **Staleness**: `SyncLifecycleManager` tracks `lastSyncTime`. On resume after >24h, forces a sync. If DNS unreachable, emits `isStaleDataWarning` to `SyncProvider`.
+- **Retry**: `SyncOrchestrator` retries up to 3 times with exponential backoff (5s, 10s, 20s). On exhaustion, schedules a 60s background retry via `Timer`. Non-transient errors (RLS, auth, schema) skip retry.
 
-### Pull Operations
-- **Online**: Remote changes fetched and merged to SQLite
-- **Offline**: Pull skipped; local data unchanged
-- **On Reconnect**: Remote changes fetched on next sync
+## Circuit Breaker
 
-### Conflict Resolution (Simple, Last-Write-Wins)
-- If entity modified offline and remotely:
-  - Remote version overwrites local (assuming remote has later timestamp)
-  - Warning logged but no user intervention needed
-- Future enhancement: Configurable conflict strategies per entity type
+If a record repeatedly fails to push, `SyncEngine` trips the circuit breaker for that `(tableName, recordId)` pair. `SyncOrchestrator.onCircuitBreakerTrip` forwards the event to `SyncProvider`, which sets `circuitBreakerTripped = true` and appends to `circuitBreakerTrips`. The UI shows a banner; user dismisses to resume.
 
-### Sync Status Transitions
+## Multi-Backend Routing
 
 ```
-Initial Creation
-    ↓
-syncStatus = pending (local-only)
-    ↓
-Sync triggered
-    ├─ If push succeeds → syncStatus = synced
-    └─ If push fails → syncStatus = error (retry on next sync)
-    ↓
-If edited while synced
-    ├─→ syncStatus = pending (marked dirty)
-    └─→ Queued for next sync
+SyncOrchestrator
+    ├─► TestModeConfig.useMockData = true → MockSyncAdapter (no network)
+    └─► TestModeConfig.useMockData = false → SyncEngine (Supabase I/O)
+        └─► Future: AASHTOWareSyncAdapter (ProjectMode.mdot)
 ```
 
-## Testing Strategy
+## Relationships
 
-### Unit Tests (Adapter-level)
-- **SupabaseSyncAdapter**: Mock SyncService, verify method delegation
-- **SyncOrchestrator**: Mock adapters, verify routing logic
-- **SyncResult**: Value object serialization/equality
+**Depends on**:
+- Every syncable feature's repositories (projects, entries, contractors, equipment, photos, forms, todos, etc.)
+- `AuthProvider` / `AuthService` for auth context and FCM token storage
+- `DatabaseService` (SQLite, change_log, sync_metadata, sync_control tables)
+- `ProjectLifecycleService` for post-sync health counts
+- `AppConfigProvider` for stale-banner clearance
 
-Location: `test/features/sync/`
-
-### Integration Tests (End-to-End)
-- **Full sync flow**: Local changes → Supabase → local pull
-- **Offline queue**: Mark pending → go offline → reconnect → verify push
-- **Conflict handling**: Offline edit + remote edit → resolve
-
-Location: `test/features/sync/integration/`
-
-### Widget Tests (Provider-level)
-- **SyncProvider**: Mock adapter, trigger sync, verify state changes
-- **Sync UI**: Display status, progress, error messages correctly
-
-Location: `test/features/sync/providers/`
-
-### Test Coverage
-- ≥ 85% for sync adapters
-- 100% for SyncResult value object
-- 80% for legacy SyncService (high complexity)
-
-## Performance Considerations
-
-### Target Response Times (Soft Guidelines)
-- Initial sync (100 items): < 30 seconds
-- Incremental sync (5-10 new items): < 5 seconds
-- Progress callback update frequency: 0.5-1 second intervals
-
-### Memory Constraints
-- Photo payloads: batched in groups of 5 to reduce memory spike
-- Large entry syncs: paginated to prevent OOM
-
-### Optimization Opportunities
-- Parallel adapter initialization on multi-backend support
-- Batch push operations (multi-insert) instead of per-entity
-- Progressive sync: Push/pull projects → entries → photos (fail-safe order)
+**Required by**:
+- Settings feature — sync section (trigger, status, pending count)
+- Projects feature — `ProjectSyncHealthProvider` (unsynced counts per project)
+- Dashboard feature — `SyncStatusIcon` widget
 
 ## File Locations
 
 ```
-lib/features/sync/                      [BRANCH: feat/sync-engine-rewrite]
-├── adapters/                           # 17 table adapters + base
-│   ├── table_adapter.dart              # Base class for all table adapters
-│   ├── type_converters.dart            # Shared type conversion utilities
+lib/features/sync/
+├── sync.dart                                   # Feature entry point / barrel
+│
+├── adapters/                                   # 22 table adapters + base
+│   ├── table_adapter.dart
+│   ├── type_converters.dart
 │   ├── project_adapter.dart
 │   ├── location_adapter.dart
 │   ├── contractor_adapter.dart
@@ -338,71 +326,93 @@ lib/features/sync/                      [BRANCH: feat/sync-engine-rewrite]
 │   ├── entry_equipment_adapter.dart
 │   ├── entry_personnel_counts_adapter.dart
 │   ├── entry_quantities_adapter.dart
+│   ├── photo_adapter.dart
 │   ├── inspector_form_adapter.dart
 │   ├── form_response_adapter.dart
+│   ├── form_export_adapter.dart
+│   ├── entry_export_adapter.dart
+│   ├── document_adapter.dart
 │   ├── todo_item_adapter.dart
+│   ├── project_assignment_adapter.dart
 │   ├── calculation_history_adapter.dart
-│   └── photo_adapter.dart
+│   ├── consent_record_adapter.dart
+│   └── support_ticket_adapter.dart
 │
-├── engine/                             # Core sync engine
-│   ├── sync_engine.dart                # Main engine coordinating sync
-│   ├── change_tracker.dart             # Tracks local pending changes
-│   ├── conflict_resolver.dart          # Conflict resolution logic
-│   ├── integrity_checker.dart          # Post-sync consistency validation
-│   ├── sync_mutex.dart                 # Prevents concurrent syncs
-│   ├── sync_registry.dart              # Ordered registry of table adapters
-│   ├── orphan_scanner.dart             # Detects orphaned records
-│   ├── scope_type.dart                 # Sync scope enumeration
-│   └── storage_cleanup.dart            # Post-sync storage cleanup
+├── engine/
+│   ├── sync_engine.dart
+│   ├── change_tracker.dart
+│   ├── conflict_resolver.dart
+│   ├── integrity_checker.dart
+│   ├── sync_mutex.dart
+│   ├── sync_registry.dart
+│   ├── orphan_scanner.dart
+│   ├── scope_type.dart
+│   ├── storage_cleanup.dart
+│   └── sync_control_service.dart
 │
 ├── domain/
-│   ├── domain.dart                     # Barrel export
-│   ├── sync_adapter.dart               # Interface + SyncResult, SyncAdapterStatus
-│   └── sync_types.dart                 # Shared type definitions
+│   ├── domain.dart
+│   └── sync_types.dart                         # SyncResult, SyncAdapterStatus
 │
 ├── data/
-│   ├── data.dart                       # Barrel export
-│   └── adapters/
-│       ├── adapters.dart               # Barrel export
-│       ├── supabase_sync_adapter.dart  # Supabase implementation
-│       └── mock_sync_adapter.dart      # Testing mock
+│   ├── data.dart
+│   ├── adapters/
+│   │   ├── adapters.dart
+│   │   └── mock_sync_adapter.dart
+│   ├── repositories/
+│   │   ├── conflict_repository.dart
+│   │   └── deletion_notification_repository.dart
+│   └── datasources/
+│       └── local/
+│           ├── conflict_local_datasource.dart
+│           └── deletion_notification_local_datasource.dart
 │
 ├── application/
-│   ├── application.dart                # Barrel export
-│   ├── sync_orchestrator.dart          # Multi-backend router
-│   └── background_sync_handler.dart    # Background/lifecycle sync triggers
+│   ├── application.dart
+│   ├── sync_orchestrator.dart
+│   ├── sync_lifecycle_manager.dart
+│   ├── background_sync_handler.dart
+│   └── fcm_handler.dart
 │
 ├── config/
-│   └── sync_config.dart                # Sync configuration parameters
+│   └── sync_config.dart
 │
-├── presentation/
-│   ├── presentation.dart               # Barrel export
-│   ├── providers/
-│   │   ├── providers.dart              # Barrel export
-│   │   └── sync_provider.dart          # ChangeNotifier for UI
-│   ├── screens/
-│   │   ├── sync_dashboard_screen.dart  # Sync status dashboard
-│   │   ├── conflict_viewer_screen.dart # View and resolve conflicts
-│   │   └── project_selection_screen.dart
-│   └── widgets/
-│       ├── sync_status_banner.dart
-│       ├── sync_status_icon.dart
-│       └── deletion_notification_banner.dart
+├── di/
+│   └── sync_providers.dart
 │
-└── sync.dart                           # Feature entry point
-
-lib/core/database/
-└── database_service.dart               # SQLite with sync status tracking
+└── presentation/
+    ├── presentation.dart
+    ├── providers/
+    │   ├── providers.dart
+    │   └── sync_provider.dart
+    ├── screens/
+    │   ├── sync_dashboard_screen.dart
+    │   └── conflict_viewer_screen.dart
+    └── widgets/
+        ├── sync_status_icon.dart
+        └── deletion_notification_banner.dart
 ```
 
-### Import Pattern
+## Import Patterns
 
 ```dart
 // Within sync feature
-import 'package:construction_inspector/features/sync/domain/sync_adapter.dart';
-import 'package:construction_inspector/features/sync/application/sync_orchestrator.dart';
 import 'package:construction_inspector/features/sync/engine/sync_engine.dart';
+import 'package:construction_inspector/features/sync/domain/sync_types.dart';
+import 'package:construction_inspector/features/sync/application/sync_orchestrator.dart';
 
 // From other features
 import 'package:construction_inspector/features/sync/presentation/providers/sync_provider.dart';
+import 'package:construction_inspector/features/sync/domain/sync_types.dart';
+
+// Via barrel
+import 'package:construction_inspector/features/sync/sync.dart';
 ```
+
+## Testing Notes
+
+- Unit tests: `test/features/sync/engine/`
+- Layer 2 (per-table push/pull): `node tools/debug-server/run-tests.js --layer L2`
+- Layer 3 (cross-cutting, multi-device, RLS): `node tools/debug-server/run-tests.js --layer L3`
+
+**Always use the app UI to create/modify test data.** Raw SQL inserts bypass SQLite triggers — `change_log` never gets populated, so records will never sync.
