@@ -953,7 +953,12 @@ These deviations are intentional improvements. They MUST be documented in code c
 **Files deleted**: `document_analyzer.dart`, `native_extractor.dart`, `structure_preserver.dart`
 **Files added**: `document_quality_profiler.dart`, `element_validator.dart`
 
-### 11.5 Feature Flag Skipped (V1 Deleted Directly)
+### 11.5 pdfrx Migration Completed
+
+**PRD 1.0**: Used `pdfx` package for PDF rendering
+**Actual**: Migrated to `pdfrx` package. `pdfrx` provides better cross-platform support and more reliable page rendering. The `page_renderer_v2.dart` stage uses `pdfrx` APIs (`PdfDocument.openFile`, `PdfPage.render`). Migration is complete — no remaining `pdfx` references.
+
+### 11.6 Feature Flag Skipped (V1 Deleted Directly)
 
 **PRD 1.0**: "Preserve V1 behind `useNewPipeline` flag"
 **Actual**: V1 deleted entirely in Phase 6 cutover
@@ -1044,7 +1049,7 @@ test/features/pdf/extraction/
 
 ## 13. TODO: Implementation Tasks
 
-Status legend: COMPLETE, MOSTLY COMPLETE, NOT STARTED
+Status legend: COMPLETE, MOSTLY COMPLETE, FUTURE RESEARCH
 
 ### Phase R1: Critical Correctness — COMPLETE
 
@@ -1110,7 +1115,7 @@ Status legend: COMPLETE, MOSTLY COMPLETE, NOT STARTED
 #### R6.4 — Document Justified Deviations ❓
 - **Unverified**: Code comments may not all be present in deviation files.
 
-### Phase R7: Enhancements (Sessions 10-15)
+### Phase R7: Future Research (Sessions 10-15)
 
 #### R7.1 — TEDS/GriTS Structural Metrics (Enhancement #5)
 - **File**: `test/features/pdf/extraction/golden/golden_file_matcher.dart`
@@ -1119,7 +1124,7 @@ Status legend: COMPLETE, MOSTLY COMPLETE, NOT STARTED
 - **Tests**: Dedicated test file for structural metrics
 
 #### R7.2 — Confidence Calibration Pipeline (Enhancement #6)
-- **New file**: `lib/features/pdf/services/extraction/pipeline/confidence_calibrator.dart` [NOT IMPLEMENTED: file does not exist on disk]
+- **File**: `lib/features/pdf/services/extraction/pipeline/confidence_calibrator.dart`
 - **What**: Implement Platt scaling (logistic regression) or table-based calibration. Compare predicted confidence to actual correctness against Springfield ground truth. Apply monotonic correction curve
 - **Research needed**: Platt scaling implementation in Dart, calibration corpus requirements, isotonic regression as alternative
 - **Tests**: Calibration test with Springfield fixture, verify monotonicity
@@ -1145,7 +1150,7 @@ Status legend: COMPLETE, MOSTLY COMPLETE, NOT STARTED
 | R4: Pipeline Wiring | COMPLETE | ProgressCallback + onStageOutput |
 | R5: Test Infrastructure | MOSTLY COMPLETE | Golden fixtures done; R5.3 schema migration test missing |
 | R6: Cleanup | MOSTLY COMPLETE | R6.3, R6.4 unverified |
-| R7: Enhancements | NOT STARTED | TEDS/GriTS, calibration, benchmarks |
+| R7: Enhancements | FUTURE RESEARCH | TEDS/GriTS, calibration, benchmarks |
 
 ---
 

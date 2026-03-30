@@ -21,13 +21,13 @@ Track the companies (prime and sub-contractors) working on a construction projec
   - `entry_personnel_counts` (junction) -- headcounts per contractor per entry
 - Key fields (contractors): `id`, `project_id`, `name`, `type` (prime/sub), `contact_name`, `phone`, `created_at`, `updated_at`
 - Key fields (equipment): `id`, `contractor_id`, `name`, `description`
-- Sync: Sync to Cloud -- contractors and equipment are created locally and synced via the sync queue
+- Sync: Sync to Cloud -- contractors and equipment are created locally and synced via change_log triggers
 
 ## User Flow
 From the entry wizard, the inspector selects which contractors were on-site that day. For each contractor, they can record equipment usage and personnel headcounts by type. Contractors and equipment are managed at the project level and reused across entries.
 
 ## Offline Behavior
-Full read/write offline. Contractors, equipment, and personnel types are stored in SQLite with no network dependency. All changes queue to `sync_queue` for cloud push when connectivity resumes. Conflict resolution uses last-write-wins at the record level.
+Full read/write offline. Contractors, equipment, and personnel types are stored in SQLite with no network dependency. All changes are tracked via change_log triggers for cloud push when connectivity resumes. Conflict resolution uses last-write-wins at the record level.
 
 ## Dependencies
 - Features: projects (parent scope), entries (junction linkage)

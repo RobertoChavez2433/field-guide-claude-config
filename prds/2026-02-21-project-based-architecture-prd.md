@@ -81,9 +81,9 @@ A **project-centric, multi-tenant** architecture where:
 | `lib/features/projects/data/models/project.dart` | 17 fields, no `company_id` or `created_by` | Add `companyId`, `createdByUserId` |
 | `lib/features/projects/presentation/providers/project_provider.dart` | `loadProjects()` returns ALL | Filter by `companyId` |
 | `lib/features/projects/data/repositories/project_repository.dart` | `getAll()` has no filtering | Add `getByCompanyId()` |
-| `lib/core/database/schema/core_tables.dart` | Schema v23, no company/user columns | Add columns, bump to v24 |
-| `lib/core/database/database_service.dart` | Manages SQLite migrations | Add v23→v24 migration |
-| `lib/features/sync/data/adapters/supabase_sync_adapter.dart` | No company filtering, no user attribution | Filter by company_id, include created_by |
+| `lib/core/database/schema/core_tables.dart` | Schema v46, no company/user columns | Add columns, bump to v47 |
+| `lib/core/database/database_service.dart` | Manages SQLite migrations | Add migration to latest version |
+| `lib/features/sync/data/adapters/` | No company filtering, no user attribution (TableAdapter per-table) | Filter by company_id, include created_by |
 | `lib/features/entries/data/models/daily_entry.dart` | No `created_by_user_id` | Add `createdByUserId`, `updatedByUserId` |
 | `lib/features/photos/data/models/photo.dart` | No `created_by_user_id` | Add `createdByUserId` |
 | `lib/core/router/app_router.dart` | Auth → Dashboard flow | Auth → Profile Setup → Company → Dashboard flow |
@@ -206,7 +206,7 @@ CREATE POLICY "admin_resolve_requests" ON company_join_requests
 
 ### 4.4 Local SQLite Changes
 
-- **Schema version**: 23 → 24
+- **Schema version**: 46 → next version (currently at v46)
 - Add same columns to local tables (nullable, no FK enforcement in SQLite)
 - New local tables: `user_profiles` (cache), `companies` (cache)
 - Migration: `onUpgrade` adds columns via `ALTER TABLE ... ADD COLUMN`
@@ -373,7 +373,7 @@ App opens → Manual sync button → Pull ALL from Supabase → Push ALL to Supa
 #### Layer 1: Sync on Save (Immediate)
 - **Trigger**: Every time a record is saved to local SQLite
 - **Behavior**: If online, immediately push the record to Supabase
-- **If offline**: Record queued in `sync_queue` table (existing pattern), pushed when connectivity returns
+- **If offline**: Record tracked via change_log triggers, pushed when connectivity returns
 - **Implementation**: Add `_pushToRemote(record)` call in each repository's `save()` method
 
 #### Layer 2: Firebase Silent Push (Daily Background Sync)
@@ -537,7 +537,9 @@ CREATE INDEX idx_entries_created_by ON daily_entries(created_by_user_id);
 
 ```dart
 // In database_service.dart, onUpgrade:
-if (oldVersion < 24) {
+// NOTE: Schema was at v23→v24 when this PRD was written; current schema is v46.
+// The actual migration block version number must be determined at implementation time.
+if (oldVersion < <next_version>) {
   // Add company/user columns to existing tables
   await db.execute('ALTER TABLE projects ADD COLUMN company_id TEXT');
   await db.execute('ALTER TABLE projects ADD COLUMN created_by_user_id TEXT');
@@ -661,7 +663,7 @@ if (oldVersion < 24) {
 - [ ] Seed CTT Engineering company + Roberto admin profile
 - [ ] Backfill existing data
 - [ ] Add indexes + constraints
-- [ ] SQLite schema migration v23 → v24
+- [ ] SQLite schema migration (current schema v46 → next version)
 - [ ] Create Dart models: `Company`, `UserProfile`, `CompanyJoinRequest`
 - [ ] Update existing models: `Project`, `DailyEntry`, `Photo`, `BidItem` with new fields
 - [ ] Add `workmanager` and `firebase_messaging` to pubspec.yaml
@@ -670,7 +672,7 @@ if (oldVersion < 24) {
 - Supabase tables exist with correct schema
 - RLS policies block cross-company access (test with 2 users)
 - Existing data backfilled with company_id + user_id
-- Local SQLite migrates cleanly from v23 → v24
+- Local SQLite migrates cleanly to the new schema version
 - Dart models compile with new fields
 
 ### Phase 2: Auth & User Profile

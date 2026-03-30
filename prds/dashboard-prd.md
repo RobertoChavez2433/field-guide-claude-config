@@ -19,7 +19,7 @@ Give inspectors a single-screen overview of their active project's health, inclu
 - Sync: N/A -- dashboard reads from local SQLite; no writes
 
 ## User Flow
-After selecting a project, the inspector lands on the dashboard tab (bottom navigation). The screen loads all project-scoped data in parallel and displays stat cards and alert rows. Tapping a stat card or alert navigates to the relevant detail screen (entries list, bid items, locations). Pull-down refreshes data from local storage.
+After selecting a project, the inspector is routed to the dashboard via `/project/:id` (nested in the project flow, not a bottom navigation tab). The screen loads all project-scoped data in parallel and displays stat cards and alert rows. Tapping a stat card or alert navigates to the relevant detail screen (entries list, bid items, locations). Pull-down refreshes data from local storage.
 
 ## Offline Behavior
 Fully functional offline. All dashboard data is aggregated from local SQLite tables. No network calls are made from the dashboard itself. Data freshness depends on the last successful sync. The dashboard does not display sync status indicators -- that responsibility belongs to the sync feature.

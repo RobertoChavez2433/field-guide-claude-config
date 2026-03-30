@@ -13,8 +13,8 @@ Weather conditions directly affect construction work and must be documented in d
 
 ## Data Model
 - Primary entity: `WeatherData` (in-memory class, not a standalone SQLite table)
-- Key fields: `condition` (String), `tempHigh` (int, Fahrenheit), `tempLow` (int, Fahrenheit)
-- Storage: Weather data is persisted as fields on the `daily_entries` table (`weather_condition`, `temp_high`, `temp_low`), not in a separate weather table
+- Key fields: `condition` (`WeatherCondition?` enum), `tempHigh` (int, Fahrenheit), `tempLow` (int, Fahrenheit)
+- Storage: Weather data is persisted as fields on the `daily_entries` table (`weather` column for condition, `temp_high`, `temp_low`), not in a separate weather table
 - Sync: Syncs with the parent daily entry record (no independent sync)
 
 ## User Flow

@@ -22,7 +22,7 @@ Allow inspectors to define and manage physical locations within a construction p
 When setting up a project, the inspector creates locations representing distinct areas of the job site (e.g., "Station 12+50", "Bridge Deck North", "Retention Pond"). During entry creation, they select a location from a dropdown. Locations can also be edited from the report screen via an inline edit dialog. GPS coordinates can be auto-captured from the device or entered manually.
 
 ## Offline Behavior
-Full read/write offline. All location data is stored in SQLite with no network dependency. New locations and edits queue to `sync_queue` for cloud push. GPS capture works offline via device hardware. Locations are loaded into `LocationProvider` on project selection and cached in memory for fast access throughout the session.
+Full read/write offline. All location data is stored in SQLite with no network dependency. New locations and edits are captured by `change_log` triggers for cloud push when connectivity returns. GPS capture works offline via device hardware. Locations are loaded into `LocationProvider` on project selection and cached in memory for fast access throughout the session.
 
 ## Dependencies
 - Features: projects (parent scope), entries (location_id FK), photos (optional location_id reference)

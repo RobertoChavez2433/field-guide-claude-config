@@ -28,5 +28,9 @@ Full read/write offline. Bid items and entry quantities are stored in SQLite and
 - Features: projects (bid items belong to a project), entries (quantities attach to daily entries), pdf (bid schedule import)
 - Packages: `uuid`, `sqflite`, `provider`
 
+## Known Defects
+- **Search filter broken**: The search input on the quantities summary screen does not correctly filter bid items by description or item number.
+- **Numeric sort uses string comparison**: Sorting by item number applies lexicographic ordering (e.g., "10" sorts before "9"), not numeric ordering.
+
 ## Owner Agent
 backend-data-layer-agent (models, repositories, datasources), frontend-flutter-specialist-agent (screens, widgets)

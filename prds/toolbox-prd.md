@@ -18,10 +18,10 @@ Fill PDF-based inspection forms (e.g., MDOT 0582B) with smart text parsing, fiel
 ### Calculator (`lib/features/calculator/`, 7 files)
 Construction calculators for HMA tonnage, concrete cubic yards, area (SF), volume (CF), linear (LF), and density. Append-only calculation history with optional notes and project/entry linkage.
 
-### Gallery (`lib/features/gallery/`, 3 files)
+### Gallery (`lib/features/gallery/`, di/domain/presentation directories)
 Photo gallery viewer with date-range filtering (today, this week, this month, custom), entry-based filtering, and sorting. Presentation-only feature that reads from the `photos` feature's repository -- no data layer of its own.
 
-### Todos (`lib/features/todos/`, 6 files)
+### Todos (`lib/features/todos/`, full data/domain/di/presentation structure)
 Project-scoped and entry-scoped task tracking with priority levels (low/normal/high), due dates, completion status, and overdue detection. Tasks can be created standalone or linked to a daily entry.
 
 ## Data Model
@@ -48,7 +48,7 @@ Sync: forms, todos, and calculator all have remote datasources for cloud sync.
 Each sub-feature is fully functional offline. Form templates, responses, todos, and calculations are stored locally in SQLite. PDF template bytes are cached as BLOBs in `inspector_forms` for offline rendering. All changes queue for sync when connectivity returns. The toolbox hub itself has no offline concerns (it is stateless).
 
 ## Dependencies
-- **Toolbox hub**: `go_router` (navigation), `AppTheme` (styling), `TestingKeys` (testability)
+- **Toolbox hub**: `go_router` (navigation), `FieldGuideColors` / `Theme.of(context)` (styling), `TestingKeys` (testability)
 - **Forms**: projects, entries (scoping/linkage), pdf (rendering), `syncfusion_flutter_pdf`, `syncfusion_flutter_pdfviewer`
 - **Calculator**: projects, entries (optional linkage), `uuid`
 - **Gallery**: photos (photo data), entries (entry filter), no own data dependencies
