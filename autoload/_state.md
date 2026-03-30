@@ -1,59 +1,39 @@
 # Session State
 
-**Last Updated**: 2026-03-30 | **Session**: 677
+**Last Updated**: 2026-03-30 | **Session**: 681
 
 ## Current Phase
-- **Phase**: Pre-Release Hardening IMPLEMENTED. Codebase cleanup needed.
-- **Status**: 3457/3457 tests passing. 0 analyze errors. Sentry + Aptabase keys configured.
+- **Phase**: Codebase cleanup plan IMPLEMENTED. 22 phases complete. Tests running.
+- **Status**: 0 analyze errors. All 22 phases passed reviews. Test results pending (full suite running).
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (677)
+### What Was Done This Session (681)
 
-1. **Implemented Pre-Release Hardening** (12 phases, 6 orchestrator launches):
-   - Sentry crash reporting with PII scrubbing + consent gating
-   - Aptabase analytics with consent gating + disable() on revoke
-   - Consent flow (ConsentProvider, ConsentScreen, router gate, re-consent on version change)
-   - Support ticket system (SupportProvider, HelpSupportScreen, log attachment)
-   - Legal documents (ToS, Privacy Policy bundled as markdown)
-   - About screen overhaul (version, licenses, legal links, help)
-   - Android release signing config
-   - iOS project scaffold
-   - Database schema (consent_tables, support_tables, append-only triggers)
-   - Supabase migrations + RLS policies
-2. **5-round review/fix sweep** (3 opus agents: code review, security, completeness):
-   - R1: 5 CRITICAL + 7 HIGH found and fixed
-   - R2: 2 MEDIUM found and fixed
-   - R3: 1 HIGH found and fixed (driver consent gate)
-   - R4: 1 MEDIUM found and fixed (driver Analytics.disable)
-   - R5: CLEAN across all 3 reviewers
-3. **7 logical commits** to app repo
-4. **Sentry + Aptabase credentials** added to `.env`
+1. **Executed 22-phase codebase cleanup plan** via `/implement`:
+   - 10 orchestrator launches (optimized from 22 via phase merging + parallel dispatch)
+   - Parallelized where possible: G7+G9 ran simultaneously, internal agents parallelized within groups
+   - All 22 phases passed completeness, code review, and security reviews
+   - Skipped per-phase test runs (analyze-only) per user request for speed
+   - Final `flutter analyze`: 0 errors, 1 pre-existing warning
+   - Final `flutter test`: running (awaiting results)
+2. **Phase merges to avoid file conflicts**:
+   - Phase 4 + 22.3 (logger.dart), 6.1+8 (project_setup_screen), 6.2+7 (entry_editor_screen), 6.3+14.1 (app_router.dart)
+3. **User feedback applied**: no per-phase tests (analyze only), launch multiple orchestrators in parallel when no file overlap
 
 ### What Needs to Happen Next
 
-1. **CODEBASE CLEANUP (user priority for next session)**:
-   - Use CodeMunch to map ALL dead code, dead imports, deprecated code
-   - Remove unnecessary junk accumulated from recent massive implementations
-   - Thorough audit and cleanse of the entire codebase
-2. **CLAUDE DIRECTORY UPDATE (user priority for next session)**:
-   - Update architecture docs, file paths, features, PRDs
-   - Almost everything in .claude/ is outdated after recent implementations
-   - Update references, documentation, directory structure docs
-3. **Push Supabase migrations** — `npx supabase db push` (2 new migrations)
-4. **Resume 0582B + IDR fixes** — paused for forms infrastructure
+1. **Verify test results** — full suite was running when session ended
+2. **Commit cleanup changes** — large diff, may want to split by part
+3. **EXECUTE .CLAUDE DIRECTORY UPDATE**: `/implement` on `.claude/plans/2026-03-30-claude-directory-audit-update.md`
+4. **Push Supabase migrations** — `npx supabase db push` (2 new migrations from S677)
+5. **Resume 0582B + IDR fixes** — paused for forms infrastructure
 
-### What Was Done Last Session (676)
-3-agent opus review sweep (0C/0H/8M), fixed 4 MEDIUMs, 5 app commits, Supabase UUID→TEXT FK fix, 2 migrations pushed, 3 claude config commits.
+### What Was Done Last Session (680)
+Implemented /implement skill performance optimization. Parallel batching, analyze-only per batch, 3xN parallel reviews, deferred test gate, batched checkpoint writer. 2 config files changed.
 
 ### Committed Changes
-- `e8bbe3d` — chore: add iOS project scaffold
-- `e92b309` — feat(settings): add About overhaul, help/support, and legal screens
-- `48b5aca` — feat(consent): add consent flow with UI, router gate, and auth lifecycle
-- `1e218e4` — feat(telemetry): add Sentry crash reporting and Aptabase analytics
-- `a034e28` — feat(settings): add consent and support data layer
-- `47d04fb` — feat(db): add consent and support database schema with append-only enforcement
-- `799494e` — feat(deps): add sentry, aptabase, flutter_markdown and Android release signing
+None yet — test results pending.
 
 ## Blockers
 
@@ -71,21 +51,25 @@
 
 ## Recent Sessions
 
-### Session 677 (2026-03-30)
-**Work**: Implemented Pre-Release Hardening (12 phases). 6 orchestrator launches. 5 review/fix sweeps (R1: 5C+7H, R2: 2M, R3: 1H, R4: 1M, R5: clean). 7 app commits. Sentry+Aptabase keys configured.
-**Decisions**: Use Flutter LicenseRegistry instead of oss_licenses_flutter. Privacy policy corrected to not claim encryption at rest. Both entrypoints get full consent lifecycle parity.
-**Next**: Codebase cleanup (dead code, imports, deprecated) + .claude/ directory update.
+### Session 681 (2026-03-30)
+**Work**: Executed 22-phase codebase cleanup (/implement). 10 orchestrator launches, parallel dispatch (G7+G9 simultaneous). All phases passed reviews. Analyze clean. Tests pending.
+**Decisions**: Skip per-phase tests for speed (analyze-only). Launch parallel orchestrators when no file overlap. Phase merges: 4+22.3, 6.1+8, 6.2+7, 6.3+14.1.
+**Next**: Verify tests → commit → /implement .claude/ directory update.
 
-### Session 676 (2026-03-29)
-**Work**: 3-agent opus review sweep (0C/0H/8M), fixed 4 MEDIUMs, 5 app commits, Supabase UUID→TEXT FK fix, 2 migrations pushed, 3 claude config commits.
-**Decisions**: Use TEXT not UUID for app table PKs/FKs in Supabase. Skip EmptyStateWidget migration.
-**Next**: /implement clean architecture → pre-release hardening → 0582B+IDR.
+### Session 680 (2026-03-30)
+**Work**: Implemented /implement skill performance optimization. Parallel batching, analyze-only per batch, 3xN parallel reviews, deferred test gate, batched checkpoint writer. 2 config files changed.
+**Decisions**: None — executed plan as written.
+**Next**: /implement .claude/ directory update (first real test of optimized skill).
 
-### Session 675 (2026-03-29)
-**Work**: Implemented both Forms Infrastructure (12 phases) + UI Refactor V2 (12 phases). 20 orchestrator launches, 8 review sweeps, 4 fixer cycles. 334 files changed total.
+### Session 679 (2026-03-30)
+**Work**: Full .claude/ directory audit (8 agents: 3 opus + 5 sonnet). Brainstorming spec. Wrote 12-phase update plan (3 opus plan writers, ~1500 lines). 5 review sweeps (2 CRITICAL fixed, all clean by sweep 4).
+**Decisions**: Structural depth (option B) for feature docs. Forms PRD only (skip calculator/gallery/todos). Tier-based execution order. FieldGuideColors.statusSuccess not .success for color mappings.
+**Next**: /implement .claude/ directory update → /implement codebase cleanup.
 
-### Session 674 (2026-03-29)
-**Work**: Clean Architecture Refactor plan complete. 8 phases, 3981 lines. 3 review rounds, all approve.
+### Session 678 (2026-03-30)
+**Work**: Deep codebase audit (5 opus agents). 60+ findings. Wrote 22-phase cleanup plan (4 parallel plan writers, ~4950 lines). 2 adversarial reviews, 3 blocking fixes applied inline.
+**Decisions**: ScopeType.viaUser doesn't exist — use ScopeType.direct + pullFilter() override for user-scoped sync adapters. FutureBuilder in GoRouter is anti-pattern — resolve formType in screen initState instead. FCM sync trigger needs 60s debounce. Consent adapter needs insertOnly flag.
+**Next**: /implement cleanup plan → .claude/ directory update.
 
 ## Active Debug Session
 
@@ -94,9 +78,9 @@ None active.
 ## Test Results
 
 ### Flutter Unit Tests
-- **Full suite**: 3457/3457 PASSING (S677)
-- **PDF tests**: 911/911 PASSING
-- **Analyze**: PASSING (0 errors)
+- **Full suite**: PENDING (running at session end, S681)
+- **PDF tests**: 911/911 PASSING (S677)
+- **Analyze**: PASSING (0 errors, 1 warning — pre-existing)
 
 ### Sync Verification (S668 — 2026-03-28, run ididd)
 - **S01**: PASS | **S02**: PASS | **S03**: PASS
@@ -104,10 +88,11 @@ None active.
 - **S07**: PASS | **S08**: PASS | **S09**: FAIL (delete no push) | **S10**: PASS
 
 ## Reference
+- **Codebase Cleanup Plan (IMPLEMENTED)**: `.claude/plans/2026-03-30-codebase-cleanup.md`
+- **Claude Directory Update Plan (READY)**: `.claude/plans/2026-03-30-claude-directory-audit-update.md`
 - **Forms Infrastructure Plan (IMPLEMENTED)**: `.claude/plans/2026-03-28-forms-infrastructure.md`
 - **UI Refactor V2 Plan (IMPLEMENTED)**: `.claude/plans/2026-03-28-ui-refactor-v2.md`
 - **Clean Architecture Plan (IMPLEMENTED)**: `.claude/plans/2026-03-29-clean-architecture-refactor.md`
 - **Pre-Release Hardening Plan (IMPLEMENTED)**: `.claude/plans/2026-03-29-pre-release-hardening.md`
-- **Forms Infrastructure Spec**: `.claude/specs/2026-03-28-forms-infrastructure-spec.md`
 - **Test Registry**: `.claude/test-flows/registry.md`
 - **Defects**: `.claude/defects/_defects-{feature}.md`

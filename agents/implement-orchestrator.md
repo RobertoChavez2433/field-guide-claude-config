@@ -45,6 +45,28 @@ Read both files, then:
 
 ---
 
+## Phase Dependency Analysis
+
+When PHASES_TO_EXECUTE contains multiple phases:
+
+1. For each phase, extract the file list from the plan text (files to create/modify)
+2. Check for file overlap between each pair of phases
+3. Group into PARALLEL BATCHES:
+   - Phases with NO mutual file overlap → same batch (run concurrently)
+   - Phases sharing ANY file → different batches (sequential order)
+   - Cap batch size at 3 phases (context management)
+4. If a phase's file list cannot be determined, treat it as overlapping with all others (sequential fallback)
+
+Example: PHASES_TO_EXECUTE: 3,4,5,6
+- Phase 3: auth/data/repo.dart, auth/data/source.dart
+- Phase 4: sync/data/repo.dart, sync/data/engine.dart
+- Phase 5: auth/data/repo.dart, auth/presentation/screen.dart (overlaps Phase 3)
+- Phase 6: settings/data/repo.dart
+→ Batch 1: Phases 3, 4, 6 (no mutual overlap)
+→ Batch 2: Phase 5 (depends on Phase 3)
+
+---
+
 ## Agent Catalog
 
 Every action is performed by dispatching one of these agents via the Agent tool:
@@ -84,12 +106,13 @@ When you need to run `flutter analyze`, `flutter test`, or `flutter build`, disp
 - `subagent_type: general-purpose`, `model: sonnet`
 - Include: the findings, the affected files, the fix guidance, and "NEVER run flutter clean."
 
-### Checkpoint-Writer Agent (updates checkpoint JSON)
+### Checkpoint-Writer Agent (batched per parallel batch)
 
 - `subagent_type: general-purpose`, `model: sonnet`
 - Prompt: "Read `<checkpoint path>`, then apply these updates: [describe changes]. Write the updated JSON back to `<checkpoint path>`."
 - Use this for ALL checkpoint updates. You cannot write files yourself.
-- **NOTE**: Implementer agents also update the checkpoint directly per-substep. The checkpoint-writer is used for phase-level finalization (Step 5) and review results.
+- Dispatched ONCE per batch, not once per phase. Prompt includes all phase results for the batch.
+- **NOTE**: Implementer agents also update the checkpoint directly per-substep (only when running as a single-phase batch). During parallel batches, substep checkpoint writes are disabled — only the batch-level checkpoint-writer updates the file.
 
 ---
 
@@ -137,60 +160,63 @@ fix_guidance: <how to fix>
 
 ---
 
-## Implementation Loop (per phase)
+## Implementation Loop (batch-oriented)
 
-For each pending phase **within your PHASES_TO_EXECUTE list**, execute these steps in order. Every step is an Agent dispatch.
+After reading the plan and checkpoint, perform Phase Dependency Analysis on your PHASES_TO_EXECUTE list to produce ordered batches. Then process each batch in order:
 
-### Step 1: Dispatch Implementer
+### Batch Step 1: Dispatch Implementers (PARALLEL if batch > 1)
 
-1. Extract the current phase text from the plan (you already have it in context).
+For each phase in the batch:
+1. Extract the phase text from the plan.
 2. Select the implementer agent from the routing table.
 3. Dispatch via Agent. The prompt MUST include:
    - The **COMPLETE phase text** from the plan (all sub-phases, all steps, all code blocks — copy verbatim)
    - The project context block
-   - The checkpoint path and this instruction: **"After completing EACH sub-step (e.g. 1.1, 1.2, 1.3, 1.4), update the checkpoint JSON at `<checkpoint path>`. Read the file, set `phases[N].substeps["X.Y"] = "done"`, and write it back. This is MANDATORY — do not batch substep updates."**
    - This instruction: "Implement the assigned phase exactly as written. The plan contains complete code for every step — write it to the specified files. Do not add anything beyond what the plan specifies. Do not omit anything the plan requires. Read each target file before editing (to preserve existing content if modifying). Use `pwsh -Command \"...\"` for all Flutter commands. NEVER run flutter clean."
    - This instruction: **"Print a status line to stdout after each sub-step: `[PROGRESS] Phase N Step X.Y: DONE — <brief description>`"**
 
-### Step 2: Dispatch Build-Runner
+**If batch size > 1**: Dispatch ALL implementers in a SINGLE message (parallel Agent calls). Add to each prompt: **"Do NOT update the checkpoint JSON — your phase will be checkpointed after all parallel phases complete."**
 
-Dispatch a build-runner agent to run:
+**If batch size = 1**: Single dispatch. Include the checkpoint update instruction: **"After completing EACH sub-step (e.g. 1.1, 1.2, 1.3, 1.4), update the checkpoint JSON at `<checkpoint path>`. Read the file, set `phases[N].substeps["X.Y"] = "done"`, and write it back. This is MANDATORY — do not batch substep updates."**
+
+### Batch Step 2: Dispatch Analyze (ONCE for the batch)
+
+Dispatch ONE build-runner agent to run `flutter analyze` only. NOT flutter test.
 ```
 pwsh -Command "flutter analyze"
-pwsh -Command "flutter test"
 ```
-The agent returns the full output. If errors exist -> go to Step 2a.
+The agent returns the full output. If errors exist → dispatch a fixer agent with ALL errors + ALL files from the batch → re-run analyze. Max 3 cycles → BLOCKED.
 
-**Step 2a (if errors):** Dispatch a fixer agent with the error output + the phase text. Then re-dispatch the build-runner. Max 3 cycles -> BLOCKED.
+### Batch Step 3: Dispatch ALL Reviews (PARALLEL — 3 per phase × N phases)
 
-### Step 3: Dispatch Completeness Reviewer
+Dispatch all reviewers in a SINGLE message (3 × batch_size Agent calls):
 
-Dispatch `general-purpose` (sonnet) with:
-- The exact phase text from the plan
-- The list of files the phase creates/modifies
-- Instruction: "Read each file listed. Verify every requirement in the phase text is implemented. Check: tests present and meaningful, code wired correctly, behavior matches spec. Report findings as CRITICAL/HIGH/MEDIUM/LOW."
+For EACH phase in the batch, dispatch these three:
 
-If findings -> dispatch fixer -> re-dispatch reviewer. Max 3 cycles -> BLOCKED.
+1. **Completeness** (`general-purpose`, sonnet): "Read each file listed. Verify every requirement in the phase text is implemented. Check: tests present and meaningful, code wired correctly, behavior matches spec. Report findings as CRITICAL/HIGH/MEDIUM/LOW."
 
-### Step 4: Dispatch Code Review + Security Review (PARALLEL)
+2. **Code Review** (`code-review-agent`, opus): "Read these files: [list]. Review for code quality, DRY/KISS, correctness. Report findings as CRITICAL/HIGH/MEDIUM/LOW."
 
-Dispatch BOTH in a single message (two Agent calls):
+3. **Security Review** (`security-agent`, opus): "Read these files: [list] plus their imports. Review for security vulnerabilities, data exposure, auth gaps. Report findings as CRITICAL/HIGH/MEDIUM/LOW."
 
-1. **Code Review** (`code-review-agent`, opus): "Read these files: [list]. Review for code quality, DRY/KISS, correctness. Report findings as CRITICAL/HIGH/MEDIUM/LOW."
+Example: batch of 3 phases = 9 parallel Agent calls in one message.
 
-2. **Security Review** (`security-agent`, opus): "Read these files: [list] plus their imports. Review for security vulnerabilities, data exposure, auth gaps. Report findings as CRITICAL/HIGH/MEDIUM/LOW."
+**If ANY findings from ANY reviewer:**
+1. Consolidate ALL findings into one list, grouped by file
+2. Dispatch ONE fixer agent with consolidated findings
+3. Re-run analyze (once)
+4. Re-dispatch ONLY the reviews for phases that had findings
+5. Max 3 fix cycles total → BLOCKED
 
-If findings -> dispatch fixer -> dispatch build-runner -> re-dispatch both reviewers. Max 3 cycles -> BLOCKED.
+### Batch Step 4: Dispatch Checkpoint-Writer (ONCE for the batch)
 
-### Step 5: Dispatch Checkpoint-Writer (final phase checkpoint)
-
-Dispatch a checkpoint-writer agent (sonnet) with:
+Dispatch ONE checkpoint-writer agent (sonnet) with:
 - Path: `<checkpoint path>`
-- Instructions: "Read the checkpoint. Set phase [N] status to 'done'. Verify all substeps are marked 'done' in phases[N].substeps. Set its reviews to: completeness={status:'pass', ...}, code_review={status:'pass', ...}, security={status:'pass', ...}. Add these files to modified_files: [list]. Write the updated JSON."
+- Instructions: "Read the checkpoint. For each of these phases [list phase numbers], set status to 'done'. Verify all substeps are marked 'done'. Set reviews to: completeness={status:'pass', ...}, code_review={status:'pass', ...}, security={status:'pass', ...}. Record per-phase review results: [include finding counts and fix cycles per phase]. Add these files to modified_files: [list all files from batch]. Write the updated JSON."
 
-After the checkpoint-writer returns, proceed to the next phase **if it is in your PHASES_TO_EXECUTE list**. Otherwise, return STATUS: DONE.
+After the checkpoint-writer returns, proceed to the next batch. If all batches are done, return STATUS: DONE.
 
-**NOTE**: Step 5 is the FINAL checkpoint write for the phase. Substep-level checkpoint updates happen DURING Step 1 (the implementer updates after each sub-step). Step 5 just finalizes the phase status and review results.
+**NOTE**: For single-phase batches, substep-level checkpoint updates happen DURING Step 1 (the implementer updates after each sub-step). Step 4 finalizes the phase status and review results. For multi-phase batches, ALL checkpoint writes happen in Step 4 only.
 
 ---
 
@@ -210,6 +236,7 @@ Return EXACTLY one of these as the first content of your response:
 ```
 STATUS: DONE
 PHASES_EXECUTED: [comma-separated phase numbers]
+PARALLEL_BATCHES: [e.g. "Batch1(3,4,6) Batch2(5)"]
 FILES: [comma-separated list]
 PER_PHASE_REVIEWS:
   Phase N: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:N
@@ -222,7 +249,8 @@ DECISIONS: [comma-separated list, or "none"]
 STATUS: HANDOFF
 REASON: Context at ~80%. Checkpoint written.
 PHASES_DONE: [count]/[total assigned]
-CURRENT_POSITION: [phase/step]
+CURRENT_BATCH: [batch number, which phases]
+COMPLETED_IN_BATCH: [phases done in current batch]
 ```
 
 **BLOCKED** (max fix attempts exceeded):

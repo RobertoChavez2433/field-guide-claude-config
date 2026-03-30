@@ -6,6 +6,23 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 677 (2026-03-30)
+**Work**: Implemented Pre-Release Hardening (12 phases). 6 orchestrator launches. 5 review/fix sweeps (R1: 5C+7H, R2: 2M, R3: 1H, R4: 1M, R5: clean). 7 app commits. Sentry+Aptabase keys configured.
+**Decisions**: Use Flutter LicenseRegistry instead of oss_licenses_flutter. Privacy policy corrected to not claim encryption at rest. Both entrypoints get full consent lifecycle parity.
+**Next**: Codebase cleanup (dead code, imports, deprecated) + .claude/ directory update.
+
+### Session 676 (2026-03-29)
+**Work**: 3-agent opus review sweep (0C/0H/8M), fixed 4 MEDIUMs, 5 app commits, Supabase UUID→TEXT FK fix, 2 migrations pushed, 3 claude config commits.
+**Decisions**: Use TEXT not UUID for app table PKs/FKs in Supabase. Skip EmptyStateWidget migration.
+**Next**: /implement clean architecture → pre-release hardening → 0582B+IDR.
+
+### Session 675 (2026-03-29)
+**Work**: Implemented both Forms Infrastructure (12 phases) + UI Refactor V2 (12 phases). 20 orchestrator launches, 8 review sweeps, 4 fixer cycles. 334 files changed total.
+
+---
+
+## March 2026
+
 ### Session 672 (2026-03-29)
 **Work**: Added Phase 12 to forms plan. Gap analysis + review sweeps.
 

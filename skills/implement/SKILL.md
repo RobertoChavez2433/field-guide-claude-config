@@ -58,9 +58,9 @@ NEVER run `flutter clean`. It is prohibited.
 {
   "plan": "<plan file path>",
   "dispatch_groups": [
-    {"phases": [1], "status": "pending"},
-    {"phases": [2], "status": "pending"},
-    {"phases": [3, 4, 5, 6], "status": "pending"}
+    {"phases": [1], "status": "pending", "test_gate": "pending"},
+    {"phases": [2], "status": "pending", "test_gate": "pending"},
+    {"phases": [3, 4, 5, 6], "status": "pending", "test_gate": "pending"}
   ],
   "phases": [
     {
@@ -159,6 +159,25 @@ After the orchestrator returns, **always read the checkpoint file** to verify:
 
 This is the **trust-but-verify** step that prevents fabricated stats.
 
+#### 2c-test: End-of-Group Test Gate
+
+After checkpoint verification passes, run the full test suite ONCE for the group:
+
+1. Launch a qa-testing-agent via:
+   ```bash
+   unset CLAUDECODE && claude --agent qa-testing-agent --print --output-format text "Run the full Flutter test suite. Command: pwsh -Command \"flutter test\". Return the full output. NEVER run flutter clean."
+   ```
+   with `run_in_background: true`
+2. If all tests pass → update checkpoint: set `dispatch_groups[N].test_gate = "pass"` → proceed to 2d
+3. If tests fail → launch a general-purpose fixer agent with:
+   - The test failure output
+   - The list of ALL files modified in this group (from `checkpoint.modified_files`)
+   - "Fix the failing tests. Run `pwsh -Command 'flutter analyze'` after fixing to verify no regressions. NEVER run flutter clean."
+4. Re-run tests. Max 3 cycles.
+5. If still failing after 3 cycles → present to user as BLOCKED with test output
+
+Skip the test gate if no files were modified in this group (checkpoint.modified_files unchanged from before the group started).
+
 #### 2d: Handle Result
 
 | Status | Action |
@@ -178,6 +197,7 @@ After each group completes, report to the user:
 Group N complete (Phases X-Y).
   Phase X: DONE — Reviews: completeness=PASS, code=PASS, security=PASS
   Phase Y: DONE — Reviews: completeness=PASS, code=PASS, security=PASS
+  Test gate: PASS
   Files modified: [list]
 
 Proceeding to Group N+1...
@@ -194,6 +214,7 @@ After ALL dispatch groups complete, print this summary:
 
 **Plan**: [plan filename]
 **Orchestrator launches**: N (M handoffs)
+**Total test runs**: N (1 per group + retries)
 
 ### Phases
 1. [Phase name] — DONE
@@ -203,6 +224,11 @@ After ALL dispatch groups complete, print this summary:
    - Fix cycles: N
 2. [Phase name] — DONE
    ...
+
+### Groups
+- Group 1 (Phases X): Test gate PASS
+- Group 2 (Phases X-Y): Test gate PASS (1 retry)
+- ...
 
 ### Files Modified
 - [file list from checkpoint]
