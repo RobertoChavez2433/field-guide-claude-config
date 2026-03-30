@@ -2,6 +2,11 @@
 
 ## Active Patterns
 
+### [CONFIG] 2026-03-29: Supabase migration used UUID for app table PKs/FKs — remote schema uses TEXT
+**Pattern**: New table CREATE statements used `id UUID PRIMARY KEY DEFAULT gen_random_uuid()` and `UUID REFERENCES` for FK columns, but all existing app tables use `TEXT PRIMARY KEY` with app-generated UUIDs. Only `created_by_user_id`/`deleted_by` are UUID (reference `auth.users`).
+**Prevention**: Always check existing table id types before writing new CREATE TABLE migrations. App tables = TEXT PKs. Auth references = UUID.
+**Ref**: @supabase/migrations/20260328100000_fix_inspector_forms_and_new_tables.sql
+
 ### [ASYNC] 2026-03-03: BackgroundSyncHandler.close() closes singleton DB on mobile isolate exit
 **Pattern**: `backgroundSyncCallback()` in `background_sync_handler.dart:86` calls `await dbService.close()` after sync completes. Since `DatabaseService()` is a singleton (`_instance`), this closes the **same shared instance** that the foreground app uses. If the background task runs concurrently with a foreground DB operation (project delete, entry save, etc.), the foreground op throws `DatabaseException(database_closed 1)`.
 **Prevention**: Never call `DatabaseService.close()` from a background isolate that shares the singleton. Background tasks should use a separate `DatabaseService` instance, or omit the close (WAL mode handles cleanup). On desktop, the timer-based `_performDesktopSync()` is safe because it never calls `close()`, but the mobile `backgroundSyncCallback` is not.

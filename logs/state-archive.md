@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 672 (2026-03-29)
+**Work**: Added Phase 12 to forms plan. Gap analysis + review sweeps.
+
 ### Session 669 (2026-03-28)
 **Work**: Verified 10 S668 bugs (4 confirmed, 3 dismissed, 3 skipped). Fixed all 4. 3175 tests pass.
 **Decisions**: S09 root cause was unconditional change_log wipe — gated on rpcSucceeded flag.
