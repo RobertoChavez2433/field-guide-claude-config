@@ -133,6 +133,127 @@ Why this matters:
 - The file name implies real screen coverage, but the assertions are mostly detached model logic and no longer describe the actual screen implementation closely.
 - This is a test-hygiene problem, not just a naming issue, because it can create false confidence about stale UI coverage.
 
+### 8. High | Confirmed
+The default verification path is not exercising the integration-test surfaces that multiple tests and comments still treat as the place for "real" startup and widget coverage.
+
+Evidence:
+
+- CI only runs analyzer and `flutter test`:
+  - `.github/workflows/e2e-tests.yml:83`
+  - `.github/workflows/e2e-tests.yml:104`
+- The app-level smoke test explicitly defers real startup pumping to `integration_test/`:
+  - `test/widget_test.dart:2`
+  - `test/widget_test.dart:11`
+- The repo still contains active `integration_test/` files outside Patrol:
+  - `integration_test/mp_extraction_integration_test.dart`
+  - `integration_test/springfield_report_test.dart`
+  - `integration_test/rendering_diagnostic_test.dart`
+  - `integration_test/generate_mp_fixtures_test.dart`
+
+Why this matters:
+
+- A green default suite still does not prove the app bootstrap, rendered startup path, or integration diagnostics run correctly.
+- The testing story currently depends on a directory that the main CI workflow never executes.
+
+### 9. Medium | Confirmed
+The Patrol-to-new-testing-system migration left stale and partially broken references across workflows, docs, and generated artifacts.
+
+Evidence:
+
+- Both workflow files still point at a plan file that does not exist in `.claude/plans/`:
+  - `.github/workflows/e2e-tests.yml:22`
+  - `.github/workflows/nightly-e2e.yml:2`
+- Both workflow files also point at `integration_test/_deprecated/patrol/`, but that directory is not present:
+  - `.github/workflows/e2e-tests.yml:23`
+  - `.github/workflows/nightly-e2e.yml:3`
+- `integration_test/test_bundle.dart` is still generated Patrol scaffolding even though it intentionally contains no tests:
+  - `integration_test/test_bundle.dart:1`
+  - `integration_test/test_bundle.dart:13`
+  - `integration_test/test_bundle.dart:21`
+  - `integration_test/test_bundle.dart:36`
+- The top-level README still advertises Patrol scripts as the testing entrypoint:
+  - `README.md:79`
+  - `README.md:80`
+- The repo's testing rule/docs layer still centers Patrol:
+  - `.claude/rules/testing/patrol-testing.md:14`
+  - `.claude/docs/guides/testing/e2e-test-setup.md:5`
+
+Why this matters:
+
+- Contributors are given conflicting signals about what the authoritative E2E/integration path is.
+- Missing file references and empty generated Patrol scaffolding are dead process surface area, not just harmless comments.
+
+Classification: stale post-migration tooling drift.
+
+### 10. Medium | Confirmed
+Several screen test files are still labeled and organized as if they provide meaningful presentation coverage, but they mostly assert local boolean/math/model behavior instead of the real screen contracts.
+
+Evidence:
+
+- `test/features/quantities/presentation/screens/quantities_screen_test.dart:7` says full widget coverage lives in Patrol, while the file itself is dominated by local list/filter/value assertions.
+- `test/features/entries/presentation/screens/entry_editor_screen_test.dart:11` says real coverage requires Patrol, while the file mostly tests detached field-validation and collection logic.
+- `test/features/projects/presentation/screens/project_setup_screen_logic_test.dart:10` and `test/features/projects/presentation/screens/project_setup_screen_ui_state_test.dart:8` frame themselves as screen coverage, but rely on boolean state simulations rather than the widget tree.
+- `test/features/todos/presentation/screens/todos_screen_test.dart:8-12` explicitly says widget rendering lives in `integration_test/`, while the file mostly tests helper sorting/filtering logic.
+- `test/features/gallery/presentation/screens/gallery_screen_test.dart:9` similarly defers real widget coverage and tests pure filter helpers.
+
+Why this matters:
+
+- File names and group names overstate how much real presentation behavior is being verified.
+- Screen regressions in routing, provider wiring, visual states, and actual interaction contracts can slip through while these files still pass.
+
+### 11. Medium | Confirmed
+The thin helper and harness surfaces used to simplify tests are themselves lightly verified and encourage non-production app composition.
+
+Evidence:
+
+- `test/helpers/provider_wrapper.dart:5-30` only wraps children in `MaterialApp` and optional `ChangeNotifierProvider`s; it does not model the production router, shell, startup, or service graph.
+- `test/helpers/README.md:125-127` recommends those wrappers as the default pattern for "complex tests".
+- `test/helpers/README.md:140-142` still documents an old tree shape (`presentation/`, `widget_test.dart` as app-level widget tests) that no longer matches the current test layout closely.
+- Repo-wide search found no direct tests covering:
+  - `lib/test_harness/harness_providers.dart`
+  - `lib/test_harness/stub_router.dart`
+  - `lib/test_harness/flow_registry.dart`
+  - `lib/test_harness/screen_registry.dart`
+- Those harness files still compose their own large provider/router world and retain stale form-era routing:
+  - `lib/test_harness/harness_providers.dart:95`
+  - `lib/test_harness/harness_providers.dart:155`
+  - `lib/test_harness/stub_router.dart:4`
+  - `lib/test_harness/stub_router.dart:22`
+  - `lib/test_harness/flow_registry.dart:30`
+  - `lib/test_harness/flow_registry.dart:48`
+  - `lib/test_harness/screen_registry.dart:84`
+
+Why this matters:
+
+- The helpers make it easy to write passing tests against a much simpler environment than production.
+- Because the harness layer itself is unverified, the suite can inherit blind spots from its own test infrastructure.
+
+### 12. Medium | Confirmed
+Part of the PDF diagnostic verification stack depends on manually generated fixtures and local machine inputs that the automated quality gates do not enforce.
+
+Evidence:
+
+- `test/features/pdf/services/mp/mp_stage_trace_diagnostic_test.dart:18-19` requires regenerating fixtures via `integration_test/generate_mp_fixtures_test.dart`, and the diagnostic groups are skipped when fixtures are not populated:
+  - `test/features/pdf/services/mp/mp_stage_trace_diagnostic_test.dart:605`
+  - `test/features/pdf/services/mp/mp_stage_trace_diagnostic_test.dart:730`
+- `test/features/pdf/extraction/stages/cell_boundary_verification_test.dart` declares the current fixture state is empty/incomplete and skips multiple checks:
+  - `test/features/pdf/extraction/stages/cell_boundary_verification_test.dart:11-13`
+  - `test/features/pdf/extraction/stages/cell_boundary_verification_test.dart:161`
+  - `test/features/pdf/extraction/stages/cell_boundary_verification_test.dart:220`
+  - `test/features/pdf/extraction/stages/cell_boundary_verification_test.dart:318`
+  - `test/features/pdf/extraction/stages/cell_boundary_verification_test.dart:360`
+  - `test/features/pdf/extraction/stages/cell_boundary_verification_test.dart:411`
+  - `test/features/pdf/extraction/stages/cell_boundary_verification_test.dart:441`
+  - `test/features/pdf/extraction/stages/cell_boundary_verification_test.dart:492`
+- The fixture generator itself needs a Windows device target and an external PDF path:
+  - `integration_test/generate_mp_fixtures_test.dart:15-16`
+  - `integration_test/generate_mp_fixtures_test.dart:25-28`
+
+Why this matters:
+
+- These diagnostics can silently drop out of effective coverage when fixtures are stale, absent, or not regenerated on the right machine.
+- The current quality gates do not verify the prerequisites needed for those tests to remain meaningful.
+
 ## Coverage Gaps
 
 - No direct tests for startup/router composition: `AppInitializer`, `AppRouter`, `app_providers`.
@@ -145,3 +266,7 @@ Why this matters:
   - `user_certification_local_datasource`
 - No direct test file for `InspectorFormProvider`, despite it being a major hub in the new form architecture.
 - `ExportFormUseCase` tests stub out PDF generation and do not verify the real template-resolution path that is currently divergent from builtin registration.
+- No default CI job runs the current `integration_test/` directory, despite several comments and placeholder tests treating it as the location for real widget/integration coverage.
+- No direct tests verify the test harness itself: `harness_providers`, `stub_router`, `flow_registry`, or `screen_registry`.
+- No executable replacement is present in-repo for the deprecated Patrol widget/E2E coverage claims still referenced by several screen test files.
+- PDF diagnostic coverage depends on manual fixture generation and local environment setup, but the automated gates do not enforce fixture freshness or availability.

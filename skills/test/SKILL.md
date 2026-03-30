@@ -253,7 +253,7 @@ Write/update `.claude/test_results/<run>/report.md` after each tier:
 
 ## Key Reference: Testing Keys
 
-All widget keys live in `lib/shared/testing_keys/` (13 files). Read the relevant file
+All widget keys live in `lib/shared/testing_keys/` (16 files: 15 feature-specific + 1 barrel export). Read the relevant file
 before interacting with a feature. Keys are discoverable at runtime via
 `GET /driver/find?key=KEY_NAME`.
 
@@ -261,7 +261,9 @@ before interacting with a feature. Keys are discoverable at runtime via
 |------|-------|--------|
 | `auth_keys.dart` | `AuthTestingKeys` | Login, registration |
 | `common_keys.dart` | `CommonTestingKeys` | Shared widgets (dialogs, snackbars) |
+| `consent_keys.dart` | `ConsentTestingKeys` | Consent/ToS screens |
 | `contractors_keys.dart` | `ContractorsTestingKeys` | Contractor management |
+| `documents_keys.dart` | `DocumentsTestingKeys` | Documents management |
 | `entries_keys.dart` | `EntriesTestingKeys` | Daily entries |
 | `locations_keys.dart` | `LocationsTestingKeys` | Location management |
 | `navigation_keys.dart` | `NavigationTestingKeys` | Bottom nav, drawer |
@@ -269,6 +271,7 @@ before interacting with a feature. Keys are discoverable at runtime via
 | `projects_keys.dart` | `ProjectsTestingKeys` | Project CRUD |
 | `quantities_keys.dart` | `QuantitiesTestingKeys` | Quantity tracking |
 | `settings_keys.dart` | `SettingsTestingKeys` | App settings |
+| `support_keys.dart` | `SupportTestingKeys` | Support/help screens |
 | `sync_keys.dart` | `SyncTestingKeys` | Sync UI |
 | `testing_keys.dart` | — | Barrel export |
 | `toolbox_keys.dart` | `ToolboxTestingKeys` | Toolbox hub |

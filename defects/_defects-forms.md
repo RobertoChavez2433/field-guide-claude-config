@@ -2,10 +2,7 @@
 
 ## Active Patterns
 
-### [CONFIG] 2026-03-28: main_driver.dart missing seedBuiltinForms() — inspector_forms empty in E2E tests (BUG-S04)
-**Pattern**: `_seedBuiltinForms()` was private to `main.dart` and never called in `main_driver.dart`. In driver/E2E mode, `inspector_forms` table stayed empty, blocking all form-related test scenarios.
-**Prevention**: Any startup initialization in `main.dart` that is required for app functionality must also exist in `main_driver.dart`. Keep seed functions public so both entrypoints can share them.
-**Ref**: @lib/main_driver.dart:228, @lib/main.dart:565
+<!-- RESOLVED 2026-03-30 BUG-S04: main_driver.dart missing seedBuiltinForms() — seedBuiltinForms is now called via AppInitializer.initialize() from both main.dart and main_driver.dart. -->
 
 ### [DATA] 2026-03-27: _sendTest uses '--' sentinel string in numeric field of legal form
 **Pattern**: When `_test['moisture_pcf']` is empty, `percent_compaction` is set to the string `'--'` in the submitted test row JSON. This propagates into PDF rendering and sync payload — a sentinel value in a legally certified MDOT density test form.
@@ -26,7 +23,7 @@
 ### [FLUTTER] 2026-02-22: Plan decisions can contradict real-world workflow
 **Pattern**: Brainstorming plans may decide "no gate needed" but actual field inspectors need explicit confirmation steps.
 **Prevention**: For multi-step data entry flows, always validate plan decisions against real inspector workflow before implementing. Ask user if unclear.
-**Ref**: `.claude/plans/2026-02-22-0582b-proctor-2010-redesign.md` line 33
+**Ref**: `.claude/plans/completed/2026-02-22-0582b-proctor-2010-redesign.md` line 33
 
 ## BUG-2: Header confirmation inferred from autofill state in hub flow
 **Status**: RESOLVED | **Severity**: High | **Found**: Session 441 | **Resolved**: Session 441

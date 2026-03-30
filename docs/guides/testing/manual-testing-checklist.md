@@ -9,7 +9,7 @@
 
 ## Overview
 
-Comprehensive 168-point QA checklist covering all 12 features across 12 test suites. Structured for both smoke testing (8 steps, 5 min) and full regression testing (168 points, 45-60 min).
+Comprehensive QA checklist covering all 17 features across 17 test suites. Structured for both smoke testing (8 steps, 5 min) and full regression testing (45-60 min).
 
 ---
 
@@ -29,6 +29,11 @@ Comprehensive 168-point QA checklist covering all 12 features across 12 test sui
 | 10. Settings | Medium | 3 min | Themes, preferences |
 | 11. Navigation | Medium | 3 min | All routes work |
 | 12. Edge Cases | Low | 5 min | Error handling |
+| 13. Forms | High | 5 min | Templates, submissions |
+| 14. Calculator | Medium | 3 min | Calculations, history |
+| 15. Gallery | Medium | 3 min | Browse, filter |
+| 16. Todos | Medium | 3 min | Create, complete, delete |
+| 17. Consent/Legal | Critical | 3 min | ToS, privacy, consent flow |
 
 ---
 
@@ -518,6 +523,150 @@ Test each section of the entry wizard:
 
 ---
 
+## Suite 13: Forms (High)
+
+### 13.1 Form Template List
+- [ ] Navigate to Forms screen
+- [ ] Available form templates display
+- [ ] Empty state shows if no templates
+
+### 13.2 Create/Fill Form
+- [ ] Select a form template
+- [ ] Form fields render correctly
+- [ ] Fill in required fields
+- [ ] Submit/save form
+
+### 13.3 Form Submissions List
+- [ ] Submitted forms appear in list
+- [ ] Submission date and type visible
+- [ ] Tap submission to view details
+
+### 13.4 Edit Submission
+- [ ] Open existing submission
+- [ ] Edit field values
+- [ ] Save changes persist
+
+### 13.5 Form Validation
+- [ ] Required fields enforced
+- [ ] Invalid input shows errors
+- [ ] Cannot submit incomplete required fields
+
+**Pass Criteria**: Form templates load, submissions create/edit/save correctly
+
+---
+
+## Suite 14: Calculator (Medium)
+
+### 14.1 Calculator Access
+- [ ] Navigate to Calculator via Toolbox or direct route
+- [ ] Calculator screen loads
+
+### 14.2 Basic Calculations
+- [ ] Enter numeric values
+- [ ] Perform addition, subtraction, multiplication, division
+- [ ] Results display correctly
+
+### 14.3 Construction-Specific Functions
+- [ ] Specialty calculation modes available (if implemented)
+- [ ] Unit conversions work (if implemented)
+- [ ] Results are accurate
+
+### 14.4 Calculation History
+- [ ] Previous calculations listed (if implemented)
+- [ ] Tap history item to recall values
+
+**Pass Criteria**: Calculator performs accurate calculations, no crash on edge inputs
+
+---
+
+## Suite 15: Gallery (Medium)
+
+### 15.1 Gallery Access
+- [ ] Navigate to Gallery via Toolbox or direct route
+- [ ] Gallery screen loads
+- [ ] Photos display in grid/list
+
+### 15.2 Browse Photos
+- [ ] Scroll through all photos
+- [ ] Thumbnails load correctly
+- [ ] Tap photo to view full size
+
+### 15.3 Filter/Search
+- [ ] Filter by project (if implemented)
+- [ ] Filter by date range (if implemented)
+- [ ] Filter results are accurate
+
+### 15.4 Photo Actions
+- [ ] Share photo works
+- [ ] View photo metadata (project, date, caption)
+
+**Pass Criteria**: Gallery loads, browsing and filtering work, full-size view works
+
+---
+
+## Suite 16: Todos (Medium)
+
+### 16.1 Todo List
+- [ ] Navigate to Todos via Toolbox or direct route
+- [ ] Todo list loads
+- [ ] Existing todos display
+
+### 16.2 Create Todo
+- [ ] Tap "+" or "Add Todo"
+- [ ] Enter todo title/description
+- [ ] Save todo
+- [ ] New todo appears in list
+
+### 16.3 Complete Todo
+- [ ] Tap checkbox or complete action
+- [ ] Todo marked as complete
+- [ ] Completed state persists
+
+### 16.4 Delete Todo
+- [ ] Delete todo (swipe or button)
+- [ ] Confirmation if applicable
+- [ ] Todo removed from list
+
+### 16.5 Todo Filtering
+- [ ] Filter by complete/incomplete (if implemented)
+- [ ] Filter by project (if implemented)
+
+**Pass Criteria**: Todos create, complete, delete, list correctly
+
+---
+
+## Suite 17: Consent & Legal (Critical)
+
+### 17.1 First-Run Consent Flow
+- [ ] Fresh install or cleared data triggers consent screen
+- [ ] Terms of Service text accessible and readable
+- [ ] Privacy Policy text accessible and readable
+- [ ] Consent cannot be bypassed to reach app features
+
+### 17.2 Accept Consent
+- [ ] Tap "Accept" / "I Agree"
+- [ ] Consent recorded
+- [ ] App proceeds to login/registration
+- [ ] Consent screen does not reappear on restart
+
+### 17.3 Decline Consent
+- [ ] Tap "Decline" / "Reject"
+- [ ] App does not grant access to features
+- [ ] User informed they must accept to use app
+
+### 17.4 Re-view Legal Documents
+- [ ] Navigate to Settings > About or Legal
+- [ ] ToS link opens readable document
+- [ ] Privacy Policy link opens readable document
+
+### 17.5 Consent Version Update
+- [ ] If consent version changes, re-prompt appears (if implemented)
+- [ ] New consent recorded correctly
+
+**Pass Criteria**: Consent gate enforced on first run, legal documents accessible, no bypass path
+
+---
+
 ## Test Results Template
 
 ### Test Run Summary
@@ -540,7 +689,12 @@ Test each section of the entry wizard:
 | 10. Settings | /11 | | | |
 | 11. Navigation | /12 | | | |
 | 12. Edge Cases | /16 | | | |
-| **TOTAL** | /168 | | | |
+| 13. Forms | /13 | | | |
+| 14. Calculator | /8 | | | |
+| 15. Gallery | /9 | | | |
+| 16. Todos | /10 | | | |
+| 17. Consent/Legal | /11 | | | |
+| **TOTAL** | | | | |
 
 ### Bugs Found
 | ID | Suite | Severity | Description | Steps to Reproduce |

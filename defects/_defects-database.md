@@ -7,10 +7,7 @@
 **Prevention**: Always check existing table id types before writing new CREATE TABLE migrations. App tables = TEXT PKs. Auth references = UUID.
 **Ref**: @supabase/migrations/20260328100000_fix_inspector_forms_and_new_tables.sql
 
-### [ASYNC] 2026-03-03: BackgroundSyncHandler.close() closes singleton DB on mobile isolate exit
-**Pattern**: `backgroundSyncCallback()` in `background_sync_handler.dart:86` calls `await dbService.close()` after sync completes. Since `DatabaseService()` is a singleton (`_instance`), this closes the **same shared instance** that the foreground app uses. If the background task runs concurrently with a foreground DB operation (project delete, entry save, etc.), the foreground op throws `DatabaseException(database_closed 1)`.
-**Prevention**: Never call `DatabaseService.close()` from a background isolate that shares the singleton. Background tasks should use a separate `DatabaseService` instance, or omit the close (WAL mode handles cleanup). On desktop, the timer-based `_performDesktopSync()` is safe because it never calls `close()`, but the mobile `backgroundSyncCallback` is not.
-**Ref**: @lib/features/sync/application/background_sync_handler.dart:86
+<!-- RESOLVED 2026-03-30: BackgroundSyncHandler.close() closes singleton DB on mobile isolate exit — close() call no longer exists in the code. Ref: lib/features/sync/application/background_sync_handler.dart -->
 
 ### [CONFIG] 2026-02-22: Supabase RLS policies assumed columns that don't exist
 **Pattern**: Multi-tenant migration wrote one-hop `project_id` RLS policies for `entry_quantities` and `equipment`, but those tables have no `project_id` column. `entry_quantities` joins via `entry_id → daily_entries`, `equipment` joins via `contractor_id → contractors`.

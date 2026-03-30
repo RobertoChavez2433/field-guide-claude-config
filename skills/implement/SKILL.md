@@ -131,14 +131,14 @@ PLAN_PATH: <absolute path to plan file>
 CHECKPOINT_PATH: <absolute path to checkpoint JSON>
 PHASES_TO_EXECUTE: <comma-separated phase numbers, e.g. '1' or '3,4,5,6'>
 
-Read the plan and checkpoint. Implement ONLY the listed phases following your Implementation Loop. For each phase: dispatch implementer, run build, run reviews, fix issues, update checkpoint. Do NOT proceed to phases not in PHASES_TO_EXECUTE. When all listed phases are done, return STATUS: DONE. If context runs low, return STATUS: HANDOFF with current progress." 2>&1 | tee /tmp/implement-orchestrator-output.txt
+Read the plan and checkpoint. Implement ONLY the listed phases following your Implementation Loop. For each phase: dispatch implementer, run build, run reviews, fix issues, update checkpoint. Do NOT proceed to phases not in PHASES_TO_EXECUTE. When all listed phases are done, return STATUS: DONE. If context runs low, return STATUS: HANDOFF with current progress." 2>&1 | tee .claude/outputs/implement-orchestrator-output.txt
 ```
 
 **Launch parameters:**
 - `unset CLAUDECODE` — bypasses nested-session protection
 - `--print` — non-interactive headless mode
 - `--output-format text` — plain text output (parseable)
-- `| tee /tmp/implement-orchestrator-output.txt` — capture output to file AND display
+- `| tee .claude/outputs/implement-orchestrator-output.txt` — capture output to file AND display
 - `run_in_background: true` — always run as background task (no timeout limit)
 
 After launching, tell the user:

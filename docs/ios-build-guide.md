@@ -31,7 +31,7 @@
 - [ ] **2.8** Scroll to **Environment variables** section
 - [ ] **2.9** Create a new **group** named exactly: `supabase_credentials`
 - [ ] **2.10** Add variable `SUPABASE_URL`:
-  - Value: `https://vsqvkxvvmnnhdajtgblj.supabase.co`
+  - Value: `https://<PROJECT_REF>.supabase.co`
   - Check **Secure** (hides value in logs)
 - [ ] **2.11** Add variable `SUPABASE_ANON_KEY`:
   - Value: *(copy from your `.env` file)*

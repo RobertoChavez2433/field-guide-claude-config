@@ -129,9 +129,78 @@ Why this matters:
 - Future changes to consent, telemetry, or auth-lifecycle side effects can land in one entrypoint and silently miss the other.
 - This is wiring drift, not business logic, so it belongs in the composition root rather than being duplicated at the edge.
 
+### 9. High | Confirmed
+`AppInitializer` still bypasses the DI boundary and pulls `Supabase.instance.client` directly in several startup paths, so the refactor did not actually make the composition root singleton-free.
+
+Evidence:
+
+- `lib/core/di/app_initializer.dart:465` says the project lifecycle service should use an injected client rather than the singleton.
+- `lib/core/di/app_initializer.dart:468` still passes `Supabase.instance.client` directly into `ProjectLifecycleService`.
+- `lib/core/di/app_initializer.dart:527` constructs `ProjectRemoteDatasourceImpl(Supabase.instance.client)`.
+- `lib/core/di/app_initializer.dart:548` constructs `CompanyMembersRepository(Supabase.instance.client)`.
+- `lib/core/di/app_initializer.dart:588` constructs `UserProfileRemoteDatasource(Supabase.instance.client)`.
+- `lib/core/di/app_initializer.dart:597` constructs `AuthService(Supabase.instance.client)`.
+- `lib/core/di/app_initializer.dart:642` passes `Supabase.instance.client` directly into `AuthProvider`.
+- `lib/core/di/app_initializer.dart:679` constructs `AppConfigRepository(Supabase.instance.client)`.
+
+Why this matters:
+
+- The startup layer still has hidden global runtime dependencies even after the DI split.
+- Reusing the initializer in tests, alternate runtimes, or stricter harnesses still depends on ambient global Supabase state.
+- The comments and actual ownership model now disagree, which is an integrity problem in the composition root itself.
+
+Classification: stale post-refactor DI drift.
+
+### 10. Medium | Confirmed
+The entrypoint contract is still split across the active HTTP-driver bootstrap and older `flutter_driver` bootstraps, leaving a stale startup surface in the repo.
+
+Evidence:
+
+- `lib/main_driver.dart:8` documents the current driver entrypoint as `flutter run --target=lib/main_driver.dart --dart-define=DEBUG_SERVER=true`.
+- `lib/main_driver.dart:57-66` starts `DriverServer`, which is the current driver-mode bootstrap behavior.
+- `lib/driver_main.dart:2-7` is still a separate `flutter_driver` entrypoint that only enables `enableFlutterDriverExtension()` and forwards to production `main()`.
+- `lib/test_harness.dart:14-18` is a second `flutter_driver`-based bootstrap that also enables `enableFlutterDriverExtension()`.
+- `pubspec.yaml:119` still carries `flutter_driver` as a dev dependency.
+- `.claude/rules/testing/patrol-testing.md:8-9` still names both `lib/test_harness.dart` and `lib/driver_main.dart` as active test files.
+- Repo search found no active `.github`, `.vscode`, or README references that target `lib/driver_main.dart`; current active planning references center on `lib/main_driver.dart` and `lib/test_harness.dart`.
+
+Why this matters:
+
+- There is no single authoritative answer for which non-production app bootstrap is current.
+- `lib/driver_main.dart` is now primarily compatibility surface area around an older driving stack, not a clearly maintained path.
+- Keeping multiple overlapping bootstraps makes it easier for future test or tooling changes to land on the wrong entrypoint.
+
+Classification: stale legacy entrypoint left behind after the driver/testing migration.
+
+### 11. Medium | Confirmed
+`app_router.dart` is still a hybrid composition file that mixes redirect policy, route registration, shell chrome, sync/config banners, and testing-key ownership in one place.
+
+Evidence:
+
+- `lib/core/router/app_router.dart` is `876` lines with `39` imports.
+- `lib/core/router/app_router.dart:147-343` owns the top-level redirect matrix.
+- `lib/core/router/app_router.dart:425-745` owns the route table and route-specific extra parsing.
+- `lib/core/router/app_router.dart:747-876` also owns `ScaffoldWithNavBar`.
+- `lib/core/router/app_router.dart:770-845` wires `SyncProvider`, `AppConfigProvider`, retry banners, stale-data banners, and offline banners into the shell.
+- `lib/core/router/app_router.dart:765` injects `ProjectSwitcher` into the app bar.
+- `lib/core/router/app_router.dart:795` and `lib/core/router/app_router.dart:804` render `VersionBanner` and `StaleConfigWarning`.
+- `lib/core/router/app_router.dart:870-872` renders `ExtractionBanner` and assigns `TestingKeys.bottomNavigationBar`.
+- `lib/core/router/app_router.dart:14-39` imports broad shared and feature presentation barrels directly into the router layer.
+
+Why this matters:
+
+- Route-policy changes and shell-UI changes share one large file and one import surface.
+- This increases blast radius for startup and navigation work and makes router integrity harder to verify in isolation.
+- It also keeps the routing layer tightly coupled to broad presentation barrels and shared compatibility surfaces rather than a narrower navigation contract.
+
+Classification: structural integrity debt that survived the routing refactor.
+
 ## Coverage Gaps
 
 - No direct tests for startup composition, router redirect matrix, or background sync bootstrap.
 - The existing suite passing does not verify that the composed production app uses the same routing/wiring objects that `AppInitializer` constructs.
 - No direct router tests cover the combined password-recovery, force-update, force-reauth, onboarding, and consent redirect matrix in one place.
 - No direct test verifies that `main.dart` and `main_driver.dart` keep equivalent consent/router/bootstrap behavior.
+- No direct test verifies that `AppInitializer.initialize()` can be composed without relying on ambient `Supabase.instance` state.
+- No direct test or tooling contract identifies the canonical non-production bootstrap among `lib/main_driver.dart`, `lib/test_harness.dart`, and `lib/driver_main.dart`.
+- No direct test covers `ScaffoldWithNavBar` shell behavior as a unit separate from the full router graph.

@@ -92,7 +92,85 @@ Why this matters:
 - Shared testing utilities are part of the maintained API of the codebase.
 - Keeping stale screen contracts alive in shared helpers makes drift harder to remove and easier to accidentally preserve in new tests.
 
+### 7. Medium | Confirmed
+The shared umbrella barrel has become a catch-all compatibility import that blurs layer boundaries instead of enforcing them.
+
+Evidence:
+
+- `lib/shared/shared.dart:1-10` exports datasources, domain models, providers, repositories, preferences, testing keys, time provider, utils, validation, and widgets from one surface.
+- The barrel is imported broadly across runtime code, including:
+  - `lib/core/router/app_router.dart:14`
+  - `lib/features/pdf/services/pdf_service.dart:21`
+  - `lib/features/projects/presentation/screens/project_setup_screen.dart:9`
+  - `lib/features/entries/presentation/screens/entry_editor_screen.dart:11`
+- Repo-wide search during this pass found `84` production imports of `package:construction_inspector/shared/shared.dart`.
+- Even shared widgets use the broad barrel where they only need testing keys:
+  - `lib/shared/widgets/confirmation_dialog.dart:2`
+  - `lib/shared/widgets/permission_dialog.dart:4`
+
+Why this matters:
+
+- A single import now exposes UI helpers, testing contracts, and data-layer primitives together.
+- This makes dependency review harder and lets cross-layer coupling spread silently.
+- It also makes later cleanup riskier because removing any shared export can have unexpectedly wide impact.
+
+### 8. Medium | Confirmed
+The testing-key compatibility surface now preserves multiple overlapping names for the same widget contracts, which reduces test specificity and keeps stale vocabulary alive.
+
+Evidence:
+
+- `lib/shared/testing_keys/navigation_keys.dart:15` aliases `bottomNavCalendar` directly to `calendarNavButton` for test compatibility.
+- `lib/shared/testing_keys/navigation_keys.dart:23-25` intentionally gives `addProjectFab` the same key string as `ProjectsTestingKeys.projectCreateButton`.
+- `lib/shared/testing_keys/projects_keys.dart:100-104` defines `projectCreateButton = Key('project_create_button')`.
+- The real runtime widget in `lib/features/projects/presentation/screens/project_list_screen.dart:356-362` is keyed as `TestingKeys.addProjectFab`.
+- `test/features/projects/presentation/screens/project_list_screen_test.dart:280`, `:329`, `:604`, `:619`, and `:634` assert both `TestingKeys.addProjectFab` and `TestingKeys.projectCreateButton` against the same creation surface.
+- `lib/shared/testing_keys/toolbox_keys.dart:246-259` still carries legacy generic calculator keys explicitly marked as legacy, and repo-wide search during this pass found no active runtime or test references to those key constants outside the testing-key facade itself.
+
+Why this matters:
+
+- Old and new test names can both pass while referring to one widget, so tests are less precise than they appear.
+- The shared testing API is preserving compatibility vocabulary instead of forcing tests onto the current product contract.
+- Unused legacy key families are dead shared API surface that still has to be maintained and understood.
+
+### 9. Medium | Confirmed
+`SearchBarField` does not handle controller replacement, so the shared widget can leave a listener on an old controller and stop reacting correctly when a parent swaps controllers.
+
+Evidence:
+
+- `lib/shared/widgets/search_bar_field.dart:35-43` adds the listener in `initState()` and removes it in `dispose()`.
+- `lib/shared/widgets/search_bar_field.dart:46-47` depends on that listener to call `setState()` and keep the clear-button state in sync.
+- The widget does not implement `didUpdateWidget`, so there is no handoff path when `widget.controller` changes.
+- It is used as a reusable shared component in:
+  - `lib/features/projects/presentation/screens/project_list_screen.dart:1004-1008`
+  - `lib/features/quantities/presentation/screens/quantities_screen.dart:181-186`
+
+Why this matters:
+
+- The shared widget contract is only safe when parents never replace controllers.
+- If a controller is swapped during rebuilds, the old controller keeps the listener and the new controller will not drive the suffix-icon state.
+- This is a reusable-component hygiene bug, not just a local screen quirk.
+
+### 10. Medium | Confirmed
+`ContextualFeedbackOverlay` can strand a global overlay on screen when the calling widget unmounts before the auto-dismiss timer fires.
+
+Evidence:
+
+- `lib/shared/widgets/contextual_feedback_overlay.dart:24` stores overlay state in a global static `_currentOverlay`.
+- `lib/shared/widgets/contextual_feedback_overlay.dart:113-118` removes the overlay only when `_currentOverlay != null && mounted()`.
+- If the caller-provided `mounted()` callback returns `false`, the code does not remove the overlay and does not clear `_currentOverlay`.
+- The shared overlay is used from live screen flows such as:
+  - `lib/features/entries/presentation/screens/entries_list_screen.dart:83-90`
+  - `lib/features/entries/presentation/screens/home_screen.dart:241`
+
+Why this matters:
+
+- A transient feedback overlay can outlive the screen that created it and remain visible after navigation/disposal.
+- Because the state is static, this leak is app-global rather than local to one widget instance.
+- This is exactly the kind of subtle shared-utility failure that is easy to miss in manual verification and hard to diagnose later.
+
 ## Coverage Gaps
 
 - Shared theme behavior is well represented by golden tests, but the analyzer results show the golden suite itself still depends on deprecated theme tokens.
 - There is no single hygiene gate today that prevents deprecated theme aliases from continuing to spread.
+- `test/golden/widgets/confirmation_dialog_test.dart` is the only direct shared-widget coverage found in this pass; there are no direct widget tests for `SearchBarField`, `VersionBanner`, `StaleConfigWarning`, `showStoragePermissionDialog()`, or `ContextualFeedbackOverlay`.
+- There is no test asserting that testing-key aliases are intentional and still mapped to the right live widgets, or that unused legacy testing keys are being retired instead of preserved indefinitely.

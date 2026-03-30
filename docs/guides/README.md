@@ -17,15 +17,11 @@ Technical how-to guides for common features and patterns.
 
 | Guide | Purpose | Used By |
 |-------|---------|---------|
-| [Pagination Widgets Guide](implementation/pagination-widgets-guide.md) | Using pagination UI components and infinite scroll lists | frontend-flutter-specialist-agent |
 | [Chunked Sync Usage](implementation/chunked-sync-usage.md) | Configuring and using chunked data sync with progress tracking | backend-supabase-agent |
 
 ## How Agents Reference These
 
 Agents load relevant implementation guides based on their specialization:
-
-### Frontend Agent
-- Uses `guides/implementation/pagination-widgets-guide.md` for list UI patterns
 
 ### Backend Supabase Agent
 - Uses `guides/implementation/chunked-sync-usage.md` for large dataset sync
@@ -34,8 +30,6 @@ Agents load relevant implementation guides based on their specialization:
 - Uses both `guides/testing/*` for test setup and verification
 
 ## When to Use Each Guide
-
-**Implementing a new feature list?** → Pagination Widgets Guide
 
 **Handling large data syncs?** → Chunked Sync Usage
 

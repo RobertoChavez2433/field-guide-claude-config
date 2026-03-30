@@ -143,6 +143,74 @@ Why this matters:
 
 Classification: state ownership debt, not dead code.
 
+### 9. Medium | Confirmed
+The provider/DI slice is still carrying stale import debt from the refactor, and the targeted analyzer output is now mostly hygiene noise rather than signal.
+
+Evidence:
+
+- A targeted provider-state analyzer sweep reported `38` issues across this layer on `2026-03-30`.
+- Redundant DI imports are confirmed in active provider modules:
+  - `lib/features/forms/di/forms_providers.dart:5-16`
+  - `lib/features/calculator/di/calculator_providers.dart:4`
+  - `lib/features/todos/di/todos_providers.dart:4`
+- The same analyzer pass also still reports a long tail of `unnecessary_overrides` across provider files, including:
+  - `lib/features/forms/presentation/providers/document_provider.dart:134`
+  - `lib/features/forms/presentation/providers/inspector_form_provider.dart:469`
+  - `lib/features/projects/presentation/providers/project_assignment_provider.dart:164`
+  - `lib/features/quantities/presentation/providers/entry_quantity_provider.dart:370`
+  - `lib/features/settings/presentation/providers/admin_provider.dart:293`
+
+Why this matters:
+
+- The provider layer now has enough analyzer-only clutter that real lifecycle or state defects are harder to spot during review.
+- Several DI modules are simultaneously importing feature barrels and the same symbols directly, which is a sign that the refactor cleanup stopped mid-stream.
+
+### 10. Medium | Confirmed
+Provider barrel exports have drifted into partial compatibility shims rather than a consistent public surface.
+
+Evidence:
+
+- `lib/features/settings/presentation/providers/providers.dart:1-5` exists, but a repo-wide search found no imports of `features/settings/presentation/providers/providers.dart`.
+- `lib/features/projects/presentation/providers/providers.dart:1-3` exports only `ProjectProvider` and `ProjectSettingsProvider`, while repo-wide search found `5` barrel imports versus `43` direct imports of concrete project-provider files such as `project_assignment_provider.dart`, `project_sync_health_provider.dart`, and `project_import_runner.dart`.
+- `lib/features/forms/presentation/providers/providers.dart:1-3` is similarly lightly used: repo-wide search found `1` barrel import versus `20` direct imports of `inspector_form_provider.dart`, `form_export_provider.dart`, and `document_provider.dart`.
+
+Why this matters:
+
+- The codebase no longer has a clear rule for whether provider classes are meant to be consumed through barrels or through concrete files.
+- Low-use barrel files are easy to leave stale, while direct-import consumers quietly bypass whatever API boundary those barrels were meant to represent.
+
+### 11. High | Confirmed
+The test harness still maintains a second, hand-built provider composition root instead of reusing the feature DI modules and production provider graph.
+
+Evidence:
+
+- `lib/test_harness/harness_providers.dart` is `315` lines long and imports a broad mix of datasource, repository, service, use-case, and provider classes directly at `lib/test_harness/harness_providers.dart:1-90`.
+- It rebuilds repositories and use cases inline at `lib/test_harness/harness_providers.dart:99-203`.
+- It then constructs providers directly instead of delegating to `buildAppProviders(...)` or the feature DI modules at `lib/test_harness/harness_providers.dart:205-315`.
+- The duplicated graph still contains known integrity drift points, including:
+  - `ProjectProvider(projectRepository)` with manual setup instead of `initWithAuth(...)`-driven feature wiring at `lib/test_harness/harness_providers.dart:239-253`
+  - raw `SyncProvider(syncOrchestrator)` creation at `lib/test_harness/harness_providers.dart:288-290`
+  - `InspectorFormProvider(..., canWrite: () => true)` at `lib/test_harness/harness_providers.dart:292-301`
+
+Why this matters:
+
+- This is effectively a second provider composition root with different ownership rules.
+- Every provider-layer refactor now has to keep production DI and harness DI in sync by convention, which is exactly how stale state wiring survives.
+
+### 12. Medium | Confirmed
+Provider-module comments and contract notes are stale enough to misrepresent how the layer actually works.
+
+Evidence:
+
+- `lib/features/projects/di/projects_providers.dart:21-22` still says the logic is a "mechanical move" identical to `main.dart lines 827-901`, but `lib/main.dart` is only `203` lines long.
+- `lib/features/forms/di/forms_providers.dart:21-24` and `lib/features/forms/di/forms_providers.dart:68-69` still describe the ordering as "compile-time enforced."
+- `lib/features/entries/di/entries_providers.dart:23-26` repeats the same claim, but the module still relies on `context.read<ExportFormUseCase>()` at `lib/features/entries/di/entries_providers.dart:63-70`, which is a runtime provider-order contract.
+
+Why this matters:
+
+- These comments are active maintenance guidance for a layer that already depends on subtle registration order and lifecycle rules.
+- Incorrect comments are not harmless here; they make fragile runtime coupling look stronger and more intentional than it really is.
+
 ## Coverage Gaps
 
 - Providers have broad test coverage in aggregate, but composition-order assumptions in `app_providers.dart` are not directly tested.
@@ -161,3 +229,6 @@ Classification: state ownership debt, not dead code.
   - `EntryQuantityProvider` mutation methods
   - `PhotoProvider.updatePhoto()`
   - `DocumentProvider.attachDocument()` / `deleteDocument()`
+- No quality gate currently fails this layer on provider/DI hygiene regressions such as `unnecessary_import` or `unnecessary_overrides`; the targeted analyzer pass surfaced `38` issues without evidence of a blocking check.
+- No tests protect the provider barrels as intended public API surfaces, so partially obsolete barrels like `features/settings/presentation/providers/providers.dart` can remain in-tree without any consumer or parity signal.
+- No automated check verifies that `lib/test_harness/harness_providers.dart` stays behaviorally aligned with `buildAppProviders(...)` and the feature DI modules after provider refactors.

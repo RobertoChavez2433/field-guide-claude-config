@@ -173,7 +173,7 @@ Screen -> Provider -> Repository -> Datasource -> SQLite/Supabase
 - **Conflict**: [Last-write-wins / Merge / Prompt user]
 
 ### Queue Behavior
-- Pending changes stored in: `sync_queue` table
+- Pending changes stored in: `change_log` table
 - Retry: [Policy for failed syncs]
 ```
 

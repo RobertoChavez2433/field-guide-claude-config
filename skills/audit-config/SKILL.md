@@ -33,7 +33,7 @@ Fallback: Use Glob + Grep + Read if CodeMunch unavailable.
 For each `.claude/` file in scope:
 - `docs/features/` (26 files + README)
 - `prds/` (14 files)
-- `agents/` (9 files)
+- `agents/` (13 files: 10 definitions + 3 memory files)
 - `agent-memory/` (10 files across 8 dirs)
 - `architecture-decisions/` (15 files)
 - `rules/` (9-11 files)

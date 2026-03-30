@@ -191,6 +191,66 @@ Why this matters:
 
 Classification: stale migration architecture that survived the recent refactors.
 
+### 12. Medium | Confirmed
+The shared datasource layer still exports dead compatibility API surface through `query_mixins.dart`, but nothing in the repo uses it anymore.
+
+Evidence:
+
+- `lib/shared/datasources/query_mixins.dart:4-28` defines `BatchOperationsMixin`.
+- `lib/shared/datasources/datasources.dart:6` still re-exports `query_mixins.dart`.
+- Repo-wide search for `BatchOperationsMixin`, `insertBatch(`, and `deleteBatch(` only returns:
+  - `lib/shared/datasources/query_mixins.dart`
+  - `lib/shared/datasources/datasources.dart`
+- No production datasource, repository, or test mixes it in.
+
+Why this matters:
+
+- The shared data-layer API advertises an extra abstraction that is not part of the active architecture.
+- That increases noise in the datasource layer and makes it harder to tell which shared primitives are actually maintained contracts.
+- It is dead code at the shared data abstraction boundary, not unfinished recent work.
+
+Classification: stale compatibility surface in the shared data layer.
+
+### 13. Medium | Confirmed
+The repo still carries a legacy `sync_queue` migration test surface that no longer matches the real production runtime path.
+
+Evidence:
+
+- `test/features/sync/schema/sync_queue_migration_test.dart:6` explicitly describes itself as a "conceptual sync_queue -> change_log migration path."
+- `test/features/sync/schema/sync_queue_migration_test.dart:20-28` manually creates a `sync_queue` table because the test helper no longer creates it.
+- `test/features/sync/schema/sync_queue_migration_test.dart:37` still groups the file around `sync_queue -> change_log migration`.
+- Production migration history only references `sync_queue` inside the old upgrade path:
+  - `lib/core/database/database_service.dart:281-299`
+  - `lib/core/database/database_service.dart:1325-1347`
+  - `lib/core/database/database_service.dart:1454-1457`
+- The current runtime schema definition does not create `sync_queue`; `SyncEngineTables` uses `change_log`, `conflict_log`, and related engine tables instead.
+
+Why this matters:
+
+- The test is green even though it is validating a manually recreated legacy table rather than the current production schema path.
+- It preserves confidence around a removed architecture surface instead of current data-engine behavior.
+- For a pre-production audit, this is stale verification debt rather than meaningful active coverage.
+
+Classification: stale legacy migration test surface.
+
+### 14. Medium | Confirmed
+Some entry flows still depend directly on local datasource types from the presentation layer, so the repository/use-case boundary is not actually clean in this slice of the data stack.
+
+Evidence:
+
+- `lib/features/entries/presentation/controllers/contractor_editing_controller.dart:4,35-42` imports contractor local datasources and stores `EntryPersonnelCountsLocalDatasource`, `EntryEquipmentLocalDatasource`, and `EntryContractorsLocalDatasource` directly.
+- `lib/features/entries/presentation/widgets/entry_contractors_section.dart:3,40` imports and accepts `EntryContractorsLocalDatasource`.
+- `lib/features/entries/presentation/controllers/pdf_data_builder.dart:7,49-50` imports and requires local datasource types for counts/equipment reads.
+- `lib/features/entries/presentation/screens/home_screen.dart:15,186-188` resolves those datasource types directly from the provider tree with `context.read<...LocalDatasource>()`.
+
+Why this matters:
+
+- Local schema and persistence details are still leaking upward into presentation-facing controllers and widgets.
+- That weakens the claimed repository/domain split in the data layer because UI-adjacent code can still bind to datasource-specific APIs.
+- It makes future datasource changes riskier and pushes data-boundary testing concerns into higher layers.
+
+Classification: post-refactor boundary drift between data and presentation layers.
+
 ## Coverage Gaps
 
 - No direct test files exist for:
@@ -205,3 +265,5 @@ Classification: stale migration architecture that survived the recent refactors.
   - `test/features/sync/engine/sync_engine_test.dart:1104-1115` explicitly states parts of the retry coverage "do NOT exercise production code"
   - `test/core/driver/driver_server_sync_status_test.dart:17-21` uses a fake contract surface because the real orchestrator depends on DB/Supabase
 - There is still no direct test proving the real `SyncOrchestrator` constructor + setter wiring + global client access path behaves correctly in production shape.
+- No direct test covers the shared datasource compatibility surface in `query_mixins.dart`; the exported batch API is effectively unverified and unused.
+- The remaining `sync_queue` migration test coverage is aimed at a manually recreated legacy schema, not the live production engine path.

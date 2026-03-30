@@ -18,7 +18,7 @@ SyncProvider (lib/features/sync/presentation/providers/sync_provider.dart)
               ├─> ChangeTracker (lib/features/sync/engine/change_tracker.dart)
               ├─> IntegrityChecker (lib/features/sync/engine/integrity_checker.dart)
               ├─> OrphanScanner (lib/features/sync/engine/orphan_scanner.dart)
-              └─> TableAdapter (lib/features/sync/engine/adapters/{table}_adapter.dart)
+              └─> TableAdapter (lib/features/sync/adapters/{table}_adapter.dart)
                   └─> Supabase client (via supabase_flutter)
 ```
 
@@ -27,7 +27,7 @@ SyncProvider (lib/features/sync/presentation/providers/sync_provider.dart)
 - `SyncEngine.pull()` — entry to inbound sync
 - `ChangeTracker.getPendingChanges()` — what's waiting to sync
 - `TableAdapter.toSupabaseMap()` — data shape before upload
-- `SyncRegistry.registerSyncAdapters()` — adapter registration order matters
+- `registerSyncAdapters()` — adapter registration order matters
 
 **Logger category**: `sync`
 
@@ -161,7 +161,7 @@ WorkManager task registration (lib/main.dart or background setup)
 - `BackgroundSyncHandler.backgroundSyncCallback()` — entry point for WorkManager task
 - Task registration: check WorkManager constraints (network, battery)
 - `SyncLifecycleManager.onAppResume()` — foreground sync trigger
-- App lifecycle events: `AppLifecycleLogger` (lib/core/logging/)
+- App lifecycle events: `AppLifecycleLogger` (lib/core/logging/logger.dart)
 
 **Logger category**: `bg`
 
@@ -192,7 +192,7 @@ FlutterError.onError (set in lib/main.dart)
 
 ```
 WidgetsBindingObserver.didChangeAppLifecycleState
-  └─> AppLifecycleLogger (lib/core/logging/) — logs transitions
+  └─> AppLifecycleLogger (lib/core/logging/logger.dart) — logs transitions
       └─> SyncLifecycleManager — triggers sync on resume
           └─> AuthProvider — validates session on resume
 ```

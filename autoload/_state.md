@@ -1,39 +1,49 @@
 # Session State
 
-**Last Updated**: 2026-03-30 | **Session**: 681
+**Last Updated**: 2026-03-30 | **Session**: 682
 
 ## Current Phase
-- **Phase**: Codebase cleanup plan IMPLEMENTED. 22 phases complete. Tests running.
-- **Status**: 0 analyze errors. All 22 phases passed reviews. Test results pending (full suite running).
+- **Phase**: Claude directory update IMPLEMENTED. 13 phases + 5 review/fix sweeps complete.
+- **Status**: All files verified. 0 active phantom paths. Ready to commit.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (681)
+### What Was Done This Session (682)
 
-1. **Executed 22-phase codebase cleanup plan** via `/implement`:
-   - 10 orchestrator launches (optimized from 22 via phase merging + parallel dispatch)
-   - Parallelized where possible: G7+G9 ran simultaneously, internal agents parallelized within groups
-   - All 22 phases passed completeness, code review, and security reviews
-   - Skipped per-phase test runs (analyze-only) per user request for speed
-   - Final `flutter analyze`: 0 errors, 1 pre-existing warning
-   - Final `flutter test`: running (awaiting results)
-2. **Phase merges to avoid file conflicts**:
-   - Phase 4 + 22.3 (logger.dart), 6.1+8 (project_setup_screen), 6.2+7 (entry_editor_screen), 6.3+14.1 (app_router.dart)
-3. **User feedback applied**: no per-phase tests (analyze only), launch multiple orchestrators in parallel when no file overlap
+1. **Executed 13-phase `.claude/` directory audit update** via `/implement`:
+   - 12 orchestrator launches (1 per dispatch group)
+   - Groups 8+9 (PRDs + Constraints) launched in parallel
+   - Groups 10+11 (State/Defects/Skills + Guides/Index) launched in parallel
+   - All 13 phases passed orchestrator reviews
+   - 96 files modified across `.claude/`
+2. **5 independent review/fix sweeps** (3 opus agents per sweep = 15 total review agents):
+   - Sweep 1: 18 fixes (Riverpod→Provider, hardcoded Supabase IDs, sync_status deprecation, sync_queue→change_log, phantom class names)
+   - Sweep 2: 16 fixes (MdotPdfFiller→function, CLAUDE.md skills count, FEATURE-MATRIX docs, AGENT-FEATURE-MAPPING discrepancies)
+   - Sweep 3: 15 fixes (forms-prd/sync-prd Riverpod, toolbox AppTheme, auth-prd phantom screens, ConflictRecord→ConflictWinner, toolbox todos table)
+   - Sweep 4: 4 fixes (pagination-widgets-guide refs in INDEX.md/README.md, patrol paths marked planned, driver-integration keys count)
+   - Sweep 5: 13 fixes (supabase_sync_adapter phantom, entry widget phantoms, interface-design skill paths, defect/memory broken links to completed/archived)
+   - Final verification: 0 active phantoms remaining
+3. **Key corrections across all `.claude/`**:
+   - All `sync_queue` → `change_log`
+   - All `AppTheme.*` → `FieldGuideColors.of(context).*`
+   - All `Riverpod` → `Provider` in rules/agents
+   - All hardcoded Supabase project IDs → `<PROJECT_REF>`
+   - All phantom class/screen names verified against codebase
+   - `pagination-widgets-guide.md` deleted + all references cleaned
+   - 4 new feature docs created (forms, calculator, gallery, todos)
 
 ### What Needs to Happen Next
 
-1. **Verify test results** — full suite was running when session ended
-2. **Commit cleanup changes** — large diff, may want to split by part
-3. **EXECUTE .CLAUDE DIRECTORY UPDATE**: `/implement` on `.claude/plans/2026-03-30-claude-directory-audit-update.md`
-4. **Push Supabase migrations** — `npx supabase db push` (2 new migrations from S677)
-5. **Resume 0582B + IDR fixes** — paused for forms infrastructure
+1. **Commit changes** — break into logical commits, commit both repos (app + .claude/)
+2. **Run flutter test** — verify codebase cleanup (S681) didn't break tests
+3. **Push Supabase migrations** — `npx supabase db push` (2 new migrations from S677)
+4. **Resume 0582B + IDR fixes** — paused for forms infrastructure
 
-### What Was Done Last Session (680)
-Implemented /implement skill performance optimization. Parallel batching, analyze-only per batch, 3xN parallel reviews, deferred test gate, batched checkpoint writer. 2 config files changed.
+### What Was Done Last Session (681)
+Executed 22-phase codebase cleanup (/implement). 10 orchestrator launches, parallel dispatch. All phases passed reviews. Analyze clean (0 errors). Tests pending.
 
 ### Committed Changes
-None yet — test results pending.
+None yet — both codebase cleanup (S681) and .claude/ directory update (S682) uncommitted.
 
 ## Blockers
 
@@ -51,6 +61,11 @@ None yet — test results pending.
 
 ## Recent Sessions
 
+### Session 682 (2026-03-30)
+**Work**: Executed 13-phase .claude/ directory audit update (/implement). 12 orchestrator launches. 5 review/fix sweeps (15 opus review agents, 66 total fixes). 96 files modified. 0 active phantoms remaining.
+**Decisions**: Parallel dispatch for Groups 8+9 and 10+11. User-requested aggressive review loops caught 66 findings missed by per-phase orchestrator reviews.
+**Next**: Commit both repos → flutter test → Supabase push.
+
 ### Session 681 (2026-03-30)
 **Work**: Executed 22-phase codebase cleanup (/implement). 10 orchestrator launches, parallel dispatch (G7+G9 simultaneous). All phases passed reviews. Analyze clean. Tests pending.
 **Decisions**: Skip per-phase tests for speed (analyze-only). Launch parallel orchestrators when no file overlap. Phase merges: 4+22.3, 6.1+8, 6.2+7, 6.3+14.1.
@@ -66,11 +81,6 @@ None yet — test results pending.
 **Decisions**: Structural depth (option B) for feature docs. Forms PRD only (skip calculator/gallery/todos). Tier-based execution order. FieldGuideColors.statusSuccess not .success for color mappings.
 **Next**: /implement .claude/ directory update → /implement codebase cleanup.
 
-### Session 678 (2026-03-30)
-**Work**: Deep codebase audit (5 opus agents). 60+ findings. Wrote 22-phase cleanup plan (4 parallel plan writers, ~4950 lines). 2 adversarial reviews, 3 blocking fixes applied inline.
-**Decisions**: ScopeType.viaUser doesn't exist — use ScopeType.direct + pullFilter() override for user-scoped sync adapters. FutureBuilder in GoRouter is anti-pattern — resolve formType in screen initState instead. FCM sync trigger needs 60s debounce. Consent adapter needs insertOnly flag.
-**Next**: /implement cleanup plan → .claude/ directory update.
-
 ## Active Debug Session
 
 None active.
@@ -78,7 +88,7 @@ None active.
 ## Test Results
 
 ### Flutter Unit Tests
-- **Full suite**: PENDING (running at session end, S681)
+- **Full suite**: PENDING (not run since S681)
 - **PDF tests**: 911/911 PASSING (S677)
 - **Analyze**: PASSING (0 errors, 1 warning — pre-existing)
 
@@ -89,7 +99,7 @@ None active.
 
 ## Reference
 - **Codebase Cleanup Plan (IMPLEMENTED)**: `.claude/plans/2026-03-30-codebase-cleanup.md`
-- **Claude Directory Update Plan (READY)**: `.claude/plans/2026-03-30-claude-directory-audit-update.md`
+- **Claude Directory Update Plan (IMPLEMENTED)**: `.claude/plans/2026-03-30-claude-directory-audit-update.md`
 - **Forms Infrastructure Plan (IMPLEMENTED)**: `.claude/plans/2026-03-28-forms-infrastructure.md`
 - **UI Refactor V2 Plan (IMPLEMENTED)**: `.claude/plans/2026-03-28-ui-refactor-v2.md`
 - **Clean Architecture Plan (IMPLEMENTED)**: `.claude/plans/2026-03-29-clean-architecture-refactor.md`

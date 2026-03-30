@@ -9,7 +9,7 @@
 
 The `.claude/docs/` folder is now organized into two main sections:
 
-### 📁 `features/` - Feature Documentation (26 files)
+### 📁 `features/` - Feature Documentation (34 files)
 
 Complete documentation for all 17 features. Each feature has:
 - **`feature-{name}-overview.md`** - Quick reference (purpose, capabilities, data model, sync strategy)
@@ -35,18 +35,29 @@ How-to guides and references organized by type:
   - Device setup, animation settings, permissions, CI/CD integration
   - Test flags, environment configuration, common issues
 
-#### `guides/implementation/` (2 files)
-- **`pagination-widgets-guide.md`** - Infinite scroll list UI implementation
-  - Used by: **frontend-flutter-specialist-agent**
-  - Quick start, widget types, provider requirements, advanced patterns
-  - For: Dashboard, Entries, Contractors, Locations, Projects, Photos lists
-
+#### `guides/implementation/` (1 file)
 - **`chunked-sync-usage.md`** - Large dataset sync with progress tracking
   - Used by: **backend-supabase-agent**
   - Configuration, progress callbacks, chunking strategy
   - For: Sync orchestrator, large entry/photo datasets
 
+#### `guides/` (root-level, 1 file)
+- **`ui-prototyping-workflow.md`** - UI prototyping and mockup workflow
+  - Used by: **frontend-flutter-specialist-agent**
+  - Mockup conventions, iteration process, design-to-code handoff
+
 👉 See [guides/README.md](guides/README.md) for guide-to-agent mapping
+
+---
+
+### 📄 Root Docs — Audits & Reports (4 files)
+
+Standalone audit and report documents at the `.claude/docs/` root:
+
+- **`2026-03-28-ui-refactor-audit.md`** - UI refactor audit findings (2026-03-28)
+- **`ios-build-guide.md`** - iOS build setup and signing guide
+- **`pdf-pipeline-performance-audit.md`** - PDF pipeline performance audit findings
+- **`workflow-insights-report.md`** - Workflow insights and process improvement report
 
 ---
 
@@ -72,7 +83,6 @@ specialization:
 | Agent | Guides |
 |-------|--------|
 | **qa-testing-agent** | Manual Testing Checklist, E2E Test Setup |
-| **frontend-flutter-specialist-agent** | Pagination Widgets Guide |
 | **backend-supabase-agent** | Chunked Sync Usage |
 | **code-review-agent** | All feature docs (read-only) |
 
@@ -90,7 +100,6 @@ specialization:
 
 ## Quick Navigation
 
-- **Creating a new feature list?** → [Pagination Widgets Guide](guides/implementation/pagination-widgets-guide.md)
 - **Handling large data syncs?** → [Chunked Sync Usage](guides/implementation/chunked-sync-usage.md)
 - **Setting up E2E tests?** → [E2E Test Setup](guides/testing/e2e-test-setup.md)
 - **Running QA coverage?** → [Manual Testing Checklist](guides/testing/manual-testing-checklist.md)
@@ -99,10 +108,12 @@ specialization:
 
 | Section | Files | Purpose |
 |---------|-------|---------|
-| Features | 26 | Feature overviews & architecture |
+| Features | 34 | Feature overviews & architecture |
 | Testing Guides | 2 | Test setup & QA coverage |
-| Implementation Guides | 2 | Feature-specific implementation how-tos |
-| **Total** | **30** | Complete project documentation |
+| Implementation Guides | 1 | Feature-specific implementation how-tos |
+| UI Prototyping Guide | 1 | UI prototyping and mockup workflow |
+| Root Audits & Reports | 4 | Audits, build guides, and reports |
+| **Total** | **43** | Complete project documentation |
 
 ---
 

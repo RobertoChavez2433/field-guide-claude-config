@@ -208,8 +208,8 @@ final result = await syncService.syncAll();
 | File | Changes |
 |------|---------|
 | `lib/features/sync/config/sync_config.dart` | SyncConfig (moved from legacy sync_service) [BRANCH: feat/sync-engine-rewrite] |
-| `lib/features/sync/domain/sync_adapter.dart` | Added `onProgressUpdate` callback |
-| `lib/features/sync/data/adapters/supabase_sync_adapter.dart` | Wired progress to legacy service |
+| `lib/features/sync/data/adapters/` (adapter base) | Added `onProgressUpdate` callback |
+| `lib/features/sync/engine/sync_engine.dart` | Wired progress to engine (Supabase I/O handled directly) |
 | `lib/features/sync/data/adapters/mock_sync_adapter.dart` | Added progress stub |
 | `lib/features/sync/application/sync_orchestrator.dart` | Added progress passthrough |
 

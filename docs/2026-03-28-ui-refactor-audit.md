@@ -165,7 +165,7 @@ Full codebase audit for refreshing the 2026-03-06 UI refactor plan. The design s
 - **Settings**: 6 widgets (SectionHeader, SignOutDialog, ThemeSection, ClearCacheDialog, SyncSection, MemberDetailSheet)
 - **Forms**: 7 widgets (FormAccordion, StatusPillBar, SummaryTiles, HubHeaderContent, HubQuickTestContent, HubProctorContent, FormThumbnail)
 - **Projects**: 15 widgets (ProjectImportBanner, ProjectFilterChips, ProjectTabBar, ProjectEmptyState, ProjectSwitcher, RemovalDialog, ProjectDeleteSheet, PayItemSourceDialog, AddLocationDialog, AddEquipmentDialog, BidItemDialog, AddContractorDialog, EquipmentChip, ProjectDetailsForm, AssignmentsStep + AssignmentListTile)
-- **PDF**: 4 widgets (ExtractionBanner, ExtractionDetailSheet, PdfImportProgressDialog [deprecated], PdfImportProgressManager)
+- **PDF**: 2 widgets (ExtractionBanner, ExtractionDetailSheet)
 - **Sync**: 2 widgets (SyncStatusIcon, DeletionNotificationBanner)
 - **Auth**: 1 widget (UserAttributionText)
 

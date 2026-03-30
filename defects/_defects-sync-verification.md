@@ -57,12 +57,7 @@ Compiled from 3 test runs (mhaz3, mvs51, 2mthw) + S661 state + opus agent verifi
 - **Key files**:
   - `lib/core/driver/test_photo_service.dart:78-85`
 
-### BUG-SV-6: No form templates on fresh install
-- **Severity**: LOW (feature incomplete)
-- **Symptom**: `inspector_forms` table empty on fresh install. No startup seeding. Forms only created ad-hoc when navigating to MDOT hub or form viewer.
-- **Root cause**: `hasBuiltinForms()` exists but no `seedBuiltinForms()` method. No app startup seeding logic.
-- **Key files**:
-  - `lib/features/forms/data/repositories/inspector_form_repository.dart:164`
+<!-- RESOLVED 2026-03-30 BUG-SV-6: No form templates on fresh install — seedBuiltinForms is now called via AppInitializer.initialize() from both main.dart and main_driver.dart. Same fix as BUG-S04. -->
 
 ---
 

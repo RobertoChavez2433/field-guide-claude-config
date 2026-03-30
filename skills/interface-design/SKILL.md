@@ -16,7 +16,7 @@ Never build a widget without first referencing the design system. Ad-hoc styling
 
 ## Design System Location
 
-`.claude/docs/design-system.md` - Central design decisions
+`.claude/skills/interface-design/references/design-system.md` - Central design decisions
 
 If this file doesn't exist, create it with the initialization workflow.
 
@@ -58,7 +58,7 @@ When starting fresh or design system doesn't exist:
 
 Before modifying UI:
 
-1. Read `.claude/docs/design-system.md`
+1. Read `.claude/skills/interface-design/references/design-system.md`
 2. Read target widget/screen
 3. Check for violations:
    - Hardcoded colors (should use `AppTheme.*`)
@@ -130,7 +130,7 @@ const double kSpacingXl = 32.0;
 ## Before Building Any Widget
 
 Checklist:
-- [ ] Read design system (`.claude/docs/design-system.md`)
+- [ ] Read design system (`.claude/skills/interface-design/references/design-system.md`)
 - [ ] Identify applicable tokens
 - [ ] Reference `AppTheme.*` for colors
 - [ ] Use theme text styles

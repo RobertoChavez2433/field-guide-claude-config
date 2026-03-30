@@ -5,10 +5,7 @@ Archive: .claude/logs/defects-archive.md
 
 ## Active Patterns
 
-### [SECURITY] 2026-03-28: Trash screen must scope queries by role and ownership (BUG-S09-1)
-**Pattern**: Trash screen queried all soft-deleted records company-wide with no role or user filter. Inspector could see, restore, and permanently delete admin-deleted projects. `SoftDeleteService.purgeExpiredRecords()` also operated globally.
-**Prevention**: Non-admin trash queries must filter `AND deleted_by = currentUserId`. Exclude project-level tables (projects, locations, contractors, bid_items) for inspector role. Scope Empty Trash to visible items only. Fixed in S667.
-**Ref**: @lib/features/settings/presentation/screens/trash_screen.dart:56
+<!-- RESOLVED 2026-03-30 BUG-S09-1: Trash screen must scope queries by role and ownership — Fixed in S667. Non-admin queries filter by deleted_by = currentUserId; inspector role excluded from project-level tables. Ref: lib/features/settings/presentation/screens/trash_screen.dart:56 -->
 
 ### [CONFIG] 2026-03-27: MANAGE_EXTERNAL_STORAGE prompts on every app launch
 **Pattern**: `_ensureLogDirectoryWritable()` in `main.dart` requested `Permission.manageExternalStorage` but that permission was never declared in `AndroidManifest.xml`. Android always reported it as `denied`, so the request dialog fired on every launch. Additionally, `_initDebugLogging` opened a `FilePicker.getDirectoryPath()` dialog on mobile when no saved log dir existed.

@@ -1,0 +1,21 @@
+{
+  "id": "forms",
+  "name": "Inspector Forms & MDOT Hub",
+  "status": "stable",
+  "description": "Registry-based form system supporting built-in inspector forms with PDF export, auto-fill, and MDOT 0582B calculations",
+
+  "docs": {
+    "prd": "prds/forms-prd.md"
+  },
+
+  "constraints_file": "forms-constraints.md",
+  "constraints_summary": [
+    "Registry-based form architecture. Forms are developer-defined, not user-defined.",
+    "Lifecycle: draft → submitted (immutable)."
+  ],
+
+  "integration": {
+    "depends_on": ["entries", "projects"],
+    "required_by": ["entries"]
+  }
+}

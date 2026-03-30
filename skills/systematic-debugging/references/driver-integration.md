@@ -222,7 +222,7 @@ The driver is a convenience, not a hard dependency. If it fails, fall back to ma
 
 ## Testing Keys Reference
 
-Keys are defined in `lib/shared/testing_keys/*.dart` (13 files). The barrel export is `lib/shared/testing_keys/testing_keys.dart`.
+Keys are defined in `lib/shared/testing_keys/*.dart` (16 files: 15 feature-specific + 1 barrel export). The barrel export is `lib/shared/testing_keys/testing_keys.dart`.
 
 ### Commonly Used Keys
 

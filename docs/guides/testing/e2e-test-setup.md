@@ -65,7 +65,7 @@ Prevent device throttling during long test runs.
 **Disable Battery Optimization**:
 ```bash
 # For debug builds
-adb shell dumpsys deviceidle whitelist +com.example.construction_inspector
+adb shell dumpsys deviceidle whitelist +com.fvconstruction.construction_inspector
 
 # Keep screen awake
 adb shell svc power stayon true
@@ -121,7 +121,7 @@ Run the provided script or use individual commands:
 
 Or manually:
 ```bash
-PACKAGE="com.example.construction_inspector"
+PACKAGE="com.fvconstruction.construction_inspector"
 adb shell pm grant $PACKAGE android.permission.CAMERA
 adb shell pm grant $PACKAGE android.permission.ACCESS_FINE_LOCATION
 adb shell pm grant $PACKAGE android.permission.ACCESS_COARSE_LOCATION
@@ -145,10 +145,10 @@ Ensure a fresh state before each test run.
 
 ```bash
 # Force stop app
-adb shell am force-stop com.example.construction_inspector
+adb shell am force-stop com.fvconstruction.construction_inspector
 
 # Clear all app data (database, preferences, files)
-adb shell pm clear com.example.construction_inspector
+adb shell pm clear com.fvconstruction.construction_inspector
 
 # Wipe emulator to factory state (if needed)
 adb -e emu avd coldboot
@@ -158,7 +158,7 @@ adb -e emu avd coldboot
 
 ```bash
 # Uninstall app from simulator
-xcrun simctl uninstall booted com.example.constructionInspector
+xcrun simctl uninstall booted com.fvconstruction.constructionInspector
 
 # Erase simulator to factory state (if needed)
 xcrun simctl erase booted
@@ -211,6 +211,8 @@ patrol test \
 ```
 
 ### Single Test File
+
+**Note**: These paths are examples for when Patrol tests are implemented. The `integration_test/patrol/` directory does not yet exist.
 
 ```bash
 patrol test \
@@ -335,7 +337,7 @@ Videos saved to: `build/patrol/videos/`
 **Solutions**:
 1. Clear app data before each run:
    ```bash
-   adb shell pm clear com.example.construction_inspector
+   adb shell pm clear com.fvconstruction.construction_inspector
    ```
 2. Use `PatrolTestConfig.resetState()` in test setup:
    ```dart
@@ -407,5 +409,5 @@ Videos saved to: `build/patrol/videos/`
 
 - [Patrol Documentation](https://patrol.leancode.co/)
 - Testing Keys: `lib/shared/testing_keys/testing_keys.dart`
-- Test Helpers: `integration_test/patrol/helpers/patrol_test_helpers.dart`
-- Test Config: `integration_test/patrol/test_config.dart`
+- Test Helpers: `integration_test/patrol/helpers/patrol_test_helpers.dart` *(planned -- directory does not yet exist)*
+- Test Config: `integration_test/patrol/test_config.dart` *(planned -- directory does not yet exist)*
