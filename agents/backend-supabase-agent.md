@@ -57,8 +57,10 @@ You are a Supabase and PostgreSQL expert with deep knowledge of cloud database a
 ## Project Context
 
 **App**: Construction Inspector App (Flutter)
-**Supabase Project**: `vsqvkxvvmnnhdajtgblj`
-**Schema**: 14 tables with TEXT IDs (not UUIDs)
+**Supabase Project**: `<PROJECT_REF>`
+> Project reference is in `.env` file. Never hardcode in docs.
+
+**Schema**: 20+ tables with TEXT IDs (not UUIDs)
 **Sync Pattern**: Offline-first SQLite -> Supabase cloud sync
 
 ### Current Schema
@@ -72,12 +74,22 @@ You are a Supabase and PostgreSQL expert with deep knowledge of cloud database a
 | bid_items | Contract line items | -> projects |
 | personnel_types | Dynamic crew types | -> projects |
 | daily_entries | Daily inspection logs | -> projects, locations |
-| entry_personnel | Legacy crew counts | -> daily_entries, contractors |
 | entry_personnel_counts | Dynamic crew counts | -> daily_entries, contractors, personnel_types |
 | entry_equipment | Equipment used | -> daily_entries, equipment |
 | entry_quantities | Materials used | -> daily_entries, bid_items |
+| entry_contractors | Contractor assignments | -> daily_entries, contractors |
 | photos | Photo attachments | -> daily_entries, projects, locations |
-| sync_queue | Offline sync queue | - |
+| companies | Inspector companies | - |
+| user_profiles | User accounts | -> companies |
+| company_join_requests | Company membership requests | -> user_profiles, companies |
+| project_assignments | Project-user assignments | -> projects |
+| inspector_forms | Form templates | -> projects |
+| form_responses | Form submissions | -> inspector_forms, daily_entries |
+| todo_items | Task tracking | -> projects, daily_entries |
+| calculation_history | Calculator history | -> projects, daily_entries |
+| user_consent_records | Privacy consent | - |
+| support_tickets | Support requests | - |
+| change_log | Offline change tracking (local only) | - |
 
 ## Supabase CLI Commands
 
@@ -86,7 +98,7 @@ You are a Supabase and PostgreSQL expert with deep knowledge of cloud database a
 pwsh -Command "npx supabase login"
 
 # Link to existing project
-pwsh -Command "npx supabase link --project-ref vsqvkxvvmnnhdajtgblj"
+pwsh -Command "npx supabase link --project-ref <PROJECT_REF>"
 
 # Check project status
 pwsh -Command "npx supabase status"
@@ -104,7 +116,7 @@ pwsh -Command "npx supabase db push"
 pwsh -Command "npx supabase db pull"
 
 # Generate TypeScript types
-pwsh -Command "npx supabase gen types typescript --project-id vsqvkxvvmnnhdajtgblj"
+pwsh -Command "npx supabase gen types typescript --project-id <PROJECT_REF>"
 
 # Reset local database
 pwsh -Command "npx supabase db reset"
@@ -143,8 +155,7 @@ Configure buckets, policies, file organization, cleanup orphaned files.
 
 | File | Purpose |
 |------|---------|
-| `supabase/migrations/` | Migration files (source of truth for production schema) |
-| `supabase/supabase_schema_v4_rls.sql` | RLS policies (NOTE: contains temporary permissive anon policies) |
+| `supabase/migrations/` | Migration files — source of truth for schema and RLS policies |
 | `lib/core/database/database_service.dart` | Local SQLite schema (source of truth) |
 | `lib/features/sync/` | Sync logic between local and remote |
 | `lib/features/*/data/datasources/remote/` | Remote datasource implementations |
@@ -158,7 +169,7 @@ Configure buckets, policies, file organization, cleanup orphaned files.
 
 ```bash
 # View Supabase logs
-pwsh -Command "npx supabase logs --project-ref vsqvkxvvmnnhdajtgblj"
+pwsh -Command "npx supabase logs --project-ref <PROJECT_REF>"
 
 # Check database connection
 pwsh -Command "npx supabase db lint"

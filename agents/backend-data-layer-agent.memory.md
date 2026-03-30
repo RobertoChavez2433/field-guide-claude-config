@@ -253,18 +253,13 @@ class Project {
 type: ContractorType.values.byName(map['type'] as String)
 ```
 
-### Sync Status Enum
-
-```dart
-enum SyncStatus { pending, synced, error, failed }
-// Stored as TEXT in SQLite, default: 'pending'
-```
+**Note**: Per-row sync_status fields are deprecated. The sync engine uses `change_log` triggers. See `rules/sync/sync-patterns.md`.
 
 ## Database Service
 
 `lib/core/database/database_service.dart` — Singleton.
 
-- Current version: **39** (increment for each migration)
+- Current version: **46** (increment for each migration)
 - WAL mode enabled (Decision 17): `PRAGMA journal_mode=WAL` — supports concurrent access from background isolates
 - Foreign keys enabled: `PRAGMA foreign_keys=ON`
 - `SchemaVerifier.verify(db)` runs on every open (self-healing for missed migrations)
@@ -290,7 +285,7 @@ lib/core/database/schema/
 ```dart
 // In database_service.dart onUpgrade
 onUpgrade: (db, oldVersion, newVersion) async {
-  if (oldVersion < 39) {
+  if (oldVersion < 46) {
     await db.execute('ALTER TABLE photos ADD COLUMN caption TEXT');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_photos_caption ON photos(caption)');
   }
@@ -320,7 +315,7 @@ if (!hasCaption) {
 
 ### Column Naming
 
-- snake_case: `project_id`, `created_at`, `sync_status`
+- snake_case: `project_id`, `created_at`
 - Foreign keys: `{entity}_id` pattern
 - Timestamps: `created_at TEXT NOT NULL`, `updated_at TEXT NOT NULL`, `synced_at TEXT`
 - Soft delete: `deleted_at TEXT`, `deleted_by TEXT`
@@ -339,7 +334,6 @@ CREATE TABLE IF NOT EXISTS my_table (
   -- domain columns
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
-  sync_status TEXT DEFAULT 'pending',
   deleted_at TEXT,
   deleted_by TEXT,
   FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE,
@@ -351,7 +345,7 @@ CREATE TABLE IF NOT EXISTS my_table (
 
 Always index:
 1. All foreign key columns
-2. Frequently filtered columns (`date`, `status`, `sync_status`)
+2. Frequently filtered columns (`date`, `status`)
 3. `deleted_at` (every synced table)
 4. Search columns (`name`, `title`)
 
@@ -359,18 +353,6 @@ Always index:
 CREATE INDEX IF NOT EXISTS idx_entries_project_id ON daily_entries(project_id);
 CREATE INDEX IF NOT EXISTS idx_entries_deleted_at ON daily_entries(deleted_at);
 CREATE INDEX IF NOT EXISTS idx_entries_date ON daily_entries(date);
-```
-
-## Seed Data System
-
-- `lib/core/database/seed_data_service.dart` — version-tracked seeder
-- `lib/core/database/seed_data_loader.dart` — loads from JSON assets
-- `assets/seed_data/` — JSON seed files (e.g., `forms.json`)
-- Seed version tracked in `SharedPreferences` (`seedVersion` key)
-
-```dart
-static const int currentSeedVersion = 5;
-// Increment to trigger re-seed on next app start
 ```
 
 ## Logging

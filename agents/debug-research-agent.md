@@ -1,7 +1,7 @@
 ---
 name: debug-research-agent
 description: Background research agent for deep debugging sessions. Launched with run_in_background during deep mode to parallelize codebase research while the user reproduces a bug.
-tools: Read, Grep, Glob, mcp__jcodemunch__search_symbols, mcp__jcodemunch__get_file_outline, mcp__jcodemunch__search_text, mcp__jcodemunch__get_context_bundle, mcp__jcodemunch__get_file_tree
+tools: Read, Grep, Glob
 model: sonnet
 ---
 

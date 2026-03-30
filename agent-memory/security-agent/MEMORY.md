@@ -5,20 +5,20 @@
 First audit performed via manual exploration + web research. Established baseline findings.
 
 ### Critical Findings
-1. Hardcoded Supabase credentials in `supabase_config.dart:14,22` (defaultValue fallbacks)
-2. RLS policies in `supabase_schema_v4_rls.sql` grant full CRUD to `anon` on 13 tables
+1. ~~Hardcoded Supabase credentials in `supabase_config.dart` (defaultValue fallbacks)~~ **RESOLVED** — now uses `String.fromEnvironment` with no default fallbacks; credentials supplied via `--dart-define-from-file=.env` at build time
+2. RLS policies in `supabase/migrations/` grant full CRUD to `anon` on 13 tables (was `supabase_schema_v4_rls.sql` — that file is no longer the source of truth; see `supabase/migrations/` for current RLS policies)
 
 ### High Findings
 3. `.env.local` contains plaintext production credentials + E2E password
-4. `flutter_secure_storage` in pubspec but zero usages in `lib/`
+4. ~~`flutter_secure_storage` in pubspec but zero usages in `lib/`~~ **RESOLVED (S677)** — now used in 4 files (auth_provider, app_config_provider, check_inactivity_use_case, sign_out_use_case)
 5. SQLite (`sqflite`) has no encryption — PII at rest in plaintext
 6. `base_remote_datasource.dart` `getAll()` with null companyId returns all rows cross-tenant
 7. Custom URI scheme deep link hijackable on Android < 12
 
 ### Patterns Discovered
 - PII stored in SharedPreferences: inspector name, initials, phone, cert number (seen in `PreferencesService`, `pdf_data_builder.dart`)
-- Deep link URI with access token logged via `debugPrint` at `main.dart:486`
-- `PRAGMA foreign_keys = ON` never set in `database_service.dart`
+- Deep link URI with access token logged via `debugPrint` at `main.dart` — **NOTE: line number stale post-refactor (was main.dart:486, main.dart is now 222 lines); verify before referencing**
+- ~~`PRAGMA foreign_keys = ON` never set in `database_service.dart`~~ **RESOLVED** — now enabled via `onConfigure` callback (rawQuery on lines 61, 83)
 - Release build uses debug signing key (`signingConfigs.getByName("debug")`)
 - `isMinifyEnabled` not set in release build type
 - `proguard-rules.pro` is empty
@@ -27,13 +27,13 @@ First audit performed via manual exploration + web research. Established baselin
 | File | Security Relevance |
 |------|-------------------|
 | `lib/core/config/supabase_config.dart` | Hardcoded credentials |
-| `lib/core/database/database_service.dart` | Unencrypted SQLite, missing FK pragma |
+| `lib/core/database/database_service.dart` | Unencrypted SQLite (FK pragma now set — see RESOLVED above) |
 | `lib/features/auth/presentation/providers/auth_provider.dart` | Session handling |
 | `lib/shared/datasources/base_remote_datasource.dart` | Null companyId bypass |
 | `lib/main.dart` | Deep link token logging |
 | `android/app/src/main/AndroidManifest.xml` | Permissions, backup, deep links |
 | `android/app/build.gradle.kts` | Release build config |
-| `supabase/supabase_schema_v4_rls.sql` | Permissive anon RLS |
+| `supabase/migrations/` | Permissive anon RLS (source of truth — `supabase_schema_v4_rls.sql` is stale) |
 | `lib/services/photo_service.dart` | EXIF not stripped, filename sanitization |
 
 ### Stack-Specific CVEs Tracked

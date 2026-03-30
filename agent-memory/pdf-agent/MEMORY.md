@@ -54,10 +54,8 @@ Profiles each page's quality to determine extraction strategy. The original `doc
 
 **Key design**: OCR-only pipeline — all pages use OCR extraction. Quality profiling guides preprocessing decisions rather than extraction strategy selection.
 
-### Stage 3 StructurePreserver (✅ Implemented — simplified for OCR-only)
-**Location**: `lib/features/pdf/services/extraction/stages/structure_preserver.dart`
-
-Simplified for OCR-only pipeline — no longer needs hybrid merge logic. All pages use OCR extraction with confidence from element confidences.
+### Stage 3 StructurePreserver [FILE REMOVED]
+Previously at `lib/features/pdf/services/extraction/stages/structure_preserver.dart` — removed during cleanup. OCR-only pipeline no longer needs a separate structure preservation stage.
 
 ### Stage 4A RowClassifierV3 (✅ Implemented — replaced V2)
 **Location**: `lib/features/pdf/services/extraction/stages/row_classifier_v3.dart`
@@ -130,7 +128,7 @@ Parses cell grid rows into structured bid items. Works with interpretation pipel
 
 ### Extraction Pipeline (v3 Architecture)
 - `lib/features/pdf/services/extraction/stages/document_quality_profiler.dart` - **Stage 0**: Per-page quality profiling
-- `lib/features/pdf/services/extraction/stages/structure_preserver.dart` - **Stage 3**: OCR result structuring
+- `lib/features/pdf/services/extraction/stages/structure_preserver.dart` [FILE REMOVED] - **Stage 3**: OCR result structuring (removed during cleanup)
 - `lib/features/pdf/services/extraction/stages/row_classifier_v3.dart` - **Stage 4A**: Row classification (v3)
 - `lib/features/pdf/services/extraction/stages/region_detector_v2.dart` - **Stage 4B**: Table region detection
 - `lib/features/pdf/services/extraction/stages/cell_extractor_v2.dart` - **Stage 4D**: Cell extraction and column assignment
@@ -150,16 +148,16 @@ Parses cell grid rows into structured bid items. Works with interpretation pipel
 - `lib/features/pdf/services/extraction/rules/` - Interpretation rule configs (v3)
 
 ### Tests
-- `test/features/pdf/extraction/stages/stage_0_document_analyzer_test.dart` - Unit tests (34)
-- `test/features/pdf/extraction/stages/document_analyzer_integration_test.dart` - Integration tests (3)
-- `test/features/pdf/extraction/stages/stage_3_structure_preserver_test.dart` - Unit tests (19)
+- `test/features/pdf/extraction/stages/stage_0_document_analyzer_test.dart` [FILE REMOVED] - Unit tests (removed with stage)
+- `test/features/pdf/extraction/stages/document_analyzer_integration_test.dart` [FILE REMOVED] - Integration tests (removed with stage)
+- `test/features/pdf/extraction/stages/stage_3_structure_preserver_test.dart` [FILE REMOVED] - Unit tests (removed with stage)
 - `test/features/pdf/extraction/stages/row_classifier_v3_test.dart` - Unit tests (v3)
 - `test/features/pdf/extraction/stages/stage_4b_region_detector_test.dart` - Unit tests (18)
 - `test/features/pdf/extraction/stages/stage_4d_cell_extractor_test.dart` - Unit tests (15)
 - `test/features/pdf/extraction/stages/field_confidence_scorer_test.dart` - Field confidence tests (v3)
 - `test/features/pdf/extraction/stages/header_consolidator_test.dart` - Header consolidator tests (v3)
 - `test/features/pdf/extraction/stages/numeric_interpreter_test.dart` - Numeric interpreter tests (v3)
-- `test/features/pdf/extraction/stages/whitespace_inset_test.dart` - Whitespace inset tests
+- `test/features/pdf/extraction/stages/whitespace_inset_test.dart` [FILE REMOVED] - Whitespace inset tests (removed during cleanup)
 - `test/features/pdf/extraction/contracts/stage_2_to_3_contract_test.dart` - Contract tests (5)
 - `test/features/pdf/extraction/contracts/stage_3_to_4a_contract_test.dart` - Contract tests (5)
 - `test/features/pdf/extraction/contracts/stage_4a_to_4b_contract_test.dart` - Contract tests (5)
@@ -167,4 +165,4 @@ Parses cell grid rows into structured bid items. Works with interpretation pipel
 
 ### Legacy Pipeline (Pre-Stage Architecture — files removed from disk)
 - `lib/features/pdf/services/pdf_import_service.dart` - Main import flow (still exists)
-- `lib/features/pdf/services/extraction/deprecated/` - Deprecated stages moved here (document_analyzer, native_extractor, structure_preserver)
+- `lib/features/pdf/services/extraction/deprecated/` [DIRECTORY REMOVED] - Previously held deprecated stages; entire directory deleted during cleanup

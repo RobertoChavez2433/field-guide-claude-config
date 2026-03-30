@@ -71,7 +71,7 @@ After reading, apply this methodology throughout your work.
 - Memory leak detection
 
 ### Patrol (E2E) Best Practices
-- **Use TestingKeys class**: All widget keys in `lib/shared/testing_keys/testing_keys.dart`
+- **Use TestingKeys class**: 16 key files in `lib/shared/testing_keys/` (barrel: `testing_keys.dart`)
 - **Never hardcode** `Key('...')` - always use TestingKeys
 - **Keep tests simple**: One feature per test, minimal conditional logic
 - **Handle native features**: System permissions (notifications, location, camera)
@@ -119,7 +119,22 @@ pwsh -Command "flutter build apk --release"        # Android release
 ## Project Test Structure
 
 ```
-lib/shared/testing_keys/testing_keys.dart   # All widget keys (import this)
+lib/shared/testing_keys/testing_keys.dart   # Barrel file — imports all 16 key files
+lib/shared/testing_keys/auth_keys.dart
+lib/shared/testing_keys/common_keys.dart
+lib/shared/testing_keys/consent_keys.dart
+lib/shared/testing_keys/contractors_keys.dart
+lib/shared/testing_keys/documents_keys.dart
+lib/shared/testing_keys/entries_keys.dart
+lib/shared/testing_keys/locations_keys.dart
+lib/shared/testing_keys/navigation_keys.dart
+lib/shared/testing_keys/photos_keys.dart
+lib/shared/testing_keys/projects_keys.dart
+lib/shared/testing_keys/quantities_keys.dart
+lib/shared/testing_keys/settings_keys.dart
+lib/shared/testing_keys/support_keys.dart
+lib/shared/testing_keys/sync_keys.dart
+lib/shared/testing_keys/toolbox_keys.dart
 
 test/
 ├── flutter_test_config.dart   # Auto-configures TolerantGoldenFileComparator

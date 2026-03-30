@@ -101,10 +101,9 @@ The sync engine is a complete rewrite on branch `feat/sync-engine-rewrite`. All 
 ```
 SyncProvider (UI)
   → SyncOrchestrator (multi-backend router, retry logic)
-    → SyncEngine (core orchestration per project)
-      → SyncRegistry (17 ordered TableAdapters)
+    → SyncEngine (core orchestration per project, handles Supabase I/O)
+      → SyncRegistry (22 ordered TableAdapters)
         → TableAdapter (push/pull/conflict per table)
-          → SupabaseSyncAdapter (Supabase backend)
 ```
 
 ### Key Engine Components
@@ -214,6 +213,7 @@ All 16 synced tables have `deleted_at TIMESTAMPTZ` and `deleted_by UUID` columns
 
 ```sql
 -- Partial index for pending sync
+-- **DEPRECATED**: `sync_status` columns are no longer used. The sync engine uses `change_log` triggers. This index pattern is historical only.
 CREATE INDEX idx_entries_pending ON daily_entries(id) WHERE sync_status = 'pending';
 
 -- Composite index for common queries

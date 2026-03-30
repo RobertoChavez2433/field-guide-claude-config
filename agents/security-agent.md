@@ -81,7 +81,9 @@ password|secret|api_key|apiKey              # Generic secret patterns
 - Any `supabase.from(tableName).select()` without `.eq('company_id', ...)` guard
 
 **Key multi-tenant tables** (must have company-scoped RLS):
-`projects`, `locations`, `contractors`, `equipment`, `bid_items`, `daily_entries`, `entry_contractors`, `entry_equipment`, `entry_personnel_counts`, `entry_quantities`, `photos`, `sync_queue`
+`projects`, `locations`, `contractors`, `equipment`, `bid_items`, `daily_entries`, `entry_contractors`, `entry_equipment`, `entry_personnel_counts`, `entry_quantities`, `photos`
+
+> **Note**: `change_log` is a local-only SQLite table, not synced to Supabase. No RLS required.
 
 **Severity**: CRITICAL for anon full-access policies on data tables; HIGH for missing company_id in RLS.
 
@@ -143,7 +145,7 @@ password|secret|api_key|apiKey              # Generic secret patterns
 **What to scan**:
 - `photo_service.dart` — check if EXIF metadata is stripped before upload
 - Photo storage flow — are GPS coordinates embedded in both EXIF and database?
-- `pdf_data_builder.dart` — what PII is written into generated PDFs?
+- `lib/features/entries/presentation/controllers/pdf_data_builder.dart` — what PII is written into generated PDFs?
 - User profile data flow: Supabase -> SQLite -> SharedPreferences -> UI
 - Check if `debugPrint` or `log()` calls include PII (email, name, tokens)
 - iOS Keychain persistence after uninstall — check for first-launch cleanup
@@ -177,11 +179,11 @@ password|secret|api_key|apiKey              # Generic secret patterns
 
 **What to scan**:
 - `lib/features/sync/engine/sync_engine.dart` — how `company_id` is injected into payloads [BRANCH: feat/sync-engine-rewrite]
-- `sync_queue` table schema — check for HMAC/hash columns
+- `change_log` table schema — check for HMAC/hash columns
 - Sync processing loop — is payload validated before sending to Supabase?
 - Background sync handler — does it verify auth session before syncing?
 - Sync retry logic — is there a max attempts limit?
-- Sync queue retention — is there a TTL or pruning mechanism?
+- change_log retention — is there a TTL or pruning mechanism for processed entries?
 - Check if server-side RLS validates `company_id` from JWT vs payload
 
 **Severity**: HIGH for client-controlled company_id trusted by server; MEDIUM for no sync queue TTL.

@@ -36,7 +36,7 @@ specialization:
     - toolbox-constraints.md
     - weather-constraints.md
   guides:
-    - docs/guides/implementation/pagination-widgets-guide.md
+    # pagination-widgets-guide.md removed (deleted in cleanup)
   state_files:
     - PROJECT-STATE.json
   context_loading: |
@@ -154,11 +154,12 @@ Responsive breakpoints: see `rules/frontend/flutter-ui.md` (Mobile < 600px, Tabl
 Before creating new UI components, always ask: "Can this be a reusable widget?"
 
 ### Existing Patterns
-- `StatusBadge` - Entry status display
-- `StatCard` - Dashboard clickable stats
-- `SectionCard` - Tap-to-edit sections
-- `InfoRow` - Label/value pairs
-- `PhotoThumbnail` - Photo preview
+- `StatusBadge` - Entry status display (`lib/features/entries/presentation/widgets/status_badge.dart`)
+- `DashboardStatCard` - Dashboard clickable stats (`lib/features/dashboard/presentation/widgets/dashboard_stat_card.dart`)
+- `AppSectionCard` - Tap-to-edit sections (`lib/core/design_system/app_section_card.dart`)
+- `SimpleInfoRow` - Label/value pairs (`lib/features/entries/presentation/widgets/simple_info_row.dart`)
+- `PhotoThumbnail` - Photo preview (`lib/features/photos/presentation/widgets/photo_thumbnail.dart`)
+- Design system components: `lib/core/design_system/` (AppScaffold, AppTextField, AppDialog, AppChip, AppEmptyState, AppLoadingState, etc.)
 
 ### When to Extract
 - Pattern used in 2+ places
@@ -177,7 +178,7 @@ When creating new widgets/screens, write widget tests to cover the component beh
 
 Before building UI components:
 - State design choices from the interface-design skill
-- Reference AppTheme.* tokens
+- Reference FieldGuideColors.of(context).* and Theme.of(context).colorScheme.* tokens (AppTheme is deprecated)
 - Follow construction domain guidelines (large touch, outdoor contrast)
 
 ## Response Rules

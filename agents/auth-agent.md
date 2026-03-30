@@ -36,7 +36,12 @@ You are a Supabase authentication specialist for the Construction Inspector App.
 ## Key Files
 - `lib/features/auth/services/auth_service.dart` - Auth operations
 - `lib/features/auth/presentation/providers/auth_provider.dart` - Auth state
-- `lib/features/auth/presentation/screens/` - Auth screens (login, register, forgot-password)
+- `lib/features/auth/presentation/screens/` - Auth screens:
+  - `login_screen.dart`, `register_screen.dart`, `forgot_password_screen.dart`
+  - `otp_verification_screen.dart`, `update_password_screen.dart`, `profile_setup_screen.dart`
+  - `company_setup_screen.dart`, `pending_approval_screen.dart`, `account_status_screen.dart`
+  - `update_required_screen.dart`
+- `lib/features/auth/di/auth_providers.dart` - Provider DI wiring
 - `lib/core/config/supabase_config.dart` - Configuration
 - `lib/main.dart` - Deep link handler
 
@@ -44,7 +49,7 @@ You are a Supabase authentication specialist for the Construction Inspector App.
 
 **App**: Construction Inspector App
 **Auth Provider**: Supabase
-**Supabase Project**: `vsqvkxvvmnnhdajtgblj`
+**Supabase Project**: `<PROJECT_REF>` (see `.env` file; never hardcode in docs)
 **Auth Methods**: Email/password (primary), magic link (planned)
 
 ## Responsibilities

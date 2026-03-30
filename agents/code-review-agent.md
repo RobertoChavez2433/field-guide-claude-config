@@ -83,7 +83,7 @@ Senior-level code reviewer focused on maintainability, scalability, and producti
 
 ### Architecture
 - [ ] Follows feature-first organization
-- [ ] Clear separation: data/presentation (sync feature uses Clean Architecture with domain/)
+- [ ] Clear separation: data/domain/presentation (most features now use clean architecture with domain/usecases and di/ layers)
 - [ ] No circular dependencies
 - [ ] Appropriate use of dependency injection
 

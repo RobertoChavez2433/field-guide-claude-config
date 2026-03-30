@@ -142,7 +142,7 @@ _setField(form, 'hhhhhhhhhhhwerwer', signature); // Signature
 - Equipment names in personnel section
 
 **Debug Steps:**
-1. Check console for `[PDF] Field not found: "fieldName"` messages
+1. Check console for `Logger.pdf('Field not found: "fieldName"')` messages
 2. Generate debug PDF to see actual field positions
 3. Compare debug output to expected visual layout
 4. Update mapping constants in `lib/features/pdf/services/pdf_service.dart`
@@ -152,6 +152,7 @@ _setField(form, 'hhhhhhhhhhhwerwer', signature); // Signature
 ## Reference Forms
 
 Located in `Pre-devolopment and brainstorming/Form Templates for export/`:
+<!-- NOTE: "Pre-devolopment" is a typo in the filesystem directory name — matches the actual directory on disk -->
 
 | Form | Purpose |
 |------|---------|
@@ -173,19 +174,19 @@ pwsh -Command "flutter run -d windows"
 pwsh -Command "flutter analyze lib/features/pdf/services/pdf_service.dart"
 
 # View debug output in console
-# Look for [PDF] tags during PDF generation
+# Look for Logger.pdf() output during PDF generation
 ```
 
 ## Console Debug Tags
 
 | Tag | Meaning |
 |-----|---------|
-| `[PDF] Loading template...` | Template load started |
-| `[PDF] Template loaded: X form fields` | Field count confirmation |
-| `[PDF] === Template Field Names ===` | Field name dump start |
-| `[PDF] Field not found: "name"` | Missing field mapping |
-| `[PDF] Set contractor X name: Y -> Z` | Contractor mapping applied |
-| `[PDF] Template filled successfully` | Generation complete |
+| `Logger.pdf('Loading template...')` | Template load started |
+| `Logger.pdf('Template loaded: X form fields')` | Field count confirmation |
+| `Logger.pdf('=== Template Field Names ===')` | Field name dump start |
+| `Logger.pdf('Field not found: "name"')` | Missing field mapping |
+| `Logger.pdf('Set contractor X name: Y -> Z')` | Contractor mapping applied |
+| `Logger.pdf('Template filled successfully')` | Generation complete |
 
 ## Testing
 

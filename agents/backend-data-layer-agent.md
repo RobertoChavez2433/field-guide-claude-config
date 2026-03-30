@@ -86,13 +86,18 @@ lib/
 4. Define providers in `lib/features/*/presentation/providers/`
 5. Update barrel exports (feature `data.dart`, `presentation.dart`)
 
-## Database Schema (20+ Tables)
+## Database Schema (35+ Tables)
+
+Schema files: `lib/core/database/schema/` (core_tables, contractor_tables, entry_tables, personnel_tables, quantity_tables, photo_tables, toolbox_tables, sync_tables, sync_engine_tables, consent_tables, support_tables, document_tables, entry_export_tables, form_export_tables, extraction_tables)
 
 ### Core Tables
 | Table | Key Fields | Foreign Keys |
 |-------|------------|--------------|
 | projects | id, name, projectNumber, client | - |
 | locations | id, name, projectId | projects.id |
+| companies | id, name | - |
+| user_profiles | id, email, companyId | companies.id |
+| company_join_requests | id, userId, companyId | user_profiles.id, companies.id |
 
 ### Contractor Tables
 | Table | Key Fields | Foreign Keys |
@@ -118,17 +123,24 @@ lib/
 |-------|------------|--------------|
 | personnel_types | id, name, projectId | projects.id |
 | entry_personnel_counts | id, entryId, personnelTypeId, count | daily_entries.id, personnel_types.id |
-| entry_personnel | id, entryId, name, role | daily_entries.id |
 
 ### Photo Tables
 | Table | Key Fields | Foreign Keys |
 |-------|------------|--------------|
 | photos | id, entryId, filePath, caption, lat, lng | daily_entries.id |
 
-### Sync Tables
+### Sync Engine Tables
 | Table | Key Fields | Foreign Keys |
 |-------|------------|--------------|
-| sync_queue | id, tableName, operation, recordId | - |
+| change_log | id, tableName, operation, recordId | - |
+| sync_control | id, key, value | - |
+| conflict_log | id, tableName, recordId, resolution | - |
+| sync_lock | id, lockedAt | - |
+| synced_projects | id, projectId | projects.id |
+| user_certifications | id, userId, certType | - |
+| storage_cleanup_queue | id, bucket, path | - |
+| project_assignments | id, projectId, userId | projects.id |
+| deletion_notifications | id, tableName, recordId | - |
 
 ### Toolbox Tables
 | Table | Key Fields | Foreign Keys |
@@ -137,9 +149,25 @@ lib/
 | form_responses | id, formId, entryId, projectId, responseData | inspector_forms.id, daily_entries.id, projects.id |
 | todo_items | id, projectId, entryId, title, isCompleted | projects.id, daily_entries.id |
 | calculation_history | id, projectId, entryId, calcType | projects.id, daily_entries.id |
-| form_field_registry | id, formId, fieldName, semanticName | inspector_forms.id |
-| field_semantic_aliases | id, semanticName, alias, formId | inspector_forms.id |
-| form_field_cache | id, projectId, semanticName, lastValue | projects.id |
+
+### Consent & Support Tables
+| Table | Key Fields | Foreign Keys |
+|-------|------------|--------------|
+| user_consent_records | id, userId, consentType | - |
+| support_tickets | id, userId, subject | - |
+
+### Document & Export Tables
+| Table | Key Fields | Foreign Keys |
+|-------|------------|--------------|
+| documents | id, projectId, name | projects.id |
+| entry_exports | id, entryId | daily_entries.id |
+| form_exports | id, formId | inspector_forms.id |
+
+### Extraction Tables
+| Table | Key Fields | Foreign Keys |
+|-------|------------|--------------|
+| extraction_metrics | id, projectId | projects.id |
+| stage_metrics | id, extractionId | extraction_metrics.id |
 
 Reference: `lib/core/database/database_service.dart`, `lib/core/database/schema/`
 
@@ -152,7 +180,7 @@ Reference: `lib/core/database/database_service.dart`, `lib/core/database/schema/
 | Feature datasources | `lib/features/*/data/datasources/` |
 | Feature repositories | `lib/features/*/data/repositories/` |
 | Feature providers | `lib/features/*/presentation/providers/` |
-| Main providers | `lib/main.dart` (MultiProvider setup) |
+| Feature DI providers | `lib/features/*/di/*_providers.dart` (feature-specific DI) |
 
 ## Testing
 
@@ -160,7 +188,7 @@ When creating models/repositories, write tests to cover model serialization and 
 
 ## Implementation Status
 
-All core data layer components are complete. The app has full CRUD operations for all 20+ database tables with both local (SQLite) and remote (Supabase) datasources.
+All core data layer components are complete. The app has full CRUD operations for all 35+ database tables with both local (SQLite) and remote (Supabase) datasources.
 
 ## Response Rules
 - Final response MUST be a structured summary, not a narrative

@@ -185,6 +185,8 @@ Enabled with `--dart-define=MOCK_AUTH=true`. Mock mode never runs in release bui
 
 Mock mode bypasses all Supabase calls. Use `TestModeConfig.useMockAuth` to branch.
 
+**WARNING**: `assert()` guards are stripped in release builds. Verify `TestModeConfig.useMockAuth` has a `kReleaseMode` runtime check, not just an assert.
+
 ## Token Storage
 
 - Supabase session tokens: managed by `supabase_flutter` SDK
