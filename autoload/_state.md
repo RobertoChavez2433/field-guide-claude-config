@@ -1,48 +1,44 @@
 # Session State
 
-**Last Updated**: 2026-03-31 | **Session**: 690
+**Last Updated**: 2026-03-31 | **Session**: 692
 
 ## Current Phase
-- **Phase**: Tailor skill + writing-plans rewrite — IMPLEMENTED + 1 review cycle complete.
-- **Status**: New `/tailor` skill created, `/writing-plans` rewritten (no headless agents), plan-writer-agent updated, cleanup done, cross-refs updated. Review cycle 1: security=APPROVE, completeness=REJECT (1 real finding fixed, rest were false positives from wrong plan reference). Code review did not complete (timeout).
+- **Phase**: `/writing-plans` for quality gates — COMPLETE. Plan approved after 3 review cycles.
+- **Status**: Wrote 2753-line implementation plan for automated quality gates. 2 plan-writer subagents (Phases 1-3 + Phases 4-6), 3 adversarial review cycles (code/security/completeness), 2 fixer passes (27 findings fixed). All 3 reviewers APPROVE on cycle 3.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (690)
+### What Was Done This Session (692)
 
-1. **Brainstormed new pipeline** — 8 questions, user approved: split monolithic writing-plans into `/tailor` (research) + `/writing-plans` (plan authoring)
-2. **Created `/tailor` skill** (`.claude/skills/tailor/skill.md`) — 7-phase workflow: accept spec → CodeMunch research → pattern discovery → ground truth verification → research agent gap-fill → write output directory → present summary
-3. **Rewrote `/writing-plans` skill** — 6-phase workflow: accept → load tailor output → determine writer strategy → write plan (direct or Agent tool subagents) → 3-sweep review loop → summary. No headless agents.
-4. **Updated plan-writer-agent** — headless-only → Agent tool subagent, `bypassPermissions` → `acceptEdits`, context bundle → tailor directory input
-5. **Cleanup** — deleted `.claude/plans/staging/`, `.claude/dependency_graphs/` contents, empty plan-writer output files
-6. **Cross-references** — updated brainstorming terminal state, directory-reference.md, CLAUDE.md pipeline
-7. **Review cycle 1** — security APPROVE (L:3), completeness REJECT (H:1 fixed — directory-reference.md pipeline missing tailor; M:2 false positive — compared against old plan). Code review timed out.
-8. **Fixes applied** — directory-reference.md pipeline updated, credential blocklist added to tailor Phase 2 steps 2+9, removed unnecessary prompt injection defense section per user feedback
+1. **Ran `/writing-plans` on quality gates spec** — consumed tailor output at `.claude/tailor/2026-03-31-automated-quality-gates/`
+2. **Plan writing** — 2 parallel plan-writer-agent subagents: Writer 1 (Phases 1-3: 1617 lines), Writer 2 timed out → main agent wrote Phases 4-6 directly
+3. **Assembled plan** — 2753 lines, 6 phases, 35 sub-phases, ~175 steps at `.claude/plans/2026-03-31-automated-quality-gates.md`
+4. **Review cycle 1** — Security REJECT (4H), Completeness REJECT (5H), Code Review REJECT (2C, 4H). Fixer pass 1: 16 findings fixed.
+5. **Review cycle 2** — Security APPROVE (1M), Completeness APPROVE (2L), Code Review APPROVE (2M). Fixer pass 2: 11 findings from late cycle 1 code review fixed.
+6. **Review cycle 3** — All 3 APPROVE. Code review: 1M (lint package missing lints dep — fixed inline), 3L. Security: 1L. Completeness: 0 new.
+7. **Total fixes applied**: 28 (analyzer pin, CI trigger count, phantom identifiers, ErrorSeverity import, exemplar files, patrol removal, branches conflict, permissions, enforce_admins, .env removal, unused_field, T2/T4/T5 cleanups, D2/D4 verification, 3 missing CI checks, BaseRemoteDatasource generic, statusInfo mapping, A9 detection logic, AppDependencies getter, etc.)
 
 ### What Needs to Happen Next
 
-1. **Run cycle 2 reviews** — verify all fixes pass, get code review to complete
-2. **Test `/tailor`** — run on quality gates spec to validate the new pipeline end-to-end
-3. **Test `/writing-plans`** — run on tailor output to validate plan writing
-4. **Rotate Supabase service role key** — was exposed in git history before S687 scrub
-5. **Commit** — S681-S690 still uncommitted
-6. **Run flutter test** — verify codebase still clean after merge to main
-7. **Push Supabase migrations** — `npx supabase db push` (2 new migrations from S677)
+1. **Run `/implement`** — execute the quality gates plan (`.claude/plans/2026-03-31-automated-quality-gates.md`)
+2. **Fix S690 code review findings** — context-bundles/ → legacy in directory-reference.md
+3. **Rotate Supabase service role key** — was exposed in git history before S687 scrub
+4. **Commit** — S681-S692 still uncommitted
+5. **Run flutter test** — verify codebase still clean after merge to main
+6. **Push Supabase migrations** — `npx supabase db push` (2 new migrations from S677)
 
-### Key Decisions Made (S690)
+### Key Decisions Made (S692)
 
-- **Fully decoupled skills** — tailor and writing-plans never call each other; user chains them
-- **Headless plan writers dead** — all writers use Agent tool subagents now
-- **Main agent writes plans directly** for <2000 lines, subagents for larger
-- **Tailor output persists** — structured directory at `.claude/tailor/YYYY-MM-DD-<spec-slug>/` with manifest, dependency-graph, ground-truth, blast-radius, patterns/, source-excerpts/
-- **Review loop unchanged** — 3 parallel reviewers, plan-fixer, max 3 cycles
-- **Credential blocklist in Phase 2** — skip `.env*`, `google-services.json`, `GoogleService-Info.plist`, `supabase_config.dart` in CodeMunch research
+- **Multi-writer split** — Plans >2000 lines split across plan-writer subagents for parallel authoring
+- **Writer timeout recovery** — When Writer 2 timed out, main agent wrote Phases 4-6 directly rather than re-dispatching
+- **3 full review cycles** — All 3 sweeps every cycle (never partial re-review). 27 total findings found and fixed.
+- **branches-ignore only** — GitHub Actions can't combine `branches` + `branches-ignore` on same trigger
 
-### What Was Done Last Session (689)
-Implemented writing-plans refactor plan via /implement. 3 orchestrator launches, 5 phases, 7 files modified. 4 new agents deployed, writing-plans skill rewritten (old version), implement skill updated.
+### What Was Done Last Session (691)
+Ran `/tailor` end-to-end on quality gates spec. 9 CodeMunch steps, 7 patterns, 36 ground truth items, 14-file output directory. S690 code review completed (APPROVE). Enforced opus-only agent policy.
 
-### What Was Done Last Session (688)
-Diagnosed writing-plans failures, researched solutions (2 agents), brainstormed refactor (18 questions), wrote spec + plan, 3 review/fix cycles (all APPROVE). 4 new agents designed.
+### What Was Done Last Session (690)
+Brainstormed + implemented new `/tailor` skill and rewrote `/writing-plans`. Killed headless plan writers. Updated plan-writer-agent, cleanup, cross-refs. 1 review cycle (security APPROVE, completeness 1 fix applied).
 
 ### Committed Changes
 - No new commits this session (config/skill work only)
@@ -70,6 +66,16 @@ Diagnosed writing-plans failures, researched solutions (2 agents), brainstormed 
 
 ## Recent Sessions
 
+### Session 692 (2026-03-31)
+**Work**: Ran `/writing-plans` on quality gates spec. 2 plan writers (1 subagent + 1 direct), 3 review cycles, 2 fixer passes, 28 findings fixed. Plan APPROVED (2753 lines, 6 phases, 35 sub-phases).
+**Decisions**: Multi-writer split for large plans, writer timeout recovery, 3 full review cycles, branches-ignore only.
+**Next**: /implement quality gates plan → fix S690 findings → commit S681-S692.
+
+### Session 691 (2026-03-31)
+**Work**: Ran `/tailor` end-to-end on quality gates spec. 9 CodeMunch steps, 7 patterns, 36 ground truth items, 14-file output directory. S690 code review completed (APPROVE). Enforced opus-only agent policy.
+**Decisions**: Opus only for all agents, tailor output validated.
+**Next**: /writing-plans → fix S690 review findings → commit S681-S691.
+
 ### Session 690 (2026-03-31)
 **Work**: Brainstormed + implemented new `/tailor` skill and rewrote `/writing-plans`. Killed headless plan writers. Updated plan-writer-agent, cleanup, cross-refs. 1 review cycle (security APPROVE, completeness 1 fix applied).
 **Decisions**: Decoupled skills, headless dead, main agent writes <2000 line plans, credential blocklist in tailor.
@@ -84,16 +90,6 @@ Diagnosed writing-plans failures, researched solutions (2 agents), brainstormed 
 **Work**: Diagnosed writing-plans failures, researched solutions (2 agents), brainstormed refactor (18 questions), wrote spec + plan, 3 review/fix cycles (all APPROVE). 4 new agents designed.
 **Decisions**: Headless plan writers, Agent tool reviewers, 3 review sweeps with fix loop, prescribed CodeMunch sequence, context bundle staging.
 **Next**: /implement refactor plan → test on quality gates spec → commit.
-
-### Session 687 (2026-03-31)
-**Work**: Merged sync-engine-rewrite to main (PR #6). Scrubbed secrets from history. Deleted all branches. Built comprehensive quality gates spec (9 research + 4 verification agents). 46 lint rules, 4 packages, 3 layers.
-**Decisions**: 4 lint packages (arch/data/sync/test), clean slate, custom_lint framework, all Supabase.instance violations, fg_lint_packages/ location.
-**Next**: /writing-plans for quality gates → opus verification review → rotate Supabase key.
-
-### Session 686 (2026-03-31)
-**Work**: Implemented CodeMunch Dart enhancement (14 phases, 9 orchestrator launches, 4 parallel). 3 review/fix cycles → clean. Pushed to fork. Switched MCP to local fork. Reviewed 8 pre-prod audit layers.
-**Decisions**: Parallel orchestrator dispatch for Groups 5-8. Architecture rules approach for audit findings (not one-off fixes). Accept R3/R8/R14 spec deviations as functionally correct.
-**Next**: Restart CLI (MCP change) → distill audit into architecture rules → retry /writing-plans.
 
 ## Active Debug Session
 
@@ -112,10 +108,11 @@ None active.
 - **S07**: PASS | **S08**: PASS | **S09**: FAIL (delete no push) | **S10**: PASS
 
 ## Reference
-- **Tailor + Writing-Plans Rewrite Plan**: `.claude/plans/compressed-meandering-moth.md`
-- **Writing-Plans Refactor Plan (SUPERSEDED)**: `.claude/plans/2026-03-31-writing-plans-refactor.md`
-- **Writing-Plans Refactor Spec (SUPERSEDED)**: `.claude/specs/2026-03-31-writing-plans-refactor-spec.md`
+- **Quality Gates Plan (APPROVED)**: `.claude/plans/2026-03-31-automated-quality-gates.md` (2753 lines, 6 phases)
+- **Quality Gates Review Sweeps**: `.claude/plans/review_sweeps/quality-gates-2026-03-31/` (9 review files, 3 cycles)
 - **Quality Gates Spec (APPROVED)**: `.claude/specs/2026-03-31-automated-quality-gates-spec.md`
+- **Quality Gates Tailor Output**: `.claude/tailor/2026-03-31-automated-quality-gates/` (14 files)
+- **Tailor + Writing-Plans Rewrite Plan**: `.claude/plans/compressed-meandering-moth.md`
 - **CodeMunch Fork**: `https://github.com/RobertoChavez2433/dart_tree_sitter_fork` (branch: `feat/dart-first-class-support`)
 - **Pre-Prod Audit Reviews (8 layers)**: `.claude/code-reviews/2026-03-30-preprod-audit-layer-*.md`
 - **Wiring/Routing Audit Fixes Spec (APPROVED)**: `.claude/specs/2026-03-30-wiring-routing-audit-fixes-spec.md`

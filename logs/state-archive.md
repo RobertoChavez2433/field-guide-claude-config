@@ -6,6 +6,16 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 687 (2026-03-31)
+**Work**: Merged sync-engine-rewrite to main (PR #6). Scrubbed secrets from history. Deleted all branches. Built comprehensive quality gates spec (9 research + 4 verification agents). 46 lint rules, 4 packages, 3 layers.
+**Decisions**: 4 lint packages (arch/data/sync/test), clean slate, custom_lint framework, all Supabase.instance violations, fg_lint_packages/ location.
+**Next**: /writing-plans for quality gates → opus verification review → rotate Supabase key.
+
+### Session 686 (2026-03-31)
+**Work**: Implemented CodeMunch Dart enhancement (14 phases, 9 orchestrator launches, 4 parallel). 3 review/fix cycles → clean. Pushed to fork. Switched MCP to local fork. Reviewed 8 pre-prod audit layers.
+**Decisions**: Parallel orchestrator dispatch for Groups 5-8. Architecture rules approach for audit findings (not one-off fixes). Accept R3/R8/R14 spec deviations as functionally correct.
+**Next**: Restart CLI (MCP change) → distill audit into architecture rules → retry /writing-plans.
+
 ### Session 684 (2026-03-30)
 **Work**: CodeMunch Dart enhancement — full planning pipeline. 4 research agents, spec (R1-R16), plan-writer, 4 review/fix sweeps (12 adversarial agents, 4 fix agents, 30 findings resolved). Target: `C:\Users\rseba\Projects\jcodemunch-mcp`.
 **Decisions**: nielsenko grammar via separate pip install (Option C), regex-based imports (matching existing pattern), `lib/` path matching over pubspec.yaml parsing (YAGNI).
