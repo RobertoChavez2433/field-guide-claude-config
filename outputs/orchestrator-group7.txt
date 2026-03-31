@@ -1,0 +1,9 @@
+STATUS: DONE
+PHASES_EXECUTED: 10, 11
+PARALLEL_BATCHES: Batch1(10,11)
+FILES: src/jcodemunch_mcp/parser/extractor.py
+PER_PHASE_REVIEWS:
+  Phase 10: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:0
+  Phase 11: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:0
+TOTAL_FIX_CYCLES: 0
+DECISIONS: Phase 10 needed two fixes in extractor.py (class-level decorator fallback for nielsenko grammar children-not-siblings pattern, constant signature calculation fix). Extension on-type signatures verified OK. Phase 11 confirmed _is_dart_generated() exists in imports.py and extra_ignore_patterns mechanism available in indexing pipeline — no code changes needed.

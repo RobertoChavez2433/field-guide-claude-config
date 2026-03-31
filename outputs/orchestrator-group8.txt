@@ -1,0 +1,8 @@
+STATUS: DONE
+PHASES_EXECUTED: 12
+PARALLEL_BATCHES: Batch1(12)
+FILES: LANGUAGE_SUPPORT.md, DART_SUPPORT.md, src/jcodemunch_mcp/tools/find_importers.py, src/jcodemunch_mcp/tools/get_dependency_graph.py, src/jcodemunch_mcp/tools/get_blast_radius.py
+PER_PHASE_REVIEWS:
+  Phase 12: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:1,M:2,L:3) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:1
+TOTAL_FIX_CYCLES: 1
+DECISIONS: Phase 12 — LANGUAGE_SUPPORT.md Dart row restructured to match table header columns (was misaligned per plan text). DART_SUPPORT.md created. Tool docstrings updated for Dart/package: URI support.

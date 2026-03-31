@@ -99,6 +99,7 @@ Screen -> Provider -> UseCase -> Repository -> SQLite (local) -> Supabase (sync)
 |------|-----|
 | App Code | https://github.com/RobertoChavez2433/construction-inspector-tracking-app |
 | Claude Config | https://github.com/RobertoChavez2433/field-guide-claude-config |
+| CodeMunch Fork | https://github.com/RobertoChavez2433/dart_tree_sitter_fork |
 
 `.claude/` is gitignored from app repo and tracked separately.
 

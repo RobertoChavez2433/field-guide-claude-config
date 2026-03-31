@@ -1,0 +1,18 @@
+## Summary
+
+All 6 fixes applied across 3 files. **1200 tests pass, 0 regressions.**
+
+### Fixes Applied
+
+| Fix | File | What Changed |
+|-----|------|-------------|
+| **H1** | `imports.py` | Replaced ReDoS-prone `[\w\s,]+` nested quantifiers with safe `[^;]*` in `_DART_CONDITIONAL_IMPORT_RE` |
+| **H2** | `imports.py` | Extracted `_build_normalized_path_map()` for O(1) direct lookup; `_resolve_dart_package_import` now takes a pre-built `norm_map` dict instead of iterating all source_files with per-call normalization |
+| **M1** | `extractor.py` | Extracted `_has_dart_const_or_final()` helper replacing ~40 lines of duplicated const/final keyword detection across `static_final_declaration` and `initialized_variable_definition` handlers |
+| **M5** | `extractor.py` | Named constructors now return only the trailing name part (e.g. `withDefaults` instead of `Foo.withDefaults`), since `_extract_symbol` already prepends the parent class name |
+| **M6/M7** | `languages.py` | Added `"method_signature": "name"` and `"mixin_declaration": "name"` to `DART_SPEC.name_fields` |
+| **R4** | `languages.py` + `extractor.py` | Added `factory_constructor_signature` and `redirecting_factory_constructor_signature` support — added to `symbol_node_types`, `name_fields`, `param_fields`, and `_extract_name` handler for `method_signature` |
+
+### Test Results
+- **1200 passed**, 6 skipped, 1 warning
+- 2 pre-existing failures in `test_config.py` and `test_server.py` due to missing `pytest-asyncio` — unrelated to these changes

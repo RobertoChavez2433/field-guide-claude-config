@@ -1,0 +1,47 @@
+The file write was blocked by permissions on the `.claude/` directory. Here's the review:
+
+---
+
+## Code Review: Dart Enhancement — Cycle 2 (Post Fix-Sweep 1)
+
+### Summary Verdict
+All 6 cycle-1 fixes are correctly implemented and introduce no new defects. 13/13 Dart tests pass. One medium perf issue found; 6 low-severity test coverage gaps.
+
+### Verified Fixes (All ✓)
+
+| Fix | Location | Status |
+|-----|----------|--------|
+| H1 ReDoS | `imports.py:274-277` — `[^;]*;` is linear-time | ✓ Correct |
+| H2 O(n) scan | `imports.py:299-350` — `_build_normalized_path_map` + O(1) direct lookup | ✓ Correct |
+| M1 DRY | `extractor.py:269-298` — `_has_dart_const_or_final` used at :1112, :1168 | ✓ Correct |
+| M5 Constructor double-prefix | `extractor.py:409-444` — returns trailing identifier for named constructors | ✓ Correct |
+| M6/M7 name_fields | `languages.py:459-461` — `method_signature` + `mixin_declaration` added | ✓ Correct |
+| R4 factory constructors | `languages.py:445,457,467` — `redirecting_factory_constructor_signature` in all 3 dicts; `factory_constructor_signature` handled transitively via `method_signature` → recursive `_extract_name` | ✓ Correct |
+
+### New Issues
+
+1. **[M] `resolve_specifier` rebuilds norm_map per call** — `imports.py:693`
+   - Problem: `_build_normalized_path_map(source_files)` called on every `package:` import. O(N × |source_files|) for N Dart imports in a graph-building loop.
+   - Fix: Apply same `id()`-based cache used by `_get_sql_stems` (line 522-535), or accept `norm_map` as an optional parameter like `alias_map`.
+
+### Test Coverage Gaps (all Low)
+
+- **T1**: No unit test for `_has_dart_const_or_final` 3-level detection — covered only via integration
+- **T2**: No test for backslash normalization or suffix-match fallback in `_build_normalized_path_map`
+- **T3**: No test asserting named constructor returns `withDefaults` (not `UserService.withDefaults`)
+- **T4**: No explicit assertion for `redirecting_factory_constructor_signature` node extraction
+- **T5**: No test for path-traversal rejection (`package:foo/../../etc/passwd`, null bytes) at `imports.py:335-339`
+- **T6**: No test that `_WITH_RE` in `get_class_hierarchy.py:20-22` captures `with Mixin1, Mixin2` as ancestors
+
+### Minor
+- `_extract_name` (`extractor.py:416`) handles `factory_constructor_signature` standalone but it's not in `symbol_node_types` — works because it's always wrapped in `method_signature`, but a comment documenting this assumption would help.
+
+### Positive Observations
+- `_has_dart_const_or_final` helper: clean frozenset lookups, good 3-level design
+- Constructor handler: single code path for all 4 constructor forms
+- Defense-in-depth in `_resolve_dart_package_import`: null-byte, normpath, `..` rejection
+- WHY comments on every non-obvious decision — excellent maintainability
+
+### Verdict: **CLEAN**
+
+No high/medium correctness issues remain. The norm_map rebuild is a perf optimization opportunity, not a blocker.

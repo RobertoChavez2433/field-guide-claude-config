@@ -1,49 +1,63 @@
 # Session State
 
-**Last Updated**: 2026-03-31 | **Session**: 685
+**Last Updated**: 2026-03-31 | **Session**: 687
 
 ## Current Phase
-- **Phase**: Wiring/Routing audit /writing-plans BLOCKED by agent permission bug. Dependency graph complete, plan partially written.
-- **Status**: CodeMunch indexing + dependency graph done. 3 plan-writer agents dispatched — ALL got Write/Edit denied. Parts 2+3 partially recovered via Bash fallback (308+283 lines, but truncated/thin). Part 1 (Foundation+Sync) not written. Must fix agent permissions before retrying.
+- **Phase**: Automated Quality Gates spec APPROVED. Merged sync-engine-rewrite to main. All branches cleaned up. Secrets scrubbed from history.
+- **Status**: Spec complete at `.claude/specs/2026-03-31-automated-quality-gates-spec.md`. Ready for /writing-plans next session.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (685)
+### What Was Done This Session (687)
 
-1. **Resumed writing-plans for wiring-routing-audit-fixes spec**
-2. **Completed Phase 1-3 of writing-plans skill** — CodeMunch indexing (7,244 symbols), file outlines for 11 key files, symbol source for all *Deps classes + AppRouter + SyncProviders
-3. **Built and saved dependency graph** at `.claude/dependency_graphs/2026-03-30-wiring-routing-audit-fixes/analysis.md` — 7 Supabase.instance.client replacements mapped, all line ranges documented
-4. **Dispatched 3 parallel plan-writer agents** (split: P1-2 Foundation+Sync, P3-6 Router+Bootstrap, P7-10 Cleanup+Tests)
-5. **ALL 3 agents got Write AND Edit tool denied** — systematic failure, not intermittent
-6. **Root cause investigation**: Settings are correct (Write/Edit explicitly allowed in both global + project). `general-purpose` subagent type does not inherit permissions on Windows. Known bug documented in MEMORY.md line 68: "#4462, #7032, #5465"
-7. **Partial recovery**: Parts 2+3 fell back to Bash/Python and wrote truncated plans (308+283 lines — should be much longer). Part 1 never written.
+1. **Merged feat/sync-engine-rewrite to main** via PR #6 (squash merge, 199 commits)
+2. **Scrubbed Supabase secrets** from git history (tools/assign-springfield.mjs, tools/seed-springfield.mjs) — replaced hardcoded keys with `process.env.*` reads, rebased 46 commits
+3. **Deleted all 11 non-main branches** (local + remote) — verified all were behind main
+4. **Fixed main branch tracking** — `git branch --set-upstream-to=origin/main main`
+5. **Built comprehensive Automated Quality Gates spec** via brainstorming skill:
+   - 9 Opus research agents analyzed 8 code reviews, session archive, defects archive, specs, and rules
+   - 4 Opus verification agents validated all violation counts, design system, DI patterns, and sync/schema
+   - Corrected multiple inaccuracies from initial research (AppTheme count 306→797, Colors 99→20, Supabase 19→15, etc.)
+   - Final spec: 46 lint rules across 4 packages, 3 enforcement layers, verified violation counts
+6. **Spec saved**: `.claude/specs/2026-03-31-automated-quality-gates-spec.md`
+
+### What Needs to Happen Next
+
+1. **Launch /writing-plans** for the quality gates spec — create implementation plan
+2. **Opus-level verification review** of spec intent vs codebase reality (user requested for next session)
+3. **Rotate Supabase service role key** — was exposed in git history before scrub (rotate in Supabase dashboard)
+4. **Commit** — S681-S686 still uncommitted plus this session's branch merge/cleanup
+5. **Run flutter test** — verify codebase still clean after merge to main
+6. **Push Supabase migrations** — `npx supabase db push` (2 new migrations from S677)
+
+### Key Decisions Made (S687)
+
+- **4 lint packages**: Architecture, Data Safety, Sync Integrity, Test Quality (in `fg_lint_packages/field_guide_lints/`)
+- **Clean slate**: Fix ALL violations before enabling linters (no grandfathering)
+- **3 enforcement layers**: Pre-commit (hard block) → CI (comprehensive) → Branch protection (merge gate)
+- **`custom_lint` framework**: By Remi Rousselet, VS Code squiggles, no Riverpod dependency
+- **Scripts in `.claude/hooks/`**, lint packages in `fg_lint_packages/` (app repo)
+- **All `Supabase.instance.client` usages are violations** — DI migration not yet complete, linter will enforce
+- **`is_deleted` column does NOT exist** — only `deleted_at`/`deleted_by` (schema-patterns.md is stale)
+- **Upgrade `flutter_lints: ^6.0.0`** to current `lints` package
+
+### What Was Done Last Session (686)
+Implemented CodeMunch Dart enhancement (14 phases, 9 orchestrator launches, 4 parallel). 3 review/fix cycles → clean. Pushed to fork. Switched MCP to local fork. Reviewed 8 pre-prod audit layers.
+
+### What Was Done Last Session (685)
+Attempted /writing-plans for wiring-routing-audit-fixes. Dependency graph complete. 3 plan-writer agents ALL got Write/Edit denied — systematic platform bug. Parts 2+3 partially recovered via Bash fallback (truncated).
+
+### Committed Changes
+- PR #6 merged to main (squash: "Sync engine rewrite + full codebase modernization")
+- All non-main branches deleted (local + remote)
+- Supabase secrets scrubbed from history
+
+## Blockers
 
 ### BLOCKER-37: Agent Write/Edit Permission Inheritance (Windows)
 **Status**: OPEN — blocks all plan-writing and fix agents
 **Impact**: `general-purpose` subagents get Write/Edit denied despite explicit allow in settings.json
-**Evidence**: All 3 plan-writer agents, same denial pattern. Settings verified correct by debug agent.
-**Must fix before**: Retrying /writing-plans or any agent that needs to write files
-**Refs**: Claude Code bugs #4462, #7032, #5465; MEMORY.md line 68
-
-### What Needs to Happen Next
-
-1. **FIX agent permission inheritance** — investigate why `general-purpose` subagents can't Write/Edit on Windows despite explicit allow in settings
-2. **Retry /writing-plans** for wiring-routing-audit-fixes spec (dependency graph already done, can skip Phases 1-3)
-3. **`/implement` the CodeMunch Dart enhancement plan** — target: `C:\Users\rseba\Projects\jcodemunch-mcp`
-4. **Commit changes** — S681+S682 still uncommitted (codebase cleanup + .claude/ directory update)
-5. **Run flutter test** — verify codebase cleanup (S681) didn't break tests
-6. **Push Supabase migrations** — `npx supabase db push` (2 new migrations from S677)
-
-### What Was Done Last Session (684)
-CodeMunch Dart enhancement — full planning pipeline. 4 research agents, spec (R1-R16), plan-writer, 4 review/fix sweeps (12 adversarial agents, 4 fix agents, 30 findings resolved). Target: `C:\Users\rseba\Projects\jcodemunch-mcp`.
-
-### What Was Done Last Session (683)
-Preprod audit verification (wiring/routing layer). 3 opus agents verified 11 findings (8 confirmed, 3 partial). Full brainstorming → approved spec for wiring/routing audit fixes (9 design questions, all answered).
-
-### Committed Changes
-None yet — codebase cleanup (S681), .claude/ directory update (S682), wiring spec (S683), CodeMunch plan (S684), and partial wiring plan artifacts (S685) all uncommitted.
-
-## Blockers
+**Refs**: Claude Code bugs #4462, #7032, #5465
 
 ### BLOCKER-34: Item 38 — Superscript `th` → `"` (Tesseract limitation)
 **Status**: OPEN (parked, cosmetic)
@@ -59,8 +73,18 @@ None yet — codebase cleanup (S681), .claude/ directory update (S682), wiring s
 
 ## Recent Sessions
 
+### Session 687 (2026-03-31)
+**Work**: Merged sync-engine-rewrite to main (PR #6). Scrubbed secrets from history. Deleted all branches. Built comprehensive quality gates spec (9 research agents + 4 verification agents). 46 lint rules, 4 packages, 3 layers.
+**Decisions**: 4 lint packages (arch/data/sync/test), clean slate, custom_lint framework, all Supabase.instance violations, fg_lint_packages/ location.
+**Next**: /writing-plans for quality gates → opus verification review → rotate Supabase key.
+
+### Session 686 (2026-03-31)
+**Work**: Implemented CodeMunch Dart enhancement (14 phases, 9 orchestrator launches, 4 parallel). 3 review/fix cycles → clean. Pushed to fork. Switched MCP to local fork. Reviewed 8 pre-prod audit layers.
+**Decisions**: Parallel orchestrator dispatch for Groups 5-8. Architecture rules approach for audit findings (not one-off fixes). Accept R3/R8/R14 spec deviations as functionally correct.
+**Next**: Restart CLI (MCP change) → distill audit into architecture rules → retry /writing-plans.
+
 ### Session 685 (2026-03-31)
-**Work**: Attempted /writing-plans for wiring-routing-audit-fixes. Dependency graph complete. 3 plan-writer agents ALL got Write/Edit denied — systematic platform bug. Parts 2+3 partially recovered via Bash fallback (truncated). Part 1 not written.
+**Work**: Attempted /writing-plans for wiring-routing-audit-fixes. Dependency graph complete. 3 plan-writer agents ALL got Write/Edit denied — systematic platform bug. Parts 2+3 partially recovered via Bash fallback (truncated).
 **Decisions**: None — blocked by platform bug.
 **Next**: Fix agent permissions → retry /writing-plans (skip Phases 1-3, reuse dependency graph).
 
@@ -74,16 +98,6 @@ None yet — codebase cleanup (S681), .claude/ directory update (S682), wiring s
 **Decisions**: Feature-scoped initializers, three-file router split, CoreDeps for Supabase DI, bottom-up execution, 12 test files, Sentry/Aptabase always on.
 **Next**: /writing-plans → /implement → commit.
 
-### Session 682 (2026-03-30)
-**Work**: Executed 13-phase .claude/ directory audit update (/implement). 12 orchestrator launches. 5 review/fix sweeps (15 opus review agents, 66 total fixes). 96 files modified. 0 active phantoms remaining.
-**Decisions**: Parallel dispatch for Groups 8+9 and 10+11. User-requested aggressive review loops caught 66 findings missed by per-phase orchestrator reviews.
-**Next**: Commit both repos → flutter test → Supabase push.
-
-### Session 681 (2026-03-30)
-**Work**: Executed 22-phase codebase cleanup (/implement). 10 orchestrator launches, parallel dispatch (G7+G9 simultaneous). All phases passed reviews. Analyze clean. Tests pending.
-**Decisions**: Skip per-phase tests for speed (analyze-only). Launch parallel orchestrators when no file overlap. Phase merges: 4+22.3, 6.1+8, 6.2+7, 6.3+14.1.
-**Next**: Verify tests → commit → /implement .claude/ directory update.
-
 ## Active Debug Session
 
 None active.
@@ -95,23 +109,16 @@ None active.
 - **PDF tests**: 911/911 PASSING (S677)
 - **Analyze**: PASSING (0 errors, 1 warning — pre-existing)
 
-### Sync Verification (S668 — 2026-03-28, run ididd)
+### Sync Verification (S668 — 2026-03-28)
 - **S01**: PASS | **S02**: PASS | **S03**: PASS
 - **S04**: BLOCKED (no form seed) | **S05**: PASS | **S06**: PASS
 - **S07**: PASS | **S08**: PASS | **S09**: FAIL (delete no push) | **S10**: PASS
 
 ## Reference
-- **CodeMunch Dart Enhancement Plan (APPROVED)**: `.claude/plans/2026-03-30-codemunch-dart-enhancement.md`
-- **CodeMunch Dart Enhancement Spec (APPROVED)**: `.claude/specs/2026-03-30-codemunch-dart-enhancement-spec.md`
-- **CodeMunch Dart Reviews (R1-R4)**: `.claude/code-reviews/2026-03-30-codemunch-dart-enhancement-plan-review*.md`
-- **CodeMunch Dependency Graph**: `.claude/dependency_graphs/2026-03-30-codemunch-dart-enhancement/`
+- **Quality Gates Spec (APPROVED)**: `.claude/specs/2026-03-31-automated-quality-gates-spec.md`
+- **Old Audit Plan (OUTDATED, REPLACED)**: `.claude/backlogged-plans/2026-02-15-audit-system-design.md`
+- **CodeMunch Fork**: `https://github.com/RobertoChavez2433/dart_tree_sitter_fork` (branch: `feat/dart-first-class-support`)
+- **Pre-Prod Audit Reviews (8 layers)**: `.claude/code-reviews/2026-03-30-preprod-audit-layer-*.md`
 - **Wiring/Routing Audit Fixes Spec (APPROVED)**: `.claude/specs/2026-03-30-wiring-routing-audit-fixes-spec.md`
-- **Wiring/Routing Audit (SOURCE)**: `.claude/code-reviews/2026-03-30-preprod-audit-layer-application-wiring-startup-routing-codex-review.md`
-- **Codebase Cleanup Plan (IMPLEMENTED)**: `.claude/plans/2026-03-30-codebase-cleanup.md`
-- **Claude Directory Update Plan (IMPLEMENTED)**: `.claude/plans/2026-03-30-claude-directory-audit-update.md`
-- **Forms Infrastructure Plan (IMPLEMENTED)**: `.claude/plans/2026-03-28-forms-infrastructure.md`
-- **UI Refactor V2 Plan (IMPLEMENTED)**: `.claude/plans/2026-03-28-ui-refactor-v2.md`
-- **Clean Architecture Plan (IMPLEMENTED)**: `.claude/plans/2026-03-29-clean-architecture-refactor.md`
-- **Pre-Release Hardening Plan (IMPLEMENTED)**: `.claude/plans/2026-03-29-pre-release-hardening.md`
 - **Test Registry**: `.claude/test-flows/registry.md`
 - **Defects**: `.claude/defects/_defects-{feature}.md`

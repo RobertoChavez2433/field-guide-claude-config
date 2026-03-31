@@ -119,6 +119,12 @@
 - Pre-existing test failure: table_locator_test "rejects section heading" (expects Y=1700, gets 1610)
 - post_process_normalization.dart `cleanOcrArtifacts()` removes commas from text (regex `[;:,!]`)
 
+### Pre-Production Audit (2026-03-30)
+- 8-layer code review by Codex: wiring/routing, data/sync, features/business-logic, screens/navigation, providers/state, services/integrations, shared-ui/hygiene, tests/tooling
+- Files: `.claude/code-reviews/2026-03-30-preprod-audit-layer-*.md`
+- Key themes: DI refactor incomplete (singletons bypass DI), 0582B form assumptions leak everywhere, stale surface area not cleaned up with refactors, 32 silent catches, no tests for highest-risk composition paths
+- Next step: distill into enforceable architecture rules (not one-off fixes)
+
 ### Memory File Notes
 - This file (`.claude/memory/MEMORY.md`) is the detailed project knowledge base, loaded on-demand by agents
 - Auto-memory (`~/.claude/projects/.../memory/MEMORY.md`) is the brief index loaded every session

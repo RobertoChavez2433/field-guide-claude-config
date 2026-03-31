@@ -1,0 +1,11 @@
+All 74 tests pass including the 3 new tests. Here's a summary:
+
+**M: norm_map caching** — Added `_norm_map_cache` and `_get_norm_map()` in `imports.py` using the same `id()`-based pattern as `_get_sql_stems`. `resolve_specifier` now calls `_get_norm_map(source_files)` instead of `_build_normalized_path_map(source_files)` directly.
+
+**T3: Named constructor test** — Added assertions in `test_parse_dart` that `withDefaults` is in extracted names, and that no symbol has a double-prefixed `qualified_name` (e.g. `UserService.UserService.withDefaults`).
+
+**T5: Path traversal/null byte rejection** — Added `test_rejects_path_traversal` (verifies `package:evil/../../etc/passwd` → `None`) and `test_rejects_null_byte` (verifies null byte in specifier → `None`) in `TestDartPackageResolution`.
+
+**T6: With-clause test** — Added `test_parse_bases_with_clause` that verifies `_parse_bases` extracts `Scrollable` and `Logging` from `class AdvancedService extends UserService with Scrollable, Logging {`.
+
+The pre-existing failure in `test_config.py::TestLoadConfigWiredIntoMain::test_main_calls_load_config_for_serve_command` is unrelated to these changes.

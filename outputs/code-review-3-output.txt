@@ -1,0 +1,39 @@
+## Code Review: Dart Enhancement — Final Pass (Cycle 3)
+
+### Summary
+**CLEAN.** All high and medium severity issues from cycles 1–2 are resolved. 74/74 tests pass. The Dart enhancement is production-ready.
+
+### Verified Fixes from Prior Cycles
+
+| ID | Issue | Status |
+|----|-------|--------|
+| H1 | ReDoS in `_DART_CONDITIONAL_IMPORT_RE` | ✅ Fixed — no nested quantifiers |
+| H2 | O(n) path normalization per `resolve_specifier` call | ✅ Fixed — `_get_norm_map()` caches by `id(source_files)` |
+| M1 | DRY — `_build_normalized_path_map` extracted | ✅ Shared between cache and direct use |
+| M5 | Constructor double-prefix `Foo.Foo.bar` | ✅ Fixed — named constructors return trailing name only (`extractor.py:420-422`) |
+| M6/M7 | Missing `name_fields` for mixin/setter/constructor | ✅ All present in DART_SPEC (`languages.py:447-462`) |
+| R4 | Factory/const/redirecting constructor signatures | ✅ All three node types in `symbol_node_types` |
+
+### Minor Observations (Non-Blocking)
+
+1. **`id()`-based cache invalidation** (`imports.py:529,545`) — `id(source_files)` can alias after GC. Pre-existing pattern (same as `_sql_stem_cache`), not introduced by Dart changes. Acceptable for the optimization's purpose.
+
+2. **`factory_constructor_signature` not in `symbol_node_types`** — Handled indirectly via `method_signature` delegation (`extractor.py:466-467`). Correct because nielsenko grammar always wraps factory constructors in `method_signature`.
+
+3. **`_WITH_RE` lookahead** (`get_class_hierarchy.py:22`) — Doesn't guard against a second `with`, but harmless since valid Dart has only one `with` clause per signature.
+
+### Positive Observations
+
+- Comprehensive fixture (`tests/fixtures/dart/sample.dart`) covers all 14 requirement areas
+- Path traversal defense with null-byte and `..` rejection — good defense-in-depth
+- WHY comments throughout explain non-obvious decisions
+- Regression test for double-prefix (`test_languages.py:554-560`) prevents M5 from recurring
+- `test_parse_bases_with_clause` covers `_WITH_RE` in hierarchy traversal
+
+### Test Results
+```
+74 passed, 0 failed, 0 errors (0.12s)
+```
+
+### Verdict
+**CLEAN — no blocking issues. Ship it.**

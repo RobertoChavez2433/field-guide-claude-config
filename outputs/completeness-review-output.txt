@@ -1,0 +1,110 @@
+I now have complete evidence for all 16 requirements. Here's the structured report:
+
+---
+
+# Dart Enhancement Completeness Review
+
+**Spec:** `2026-03-30-codemunch-dart-enhancement-spec.md` | **Target:** `C:/Users/rseba/Projects/jcodemunch-mcp`  
+**Test results:** 13/13 Dart tests PASSED (252 total passed, 1 unrelated failure in `test_config.py`)
+
+---
+
+## R1: Sync with Upstream — **MET**
+- **Evidence:** Repo is at `v1.13.1` (tag `v1.13.1-1-gab269ad`). 37 tools present. All 252 non-config tests pass.
+- **Gap:** None.
+
+## R2: Dart Import Extractor — **MET**
+- **Evidence:** `_extract_dart_imports()` at `imports.py:328-387`. Registered in `_LANGUAGE_EXTRACTORS` at line 457. Four regex patterns cover all 11 import forms:
+  - `_DART_IMPORT_RE` (line 253): package, relative, export, deferred, as, show/hide
+  - `_DART_PART_RE` (line 262): part directives
+  - `_DART_PART_OF_RE` (line 267): part-of directives
+  - `_DART_CONDITIONAL_IMPORT_RE` (line 273): conditional imports
+- **Tests:** 9 dedicated extraction tests, all passing.
+- **Gap:** None.
+
+## R3: Package URI Resolution — **PARTIALLY MET**
+- **Evidence:** `_resolve_dart_package_import()` at `imports.py:299-325`. Maps `package:foo/bar.dart` → searches `lib/bar.dart` in source files. `.dart` in `_ALL_EXTENSIONS` (line 490). Relative imports and part/part-of resolution work. Path traversal defense in place.
+- **Gap:** **Does NOT read `pubspec.yaml`** to discover the project's own package name. The comment at line 290-292 claims it does, but line 295-296 says `_find_pubspec_package_name()` was removed as YAGNI. Resolution works by lib/ convention matching against source_files, which handles self-package imports correctly in practice, but cannot distinguish own-package vs external-package by name — it relies on file presence in the index. **Spec explicitly says "Read `pubspec.yaml` to get project package name".**
+
+## R4: Constructor Extraction — **PARTIALLY MET**
+- **Evidence:** `constructor_signature` and `constant_constructor_signature` in DART_SPEC (lines 442-443). Name/param fields defined.
+- **Gap:** Spec requires `factory_constructor_signature` and `redirecting_factory_constructor_signature` — **neither is in DART_SPEC**. Grep for these returns zero matches. The fixture has factory and redirecting constructors (lines 66-71), but the test at line 552-553 only says "At minimum, verify some constructor-related symbols exist" — it doesn't assert specific constructor names, so this gap is untested.
+
+## R5: Top-Level Constants — **MET**
+- **Evidence:** `constant_patterns=["initialized_variable_definition", "static_final_declaration"]` at `languages.py:473`. Test asserts `appVersion` is found (line 565).
+- **Gap:** None.
+
+## R6: Class Hierarchy — Mixin Support — **MET**
+- **Evidence:** `_WITH_RE` regex at `get_class_hierarchy.py:20-22`. Used in `_parse_bases()` alongside `_EXTENDS_RE` and `_IMPLEMENTS_RE`. Fixture has `AdvancedService extends UserService with Scrollable, Logging`.
+- **Gap:** None.
+
+## R7: Barrel/Export File Handling — **MET**
+- **Evidence:** The `_DART_IMPORT_RE` regex captures both `import` and `export` directives (line 254: `(?:import|export)`). Export edges appear in the dependency graph. Test at line 40-46 verifies exports are extracted.
+- **Gap:** None — barrel files with only exports will have edges extracted.
+
+## R8: Show/Hide Combinator Parsing — **PARTIALLY MET**
+- **Evidence:** Show names are captured into the `names` field (lines 356-357). Test verifies `kDebugMode` and `kIsWeb` are in names.
+- **Gap:** **`hide` names are intentionally excluded** — the code only captures `show` names (line 356: `if m.group(2) == "show"`). The spec says "Extract `show`/`hide` names into the `names` field" — hide names are not captured. The code comment justifies this ("hide names are NOT imported names"), which is semantically correct but diverges from the spec letter.
+
+## R9: Annotation-Aware Indexing — **MET**
+- **Evidence:** `decorator_node_type="annotation"` at `languages.py:463`. The fixture uses `@immutable`, `@visibleForTesting`, `@Deprecated`, `@override`. DART_SUPPORT.md documents all four annotation types. Documentation shows decorators in tool output examples.
+- **Gap:** None — annotations are captured via the generic decorator extraction mechanism.
+
+## R10: Generated Code Filtering — **MET**
+- **Evidence:** `_DART_GENERATED_SUFFIXES` at `imports.py:282` covers `.g.dart`, `.freezed.dart`, `.mocks.dart`, `.gr.dart`, `.config.dart`. `_is_dart_generated()` filters them from import edges. Test at line 62-65 verifies `sample.g.dart` is excluded.
+- **Gap:** None.
+
+## R11: Extension Type Support — **MET**
+- **Evidence:** `"extension_type_declaration": "class"` at `languages.py:434`. Custom name extraction logic at `extractor.py:413-422`. Test asserts `UserId` is found with kind `class` (lines 540-541). Fixture has `extension type const UserId(int value) implements int`.
+- **Gap:** None.
+
+## R12: Grammar Upgrade (nielsenko) — **MET**
+- **Evidence:** `pyproject.toml` has `tree-sitter-dart @ git+https://github.com/nielsenko/tree-sitter-dart.git@316b9743...`. DART_SPEC uses `class_declaration` (not `class_definition`). Comment at `languages.py:428` confirms nielsenko grammar.
+- **Gap:** None.
+
+## R13: Real-Time File Watching — **MET**
+- **Evidence:** Watcher is language-agnostic (upstream feature). `.dart` is in `_ALL_EXTENSIONS`. Watcher tests exist (`test_watch_claude.py`). DART_SUPPORT.md documents watcher auto-detection of `.dart` files.
+- **Gap:** None.
+
+## R14: Extension Method Type Awareness — **NOT MET**
+- **Evidence:** No `on` type extraction found in parser code. `extension_declaration` is mapped to `"class"` kind but the `on` target type (e.g., `String` in `extension StringExt on String`) is not extracted into metadata.
+- **Gap:** The spec marks this as Tier 4 / Nice to Have, but it is unimplemented. No test asserts it.
+
+## R15: Updated Tests — **MET**
+- **Evidence:** `tests/fixtures/dart/sample.dart` (163 lines) covers all features: imports (all forms), constructors, constants, part/part-of, show/hide, annotations, extension types, sealed classes, mixins. `test_dart_imports.py` has 12 test methods. `test_languages.py::test_parse_dart` has 20+ assertions. `conftest.py` has shared fixtures.
+- **Gap:** Constructor-specific assertions are weak (comment only, no concrete assert). No test for `hide` combinator behavior. No test for R14 (on-type).
+
+## R16: Documentation — **MET**
+- **Evidence:** `DART_SUPPORT.md` (114 lines) covers grammar, all symbol types, all import forms, class hierarchy, generated code filtering, annotations, Flutter config, tool examples, and file watcher. `LANGUAGE_SUPPORT.md` has full Dart row with all symbol types and decorator support.
+- **Gap:** None.
+
+---
+
+## Summary
+
+| Req | Description | Status | Notes |
+|-----|-------------|--------|-------|
+| R1 | Upstream sync | **MET** | At v1.13.1, 252 tests pass |
+| R2 | Import extractor | **MET** | All 11 import forms covered |
+| R3 | Package URI resolution | **PARTIALLY MET** | No pubspec.yaml read; lib/ convention works in practice |
+| R4 | Constructor extraction | **PARTIALLY MET** | Missing factory + redirecting constructor node types |
+| R5 | Top-level constants | **MET** | |
+| R6 | Mixin support | **MET** | `with` regex in hierarchy |
+| R7 | Barrel/export handling | **MET** | |
+| R8 | Show/hide combinators | **PARTIALLY MET** | Only `show` names captured; `hide` excluded by design |
+| R9 | Annotations | **MET** | |
+| R10 | Generated code filtering | **MET** | |
+| R11 | Extension types | **MET** | |
+| R12 | Grammar upgrade | **MET** | nielsenko pinned at commit |
+| R13 | File watching | **MET** | Language-agnostic watcher |
+| R14 | Extension on-type | **NOT MET** | Tier 4 / nice-to-have, unimplemented |
+| R15 | Tests | **MET** | 13 Dart tests, weak constructor asserts |
+| R16 | Documentation | **MET** | DART_SUPPORT.md + LANGUAGE_SUPPORT.md |
+
+**Overall: 12 MET, 3 PARTIALLY MET, 1 NOT MET**
+
+### Action items for full spec compliance:
+1. **R4:** Add `factory_constructor_signature` and `redirecting_factory_constructor_signature` to `DART_SPEC.symbol_node_types` + add test assertions
+2. **R3:** Either read `pubspec.yaml` for package name or update spec to accept the lib/ convention approach (current behavior is functionally correct)
+3. **R8:** Decide whether `hide` names should be in the `names` field or update spec to match the semantically-correct current behavior
+4. **R14:** Implement on-type extraction if desired (Tier 4, lowest priority)

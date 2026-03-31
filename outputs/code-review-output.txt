@@ -1,0 +1,77 @@
+The review report couldn't be saved to the `.claude/` directory due to permissions, but here's the complete review:
+
+---
+
+## Code Review: jcodemunch-mcp Dart Enhancement
+
+### Summary
+Solid, well-documented Dart language support across 17 files. Strong domain knowledge (Dart 3 features, generated code filtering, package URI resolution) and good defensive practices. Two high-severity issues and seven medium-severity issues found.
+
+---
+
+### High Severity
+
+1. **H1. Potential ReDoS in `_DART_CONDITIONAL_IMPORT_RE`** — `imports.py:274-276`
+   - `(?:\s*(?:as\s+\w+|show\s+[\w\s,]+|hide\s+[\w\s,]+))*\s*;` has nested quantifiers. `[\w\s,]+` inside `(?:...)*` creates polynomial backtracking on malformed input without `;`.
+   - **Fix**: Replace `[\w\s,]+` with `[^;]+?` or simplify to just capture the two URIs.
+
+2. **H2. `_resolve_dart_package_import` O(n) linear scan per specifier** — `imports.py:320-324`
+   - Iterates all `source_files` with normalization per `package:` import. O(imports × files) in large monorepos.
+   - **Fix**: Pre-build a normalized path dict (like `_get_sql_stems`).
+
+---
+
+### Medium Severity
+
+3. **M1. DRY violation: 3 copy-pasted `has_const_or_final` blocks** — `extractor.py:1072-1114, 1166-1181`
+   - **Fix**: Extract `_has_dart_const_or_final(node) -> bool`.
+
+4. **M2. `as` alias not captured in import names** — `imports.py:253-260`
+   - `import 'x.dart' as foo;` produces empty names; JS captures aliases.
+   - **Fix**: Add capture group for `as` identifier.
+
+5. **M3. `show` + `hide` combination not handled** — `imports.py:257`
+   - Only one `(show|hide)` group captured; `import 'x.dart' show A hide B;` loses the hide.
+   - **Fix**: Document limitation or add second combinator group.
+
+6. **M4. `.part.dart` missing from generated suffixes** — `imports.py:282`
+   - Riverpod `.part.dart` files not filtered. `.gr.dart`/`.config.dart` undocumented in DART_SUPPORT.md.
+
+7. **M5. Constructor double-prefixing in qualified_name** — `extractor.py:377-411`
+   - `_extract_name` returns `"UserService.withDefaults"`, then `_extract_symbol` prepends parent → `"UserService.UserService.withDefaults"`.
+   - **Fix**: Skip parent prefix when name already contains it, or return only trailing part.
+
+8. **M6. `method_signature` missing from `name_fields`** — `languages.py:445-455`
+   - Works via special-case in extractor but fragile; silent breakage risk.
+
+9. **M7. `mixin_declaration` missing from `name_fields`** — `languages.py:445-455`
+   - Same issue as M6.
+
+---
+
+### Low Severity
+
+10. **L1. `_WITH_RE` runs on all languages** — `get_class_hierarchy.py:20-22` — Low risk since signatures come from AST.
+11. **L2. `.config.dart` may false-positive on hand-written files** — `imports.py:282`
+12. **L3. `part of my_library;` (unquoted) not handled** — `imports.py:267-270`
+13. **L4. Loose constant assertion in test** — `test_languages.py:566` — Accepts 4 kinds, can't detect regressions.
+14. **L5. Path traversal defense untested** — `test_dart_imports.py` — No test for `package:evil/../../etc/passwd`.
+15. **L6. `hide` combinator behavior untested** — `test_dart_imports.py`
+16. **L7. `_DART_PART_RE` matches `part of` lines** — `imports.py:262-265` — Order-dependent dedup; add negative lookahead.
+17. **L8. Pinned commit hash undocumented** — `pyproject.toml:14`
+
+---
+
+### Positive Observations
+- Exemplary `# WHY:` comments on every Dart-specific block
+- Graceful nielsenko grammar fallback (extractor.py:12-17)
+- Consistent import extraction pattern (matches JS/Python/Go structure)
+- Strong path-traversal + null-byte defense in package resolution
+- Comprehensive `sample.dart` fixture (15+ Dart features)
+- Clean `with`-clause addition to class hierarchy (minimal diff)
+
+### Key Test Gaps
+- No test for class hierarchy `with` clause
+- No test for constructor qualified_name correctness (M5)
+- No test for path traversal rejection (L5)
+- No test asserting `hide` combinator produces empty names (L6)

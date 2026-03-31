@@ -1,0 +1,8 @@
+STATUS: DONE
+PHASES_EXECUTED: 8
+PARALLEL_BATCHES: Batch1(8)
+FILES: src/jcodemunch_mcp/tools/get_class_hierarchy.py
+PER_PHASE_REVIEWS:
+  Phase 8: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:2) security=PASS(C:0,H:0,M:0,L:2) fix_cycles:1
+TOTAL_FIX_CYCLES: 1
+DECISIONS: Added _WITH_RE regex, updated _EXTENDS_RE with \s+with\b lookahead, updated _parse_bases() for Dart mixin support. 1 fix cycle for docstring update and word boundary guard. Pre-existing test failure (missing pytest-asyncio) unrelated to Phase 8.
