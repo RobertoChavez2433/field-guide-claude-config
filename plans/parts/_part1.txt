@@ -1,0 +1,84 @@
+# Wiring/Routing Audit Fixes - Implementation Plan
+
+> **For Claude:** Use the implement skill (`/implement`) to execute this plan.
+
+**Goal:** Fix 11 confirmed findings from the wiring/routing preprod audit by decomposing AppInitializer (891->80 lines), splitting AppRouter (932->100 lines), consolidating entrypoints, introducing CoreDeps.supabaseClient, extracting SyncProviders business logic, and adding 12 test files.
+**Spec:** `.claude/specs/2026-03-30-wiring-routing-audit-fixes-spec.md`
+**Analysis:** `.claude/dependency_graphs/2026-03-30-wiring-routing-audit-fixes/`
+
+**Architecture:** Bottom-up decomposition. CoreDeps becomes the DI root (supabaseClient, dbService, prefs). Feature initializers are static factories returning typed deps. AppBootstrap handles post-init wiring (consent, auth listener, router). AppRouter takes all providers as required - no nullable, no try-catch.
+**Tech Stack:** Flutter/Dart, GoRouter, Provider, Supabase, Sentry, Aptabase
+**Blast Radius:** 10 direct, 5 dependent, 12 new tests, 2 deleted files + dead code
+
+---
+
+## Agent Routing Table
+| File Pattern | Agent |
+|-------------|-------|
+| `lib/**/presentation/**` | `frontend-flutter-specialist-agent` |
+| `lib/**/data/**` | `backend-data-layer-agent` |
+| `lib/core/database/**` | `backend-data-layer-agent` |
+| `lib/features/auth/**` | `auth-agent` |
+| `lib/features/sync/**` | `backend-supabase-agent` |
+| `test/**` | `qa-testing-agent` |
+| Multiple domains or `.claude/` config | `general-purpose` |
+
+## Commands
+- All commands: `pwsh -Command "..."` (Git Bash silently fails on Flutter)
+- Test: `pwsh -Command "flutter test test/exact/path.dart"`
+- Analyze: `pwsh -Command "flutter analyze"`
+
+---
+
+## Phase 1: Foundation (InitOptions + CoreDeps)
+
+**Goal:** Extract `InitOptions` and `CoreDeps` into standalone files so they can be imported independently. Add `supabaseClient` to `CoreDeps` and a static `create()` factory that absorbs lines 362-461 of the current `app_initializer.dart`.
+
+**Agent:** `general-purpose`
+
+### Sub-phase 1.1: Create `init_options.dart`
+
+**File:** `lib/core/di/init_options.dart` (NEW)
+**Why:** `AppInitializer.initialize()` currently takes `logDirOverride` as a loose string param. `main_driver.dart` needs `isDriverMode` and test overrides. Bundling these into a typed options class removes positional ambiguity and makes the init contract explicit.
+**Time:** 2 min
+
+Create this file with the following exact content:
+
+```dart
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:construction_inspector/services/photo_service.dart';
+
+/// Configuration options passed to [AppInitializer.initialize].
+///
+/// WHY: Replaces loose parameters (logDirOverride, isDriverMode) with a typed
+/// contract. Enables test/driver overrides without modifying the initializer.
+class InitOptions {
+  /// When true, substitutes TestPhotoService and skips real camera access.
+  final bool isDriverMode;
+
+  /// Override for debug log directory (used by integration tests).
+  /// Empty string = use default from PreferencesService.
+  final String logDirOverride;
+
+  /// Inject a pre-configured SupabaseClient (for testing or driver mode).
+  /// When non-null, skips Supabase.initialize() and uses this client directly.
+  final SupabaseClient? supabaseClientOverride;
+
+  /// Inject a custom PhotoService (for testing or driver mode).
+  /// When non-null, used instead of the default PhotoService(photoRepository).
+  final PhotoService? photoServiceOverride;
+
+  const InitOptions({
+    this.isDriverMode = false,
+    this.logDirOverride = '',
+    this.supabaseClientOverride,
+    this.photoServiceOverride,
+  });
+}
+```
+
+**Verify:** File compiles - no downstream consumers yet, so no analysis errors expected.
+
+---
+

@@ -1,49 +1,47 @@
 # Session State
 
-**Last Updated**: 2026-03-30 | **Session**: 682
+**Last Updated**: 2026-03-31 | **Session**: 685
 
 ## Current Phase
-- **Phase**: Claude directory update IMPLEMENTED. 13 phases + 5 review/fix sweeps complete.
-- **Status**: All files verified. 0 active phantom paths. Ready to commit.
+- **Phase**: Wiring/Routing audit /writing-plans BLOCKED by agent permission bug. Dependency graph complete, plan partially written.
+- **Status**: CodeMunch indexing + dependency graph done. 3 plan-writer agents dispatched — ALL got Write/Edit denied. Parts 2+3 partially recovered via Bash fallback (308+283 lines, but truncated/thin). Part 1 (Foundation+Sync) not written. Must fix agent permissions before retrying.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (682)
+### What Was Done This Session (685)
 
-1. **Executed 13-phase `.claude/` directory audit update** via `/implement`:
-   - 12 orchestrator launches (1 per dispatch group)
-   - Groups 8+9 (PRDs + Constraints) launched in parallel
-   - Groups 10+11 (State/Defects/Skills + Guides/Index) launched in parallel
-   - All 13 phases passed orchestrator reviews
-   - 96 files modified across `.claude/`
-2. **5 independent review/fix sweeps** (3 opus agents per sweep = 15 total review agents):
-   - Sweep 1: 18 fixes (Riverpod→Provider, hardcoded Supabase IDs, sync_status deprecation, sync_queue→change_log, phantom class names)
-   - Sweep 2: 16 fixes (MdotPdfFiller→function, CLAUDE.md skills count, FEATURE-MATRIX docs, AGENT-FEATURE-MAPPING discrepancies)
-   - Sweep 3: 15 fixes (forms-prd/sync-prd Riverpod, toolbox AppTheme, auth-prd phantom screens, ConflictRecord→ConflictWinner, toolbox todos table)
-   - Sweep 4: 4 fixes (pagination-widgets-guide refs in INDEX.md/README.md, patrol paths marked planned, driver-integration keys count)
-   - Sweep 5: 13 fixes (supabase_sync_adapter phantom, entry widget phantoms, interface-design skill paths, defect/memory broken links to completed/archived)
-   - Final verification: 0 active phantoms remaining
-3. **Key corrections across all `.claude/`**:
-   - All `sync_queue` → `change_log`
-   - All `AppTheme.*` → `FieldGuideColors.of(context).*`
-   - All `Riverpod` → `Provider` in rules/agents
-   - All hardcoded Supabase project IDs → `<PROJECT_REF>`
-   - All phantom class/screen names verified against codebase
-   - `pagination-widgets-guide.md` deleted + all references cleaned
-   - 4 new feature docs created (forms, calculator, gallery, todos)
+1. **Resumed writing-plans for wiring-routing-audit-fixes spec**
+2. **Completed Phase 1-3 of writing-plans skill** — CodeMunch indexing (7,244 symbols), file outlines for 11 key files, symbol source for all *Deps classes + AppRouter + SyncProviders
+3. **Built and saved dependency graph** at `.claude/dependency_graphs/2026-03-30-wiring-routing-audit-fixes/analysis.md` — 7 Supabase.instance.client replacements mapped, all line ranges documented
+4. **Dispatched 3 parallel plan-writer agents** (split: P1-2 Foundation+Sync, P3-6 Router+Bootstrap, P7-10 Cleanup+Tests)
+5. **ALL 3 agents got Write AND Edit tool denied** — systematic failure, not intermittent
+6. **Root cause investigation**: Settings are correct (Write/Edit explicitly allowed in both global + project). `general-purpose` subagent type does not inherit permissions on Windows. Known bug documented in MEMORY.md line 68: "#4462, #7032, #5465"
+7. **Partial recovery**: Parts 2+3 fell back to Bash/Python and wrote truncated plans (308+283 lines — should be much longer). Part 1 never written.
+
+### BLOCKER-37: Agent Write/Edit Permission Inheritance (Windows)
+**Status**: OPEN — blocks all plan-writing and fix agents
+**Impact**: `general-purpose` subagents get Write/Edit denied despite explicit allow in settings.json
+**Evidence**: All 3 plan-writer agents, same denial pattern. Settings verified correct by debug agent.
+**Must fix before**: Retrying /writing-plans or any agent that needs to write files
+**Refs**: Claude Code bugs #4462, #7032, #5465; MEMORY.md line 68
 
 ### What Needs to Happen Next
 
-1. **Commit changes** — break into logical commits, commit both repos (app + .claude/)
-2. **Run flutter test** — verify codebase cleanup (S681) didn't break tests
-3. **Push Supabase migrations** — `npx supabase db push` (2 new migrations from S677)
-4. **Resume 0582B + IDR fixes** — paused for forms infrastructure
+1. **FIX agent permission inheritance** — investigate why `general-purpose` subagents can't Write/Edit on Windows despite explicit allow in settings
+2. **Retry /writing-plans** for wiring-routing-audit-fixes spec (dependency graph already done, can skip Phases 1-3)
+3. **`/implement` the CodeMunch Dart enhancement plan** — target: `C:\Users\rseba\Projects\jcodemunch-mcp`
+4. **Commit changes** — S681+S682 still uncommitted (codebase cleanup + .claude/ directory update)
+5. **Run flutter test** — verify codebase cleanup (S681) didn't break tests
+6. **Push Supabase migrations** — `npx supabase db push` (2 new migrations from S677)
 
-### What Was Done Last Session (681)
-Executed 22-phase codebase cleanup (/implement). 10 orchestrator launches, parallel dispatch. All phases passed reviews. Analyze clean (0 errors). Tests pending.
+### What Was Done Last Session (684)
+CodeMunch Dart enhancement — full planning pipeline. 4 research agents, spec (R1-R16), plan-writer, 4 review/fix sweeps (12 adversarial agents, 4 fix agents, 30 findings resolved). Target: `C:\Users\rseba\Projects\jcodemunch-mcp`.
+
+### What Was Done Last Session (683)
+Preprod audit verification (wiring/routing layer). 3 opus agents verified 11 findings (8 confirmed, 3 partial). Full brainstorming → approved spec for wiring/routing audit fixes (9 design questions, all answered).
 
 ### Committed Changes
-None yet — both codebase cleanup (S681) and .claude/ directory update (S682) uncommitted.
+None yet — codebase cleanup (S681), .claude/ directory update (S682), wiring spec (S683), CodeMunch plan (S684), and partial wiring plan artifacts (S685) all uncommitted.
 
 ## Blockers
 
@@ -61,6 +59,21 @@ None yet — both codebase cleanup (S681) and .claude/ directory update (S682) u
 
 ## Recent Sessions
 
+### Session 685 (2026-03-31)
+**Work**: Attempted /writing-plans for wiring-routing-audit-fixes. Dependency graph complete. 3 plan-writer agents ALL got Write/Edit denied — systematic platform bug. Parts 2+3 partially recovered via Bash fallback (truncated). Part 1 not written.
+**Decisions**: None — blocked by platform bug.
+**Next**: Fix agent permissions → retry /writing-plans (skip Phases 1-3, reuse dependency graph).
+
+### Session 684 (2026-03-30)
+**Work**: CodeMunch Dart enhancement — full planning pipeline. 4 research agents, spec (R1-R16), plan-writer, 4 review/fix sweeps (12 adversarial agents, 4 fix agents, 30 findings resolved). Target: `C:\Users\rseba\Projects\jcodemunch-mcp`.
+**Decisions**: nielsenko grammar via separate pip install (Option C), regex-based imports (matching existing pattern), `lib/` path matching over pubspec.yaml parsing (YAGNI).
+**Next**: /implement CodeMunch plan → /writing-plans for wiring spec → commit.
+
+### Session 683 (2026-03-30)
+**Work**: Preprod audit verification (wiring/routing layer). 3 opus agents verified 11 findings (8 confirmed, 3 partial). Full brainstorming → approved spec for all 11 fixes.
+**Decisions**: Feature-scoped initializers, three-file router split, CoreDeps for Supabase DI, bottom-up execution, 12 test files, Sentry/Aptabase always on.
+**Next**: /writing-plans → /implement → commit.
+
 ### Session 682 (2026-03-30)
 **Work**: Executed 13-phase .claude/ directory audit update (/implement). 12 orchestrator launches. 5 review/fix sweeps (15 opus review agents, 66 total fixes). 96 files modified. 0 active phantoms remaining.
 **Decisions**: Parallel dispatch for Groups 8+9 and 10+11. User-requested aggressive review loops caught 66 findings missed by per-phase orchestrator reviews.
@@ -70,16 +83,6 @@ None yet — both codebase cleanup (S681) and .claude/ directory update (S682) u
 **Work**: Executed 22-phase codebase cleanup (/implement). 10 orchestrator launches, parallel dispatch (G7+G9 simultaneous). All phases passed reviews. Analyze clean. Tests pending.
 **Decisions**: Skip per-phase tests for speed (analyze-only). Launch parallel orchestrators when no file overlap. Phase merges: 4+22.3, 6.1+8, 6.2+7, 6.3+14.1.
 **Next**: Verify tests → commit → /implement .claude/ directory update.
-
-### Session 680 (2026-03-30)
-**Work**: Implemented /implement skill performance optimization. Parallel batching, analyze-only per batch, 3xN parallel reviews, deferred test gate, batched checkpoint writer. 2 config files changed.
-**Decisions**: None — executed plan as written.
-**Next**: /implement .claude/ directory update (first real test of optimized skill).
-
-### Session 679 (2026-03-30)
-**Work**: Full .claude/ directory audit (8 agents: 3 opus + 5 sonnet). Brainstorming spec. Wrote 12-phase update plan (3 opus plan writers, ~1500 lines). 5 review sweeps (2 CRITICAL fixed, all clean by sweep 4).
-**Decisions**: Structural depth (option B) for feature docs. Forms PRD only (skip calculator/gallery/todos). Tier-based execution order. FieldGuideColors.statusSuccess not .success for color mappings.
-**Next**: /implement .claude/ directory update → /implement codebase cleanup.
 
 ## Active Debug Session
 
@@ -98,6 +101,12 @@ None active.
 - **S07**: PASS | **S08**: PASS | **S09**: FAIL (delete no push) | **S10**: PASS
 
 ## Reference
+- **CodeMunch Dart Enhancement Plan (APPROVED)**: `.claude/plans/2026-03-30-codemunch-dart-enhancement.md`
+- **CodeMunch Dart Enhancement Spec (APPROVED)**: `.claude/specs/2026-03-30-codemunch-dart-enhancement-spec.md`
+- **CodeMunch Dart Reviews (R1-R4)**: `.claude/code-reviews/2026-03-30-codemunch-dart-enhancement-plan-review*.md`
+- **CodeMunch Dependency Graph**: `.claude/dependency_graphs/2026-03-30-codemunch-dart-enhancement/`
+- **Wiring/Routing Audit Fixes Spec (APPROVED)**: `.claude/specs/2026-03-30-wiring-routing-audit-fixes-spec.md`
+- **Wiring/Routing Audit (SOURCE)**: `.claude/code-reviews/2026-03-30-preprod-audit-layer-application-wiring-startup-routing-codex-review.md`
 - **Codebase Cleanup Plan (IMPLEMENTED)**: `.claude/plans/2026-03-30-codebase-cleanup.md`
 - **Claude Directory Update Plan (IMPLEMENTED)**: `.claude/plans/2026-03-30-claude-directory-audit-update.md`
 - **Forms Infrastructure Plan (IMPLEMENTED)**: `.claude/plans/2026-03-28-forms-infrastructure.md`

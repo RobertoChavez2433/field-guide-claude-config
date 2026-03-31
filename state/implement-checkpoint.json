@@ -1,292 +1,574 @@
 {
-  "plan": ".claude/plans/2026-03-30-claude-directory-audit-update.md",
+  "plan": ".claude/plans/2026-03-30-codemunch-dart-enhancement.md",
   "dispatch_groups": [
-    {"group": 1, "phases": ["1"], "status": "done", "test_gate": "n/a"},
-    {"group": 2, "phases": ["2", "3"], "status": "done", "test_gate": "n/a"},
-    {"group": 3, "phases": ["4"], "status": "done", "test_gate": "n/a"},
-    {"group": 4, "phases": ["5.1", "5.2", "5.3", "5.4", "5.5", "5.6"], "status": "done", "test_gate": "n/a"},
-    {"group": 5, "phases": ["5.7", "5.8", "5.9", "5.10", "5.11", "5.12", "5.13"], "status": "done", "test_gate": "n/a"},
-    {"group": 6, "phases": ["6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7", "6.8", "6.9", "6.10", "6.11", "6.12", "6.13"], "status": "done", "test_gate": "n/a"},
-    {"group": 7, "phases": ["7.1", "7.2", "7.3", "7.4"], "status": "done", "test_gate": "n/a"},
-    {"group": 8, "phases": ["8.1", "8.2", "8.3", "8.4", "8.5", "8.6", "8.7", "8.8"], "status": "done", "test_gate": "n/a"},
-    {"group": 9, "phases": ["9.1", "9.2", "9.3", "9.4", "9.5", "9.6", "9.7", "9.8", "9.9", "9.10"], "status": "done", "test_gate": "n/a"},
-    {"group": 10, "phases": ["10", "11"], "status": "done", "test_gate": "n/a"},
-    {"group": 11, "phases": ["12"], "status": "done", "test_gate": "n/a"},
-    {"group": 12, "phases": ["13"], "status": "done", "test_gate": "n/a"}
+    {
+      "group": 1,
+      "phases": [
+        "1"
+      ],
+      "status": "done",
+      "test_gate": "n/a"
+    },
+    {
+      "group": 2,
+      "phases": [
+        "2"
+      ],
+      "status": "done",
+      "test_gate": "n/a"
+    },
+    {
+      "group": 3,
+      "phases": [
+        "3",
+        "4",
+        "5"
+      ],
+      "status": "pending",
+      "test_gate": "pending"
+    },
+    {
+      "group": 4,
+      "phases": [
+        "6",
+        "7"
+      ],
+      "status": "pending",
+      "test_gate": "pending"
+    },
+    {
+      "group": 5,
+      "phases": [
+        "8"
+      ],
+      "status": "pending",
+      "test_gate": "pending"
+    },
+    {
+      "group": 6,
+      "phases": [
+        "9"
+      ],
+      "status": "pending",
+      "test_gate": "pending"
+    },
+    {
+      "group": 7,
+      "phases": [
+        "10",
+        "11"
+      ],
+      "status": "pending",
+      "test_gate": "n/a"
+    },
+    {
+      "group": 8,
+      "phases": [
+        "12"
+      ],
+      "status": "pending",
+      "test_gate": "n/a"
+    },
+    {
+      "group": 9,
+      "phases": [
+        "13",
+        "14"
+      ],
+      "status": "pending",
+      "test_gate": "pending"
+    }
   ],
   "phases": [
-    {"name": "Phase 1: CLAUDE.md + State Files", "status": "done", "reviews": {"completeness": {"status": "pass", "findings": {"critical": 0, "high": 1, "medium": 2, "low": 1}, "fix_cycles": 1}, "code_review": {"status": "pass", "findings": {"critical": 0, "high": 3, "medium": 4, "low": 3}, "fix_cycles": 1}, "security": {"status": "pass", "findings": {"critical": 1, "high": 0, "medium": 1, "low": 1}, "fix_cycles": 1}},
-     "substeps": {
-       "1.1.1": "done",
-       "1.1.2": "done",
-       "1.1.3": "done",
-       "1.2.1": "done",
-       "1.2.2": "done",
-       "1.2.3": "done",
-       "1.2.4": "done",
-       "1.3.1": "done",
-       "1.3.2": "done",
-       "1.3.3": "done",
-       "1.4.1": "done",
-       "1.4.2": "done",
-       "1.5.1": "done",
-       "1.6.1": "done",
-       "1.6.2": "done"
-     }
+    {
+      "name": "Phase 1: Upstream Sync",
+      "status": "done",
+      "substeps": {
+        "1.1.1": "done",
+        "1.1.2": "done",
+        "1.1.3": "done",
+        "1.1.4": "done",
+        "1.1.5": "done"
+      },
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": true,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
     },
-    {"name": "Phase 2: Architecture + Data Layer Rules", "status": "done", "reviews": {"completeness": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "code_review": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "security": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}},
-     "substeps": {
-       "2.1.1": "done",
-       "2.1.2": "done",
-       "2.1.3": "done",
-       "2.1.4": "done",
-       "2.1.5": "done",
-       "2.1.6": "done",
-       "2.1.7": "done",
-       "2.1.8": "done",
-       "2.2.1": "done",
-       "2.2.2": "done",
-       "2.2.3": "done",
-       "2.2.4": "done",
-       "2.2.5": "done",
-       "2.2.6": "done",
-       "2.2.7": "done",
-       "2.2.8": "done"
-     }
+    {
+      "name": "Phase 2: Grammar Upgrade (R12)",
+      "status": "done",
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": true,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 2,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 1,
+          "low": 2,
+          "fix_cycles": 0
+        }
+      },
+      "substeps": {
+        "2.1.1": "done",
+        "2.1.2": "done",
+        "2.1.3": "done",
+        "2.2.1": "done",
+        "2.2.2": "done",
+        "2.2.3": "done"
+      }
     },
-    {"name": "Phase 3: Feature-Specific Rules", "status": "done", "reviews": {"completeness": {"status": "pass", "findings": {"critical": 0, "high": 1, "medium": 0, "low": 1}, "fix_cycles": 1}, "code_review": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "security": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}},
-     "substeps": {
-       "3.1.1": "done",
-       "3.1.2": "done",
-       "3.1.3": "done",
-       "3.1.4": "done",
-       "3.1.5": "done",
-       "3.1.6": "done",
-       "3.1.7": "done",
-       "3.1.8": "done",
-       "3.2.1": "done",
-       "3.2.2": "done",
-       "3.2.3": "done",
-       "3.2.4": "done",
-       "3.2.5": "done",
-       "3.2.6": "done",
-       "3.2.7": "done",
-       "3.3.1": "done",
-       "3.3.2": "done",
-       "3.3.3": "done",
-       "3.3.4": "done",
-       "3.4.1": "done",
-       "3.4.2": "done",
-       "3.4.3": "done",
-       "3.4.4": "done",
-       "3.5.1": "done",
-       "3.5.2": "done",
-       "3.5.3": "done",
-       "3.5.4": "done",
-       "3.5.5": "done"
-     }
+    {
+      "name": "Phase 3: Test Fixture",
+      "status": "pending",
+      "reviews": {
+        "completeness": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
     },
-    {"name": "Phase 4: Agent Definitions + Memory", "status": "done", "reviews": {"completeness": {"status": "pass", "findings": {"critical": 0, "high": 1, "medium": 0, "low": 0}, "fix_cycles": 1}, "code_review": {"status": "pass", "findings": {"critical": 0, "high": 1, "medium": 3, "low": 4}, "fix_cycles": 1}, "security": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 2, "low": 4}, "fix_cycles": 1}},
-     "substeps": {
-       "4.1": "done", "4.2": "done", "4.3": "done", "4.4": "done",
-       "4.5": "done", "4.6": "done", "4.7": "done", "4.8": "done",
-       "4.9": "done", "4.10": "done", "4.11": "done", "4.12": "done"
-     }
+    {
+      "name": "Phase 4: DART_SPEC Update (R4, R5, R6, R11, R14)",
+      "status": "pending",
+      "reviews": {
+        "completeness": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
     },
-    {"name": "Phase 5: Feature Architecture Docs (13 rewrites)", "status": "done", "reviews": {"completeness": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "code_review": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "security": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}},
-     "substeps": {
-       "5.1": "done",
-       "5.2": "done",
-       "5.3": "done",
-       "5.4": "done",
-       "5.5": "done",
-       "5.6": "done",
-       "5.7": "done",
-       "5.8": "done",
-       "5.9": "done",
-       "5.10": "done",
-       "5.11": "done",
-       "5.12": "done",
-       "5.13": "done"
-     }
+    {
+      "name": "Phase 5: Extractor Updates (R4, R5, R11, R14)",
+      "status": "pending",
+      "reviews": {
+        "completeness": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
     },
-    {"name": "Phase 6: Feature Overview Docs (13 updates)", "status": "done", "reviews": {"completeness": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "code_review": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "security": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}},
-     "substeps": {
-       "6.1": "done", "6.2": "done", "6.3": "done", "6.4": "done", "6.5": "done",
-       "6.6": "done", "6.7": "done", "6.8": "done", "6.9": "done", "6.10": "done",
-       "6.11": "done", "6.12": "done", "6.13": "done"
-     }
+    {
+      "name": "Phase 6: Dart Import Extractor (R2, R7, R8, R10)",
+      "status": "pending",
+      "reviews": {
+        "completeness": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
     },
-    {"name": "Phase 7: Feature Docs — CREATE (4 new)", "status": "done", "reviews": {"completeness": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "code_review": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "security": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}},
-     "substeps": {
-       "7.1": "done", "7.2": "done", "7.3": "done", "7.4": "done"
-     }
+    {
+      "name": "Phase 7: Package URI Resolution (R3)",
+      "status": "pending",
+      "reviews": {
+        "completeness": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
     },
-    {"name": "Phase 8: PRDs (8 updates)", "status": "done",
-     "substeps": {
-       "8.1.1": "done", "8.2.1": "done", "8.3.1": "done",
-       "8.4.1": "done", "8.4.2": "done", "8.4.3": "done",
-       "8.5.1": "done", "8.5.2": "done", "8.5.3": "done", "8.5.4": "done",
-       "8.6.1": "done", "8.6.2": "done", "8.6.3": "done",
-       "8.7.1": "done", "8.7.2": "done", "8.7.3": "done",
-       "8.8.1": "done", "8.8.2": "done", "8.8.3": "done", "8.8.4": "done",
-       "8.8.5": "done", "8.8.6": "done", "8.8.7": "done"
-     },
-     "reviews": {"completeness": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "code_review": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "security": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}}},
-    {"name": "Phase 9: Constraints (10 updates)", "status": "done",
-     "substeps": {
-       "9.1": "done", "9.2": "done", "9.3": "done", "9.4": "done", "9.5": "done",
-       "9.6": "done", "9.7": "done", "9.8": "done", "9.9": "done", "9.10": "done"
-     },
-     "reviews": {"completeness": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "code_review": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "security": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}}},
-    {"name": "Phase 10-11: State/Defects + Skills", "status": "done",
-     "substeps": {
-       "10.1.1": "done", "10.1.2": "done", "10.1.3": "done", "10.1.4": "done", "10.1.5": "done",
-       "10.2.1": "done", "10.2.2": "done", "10.2.3": "done", "10.2.4": "done", "10.2.5": "done", "10.2.6": "done",
-       "11.1.1": "done", "11.2.1": "done", "11.3.1": "done", "11.4.1": "done", "11.5.1": "done"
-     },
-     "reviews": {
-       "completeness": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 1, "low": 0}, "fix_cycles": 1},
-       "code_review": {"status": "pass", "findings": {"critical": 0, "high": 2, "medium": 5, "low": 4}, "fix_cycles": 1},
-       "security": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}
-     }
+    {
+      "name": "Phase 8: Class Hierarchy Update (R6)",
+      "status": "pending",
+      "reviews": {
+        "completeness": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
     },
-    {"name": "Phase 12: Guides + Test Flows + Index", "status": "done",
-     "substeps": {"12.1": "done", "12.2": "done", "12.3": "done", "12.4": "done", "12.5": "done"},
-     "reviews": {"completeness": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "code_review": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "security": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}}},
-    {"name": "Phase 13: Final Verification", "status": "done",
-     "substeps": {
-       "13.1": "done",
-       "13.2": "done",
-       "13.3": "done",
-       "13.4": "done",
-       "13.5": "done",
-       "13.6": "done",
-       "13.7": "done",
-       "13.8": "done",
-       "13.9": "done",
-       "13.10": "done",
-       "13.11": "done",
-       "13.12": "done",
-       "13.13": "done"
-     },
-     "reviews": {"completeness": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "code_review": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}, "security": {"status": "pass", "findings": {"critical": 0, "high": 0, "medium": 0, "low": 0}, "fix_cycles": 0}}}
+    {
+      "name": "Phase 9: Tests (R15)",
+      "status": "pending",
+      "reviews": {
+        "completeness": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
+    },
+    {
+      "name": "Phase 10: Annotation and Extension Verification (R9, R14)",
+      "status": "pending",
+      "reviews": {
+        "completeness": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
+    },
+    {
+      "name": "Phase 11: Generated Code Filtering (R10)",
+      "status": "pending",
+      "reviews": {
+        "completeness": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
+    },
+    {
+      "name": "Phase 12: Documentation (R16)",
+      "status": "pending",
+      "reviews": {
+        "completeness": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
+    },
+    {
+      "name": "Phase 13: Final Integration Test",
+      "status": "pending",
+      "reviews": {
+        "completeness": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
+    },
+    {
+      "name": "Phase 14: Spec Validation (Real-World Verification)",
+      "status": "pending",
+      "reviews": {
+        "completeness": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pending",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
+    }
   ],
   "modified_files": [
-    ".claude/CLAUDE.md",
-    ".claude/state/FEATURE-MATRIX.json",
-    ".claude/state/PROJECT-STATE.json",
-    ".claude/state/AGENT-FEATURE-MAPPING.json",
-    ".claude/state/AGENT-CHECKLIST.json",
-    ".claude/docs/directory-reference.md",
-    ".claude/rules/architecture.md",
-    ".claude/rules/backend/data-layer.md",
-    ".claude/rules/sync/sync-patterns.md",
-    ".claude/rules/auth/supabase-auth.md",
-    ".claude/rules/frontend/flutter-ui.md",
-    ".claude/rules/database/schema-patterns.md",
-    ".claude/rules/pdf/pdf-generation.md",
-    ".claude/agents/implement-orchestrator.md",
-    ".claude/agents/debug-research-agent.md",
-    ".claude/agents/auth-agent.md",
-    ".claude/agents/backend-data-layer-agent.md",
-    ".claude/agents/backend-supabase-agent.md",
-    ".claude/agents/code-review-agent.md",
-    ".claude/agents/frontend-flutter-specialist-agent.md",
-    ".claude/agents/pdf-agent.md",
-    ".claude/agents/qa-testing-agent.md",
-    ".claude/agents/security-agent.md",
-    ".claude/agents/backend-data-layer-agent.memory.md",
-    ".claude/agent-memory/code-review-agent/MEMORY.md",
-    ".claude/agent-memory/pdf-agent/MEMORY.md",
-    ".claude/agent-memory/security-agent/MEMORY.md",
-    ".claude/docs/features/feature-auth-architecture.md",
-    ".claude/docs/features/feature-settings-architecture.md",
-    ".claude/docs/features/feature-projects-architecture.md",
-    ".claude/docs/features/feature-entries-architecture.md",
-    ".claude/docs/features/feature-sync-architecture.md",
-    ".claude/docs/features/feature-toolbox-architecture.md",
-    ".claude/docs/features/feature-contractors-architecture.md",
-    ".claude/docs/features/feature-dashboard-architecture.md",
-    ".claude/docs/features/feature-locations-architecture.md",
-    ".claude/docs/features/feature-pdf-architecture.md",
-    ".claude/docs/features/feature-photos-architecture.md",
-    ".claude/docs/features/feature-quantities-architecture.md",
-    ".claude/docs/features/feature-weather-architecture.md",
-    ".claude/docs/features/feature-auth-overview.md",
-    ".claude/docs/features/feature-settings-overview.md",
-    ".claude/docs/features/feature-projects-overview.md",
-    ".claude/docs/features/feature-entries-overview.md",
-    ".claude/docs/features/feature-sync-overview.md",
-    ".claude/docs/features/feature-toolbox-overview.md",
-    ".claude/docs/features/feature-contractors-overview.md",
-    ".claude/docs/features/feature-dashboard-overview.md",
-    ".claude/docs/features/feature-locations-overview.md",
-    ".claude/docs/features/feature-pdf-overview.md",
-    ".claude/docs/features/feature-photos-overview.md",
-    ".claude/docs/features/feature-quantities-overview.md",
-    ".claude/docs/features/feature-weather-overview.md",
-    ".claude/docs/features/feature-forms-overview.md",
-    ".claude/docs/features/feature-forms-architecture.md",
-    ".claude/docs/features/feature-calculator-overview.md",
-    ".claude/docs/features/feature-calculator-architecture.md",
-    ".claude/docs/features/feature-gallery-overview.md",
-    ".claude/docs/features/feature-gallery-architecture.md",
-    ".claude/docs/features/feature-todos-overview.md",
-    ".claude/docs/features/feature-todos-architecture.md",
-    ".claude/architecture-decisions/sync-constraints.md",
-    ".claude/architecture-decisions/settings-constraints.md",
-    ".claude/architecture-decisions/toolbox-constraints.md",
-    ".claude/architecture-decisions/entries-constraints.md",
-    ".claude/architecture-decisions/contractors-constraints.md",
-    ".claude/architecture-decisions/locations-constraints.md",
-    ".claude/architecture-decisions/photos-constraints.md",
-    ".claude/architecture-decisions/projects-constraints.md",
-    ".claude/architecture-decisions/quantities-constraints.md",
-    ".claude/architecture-decisions/weather-constraints.md",
-    ".claude/architecture-decisions/pdf-v2-constraints.md",
-    ".claude/architecture-decisions/dashboard-constraints.md",
-    ".claude/architecture-decisions/auth-constraints.md",
-    ".claude/architecture-decisions/data-validation-rules.md",
-    ".claude/architecture-decisions/forms-constraints.md",
-    ".claude/architecture-decisions/consent-telemetry-constraints.md",
-    ".claude/prds/forms-prd.md",
-    ".claude/prds/sync-prd.md",
-    ".claude/prds/settings-prd.md",
-    ".claude/prds/auth-prd.md",
-    ".claude/prds/entries-prd.md",
-    ".claude/prds/projects-prd.md",
-    ".claude/prds/photos-prd.md",
-    ".claude/prds/dashboard-prd.md",
-    ".claude/prds/contractors-prd.md",
-    ".claude/prds/quantities-prd.md",
-    ".claude/prds/weather-prd.md",
-    ".claude/prds/toolbox-prd.md",
-    ".claude/prds/pdf-extraction-v2-prd-2.0.md",
-    ".claude/prds/2026-02-21-project-based-architecture-prd.md",
-    ".claude/docs/guides/testing/e2e-test-setup.md",
-    ".claude/docs/guides/testing/manual-testing-checklist.md",
-    ".claude/docs/INDEX.md",
-    ".claude/state/feature-forms.json",
-    ".claude/state/feature-calculator.json",
-    ".claude/state/feature-gallery.json",
-    ".claude/state/feature-todos.json",
-    ".claude/defects/_defects-photos.md",
-    ".claude/defects/_defects-database.md",
-    ".claude/defects/_defects-forms.md",
-    ".claude/defects/_defects-sync-verification.md",
-    ".claude/defects/_defects-settings.md",
-    ".claude/defects/_defects-toolbox.md",
-    ".claude/skills/implement/skill.md",
-    ".claude/skills/audit-config/SKILL.md",
-    ".claude/skills/test/SKILL.md",
-    ".claude/skills/interface-design/references/design-system.md",
-    ".claude/skills/systematic-debugging/references/codebase-tracing-paths.md",
-    ".claude/outputs/.gitkeep"
+    "pyproject.toml",
+    "src/jcodemunch_mcp/parser/extractor.py"
   ],
   "build": "n/a",
-  "analyze_and_test": "n/a",
-  "decisions": [],
+  "analyze_and_test": "pending",
+  "integration_reviews": {
+    "completeness": {
+      "status": "pending",
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "fix_cycles": 0
+    },
+    "code_review": {
+      "status": "pending",
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "fix_cycles": 0
+    },
+    "security": {
+      "status": "pending",
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "fix_cycles": 0
+    }
+  },
+  "decisions": [
+    "1.1.1: upstream URL jcodemunch/jcodemunch-mcp.git not found; synced from origin (jgravelle/jcodemunch-mcp) instead \u00e2\u20ac\u201d fast-forward succeeded, 466 commits applied. Local uncommitted Kotlin-support changes stashed as local-mods-before-ff-sync.",
+    "Phase 1: Upstream URL in plan (jcodemunch/jcodemunch-mcp) was wrong \u2014 synced from origin (jgravelle/jcodemunch-mcp) instead. Kotlin WIP stashed as local-mods-before-ff-sync. v1.13.1 confirmed with 1381 tests passing.",
+    "Phase 2: test_parse_dart fails after grammar switch because DART_SPEC uses class_definition (language-pack) but nielsenko grammar uses class_declaration. This is expected and will be resolved in Phase 4 DART_SPEC update.",
+    "Phase 2: Pinned tree-sitter-dart to commit 316b9743b2d45b7e7b71fdbdb28e3e8971d64c13. Added tool.hatch.metadata.allow-direct-references=true to pyproject.toml to allow git URL dependencies.",
+    "Phase 2: Grammar upgrade complete. nielsenko/tree-sitter-dart installed and pinned to commit 316b9743. Grammar override added in extractor.py. 1 expected test failure (test_parse_dart) due to node type mismatch - will be resolved in Phase 4. allow-direct-references=true added to hatch metadata for VCS dep."
+  ],
   "fix_attempts": [],
   "blocked": []
 }
