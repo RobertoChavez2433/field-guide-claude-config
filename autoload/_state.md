@@ -1,69 +1,63 @@
 # Session State
 
-**Last Updated**: 2026-04-01 | **Session**: 700
+**Last Updated**: 2026-04-01 | **Session**: 701
 
 ## Current Phase
-- **Phase**: WIRING RE-WIRE COMPLETE — S697 re-done. Lint cleanup (S698 redo) next.
-- **Status**: Wiring-routing tracked file rewiring done. 3769 tests pass (4 pre-existing form_sub_screens failures). 0 analyze errors. NOT YET COMMITTED.
+- **Phase**: LINT CLEANUP COMPLETE — full codebase lint compliance achieved.
+- **Status**: 0 flutter analyze issues. 0 custom_lint issues. 0 lint package analyze issues. 3769 tests pass (4 pre-existing form_sub_screens failures). All committed on feat/wiring-routing-rewire.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (700)
+### What Was Done This Session (701)
 
-1. Audited all 33 surviving new files from S697 (32 COMPLETE, 1 BROKEN — harness_seed_data.dart em-dash syntax)
-2. Wrote targeted re-wiring plan: `.claude/plans/2026-04-01-wiring-rewire-tracked-files.md`
-3. Executed all 8 phases — directly, no orchestrator overhead:
-   - **Phase 1**: AppInitializer — extracted types, InitOptions, captured supabaseClient (done by orchestrator)
-   - **Phase 2**: Caller migration — all callers use qualified paths (deps.core.X, deps.auth.X), compat extension removed
-   - **Phase 3**: Feature initializer delegation — app_initializer.dart 644→268 lines, delegates to AuthInitializer, ProjectInitializer, EntryInitializer, FormInitializer
-   - **Phase 4**: Router split — redirect delegated to AppRedirect, ScaffoldWithNavBar removed from app_router.dart (~200 lines removed)
-   - **Phase 5**: SyncProviders extraction — ~200 lines of inline logic replaced with SyncInitializer.create() delegation
-   - **Phase 6**: AppBootstrap consolidation — main.dart 224→88 lines, main_driver.dart 122→72 lines
-   - **Phase 7**: Cleanup — deleted 3 stale files, fixed harness_seed_data.dart syntax, added FakeSupabaseClient to mock_services.dart
-   - **Phase 8**: Full test suite — 3769 pass, 4 pre-existing failures in form_sub_screens_test.dart
-4. Fixed 3 test issues: FakeSupabaseClient missing from mock_services.dart, app_initializer_test.dart capture pattern, ChangeNotifierProvider.value for SupportProvider
-5. Saved feedback: always use opus model for subagents
+1. Full custom lint cleanup — 977 custom lint ERRORs + 288 WARNINGs → 0
+2. Flutter analyzer cleanup — 73 issues → 0
+3. Lint package cleanup — 18 warnings → 0
+4. Pre-commit hook hardened — grep-checks.ps1 exclusions for false positives
 
-### Files Modified (10 tracked files)
-- `lib/core/di/app_initializer.dart` — 644→268 lines (feature initializer delegation + compat extension removed)
-- `lib/core/di/app_providers.dart` — qualified paths + consent/support params
-- `lib/main.dart` — 224→88 lines (AppBootstrap + sentry_pii_filter)
-- `lib/main_driver.dart` — 122→72 lines (AppBootstrap)
-- `lib/core/router/app_router.dart` — redirect→AppRedirect, ScaffoldWithNavBar→import
-- `lib/features/sync/di/sync_providers.dart` — inline logic→SyncInitializer delegation
-- `lib/core/driver/harness_seed_data.dart` — em-dash syntax fix
-- `test/helpers/mocks/mock_services.dart` — added FakeSupabaseClient
-- `test/core/di/app_initializer_test.dart` — fixed structural test pattern
+#### Violation categories fixed:
+- **851 no_deprecated_app_theme** — AppTheme.space*/radius*/animation* → DesignConstants.*, color refs → Theme.of(context)/FieldGuideColors.of(context)/AppColors.* across 83 presentation files
+- **152 no_silent_catch** — Logger calls added to all catch blocks across 62 files
+- **64 copywith_nullable_sentinel** — sentinel pattern added to 47 model copyWith methods
+- **47 no_hardcoded_form_type** — 'mdot_0582b' → kFormTypeMdot0582b across 15 files
+- **41 require_soft_delete_filter** — deleted_at IS NULL added to queries in local datasources
+- **27 avoid_raw_database_delete** — db.delete() → soft delete with deleted_at timestamp
+- **19 check_bytes_null_and_empty** — .isEmpty checks added alongside null checks
+- **17 no_sync_status_column** — sync_status references cleaned from migration code
+- **15 require_did_update_widget_for_controllers** — didUpdateWidget overrides added
+- **13 sync_control_inside_transaction** — try/finally wrapping for sync locks
+- **7 path_traversal_guard** — path traversal validation added
+- **5 sync_time_on_success_only** — timestamps moved to success paths
+- **3 no_direct_database_construction** — DI injection fixes
+- **3 change_log_cleanup_requires_success** — success guards added
+- **1 no_direct_testing_keys_bypass** — facade import used
 
-### Files Deleted (3)
-- `lib/driver_main.dart` — stale flutter_driver shim
-- `lib/test_harness.dart` — replaced by DriverServer HTTP harness
-- `lib/test_harness/harness_providers.dart` — only used by test_harness.dart
+#### Flutter analyzer fixes (73):
+- 16 use_super_parameters, 14 unintended_html_in_doc_comment, 20 identifier naming, 2 dangling_library_doc_comments, 2 prefer_initializing_formals, 2 unused_field/element, 1 dead_code, 1 unused_local_variable, 1 deprecated_member_use, 1 unused_import
 
-### 32 Surviving New Files (UNTOUCHED)
-All 32 new files from S697 confirmed intact and untouched. See plan for full list.
+### Commits (6 on feat/wiring-routing-rewire)
+1. `6ec83cb` — Lint package: unused imports, overrides, allowlists (37 files)
+2. `ce51b9a` — Presentation: AppTheme → DesignConstants + UI fixes (157 files)
+3. `c766452` — Data layer: sentinel, soft-delete, super params (99 files)
+4. `f0207e6` — Core + sync: silent catches, sync integrity, DI (56 files)
+5. `4d47fb9` — Tests + CI: Logger calls, doc comments, identifiers (124 files)
+6. `7314a49` — Restore sync/engine catch-all in lint rule allowlists (2 files)
 
 ### What Needs to Happen Next
-1. **COMMIT IMMEDIATELY** — on a feature branch, then PR
-2. **Re-run lint cleanup** (session 698 redo) — violation map exists at `tmp_lint_fix_map.md`
-3. **Remove ignore comments** SAFELY — use Python, not PowerShell
-4. **Clean up temp files**: `tmp_*.ps1`, `tmp_*.txt`, `parse_violations.py` in project root
+1. **PR for feat/wiring-routing-rewire** — squash merge to main
+2. **Address pre-existing test failures** — 4 form_sub_screens_test.dart failures
+3. **BLOCKER-38: Sign-out data wipe** — HIGH priority data loss risk
 
-### Key Decisions Made (S700)
-- **Targeted re-wiring plan** instead of full `/implement` re-run — preserved 32 existing new files, only modified tracked files
-- **Phases 2+6 combined** for main.dart/main_driver.dart — rewrote both with AppBootstrap in one pass
-- **Phase 3 done correctly** — delegated to all 4 feature initializers (auth, project, entry, form)
-- **Direct edits** instead of orchestrator — much faster for mechanical tracked-file rewiring
-- **Always use opus for subagents** — user feedback, saved to memory
-
-### Committed Changes
-- No commits yet — MUST COMMIT before session ends
+### Key Decisions Made (S701)
+- **Parallel opus agents** for lint fixes — 5 concurrent for AppTheme, 6 concurrent for other rules
+- **Catch-all patterns preserved** in lint rules — sync/engine/* uses pattern match, not explicit paths
+- **No ignore comments** — all violations fixed with real code changes
+- **Pre-commit hook hardened** — grep-checks.ps1 exclusions for lint rule files, test databases, form type allowlisted files
 
 ## Blockers
 
 ### BLOCKER-39: Data Loss — Sessions 697-698 Destroyed
-**Status**: PARTIALLY RESOLVED — S697 (wiring-routing) re-done. S698 (lint cleanup) still pending.
-**Impact**: Lint cleanup (~1,200 code fixes) still needs re-doing.
+**Status**: RESOLVED — S697 (wiring-routing) re-done in S700. S698 (lint cleanup) re-done in S701.
 
 ### BLOCKER-38: Sign-Out Data Wipe Bug
 **Status**: OPEN — discovered during lint cleanup
@@ -87,6 +81,11 @@ All 32 new files from S697 confirmed intact and untouched. See plan for full lis
 **Status**: OPEN — MEDIUM
 
 ## Recent Sessions
+
+### Session 701 (2026-04-01)
+**Work**: Full lint cleanup redo. 977 custom lint + 73 analyzer + 18 lint package warnings → 0. 466 files across 6 commits.
+**Decisions**: Parallel opus agents. No ignore comments. Catch-all patterns preserved. Pre-commit hook hardened.
+**Next**: PR → merge. Address form_sub_screens failures. BLOCKER-38.
 
 ### Session 700 (2026-04-01)
 **Work**: Re-wired tracked files for wiring-routing plan. 10 files modified, 3 deleted, 32 new files untouched. app_initializer.dart 644→268 lines. main.dart 224→88 lines.
@@ -114,10 +113,11 @@ None active.
 ## Test Results
 
 ### Flutter Unit Tests
-- **Full suite (S700)**: 3769 pass, 4 pre-existing fail (form_sub_screens_test.dart)
-- **Analyze (S700)**: 0 errors, 189 infos/warnings (all pre-existing)
+- **Full suite (S701)**: 3769 pass, 4 pre-existing fail (form_sub_screens_test.dart)
+- **Analyze (S701)**: 0 issues
+- **Custom lint (S701)**: 0 issues
+- **Lint package (S701)**: 0 issues, 86/86 tests passing
 - **DI/Router/Sync tests (S700)**: 98/98 PASSING
-- **Lint package**: 86/86 PASSING (S699)
 
 ### Sync Verification (S668 — 2026-03-28)
 - **S01**: PASS | **S02**: PASS | **S03**: PASS
@@ -130,5 +130,3 @@ None active.
 - **Quality Gates Plan (IMPLEMENTED)**: `.claude/plans/2026-03-31-automated-quality-gates.md`
 - **Implement Checkpoint**: `.claude/state/implement-checkpoint.json`
 - **Lint Package**: `fg_lint_packages/field_guide_lints/` (91 dart files, 43 custom rules)
-- **Lint Fix Map**: `tmp_lint_fix_map.md` (original violation map from S698)
-- **Temp files to clean up**: `tmp_*.ps1`, `tmp_*.txt`, `parse_violations.py` in project root
