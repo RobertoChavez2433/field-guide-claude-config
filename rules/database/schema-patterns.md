@@ -138,7 +138,7 @@ synced_at TEXT
 ### Soft Delete
 ```sql
 deleted_at TEXT,
-is_deleted INTEGER DEFAULT 0
+deleted_by TEXT
 ```
 
 ## Anti-Patterns

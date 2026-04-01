@@ -221,3 +221,24 @@ Reference: `lib/features/contractors/data/models/contractor.dart`
 **File:** `lib/features/entries/presentation/screens/home_screen.dart`
 **Why:** `ContractorEditingController` requires `DatabaseService` from Provider, which is not available in `initState()`. The standard Loading Pattern (see above) using `addPostFrameCallback` created a race condition causing `LateInitializationError` when build ran before the callback. Moving to `didChangeDependencies` with a `_controllersInitialized` guard is the established Flutter pattern when `context` is required at build time.
 **Guard:** `_controllersInitialized` flag prevents re-initialization on dependency changes.
+
+
+## Anti-Patterns (Enforced by Lint)
+
+These patterns are enforced by `field_guide_lints` custom lint rules. Violations block commit and CI.
+
+| Anti-Pattern | Rule | Fix |
+|-------------|------|-----|
+| `Supabase.instance.client` outside DI root | A1 | Inject via constructor from AppInitializer |
+| `DatabaseService()` outside DI root | A2 | Inject via constructor |
+| Raw SQL in presentation/ | A3 | Use repository/datasource methods |
+| Raw SQL in di/ files | A4 | Move to repository layer |
+| Datasource imports in presentation/ | A5 | Import repository, not datasource |
+| Business logic (await/try) in di/ files | A6 | Move to use case or repository |
+| Provider construction outside buildAppProviders() | A7 | Register in app_providers.dart |
+| Service construction in widgets | A8 | Inject via Provider.of or context.read |
+| Silent catch blocks | A9 | Add Logger.<category>() call |
+| `AppTheme.*` color constants | A12 | Use three-tier color system |
+| Hardcoded `Colors.*` in presentation | A13 | Use theme tokens |
+
+> **Note:** Rules A10–A11 and additional data safety, sync integrity, and test quality rules are defined in `fg_lint_packages/field_guide_lints/`. The table above covers architecture-specific rules only.

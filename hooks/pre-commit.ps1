@@ -1,85 +1,55 @@
-# Pre-commit hook — tiered enforcement
-# Hard block: security anti-patterns (exit 1)
-# Warn only: code quality patterns (exit 0 with warning)
+# Pre-commit hook - 3-layer quality gate orchestrator
+# FROM SPEC: Section 10 - "main orchestrator (replaces current)"
+# Called by .githooks/pre-commit shell shim
+#
+# Sequence: analyze -> custom_lint -> grep checks -> targeted tests
+# ANY failure = hard block (exit 1)
 
 param()
 
-# NOTE: @() ensures proper array parsing on Windows (line-ending issues without it)
-$stagedFiles = @(git diff --cached --name-only --diff-filter=ACM)
-if ($LASTEXITCODE -ne 0) { exit 0 }
+$ErrorActionPreference = "Stop"
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$checksDir = Join-Path $scriptDir "checks"
 
-$hardBlockPatterns = @(
-    @{
-        Pattern = 'db\.execute|db\.rawQuery|db\.rawUpdate|db\.rawDelete|db\.rawInsert'
-        PathFilter = 'presentation/'
-        Message = 'BLOCKED: Raw SQL found in presentation layer. Move to repository/datasource.'
-    }
-)
+# Get staged .dart files (skip generated)
+$stagedFiles = @(git diff --cached --name-only --diff-filter=ACM | Where-Object {
+    $_ -match '\.dart$' -and
+    $_ -notmatch '\.(g|freezed|mocks)\.dart$'
+})
 
-$warnPatterns = @(
-    @{
-        Pattern = 'catch\s*\(_\)'
-        PathFilter = 'lib/'
-        Message = 'WARNING: catch (_) without logging detected. Consider adding Logger call.'
-    },
-    @{
-        Pattern = '\.firstWhere\('
-        PathFilter = 'lib/'
-        Message = 'WARNING: .firstWhere() detected. Verify it has orElse or use .firstOrNull instead.'
-    },
-    @{
-        Pattern = 'debugPrint'
-        PathFilter = 'lib/'
-        Message = 'WARNING: debugPrint found. Use Logger.<category>() instead.'
-    }
-)
-
-$blocked = $false
-$warned = $false
-
-foreach ($file in $stagedFiles) {
-    if (-not (Test-Path $file)) { continue }
-
-    # Check .env files (filename-based check — catches .env, .env.local, .env.production, etc.)
-    if ($file -match '\.env') {
-        Write-Host "BLOCKED: .env file staged for commit: $file" -ForegroundColor Red
-        $blocked = $true
-        continue
-    }
-
-    # Only check Dart files for code patterns
-    if ($file -notmatch '\.dart$') { continue }
-
-    # Skip generated files — they produce false positives
-    if ($file -match '\.(g|freezed|mocks)\.dart$') { continue }
-
-    $content = git show ":0:$file" 2>$null
-    if (-not $content) { continue }
-
-    foreach ($pattern in $hardBlockPatterns) {
-        if ($pattern.PathFilter -and $file -notmatch $pattern.PathFilter) { continue }
-        if ($content -match $pattern.Pattern) {
-            Write-Host "$($pattern.Message) [$file]" -ForegroundColor Red
-            $blocked = $true
-        }
-    }
-
-    foreach ($pattern in $warnPatterns) {
-        if ($pattern.PathFilter -and $file -notmatch $pattern.PathFilter) { continue }
-        if ($content -match $pattern.Pattern) {
-            Write-Host "$($pattern.Message) [$file]" -ForegroundColor Yellow
-            $warned = $true
-        }
-    }
-}
-
-if ($blocked) {
-    Write-Host "`nCommit blocked. Fix the issues above and try again." -ForegroundColor Red
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Failed to get staged files from git." -ForegroundColor Red
     exit 1
 }
 
-if ($warned) {
-    Write-Host "`nWarnings found but commit allowed. Consider fixing the issues above." -ForegroundColor Yellow
+$stagedSql = @(git diff --cached --name-only --diff-filter=ACM | Where-Object { $_ -match '\.sql$' })
+
+if ($stagedFiles.Count -eq 0 -and $stagedSql.Count -eq 0) {
+    Write-Host "No staged Dart or SQL files — skipping pre-commit checks." -ForegroundColor Yellow
+    exit 0
 }
 
+Write-Host ""
+Write-Host "Pre-commit: $($stagedFiles.Count) staged Dart file(s)" -ForegroundColor Cyan
+Write-Host "============================================" -ForegroundColor Cyan
+
+# Step 1: dart analyze
+& pwsh -File (Join-Path $checksDir "run-analyze.ps1")
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+# Step 2: custom_lint
+& pwsh -File (Join-Path $checksDir "run-custom-lint.ps1")
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+# Step 3: grep checks
+& pwsh -File (Join-Path $checksDir "grep-checks.ps1")
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+# Step 4: targeted tests
+& pwsh -File (Join-Path $checksDir "run-tests.ps1")
+if ($LASTEXITCODE -ne 0) { exit 1 }
+
+Write-Host ""
+Write-Host "============================================" -ForegroundColor Green
+Write-Host "All pre-commit checks passed." -ForegroundColor Green
 exit 0

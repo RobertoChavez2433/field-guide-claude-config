@@ -280,11 +280,22 @@ Expected: PASS
 
 > `general-purpose` is the built-in Agent tool subagent type, not a `.claude/agents/` file.
 
+### Test Run Rules
+
+**CRITICAL: Plans must NEVER include `flutter test` (full suite) inside sub-phases.** The full test suite runs once per phase at the orchestrator level — not per sub-phase. Including full-suite runs in sub-phase steps causes the implementer to run the entire test suite dozens of times, wasting 10+ minutes per run.
+
+| Allowed in sub-phase steps | NOT allowed in sub-phase steps |
+|---------------------------|-------------------------------|
+| `flutter test test/specific/file_test.dart` (targeted) | `flutter test` (full suite) |
+| `flutter analyze` (fast, seconds) | `flutter test --coverage` |
+
+The last step of the **final sub-phase in each phase** may include `flutter analyze` as a verification gate. The orchestrator handles `flutter test` after each phase completes.
+
 ### Phase Ordering Rules
 
 1. **Data layer first** — Models, repositories, datasources before UI
 2. **Dependencies before dependents** — If Phase 2 uses Phase 1 output, Phase 1 first
-3. **Tests alongside implementation** — Every sub-phase includes test steps
+3. **Tests alongside implementation** — Every sub-phase includes targeted test steps (specific test files only)
 4. **Cleanup last** — Dead code removal in final phase
 5. **Integration phase** — Wire everything together after all features
 
@@ -349,6 +360,7 @@ Do NOT dispatch reviewers (Phase 5) until the plan file exists at `.claude/plans
 | Sequential adversarial review | Wastes time | Always dispatch all 3 in parallel |
 | Partial re-review after fixes | Misses regressions | Always run ALL 3 sweeps each cycle |
 | Telling subagent writers to "read files" | They can read but lack full context | Give them the tailor directory path |
+| `flutter test` (full suite) in sub-phase steps | Runs 3600+ tests per sub-phase, 10+ min each | Use targeted `flutter test test/specific_test.dart` only; orchestrator runs full suite per phase |
 
 ---
 

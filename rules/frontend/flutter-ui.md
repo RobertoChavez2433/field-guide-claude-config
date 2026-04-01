@@ -199,3 +199,16 @@ DashboardStatCard(
 ```
 
 Reference: `lib/features/dashboard/presentation/screens/project_dashboard_screen.dart` — stat card usage
+
+
+## Accessibility
+
+- **Touch targets**: Minimum 48dp x 48dp for all interactive elements
+- **Semantics labels**: All icons and images must have `Semantics` or `semanticLabel`
+- **Color contrast**: Use theme tokens (three-tier system) which are designed for contrast
+- **Dark mode testing**: All UI must be verified in dark, light, and high-contrast themes
+
+## Color System (Enforced by A12, A13)
+
+Colors MUST use the three-tier system. Violations are blocked by custom lint rules.
+See spec Section 3 for the full tier mapping.

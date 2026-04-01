@@ -6,7 +6,7 @@ paths:
   - "lib/shared/testing_keys/quantities_keys.dart"
   - "lib/test_harness/**/*.dart"
   - "lib/test_harness.dart"
-  - "lib/driver_main.dart"
+  - "lib/main_driver.dart"
 ---
 
 # Testing Guide
@@ -35,6 +35,8 @@ pwsh -Command "flutter test test/features/pdf/extraction/ --name 'stage trace'"
 ---
 
 ## Patrol E2E Testing
+
+> **DEPRECATED:** Patrol has been removed from this project. The section below is retained for historical reference only. See [Deprecated Testing Stacks](#deprecated-testing-stacks) at the bottom of this file.
 
 ### Run Tests
 
@@ -266,21 +268,18 @@ UI test findings: `.claude/test-results/YYYY-MM-DD-ui-test-findings.md`
 
 ## Sync Testing (Debug Server)
 
-Sync-specific tests run via the debug server, not Patrol. Use these commands:
+Sync-specific tests run via unit tests for Layer 1. Use this command:
 
 ```bash
 # Layer 1: Unit tests (fast, no device)
 pwsh -Command "flutter test test/features/sync/engine/"
-
-# Layer 2: Per-table push/pull/conflict scenarios
-node tools/debug-server/run-tests.js --layer L2
-
-# Layer 3: Cross-cutting scenarios (multi-device, offline, RLS)
-node tools/debug-server/run-tests.js --layer L3
 ```
 
-Scenario files: `tools/debug-server/scenarios/L2/` and `tools/debug-server/scenarios/L3/`
-Test results endpoint: `GET http://127.0.0.1:3947/test-status`
+### Layer 2 & Layer 3 Sync Testing
+
+Sync integration testing is Claude-driven via test flows. See `.claude/test-flows/sync-verification-guide.md` for the current workflow.
+
+> **Note:** The previous `run-tests.js --layer L2/L3` CLI commands have been removed. Use the Claude-driven verification guide instead.
 
 ---
 
@@ -369,3 +368,13 @@ The report test generates a scorecard automatically. When presenting results, us
 - Pipeline Reports: `test/features/pdf/extraction/reports/` (gitignored, per-platform baselines)
 - Defects to Avoid: `.claude/defects/_defects-{feature}.md` (per-feature defect files)
 - Screen Registry: `lib/test_harness/screen_registry.dart`
+
+
+## Deprecated Testing Stacks
+
+| Stack | Status | Replacement |
+|-------|--------|-------------|
+| Patrol | Removed | Unit/widget tests + manual ADB testing |
+| flutter_driver | Removed | Unit/widget tests + manual ADB testing |
+
+**Lint rule T6** blocks imports of `patrol` or `flutter_driver` packages.

@@ -172,7 +172,7 @@ For each phase in the batch:
 3. Dispatch via Agent. The prompt MUST include:
    - The **COMPLETE phase text** from the plan (all sub-phases, all steps, all code blocks — copy verbatim)
    - The project context block
-   - This instruction: "Implement the assigned phase exactly as written. The plan contains complete code for every step — write it to the specified files. Do not add anything beyond what the plan specifies. Do not omit anything the plan requires. Read each target file before editing (to preserve existing content if modifying). Use `pwsh -Command \"...\"` for all Flutter commands. NEVER run flutter clean."
+   - This instruction: "Implement the assigned phase exactly as written. The plan contains complete code for every step — write it to the specified files. Do not add anything beyond what the plan specifies. Do not omit anything the plan requires. Read each target file before editing (to preserve existing content if modifying). Use `pwsh -Command \"...\"` for all Flutter commands. NEVER run flutter clean. SKIP all `flutter test` commands inside sub-phases — do NOT run the full test suite. Only run `flutter analyze` for verification. The orchestrator runs the full test suite once at the batch level after all sub-phases complete."
    - This instruction: **"Print a status line to stdout after each sub-step: `[PROGRESS] Phase N Step X.Y: DONE — <brief description>`"**
 
 **If batch size > 1**: Dispatch ALL implementers in a SINGLE message (parallel Agent calls). Add to each prompt: **"Do NOT update the checkpoint JSON — your phase will be checkpointed after all parallel phases complete."**

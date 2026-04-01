@@ -367,12 +367,21 @@ Sync correctness is verified via a 3-layer system:
 
 - **Layer 1** — Unit tests (fast, no device needed):
   `pwsh -Command "flutter test test/features/sync/engine/"`
-- **Layer 2** — Per-table push/pull/conflict scenarios (requires device + Supabase):
-  `node tools/debug-server/run-tests.js --layer L2`
-- **Layer 3** — Cross-cutting scenarios (multi-device, offline, RLS):
-  `node tools/debug-server/run-tests.js --layer L3`
 
-Scenario files live in `tools/debug-server/scenarios/`. Results are accessible via
-`GET /test-status` on the debug server (port 3947).
+### Layer 2 & Layer 3 Sync Testing
+
+Sync integration testing is Claude-driven via test flows. See `.claude/test-flows/sync-verification-guide.md` for the current workflow.
+
+> **Note:** The previous `run-tests.js --layer L2/L3` CLI commands have been removed. Use the Claude-driven verification guide instead.
 
 **IMPORTANT**: Always use the app UI to create/modify test data for sync testing. Never use raw SQL, Supabase REST writes, or direct `change_log` inserts (except the one documented exception in `ChangeTracker.manualInsert()`). Bypassing the UI skips the SQLite trigger that populates `change_log`, so changes will never sync.
+
+
+## Enforced Invariants (Lint Rules)
+
+- **sync_control flag MUST be inside transaction** (S3) -- set pulling='1' inside try/finally
+- **change_log cleanup MUST be conditional on RPC success** (S2) -- never unconditional DELETE
+- **ConflictAlgorithm.ignore MUST have rowId==0 fallback** (S1) -- check return value, UPDATE on 0
+- **No sync_status column** (S4) -- deprecated pattern, only change_log is used
+- **toMap() MUST include project_id for synced child models** (S5)
+- **_lastSyncTime only updated in success path** (S8)

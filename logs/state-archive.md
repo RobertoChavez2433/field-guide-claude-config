@@ -6,6 +6,25 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## March 2026
 
+### Session 690 (2026-03-31)
+**Work**: Brainstormed + implemented new `/tailor` skill and rewrote `/writing-plans`. Killed headless plan writers. Updated plan-writer-agent, cleanup, cross-refs. 1 review cycle (security APPROVE, completeness 1 fix applied).
+**Decisions**: Decoupled skills, headless dead, main agent writes <2000 line plans, credential blocklist in tailor.
+**Next**: Cycle 2 reviews → test /tailor on quality gates spec → commit.
+
+### Session 689 (2026-03-31)
+**Work**: Implemented writing-plans refactor plan via /implement. 3 orchestrator launches, 5 phases, 7 files modified. 4 new agents deployed, writing-plans skill rewritten, implement skill updated.
+**Decisions**: 3 dispatch groups, test gates skipped (config-only), no handoffs needed.
+**Next**: Test refactored skill on quality gates spec → investigate review concurrency → commit.
+
+### Session 688 (2026-03-31)
+**Work**: Diagnosed writing-plans failures, researched solutions (2 agents), brainstormed refactor (18 questions), wrote spec + plan, 3 review/fix cycles (all APPROVE). 4 new agents designed.
+**Decisions**: Headless plan writers, Agent tool reviewers, 3 review sweeps with fix loop, prescribed CodeMunch sequence, context bundle staging.
+**Next**: /implement refactor plan → test on quality gates spec → commit.
+
+---
+
+## March 2026
+
 ### Session 687 (2026-03-31)
 **Work**: Merged sync-engine-rewrite to main (PR #6). Scrubbed secrets from history. Deleted all branches. Built comprehensive quality gates spec (9 research + 4 verification agents). 46 lint rules, 4 packages, 3 layers.
 **Decisions**: 4 lint packages (arch/data/sync/test), clean slate, custom_lint framework, all Supabase.instance violations, fg_lint_packages/ location.
