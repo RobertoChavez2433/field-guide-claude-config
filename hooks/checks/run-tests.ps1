@@ -1,6 +1,7 @@
 # Run targeted flutter tests for changed files only
 # FROM SPEC: Section 10 - "flutter test (targeted - changed files only)"
 # Test targeting: lib/features/{feature}/.../file.dart -> test/features/{feature}/.../file_test.dart
+# FIX: Single flutter test invocation to avoid native_assets DLL copy crash on Windows
 
 param()
 
@@ -37,19 +38,13 @@ if ($uniqueTests.Count -eq 0) {
 
 Write-Host "Running $($uniqueTests.Count) test file(s)..." -ForegroundColor Cyan
 
-$failed = $false
-foreach ($testFile in $uniqueTests) {
-    Write-Host "  Testing: $testFile"
-    $output = & flutter test $testFile 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "  FAILED: $testFile" -ForegroundColor Red
-        $output | ForEach-Object { Write-Host "    $_" }
-        $failed = $true
-    }
-}
-
-if ($failed) {
-    Write-Host "FAILED: One or more targeted tests failed." -ForegroundColor Red
+# Run all tests in a single invocation to avoid repeated native_assets builds
+# (Flutter SDK bug: per-file invocations cause PathExistsException on Windows)
+$testArgs = @("test") + $uniqueTests
+$output = & flutter @testArgs 2>&1
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "FAILED: Targeted tests failed." -ForegroundColor Red
+    $output | ForEach-Object { Write-Host "    $_" }
     exit 1
 }
 

@@ -143,6 +143,14 @@ foreach ($file in $stagedSql) {
     }
 }
 
+# Check 7: Block .env files from being committed
+# FROM SPEC: Restored from v1 hook — prevents credential leaks
+$stagedEnv = @(git diff --cached --name-only --diff-filter=ACM | Where-Object { $_ -match '\.env$' })
+foreach ($file in $stagedEnv) {
+    Write-Host "BLOCKED: .env file staged for commit: $file — remove with 'git reset HEAD $file'" -ForegroundColor Red
+    $failed = $true
+}
+
 if ($failed) {
     Write-Host "FAILED: grep checks found blocking issues." -ForegroundColor Red
     exit 1
