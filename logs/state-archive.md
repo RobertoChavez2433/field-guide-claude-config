@@ -4,6 +4,28 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ---
 
+## April 2026
+
+### Session 694 (2026-03-31)
+**Work**: Ran `/writing-plans` on wiring-routing-audit-fixes spec. 2 parallel plan writers, 3 review cycles, 18 findings fixed. Plan APPROVED (4194 lines, 8 phases).
+**Decisions**: Multi-writer split, photoServiceOverride dropped (chicken-and-egg), PII scrubbing extracted.
+
+## March 2026
+
+### Session 691 (2026-03-31)
+**Work**: Ran `/tailor` end-to-end on quality gates spec. 9 CodeMunch steps, 7 patterns, 36 ground truth items, 14-file output directory. S690 code review completed (APPROVE). Enforced opus-only agent policy.
+**Decisions**: Opus only for all agents, tailor output validated.
+
+### Session 692 (2026-03-31)
+**Work**: Ran `/writing-plans` on quality gates spec. 2 plan writers, 3 review cycles, 2 fixer passes, 28 findings fixed. Plan APPROVED (2753 lines, 6 phases, 35 sub-phases).
+**Decisions**: Multi-writer split for large plans, writer timeout recovery, 3 full review cycles, branches-ignore only.
+
+### Session 693 (2026-03-31)
+**Work**: Ran `/tailor` on wiring-routing-audit-fixes spec. 9 CodeMunch steps, 7 patterns, 42 methods, 48 ground truth items, 12-file output directory.
+**Decisions**: Dual spec+review input, flagged 9 vs 7 Supabase.instance.client discrepancy.
+
+---
+
 ## March 2026
 
 ### Session 690 (2026-03-31)

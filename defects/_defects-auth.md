@@ -3,6 +3,22 @@
 Active patterns for auth. Max 5 defects - oldest auto-archives.
 Archive: .claude/logs/defects-archive.md
 
+### [CONFIG] 2026-04-01: GoRouter redirect side-effects fire multiple times
+**Pattern**: Calling non-idempotent methods (handleForceReauth, analytics events) inside GoRouter's redirect callback — it fires multiple times per navigation event.
+**Prevention**: Gate side-effects with a boolean flag (e.g., `_reauthTriggered`) or move them to a dedicated listener outside the redirect callback.
+**Ref**: @lib/core/router/app_redirect.dart
+
+### [CONFIG] 2026-04-01: Gate ordering bypass window for null-profile on onboarding routes
+**Pattern**: Early `return null` in onboarding gate (Gate 6) before profile-check gates (7-8) allows null-profile users to stay on onboarding routes without being redirected to /profile-setup.
+**Prevention**: Always let profile-check gates run before returning null for onboarding routes. Gate ordering is security-critical.
+**Ref**: @lib/core/router/app_redirect.dart
+
+### [DATA-LOSS] 2026-04-01: Sign-out hard-deletes ALL local data — BLOCKER-38
+**Pattern**: `auth_service.dart:354` performs raw `db.delete()` on all tables during sign-out, wiping all local user data. Sign-out should clear auth state (tokens, session) but NOT destroy inspection data, entries, photos, etc. User data must persist for offline access and re-authentication.
+**Prevention**: Sign-out should only clear auth tokens and session state. Local data belongs to the device/user and should survive sign-out. If multi-user support requires data isolation, use per-user encryption or filtering, not deletion.
+**Ref**: @lib/features/auth/services/auth_service.dart:354
+**Priority**: HIGH — data loss risk on every sign-out
+
 ## Active Patterns
 
 ### [DATA] 2026-03-28: loadUserProfile network failure leaves _userProfile null — admin UI degrades (BUG-S01-PROFILE)

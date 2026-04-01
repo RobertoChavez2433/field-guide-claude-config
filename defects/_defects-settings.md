@@ -3,6 +3,11 @@
 Active patterns for settings. Max 5 defects - oldest auto-archives.
 Archive: .claude/logs/defects-archive.md
 
+### [CONFIG] 2026-04-01: Sentry extra map bypasses PII scrubbing for non-string values
+**Pattern**: Sentry `beforeSend` scrubbed only `String` values in the `extra` map. Non-string values (int, Map, List) passed through unscrubbed, potentially carrying PII.
+**Prevention**: Always convert all values to string before scrubbing: `Logger.scrubString(v.toString())`. Apply to both `extra` and `tags` maps.
+**Ref**: @lib/core/config/sentry_pii_filter.dart
+
 ## Active Patterns
 
 <!-- RESOLVED 2026-03-30 BUG-S09-1: Trash screen must scope queries by role and ownership — Fixed in S667. Non-admin queries filter by deleted_by = currentUserId; inspector role excluded from project-level tables. Ref: lib/features/settings/presentation/screens/trash_screen.dart:56 -->
