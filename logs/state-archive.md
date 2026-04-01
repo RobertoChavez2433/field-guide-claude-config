@@ -1429,3 +1429,8 @@ Phases 0-4: Observability, clustering, header detection, structural keywords, de
 ### Session 699 (2026-04-01)
 **Work**: Lint rule allowlists (8 rules, ~150 paths). DATA LOSS: `git checkout --` destroyed sessions 697-698. Recovered 681-696 from dangling commit.
 **Decisions**: File-level allowlists only. NEVER run destructive git commands.
+
+### Session 700 (2026-04-01)
+**Work**: Re-wired tracked files for wiring-routing plan. 10 files modified, 3 deleted, 32 new files untouched. app_initializer.dart 644→268 lines. main.dart 224→88 lines.
+**Decisions**: Targeted re-wiring plan. Direct edits. Opus subagents only.
+**Next**: COMMIT → lint cleanup (S698 redo).
