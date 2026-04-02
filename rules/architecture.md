@@ -240,6 +240,12 @@ These patterns are enforced by `field_guide_lints` custom lint rules. Violations
 | Silent catch blocks | A9 | Add Logger.<category>() call |
 | `AppTheme.*` color constants | A12 | Use three-tier color system |
 | Hardcoded `Colors.*` in presentation | A13 | Use theme tokens |
+| Raw `AlertDialog(` in presentation | A18 | Use `AppDialog.show()` |
+| Raw `showDialog(` in presentation | A19 | Use `AppDialog.show()` |
+| Raw `showModalBottomSheet(` in presentation | A20 | Use `AppBottomSheet.show()` |
+| Raw `Scaffold(` in screen files | A21 | Use `AppScaffold` |
+| Direct `ScaffoldMessenger`/`showSnackBar` in presentation | A22 | Use `SnackBarHelper.show*()` |
+| Inline `TextStyle(` in presentation | A23 | Use `AppText.*` or textTheme slots |
 
 > **Note:** Rules A10–A11 and additional data safety, sync integrity, and test quality rules are defined in `fg_lint_packages/field_guide_lints/`. The table above covers architecture-specific rules only.
 
@@ -249,7 +255,8 @@ Which lint rules activate based on file path. Use this when creating or modifyin
 
 | Path Pattern | Active Rules | Key Constraints |
 |-------------|-------------|-----------------|
-| `*/presentation/*` | A3, A5, A8, A13, D5 | No raw SQL, no datasource imports, no service construction, no hardcoded Colors, mounted check required |
+| `*/presentation/*` | A3, A5, A8, A13, A18, A19, A20, A22, A23, D5 | No raw SQL, no datasource imports, no service construction, no hardcoded Colors, no raw dialogs/sheets/snackbars/TextStyle, mounted check required |
+| `*/presentation/screens/*` | A21 | No raw Scaffold in screen files |
 | `*/di/*` | A4, A6, A15 | No raw SQL in DI, no business logic in DI, no duplicate services |
 | `*/data/models/*` | S5, D8 | toMap must include project_id for project-scoped features, no sentinel strings |
 | `test/*` or `integration_test/*` | T2, T3, T4, T5 | Test rules activate; D3, D11, S1, S3, S4 are EXCLUDED (test-only relaxations) |

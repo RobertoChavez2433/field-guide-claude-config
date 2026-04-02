@@ -1,8 +1,8 @@
 STATUS: DONE
 PHASES_EXECUTED: 2
 PARALLEL_BATCHES: Batch1(2)
-FILES: lib/core/database/database_service.dart, lib/core/database/schema_verifier.dart, test/core/database/migration_v47_test.dart, test/core/database/schema_verifier_drift_test.dart
+FILES: lib/features/dashboard/presentation/widgets/dashboard_stat_card.dart, lib/features/dashboard/presentation/widgets/budget_overview_card.dart, lib/features/dashboard/presentation/widgets/tracked_item_row.dart, lib/features/dashboard/presentation/widgets/alert_item_row.dart, lib/features/dashboard/presentation/widgets/weather_summary_card.dart, lib/features/dashboard/presentation/widgets/todays_entry_card.dart, lib/features/dashboard/presentation/widgets/widgets.dart, lib/features/dashboard/presentation/screens/project_dashboard_screen.dart, lib/features/weather/presentation/providers/weather_provider.dart, lib/features/weather/di/weather_providers.dart
 PER_PHASE_REVIEWS:
-  Phase 2: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:2) fix_cycles:2
-TOTAL_FIX_CYCLES: 2
-DECISIONS: CRITICAL FK cascade fix — added PRAGMA legacy_alter_table=ON/OFF with try/finally around form_responses table rebuild to prevent form_exports cascade deletion, SchemaVerifier report-only uses Logger.error for missing columns/tables (upgraded from plan's Logger.db WARNING pattern), Security LOWs accepted — v22 migration string interpolation (historical const value) and PRAGMA table_info interpolation (can't parameterize PRAGMA source is const map)
+  Phase 2: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:2) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:1
+TOTAL_FIX_CYCLES: 1
+DECISIONS: BudgetOverviewCard keeps custom gradient header (intentional plan decision, not migrated to AppGlassCard)

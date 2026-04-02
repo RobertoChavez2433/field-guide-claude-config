@@ -1,8 +1,8 @@
 STATUS: DONE
-PHASES_EXECUTED: 6
-PARALLEL_BATCHES: Batch1(6)
-FILES: test/shared/datasources/base_remote_datasource_test.dart, test/features/auth/data/datasources/remote/user_profile_sync_datasource_test.dart, test/core/database/schema_verifier_report_test.dart, test/core/database/schema_verifier_drift_test.dart, test/helpers/sync_orchestrator_test_helper.dart, test/features/sync/engine/sync_engine_delete_test.dart, lib/features/sync/application/sync_orchestrator.dart
+PHASES_EXECUTED: 8
+PARALLEL_BATCHES: Batch1(8)
+FILES: fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_alert_dialog.dart, fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_show_dialog.dart, fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_bottom_sheet.dart, fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_scaffold.dart, fg_lint_packages/field_guide_lints/lib/architecture/rules/no_direct_snackbar.dart, fg_lint_packages/field_guide_lints/lib/architecture/rules/no_inline_text_style.dart, fg_lint_packages/field_guide_lints/lib/architecture/architecture_rules.dart, fg_lint_packages/field_guide_lints/lib/field_guide_lints.dart, .claude/rules/architecture.md, fg_lint_packages/field_guide_lints/test/architecture/no_raw_alert_dialog_test.dart, fg_lint_packages/field_guide_lints/test/architecture/no_raw_show_dialog_test.dart, fg_lint_packages/field_guide_lints/test/architecture/no_raw_bottom_sheet_test.dart, fg_lint_packages/field_guide_lints/test/architecture/no_raw_scaffold_test.dart, fg_lint_packages/field_guide_lints/test/architecture/no_direct_snackbar_test.dart, fg_lint_packages/field_guide_lints/test/architecture/no_inline_text_style_test.dart
 PER_PHASE_REVIEWS:
-  Phase 6: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:1
+  Phase 8: completeness=PASS(C:0,H:0,M:1,L:2) code=PASS(C:1,H:2,M:2,L:2) security=PASS(C:0,H:0,M:0,L:3) fix_cycles:1
 TOTAL_FIX_CYCLES: 1
-DECISIONS: Security HIGHs in base_remote_datasource.dart (unscoped queries) are pre-existing patterns not introduced by Phase 6 — noted but not fixed in this phase
+DECISIONS: none

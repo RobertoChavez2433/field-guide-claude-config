@@ -1,9 +1,8 @@
 STATUS: DONE
 PHASES_EXECUTED: 1
 PARALLEL_BATCHES: Batch1(1)
-FILES: lib/features/auth/data/datasources/remote/user_profile_sync_datasource.dart, lib/features/sync/application/sync_orchestrator.dart, lib/shared/datasources/datasources.dart, fg_lint_packages/field_guide_lints/lib/data_safety/rules/require_soft_delete_filter.dart
-DELETED: lib/shared/datasources/query_mixins.dart, test/features/sync/schema/sync_queue_migration_test.dart
+FILES: lib/core/design_system/app_dialog.dart, test/core/design_system/app_dialog_test.dart
 PER_PHASE_REVIEWS:
-  Phase 1: completeness=PASS(C:0,H:0,M:1,L:1) code=PASS(C:0,H:0,M:1,L:2) security=PASS(C:0,H:0,M:3,L:3) fix_cycles:1
+  Phase 1: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:1,L:4) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:1
 TOTAL_FIX_CYCLES: 1
-DECISIONS: SEC-R1 spec deviation kept SwitchCompanyUseCase per security rationale, removed dead userId null-guard post-param-removal, pre-existing findings (dead pullUserCertifications, SharedPrefs company-switch gap, PII in logs) noted as out-of-scope
+DECISIONS: none
