@@ -1,24 +1,25 @@
 # Session State
 
-**Last Updated**: 2026-04-02 | **Session**: 713
+**Last Updated**: 2026-04-02 | **Session**: 714
 
 ## Current Phase
-- **Phase**: Full GitHub Issues audit complete. 61 issues closed, 10 bugs fixed.
-- **Status**: On `main` (uncommitted). 10 files modified, 1 new Supabase migration.
+- **Phase**: Defect migration to GitHub Issues implemented. All local defect files deleted.
+- **Status**: On `main` (uncommitted). Defect migration complete + S713 bug fixes still uncommitted.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (713)
+### What Was Done This Session (714)
 
-1. **Audited all 64 open GitHub Issues** (3 critical, 20 high, 35 medium, 14 low, 2 parked) against current codebase
-2. **Closed 61 issues**: 48 verified resolved in prior sessions, 6 process lessons, 4 outdated/rewritten, 3 not code bugs
-3. **Fixed 10 verified bugs**: #50 (path traversal), #37 (sentinel string), #51 (pulling flag onOpen), #84 (lint path normalization), #64 (manageExternalStorage), #23 (Company.fromJson), #61 (natural sort), #81 (legacy header backfill), #72 (enforce_created_by NULL guard), #40 (harness user profile seed)
-4. **New Supabase migration**: `20260402000000_fix_enforce_created_by_null_guard.sql`
+1. **Implemented defect migration plan** via `/implement` — 4 dispatch groups, all completed (0 handoffs)
+2. **Phase 1**: Created 36 GitHub labels (17 feature + 4 type + 5 priority + 10 layer) + `tools/create-defect-issue.ps1` helper script
+3. **Phase 2**: Audited 18 defect files, migrated active defects to GitHub Issues, updated _state.md blocker entries with issue numbers, archived migrated entries
+4. **Phases 3-4**: Updated 7 agents, 6 skills, 1 rule to replace local defect file references with GitHub Issues commands
+5. **Phase 5**: Deleted `.claude/defects/` (18 files) + `.github/workflows/sync-defects.yml`, updated CLAUDE.md and logs docs
 
 ### What Needs to Happen Next
-1. **Commit** all session 713 changes on a feature branch and push
+1. **Commit** all S713 + S714 changes on a feature branch and push
 2. **Fix** `database_service_test.dart` — expects version 46, now 47 after migration
-3. **Run full test suite** to verify all fixes + CI-readiness
+3. **Run full test suite** to verify CI-readiness
 4. **Push** Supabase migration `20260402000000` to remote via `npx supabase db push`
 
 ## Blockers
@@ -46,6 +47,11 @@
 
 ## Recent Sessions
 
+### Session 714 (2026-04-02)
+**Work**: Implemented defect migration plan — 4 dispatch groups, 5 phases, 22 files updated, 19 deleted, 1 created. GitHub Issues now sole source of truth for defect tracking.
+**Decisions**: No Dart code changes needed. All config/tooling. Test gates skipped (no code changes).
+**Next**: Commit S713+S714 → fix database version test → full test suite → push Supabase migration.
+
 ### Session 713 (2026-04-02)
 **Work**: Full GitHub Issues audit — verified 64 issues against codebase, closed 61 (resolved/outdated/process), fixed 10 verified bugs across lint, auth, sync, forms, quantities, permissions, and harness.
 **Decisions**: manageExternalStorage not needed for scoped storage (Android 11+). Legacy form headers get backfilled via putIfAbsent. enforce_created_by needs NULL guard for service role. Harness needs user profile seed.
@@ -65,11 +71,6 @@
 **Work**: Ran `/writing-plans` on audit remediation spec. 2 review/fix cycles (6 reviewer agents, 2 fixer agents). Security override: kept SwitchCompanyUseCase (spec wanted deletion but creates cross-tenant exposure). Migration DDL rewritten from canonical source. Repository redesigned with actual datasource APIs.
 **Decisions**: SwitchCompanyUseCase KEPT for sign-in company-switch detection (security override of spec). — **OVERRIDDEN in S712: deleted per user directive.**
 **Next**: `/implement` audit remediation → `/writing-plans` defect migration → implement.
-
-### Session 709 (2026-04-01)
-**Work**: Brainstormed + approved spec for defect tracking migration to GitHub Issues. Ran tailor — mapped 21 files, 2 patterns, 38 ground truth items.
-**Decisions**: GitHub Issues sole source of truth. Blockers dual-tracked (_state.md + Issues). 4-dimension labels (feature+type+priority+layer). Thin helper script `create-defect-issue.ps1`. Drop pre-work defect loading from read-only agents. Migrate active defects with audit.
-**Next**: `/writing-plans` → implement migration → then audit remediation.
 
 
 ## Active Debug Session
@@ -92,7 +93,7 @@ None active.
 ## Reference
 - **Audit Remediation Plan (IMPLEMENTED S712)**: `.claude/plans/2026-04-02-data-sync-audit-remediation.md`
 - **Audit Remediation Checkpoint**: `.claude/state/implement-checkpoint.json`
-- **Defect Migration Plan (READY)**: `.claude/plans/2026-04-02-defect-tracking-github-issues-migration.md`
+- **Defect Migration Plan (IMPLEMENTED S714)**: `.claude/plans/2026-04-02-defect-tracking-github-issues-migration.md`
 - **Pre-Prod Audit**: `.claude/code-reviews/2026-03-30-preprod-audit-layer-data-database-sync-codex-review.md`
 - **Lint Package**: `fg_lint_packages/field_guide_lints/` (46 custom rules, 8 path-scoped)
 - **Lint Baseline**: `lint_baseline.json` (93 violations, 40 groups, 7 rules)

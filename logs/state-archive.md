@@ -6,6 +6,11 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## April 2026
 
+### Session 709 (2026-04-01)
+**Work**: Brainstormed + approved spec for defect tracking migration to GitHub Issues. Ran tailor — mapped 21 files, 2 patterns, 38 ground truth items.
+**Decisions**: GitHub Issues sole source of truth. Blockers dual-tracked (_state.md + Issues). 4-dimension labels (feature+type+priority+layer). Thin helper script `create-defect-issue.ps1`. Drop pre-work defect loading from read-only agents. Migrate active defects with audit.
+**Next**: `/writing-plans` → implement migration → then audit remediation.
+
 ### Session 708 (2026-04-02)
 **Work**: Fixed CI failures (stale baseline, 4 test failures, summary overflow). Fixed branch protection for solo dev. Merged PR #7. Removed flutter test from implement orchestrator.
 **Decisions**: Lint baseline must be regenerated after file moves. CI summary capped at 200 lines. Branch protection check names must match CI job display names. Tests run in CI only — not during implementation.
