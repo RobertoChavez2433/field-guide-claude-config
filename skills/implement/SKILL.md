@@ -159,21 +159,19 @@ After the orchestrator returns, **always read the checkpoint file** to verify:
 
 This is the **trust-but-verify** step that prevents fabricated stats.
 
-#### 2c-test: End-of-Group Test Gate
+#### 2c-verify: End-of-Group Analyze Gate
 
-After checkpoint verification passes, run the full test suite ONCE for the group:
+After checkpoint verification passes, run flutter analyze ONCE for the group:
 
-1. Launch a qa-testing-agent via:
-   ```bash
-   unset CLAUDECODE && claude --agent qa-testing-agent --print --output-format text "Run the full Flutter test suite. Command: pwsh -Command \"flutter test\". Return the full output. NEVER run flutter clean."
-   ```
-   with `run_in_background: true`
-2. If all tests pass → update checkpoint: set `dispatch_groups[N].test_gate = "pass"` → proceed to 2d
-3. If tests fail → launch code-fixer-agent with:
-   - The test failure output
+1. Run: `pwsh -Command "flutter analyze"`
+2. If no issues → update checkpoint: set `dispatch_groups[N].test_gate = "pass"` → proceed to 2d
+3. If issues found → launch code-fixer-agent with:
+   - The analyze output
    - The list of ALL files modified in this group (from `checkpoint.modified_files`)
-   - "Fix the failing tests. Run `pwsh -Command 'flutter analyze'` after fixing to verify no regressions. NEVER run flutter clean."
-4. Re-run tests. Max 3 cycles.
+   - "Fix the analysis issues. Run `pwsh -Command 'flutter analyze'` after fixing to verify no regressions. NEVER run flutter clean."
+4. Re-run analyze. Max 3 cycles.
+
+> **NOTE:** Do NOT run `flutter test` locally. Testing runs in CI only via PR quality gate.
 5. If still failing after 3 cycles → present to user as BLOCKED with test output
 
 Skip the test gate if no files were modified in this group (checkpoint.modified_files unchanged from before the group started).

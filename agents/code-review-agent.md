@@ -188,7 +188,7 @@ pwsh -File tools/create-defect-issue.ps1 `
 
 Before approving any code or claiming review complete:
 - Run `pwsh -Command "flutter analyze"` and confirm 0 issues
-- Run `pwsh -Command "flutter test"` and confirm all pass
+- Do NOT run `flutter test` — testing runs in CI only, not locally
 - Verify claims with evidence, not assumptions
 
 ## Response Rules

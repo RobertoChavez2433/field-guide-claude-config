@@ -1,7 +1,8 @@
 {
   "id": "dashboard",
   "name": "Dashboard & Overview",
-  "status": "stable",
+  "status": "in_progress",
+  "current_phase": "UI refactor complete — needs visual QA on Windows/Android",
   "description": "Read-only aggregator showing project stats, recent entries, and quick navigation to feature screens",
 
   "docs": {

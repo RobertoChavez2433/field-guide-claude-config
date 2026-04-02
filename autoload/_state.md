@@ -1,48 +1,39 @@
 # Session State
 
-**Last Updated**: 2026-04-02 | **Session**: 716
+**Last Updated**: 2026-04-02 | **Session**: 720
 
 ## Current Phase
-- **Phase**: Codebase hygiene — complete. PR #94 merged to main.
-- **Status**: On `main` branch. All lint issues resolved, CI green, 3785 tests pass.
+- **Phase**: UI refactor complete. Design-system rollout merged. Lint rules A18-A23 enforcing.
+- **Status**: PR #101 (sync fixes) merged. PR #102 (UI refactor) auto-merging after CI. Both on main.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (716)
+### What Was Done This Session (720)
 
-1. **Issue #8 deep refactor** (`no_business_logic_in_di`, 33 violations):
-   - Dispatched 3 opus research agents to map every violation
-   - Extracted `DebugLoggingInitializer` and `AppLifecycleInitializer` bootstrap modules
-   - Moved `app_initializer.dart` from `lib/core/di/` to `lib/core/bootstrap/`
-   - Moved `sync_initializer.dart` from `lib/features/sync/di/` to `lib/features/sync/application/`
-   - Made `AuthInitializer`, `FormInitializer`, `ProjectInitializer` synchronous
-   - Refactored `ProjectLifecycleService` to accept `DatabaseService` instead of raw `Database`
-   - Extracted sync callback to `ProjectSyncHealthProvider.refreshFromService()`
-   - 3 parallel verification agents confirmed: code review PASS, completeness 25/25 MET, lint integrity PASS
-2. **CI workflow redesigned**:
-   - Replaced `OUTPUT=$(command 2>&1)` with `tee`-based streaming — failures now visible via `gh run view --log-failed`
-   - Removed redundant Quality Report job (saved runner time)
-   - Fixed subshell bug in lint-to-GitHub-Issues sync (auto-closing now works)
-   - Reused lint output file to eliminate redundant `dart run custom_lint` invocation
-3. **Fixed all test failures**:
-   - Added FFI init to `migration_v47_test.dart` (cascaded to 2 other failures)
-   - Added 4 missing columns to `user_profiles` CREATE TABLE DDL
-   - Added missing mock to `settings_screen_test.dart`
-   - Result: 3785 pass, 0 fail (was 3782 pass, 3 fail)
-4. **Allowlisted 2 test files** for `no_direct_database_construction` (legitimate test fixture construction)
-5. **PR #94 merged** to main via squash merge
+1. **Branch separation** — stashed sync fixes, created `feat/ui-refactor-gap-closure` from main
+2. **Implemented UI refactor plan** (9 phases via `/implement`) — 6 orchestrator launches, 0 handoffs
+   - Phase 1: AppDialog icon/iconColor support
+   - Phase 2: Dashboard redesign (AppGlassCard, AppProgressBar, AppSectionHeader, weather card, Today's Entry CTA)
+   - Phase 3: Modal standardization (AppDialog.show, AppBottomSheet.show)
+   - Phases 4-7: Typography (AppText), AppTextField, snackbar (SnackBarHelper), ValueKey/page transitions
+   - Phase 8: 6 new lint rules (A18-A23) with tests
+   - Phase 9: Quality gate verification
+3. **Fixed 92 additional custom_lint violations** caught by CI — 3 parallel code-fixer agents
+4. **Fixed last 4 violations** — TestingKeys constants, didUpdateWidget for BidItemDialogBody
+5. **Committed in logical groups** — 6 commits on UI branch, 1 commit on sync branch
+6. **PR #101 merged** (sync fixes #96/#97/#98)
+7. **PR #102 auto-merging** (UI refactor — all CI checks green)
 
 ### What Needs to Happen Next
-1. **Push Supabase migration** `20260402000000` to remote via `npx supabase db push`
-2. **Close GitHub Issue #8** (if not auto-closed by PR)
-3. **Review remaining lint issues** — #9-#14 may have been auto-updated by CI sync step
-4. **Next feature work** — codebase hygiene phase complete
+1. **Fix #99** — companies.deleted_at missing column (pullCompanyMembers fails every cycle)
+2. **Fix #100** — getPendingCount mismatch (persistent error banner for exhausted entries)
+3. **Visual QA** — run the app and verify dashboard redesign looks correct on Windows/Android
 
 ### User Preferences (Critical)
-- **CI-first testing**: Use CI as primary test runner, not local flutter test. Saves tokens.
-- **CI output must be CLI-accessible**: All failure details visible via `gh run view --log-failed`
-- **Do NOT modify lint rules** to fix violations — always fix the code instead
-- **Clean architecture goal**: Modularize so things can be added/tested/debugged easily. No cross-contamination.
+- **Fresh test projects only**: NEVER use existing projects during test runs — always create from scratch
+- **CI-first testing**: Use CI as primary test runner. NEVER include `flutter test` in plans or quality gates.
+- **Always check sync logs** after every sync during test runs — never skip log review.
+- **No band-aid fixes**: Root-cause fixes only. User explicitly rejected one-off cleanup approaches.
 
 ## Blockers
 
@@ -57,22 +48,25 @@
 
 ## Recent Sessions
 
-### Session 716 (2026-04-02)
-**Work**: Issue #8 full resolution (33 violations), CI workflow redesign (tee-based streaming), fixed all 3 pre-existing test failures. PR #94 merged.
-**Decisions**: app_initializer belongs in bootstrap/ not di/. ProjectLifecycleService should own its DB resolution. CI should stream output via tee for CLI accessibility. Quality Report job is redundant.
-**Next**: Push Supabase migration → close Issue #8 → next feature work.
+### Session 720 (2026-04-02)
+**Work**: Full UI refactor implementation (9 phases), branch separation, 92+4 lint violation fixes, PRs #101 (merged) and #102 (auto-merging).
+**Decisions**: AppDialog.showCustom added for complex dialogs. Mechanical wrapper swaps only — zero logic changes.
+**Next**: Fix #99/#100 → visual QA of dashboard redesign.
 
-### Session 715 (2026-04-02)
-**Work**: Codebase hygiene — fixed 9/10 lint GitHub Issues across 30 files. PR #94 created.
+### Session 719 (2026-04-02)
+**Work**: Sync verification — confirmed #96/#97/#98 fixes via live sync. Push/pull round-trip on fresh E2E project. Filed #100. Closed #96-#98.
+**Decisions**: Fresh test projects only (never reuse). Trigger-level filtering for builtin forms (not query-layer band-aid).
+**Next**: Branch cleanup → fix #99/#100 → implement UI refactor plan.
 
-### Session 714 (2026-04-02)
-**Work**: Implemented defect migration plan — GitHub Issues now sole source of truth.
+### Session 718 (2026-04-02)
+**Work**: Tailor research + 9-phase plan for UI refactor gap closure. 2-cycle adversarial review (all APPROVE). Added 6 lint rules (A18-A23) to enforce design-system adoption. Updated agent/skill files to remove flutter test from quality gates.
+**Decisions**: Lint rules enforce migration at commit time. Performance pass deferred. flutter test never in plans — CI only.
+**Next**: Fix sync bugs #96-#98 → implement UI refactor plan → re-run sync verification.
 
-### Session 713 (2026-04-02)
-**Work**: Full GitHub Issues audit — verified 64 issues, closed 61, fixed 10 bugs.
-
-### Session 712 (2026-04-02)
-**Work**: Implemented full audit remediation plan (6 phases, 33 files).
+### Session 717 (2026-04-02)
+**Work**: Pushed Supabase migration. Started sync verification (S01). Discovered 3 pre-existing sync bugs (#96, #97, #98). Filed issues. Cleaned up test data.
+**Decisions**: Must fix sync bugs before verification can proceed. Log review is mandatory after every sync operation.
+**Next**: Fix #96-#98 → re-run sync verification S01-S11.
 
 ## Active Debug Session
 
@@ -82,13 +76,20 @@ None active.
 
 ### Flutter Unit Tests
 - **Full suite (S716 CI)**: 3785 pass, 0 fail
-- **Analyze (S716 CI)**: 0 issues
-- **Custom lint (S716 CI)**: 0 new, ~7 baselined
-- **All CI jobs**: PASS (Analyze & Test, Architecture Validation, Security Scanning)
+- **Analyze (S720)**: 0 issues
+- **Custom lint (S720)**: 0 new, 0 baselined (all violations resolved)
+
+### Sync Verification (S719)
+- **Bug fixes #96-#98**: ALL PASS
+- **Push round-trip**: PASS (1 pushed, 0 errors)
+- **Pull round-trip**: PASS (1 pulled, server update verified in UI)
+- **Pending count**: 0 (v48 migration purged stuck entry)
+- **Known recurring**: #99 (companies.deleted_at), #100 (getPendingCount mismatch)
 
 ## Reference
-- **PR #94**: MERGED — https://github.com/RobertoChavez2433/construction-inspector-tracking-app/pull/94
-- **Issue #8 Plan (IMPLEMENTED S716)**: `.claude/plans/2026-04-02-issue-8-no-business-logic-in-di.md`
-- **Lint Package**: `fg_lint_packages/field_guide_lints/` (46 custom rules, 8 path-scoped)
-- **Lint Baseline**: `lint_baseline.json` (~7 violations remaining, down from 93)
-- **GitHub Issues**: #8 (resolved S716), #9-#14 (lint tech debt), #89 (sqlcipher), #42 (pdfrx), #91-#92 (parked OCR)
+- **PR #101**: MERGED (sync fixes #96-#98)
+- **PR #102**: AUTO-MERGING (UI refactor gap closure + lint rules A18-A23)
+- **Issue #96-#98**: CLOSED (sync bugs fixed & verified)
+- **Issue #99**: OPEN (companies.deleted_at)
+- **Issue #100**: OPEN (getPendingCount mismatch)
+- **GitHub Issues**: #9-#14 (lint tech debt), #89 (sqlcipher), #91-#92 (parked OCR), #99-#100 (sync)

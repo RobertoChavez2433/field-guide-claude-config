@@ -6,6 +6,20 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## April 2026
 
+### Session 716 (2026-04-02)
+**Work**: Issue #8 full resolution (33 violations), CI workflow redesign (tee-based streaming), fixed all 3 pre-existing test failures. PR #94 merged.
+**Decisions**: app_initializer belongs in bootstrap/ not di/. CI should stream output via tee for CLI accessibility.
+**Next**: Push Supabase migration → close Issue #8 → next feature work.
+
+### Session 715 (2026-04-02)
+**Work**: Codebase hygiene — fixed 9/10 lint GitHub Issues across 30 files. PR #94 created.
+
+### Session 714 (2026-04-02)
+**Work**: Implemented defect migration plan — GitHub Issues now sole source of truth.
+
+### Session 713 (2026-04-02)
+**Work**: Full GitHub Issues audit — verified 64 issues, closed 61, fixed 10 bugs.
+
 ### Session 709 (2026-04-01)
 **Work**: Brainstormed + approved spec for defect tracking migration to GitHub Issues. Ran tailor — mapped 21 files, 2 patterns, 38 ground truth items.
 **Decisions**: GitHub Issues sole source of truth. Blockers dual-tracked (_state.md + Issues). 4-dimension labels (feature+type+priority+layer). Thin helper script `create-defect-issue.ps1`. Drop pre-work defect loading from read-only agents. Migrate active defects with audit.

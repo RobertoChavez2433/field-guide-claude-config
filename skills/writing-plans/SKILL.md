@@ -243,12 +243,7 @@ void main() {
 }
 ```
 
-#### Step N.M.2: Verify test fails
-
-Run: `pwsh -Command "flutter test test/exact/path/test.dart"`
-Expected: FAIL with "[specific error message]"
-
-#### Step N.M.3: Implement minimal code
+#### Step N.M.2: Implement minimal code
 
 ```dart
 // WHY: [Business reason]
@@ -258,10 +253,12 @@ ReturnType methodName(ParamType param) {
 }
 ```
 
-#### Step N.M.4: Verify test passes
+#### Step N.M.3: Verify with flutter analyze
 
-Run: `pwsh -Command "flutter test test/exact/path/test.dart"`
-Expected: PASS
+Run: `pwsh -Command "flutter analyze"`
+Expected: No issues
+
+> **NOTE:** Do NOT include `flutter test` steps in plans. Testing runs in CI only.
 ````
 
 ### Agent Routing Table
@@ -282,20 +279,21 @@ Expected: PASS
 
 ### Test Run Rules
 
-**CRITICAL: Plans must NEVER include `flutter test` (full suite) inside sub-phases.** The full test suite runs once per phase at the orchestrator level — not per sub-phase. Including full-suite runs in sub-phase steps causes the implementer to run the entire test suite dozens of times, wasting 10+ minutes per run.
+**CRITICAL: Plans must NEVER include `flutter test` — neither full suite NOR targeted file runs.** Testing is handled exclusively by CI via PR quality gate. Running tests locally wastes tokens and creates local/CI parity issues.
 
 | Allowed in sub-phase steps | NOT allowed in sub-phase steps |
 |---------------------------|-------------------------------|
-| `flutter test test/specific/file_test.dart` (targeted) | `flutter test` (full suite) |
-| `flutter analyze` (fast, seconds) | `flutter test --coverage` |
+| `flutter analyze` (fast, seconds) | `flutter test` (full suite) |
+| — | `flutter test test/specific/file.dart` (targeted) |
+| — | `flutter test --coverage` |
 
-The last step of the **final sub-phase in each phase** may include `flutter analyze` as a verification gate. The orchestrator handles `flutter test` after each phase completes.
+The last step of the **final sub-phase in each phase** may include `flutter analyze` as a verification gate. CI handles all test execution after push.
 
 ### Phase Ordering Rules
 
 1. **Data layer first** — Models, repositories, datasources before UI
 2. **Dependencies before dependents** — If Phase 2 uses Phase 1 output, Phase 1 first
-3. **Tests alongside implementation** — Every sub-phase includes targeted test steps (specific test files only)
+3. **Analyze alongside implementation** — Every sub-phase ends with `flutter analyze` verification (CI handles test execution)
 4. **Cleanup last** — Dead code removal in final phase
 5. **Integration phase** — Wire everything together after all features
 
@@ -355,12 +353,12 @@ Do NOT dispatch reviewers (Phase 5) until the plan file exists at `.claude/plans
 | Dispatching subagents for small plans | Unnecessary overhead, loses context | Main agent writes plans under ~2000 lines directly |
 | Vague steps ("add validation") | Implementing agent has to think | Complete code with annotations |
 | Missing file paths | Agent guesses wrong | Exact `path/to/file.dart:line` |
-| Skipping tests | Breaks TDD cycle | Every sub-phase has test steps |
+| Including `flutter test` in plans | Tests run in CI only, not locally | Use `flutter analyze` as the only local quality gate |
 | Assumed names in plan code | Runtime failures every time | Cross-reference against tailor ground-truth.md |
 | Sequential adversarial review | Wastes time | Always dispatch all 3 in parallel |
 | Partial re-review after fixes | Misses regressions | Always run ALL 3 sweeps each cycle |
 | Telling subagent writers to "read files" | They can read but lack full context | Give them the tailor directory path |
-| `flutter test` (full suite) in sub-phase steps | Runs 3600+ tests per sub-phase, 10+ min each | Use targeted `flutter test test/specific_test.dart` only; orchestrator runs full suite per phase |
+| `flutter test` in plans (any form) | Tests run in CI only — local runs waste tokens and create parity issues | Use `flutter analyze` as the only local verification gate |
 
 ---
 
