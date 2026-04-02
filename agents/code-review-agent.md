@@ -18,7 +18,6 @@ specialization:
     Before starting work, identify the feature(s) from your task.
     Then read ONLY these files for each relevant feature:
     - state/feature-{name}.json (feature state and constraints summary)
-    - defects/_defects-{name}.md (known issues and patterns to avoid)
     - architecture-decisions/{name}-constraints.md (hard rules)
 ---
 
@@ -172,7 +171,18 @@ This directory persists across sessions so findings can be referenced by other a
 
 ## Defect Logging
 
-When finding issues, log to `.claude/defects/_defects-{feature}.md` using format from `/end-session`.
+When finding issues, create a GitHub Issue:
+
+```bash
+pwsh -File tools/create-defect-issue.ps1 `
+    -Title "[CATEGORY] YYYY-MM-DD: Brief Title" `
+    -Feature "{feature}" `
+    -Type "defect" `
+    -Priority "{priority}" `
+    -Layer @("{layer:...}") `
+    -Body "**Pattern**: ...`n**Prevention**: ..." `
+    -Ref "file:line"
+```
 
 ## Verification
 
@@ -191,4 +201,4 @@ Before approving any code or claiming review complete:
 
 ## Historical Reference
 - Past sessions: `.claude/logs/state-archive.md`
-- Past defects: `.claude/logs/defects-archive.md`
+- Past defects: `gh issue list --label "{feature}" --state closed`

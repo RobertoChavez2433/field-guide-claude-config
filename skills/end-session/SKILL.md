@@ -39,19 +39,20 @@ If >5 sessions exist, run rotation:
 2. Append to `.claude/logs/state-archive.md` under appropriate month header
 3. Remove from _state.md
 
-### 3. Update Per-Feature Defect Files
-**Directory**: `.claude/defects/`
+### 3. File Defects to GitHub Issues
 
-For each feature where defects were discovered during this session:
-1. Open `.claude/defects/_defects-{feature}.md`
-2. Add new defect at the top of Active Patterns section:
-```markdown
-### [CATEGORY] YYYY-MM-DD: Brief Title
-**Pattern**: What to avoid (1 line)
-**Prevention**: How to avoid (1-2 lines)
-**Ref**: @path/to/file.dart (optional)
+For each feature where defects were discovered during this session, create a GitHub Issue:
+
+```bash
+pwsh -File tools/create-defect-issue.ps1 `
+    -Title "[CATEGORY] YYYY-MM-DD: Brief Title" `
+    -Feature "{feature}" `
+    -Type "defect" `
+    -Priority "{critical|high|medium|low|parked}" `
+    -Layer @("{layer:...}") `
+    -Body "**Pattern**: What to avoid (1 line)`n**Prevention**: How to avoid (1-2 lines)" `
+    -Ref "@path/to/file.dart"
 ```
-3. If >5 defects in that file, move oldest to `.claude/logs/defects-archive.md`
 
 ### Categories
 | Category | Use For |
@@ -67,6 +68,8 @@ For each feature where defects were discovered during this session:
 **PROJECT-STATE.json** (`state/PROJECT-STATE.json`):
 - Update `session_notes` with brief session summary
 - Update `active_blockers` if blockers were resolved or discovered
+- If a blocker was resolved: `gh issue close <number> --comment "Resolved in session N"` and update `_state.md` status
+- If a new blocker was discovered: create via `create-defect-issue.ps1` with `-Type blocker`, add `(#NN)` to `_state.md`
 - Update `release_cycle` dates if milestones were hit
 - Do NOT duplicate session narrative here (that belongs in _state.md)
 
@@ -80,7 +83,7 @@ For each feature where defects were discovered during this session:
 Present:
 - Session summary (what was accomplished)
 - Features touched
-- Defects logged (if any)
+- Defects filed to GitHub Issues (if any, with issue URLs)
 - Next priorities
 - Reminder: Run `/resume-session` to start next session
 
@@ -90,5 +93,5 @@ Present:
 - **NO git commands** - not `git status`, not `git diff`, not `git add`, not `git commit`
 - All analysis from conversation context only
 - Zero user input required
-- Updates per-feature defect files in `.claude/defects/`
-- Defect tracking uses per-feature files in `.claude/defects/_defects-{feature}.md`
+- Files defects to GitHub Issues via `tools/create-defect-issue.ps1`
+- Defect tracking uses GitHub Issues with feature/type/priority/layer labels

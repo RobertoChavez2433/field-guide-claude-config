@@ -1,34 +1,29 @@
 # Defects Integration
 
-How to use and update per-feature defect files during debugging. Integrates with the Logger-based investigation workflow.
+How to use and create GitHub Issues for defect tracking during debugging. Integrates with the Logger-based investigation workflow.
 
 ## Before Debugging
 
-**ALWAYS check the relevant feature's defect file first.**
+**ALWAYS check GitHub Issues for the relevant feature first.**
 
 The bug you're looking at might be a known pattern.
 
 ### Check Process
 
-1. Read `.claude/defects/_defects-{feature}.md` for the feature you're debugging
-2. Search for related categories:
-   - `[ASYNC]` - Context safety, dispose issues
-   - `[E2E]` - ADB/UIAutomator testing patterns
-   - `[FLUTTER]` - Widget, Provider patterns
-   - `[DATA]` - Repository, collection access
-   - `[CONFIG]` - Supabase, credentials, environment
-   - `[SYNC]` - SyncEngine, adapters, change tracker
-   - `[MIGRATION]` - Schema versions, migration steps
-   - `[SCHEMA]` - FK constraints, triggers, table structure
-3. If pattern exists, apply the documented prevention
+1. Query open issues for the feature:
+   ```bash
+   gh issue list --repo RobertoChavez2433/construction-inspector-tracking-app --label "{feature}" --state open --json number,title,body --limit 20
+   ```
+2. Search for related categories in issue titles: `[ASYNC]`, `[SYNC]`, `[DATA]`, `[CONFIG]`, `[SCHEMA]`, `[FLUTTER]`, `[E2E]`, `[MIGRATION]`
+3. If pattern exists, apply the documented prevention from the issue body
 
 ### Example Check
 
 Debugging: "Sync adapter pushing wrong column data"
 
-1. Open `.claude/defects/_defects-sync.md`
-2. Search for "adapter", "column", "push"
-3. Find: `[SYNC] 2026-03-01: Type Converter Mismatch`
+1. `gh issue list --label "sync" --state open --json number,title --limit 20`
+2. Find: `#42 [SYNC] Type Converter Mismatch`
+3. Read issue body: `gh issue view 42 --json body`
 4. Check: Does the adapter's toSupabaseMap() strip local-only columns?
 5. Apply: Verify TypeConverters alignment
 
@@ -36,36 +31,36 @@ Debugging: "Sync adapter pushing wrong column data"
 
 ### Pattern Recognition
 
-As you investigate, note patterns that match existing defects:
+As you investigate, note patterns that match existing issues:
 
 ```markdown
 **Observed**: setState called after await
-**Matches**: [ASYNC] Async Context Safety
+**Matches**: GitHub Issue #NN [ASYNC] Async Context Safety
 **Prevention applied**: Added mounted check
 ```
 
 ### New Pattern Discovery
 
-If you discover a pattern NOT in the feature's defect file:
+If you discover a pattern NOT in existing GitHub Issues:
 
 1. Document the pattern immediately (even before fixing)
-2. Use the standard format
-3. Include prevention strategy
+2. Create the issue after fix is confirmed (Phase 10)
 
 ## After Fix
 
-**ALWAYS log new patterns to the relevant feature's defect file.**
+**ALWAYS create a GitHub Issue for new patterns.**
 
-### Adding New Defects
+### Creating Defect Issues
 
-Location: `.claude/defects/_defects-{feature}.md`
-
-Format:
-```markdown
-### [CATEGORY] YYYY-MM-DD: Brief Title
-**Pattern**: What causes the issue
-**Prevention**: How to avoid it
-**Ref**: @path/to/relevant/file.dart (optional)
+```bash
+pwsh -File tools/create-defect-issue.ps1 `
+    -Title "[CATEGORY] YYYY-MM-DD: Brief Title" `
+    -Feature "{feature}" `
+    -Type "defect" `
+    -Priority "{priority}" `
+    -Layer @("{layer:...}") `
+    -Body "**Pattern**: What causes the issue`n**Prevention**: How to avoid it`n**Logger signal**: {relevant Logger call}" `
+    -Ref "@path/to/relevant/file.dart"
 ```
 
 ### Categories
@@ -81,98 +76,47 @@ Format:
 | `[MIGRATION]` | Schema versions, migration steps, DatabaseService upgrades |
 | `[SCHEMA]` | FK constraints, trigger behavior, table structure, SchemaVerifier |
 
-### Example Entry
-
-```markdown
-### [ASYNC] 2026-02-01: Timer Callback After Dispose
-**Pattern**: Timer.periodic callback runs after widget disposed
-**Prevention**: Cancel timer in dispose(); use mounted check in callback
-**Ref**: @lib/features/sync/presentation/widgets/sync_status_icon.dart
-```
-
 ## Defect Lifecycle
 
 ```
 1. DISCOVER during debugging
-   └─> Document pattern immediately
+   └─> Note pattern immediately
 
 2. VERIFY fix works
-   └─> Add to .claude/defects/_defects-{feature}.md
+   └─> Create GitHub Issue via create-defect-issue.ps1
 
 3. PREVENT in future
    └─> Reference in code reviews
-   └─> Check before similar work
+   └─> Check via gh issue list before similar work
 
-4. ARCHIVE when limit reached
-   └─> Oldest defects archived to .claude/logs/defects-archive.md
+4. CLOSE when resolved
+   └─> gh issue close <number> --comment "Fixed in session N"
 ```
-
-## Using Defects in Code Review
-
-When reviewing code, cross-reference the feature's defect file:
-
-```markdown
-## Code Review Notes
-
-Checked against known defects (_defects-entries.md):
-- [ASYNC] Async Context Safety: ✓ Mounted checks present
-- [E2E] TestingKeys Defined But Not Wired: ✓ Keys wired to widgets
-- [DATA] Unsafe Collection Access: ⚠️ Line 45 uses .first without check
-```
-
-## Defects Limit
-
-Each feature defect file has a max of 5 active defects.
-
-When adding new defects:
-- If at 5, oldest is auto-archived to `.claude/logs/defects-archive.md`
-- Keep most relevant/recent patterns active
-- Recurring patterns should stay active longer
 
 ## Quick Reference
 
-### Per-Feature Defect Files
-
 ```bash
-# All 15 active per-feature defect files:
-.claude/defects/_defects-auth.md
-.claude/defects/_defects-contractors.md
-.claude/defects/_defects-dashboard.md
-.claude/defects/_defects-database.md
-.claude/defects/_defects-entries.md
-.claude/defects/_defects-forms.md
-.claude/defects/_defects-locations.md
-.claude/defects/_defects-pdf.md
-.claude/defects/_defects-photos.md
-.claude/defects/_defects-projects.md
-.claude/defects/_defects-quantities.md
-.claude/defects/_defects-settings.md
-.claude/defects/_defects-sync.md
-.claude/defects/_defects-toolbox.md
-.claude/defects/_defects-weather.md
-```
+# List all open defects for a feature
+gh issue list --repo RobertoChavez2433/construction-inspector-tracking-app --label "{feature}" --state open
 
-### Common Commands
+# List all open blockers
+gh issue list --repo RobertoChavez2433/construction-inspector-tracking-app --label "blocker" --state open
 
-```bash
-# View PDF defects
-Read .claude/defects/_defects-pdf.md
+# View a specific issue
+gh issue view <number> --repo RobertoChavez2433/construction-inspector-tracking-app
 
-# View all feature defect files
-Glob .claude/defects/_defects-*.md
+# Close a resolved issue
+gh issue close <number> --repo RobertoChavez2433/construction-inspector-tracking-app --comment "Resolved"
 
-# Search for async patterns across all features
-Grep "ASYNC" .claude/defects/
-
-# Search for sync patterns
-Grep "SYNC" .claude/defects/
+# Create a new defect
+pwsh -File tools/create-defect-issue.ps1 -Title "..." -Feature "..." -Type defect -Priority medium -Layer @("layer:...") -Body "..." -Ref "..."
 ```
 
 ---
 
 ## Log Server Integration
 
-When using the debug server during investigation, cross-reference log evidence with defect patterns.
+When using the debug server during investigation, cross-reference log evidence with GitHub Issues.
 
 ### Connecting defects to log evidence
 
@@ -182,7 +126,7 @@ When the server returns an error log entry, check if it matches a known defect p
 curl "http://127.0.0.1:3947/logs?category=error&last=20"
 ```
 
-If the error message matches a known `[CATEGORY]` pattern in the defect file, apply the documented prevention rather than starting fresh investigation.
+If the error message matches a known `[CATEGORY]` pattern in an open GitHub Issue, apply the documented prevention rather than starting fresh investigation.
 
 ### Logger categories map to defect categories
 
@@ -194,14 +138,10 @@ If the error message matches a known `[CATEGORY]` pattern in the defect file, ap
 | `Logger.error()` | Any category |
 | `Logger.lifecycle()` | `[ASYNC]` |
 
-### Recording log patterns in defect entries
+### Recording log patterns in defect issues
 
-When writing a new defect entry, include the Logger call that would have caught it earlier:
+When creating a new defect issue, include the Logger call that would have caught it earlier in the body:
 
-```markdown
-### [SYNC] 2026-03-14: Push skipped silently on auth state change
-**Pattern**: SyncEngine.push() returns early when auth state changes mid-sync with no log output
-**Prevention**: Check Logger.sync() output at push() entry — if H-marker fires but push never fires, check auth state guard
+```
 **Logger signal**: Logger.sync('SyncEngine.push.skipped') missing from error log when pendingCount > 0
-**Ref**: lib/features/sync/engine/sync_engine.dart
 ```

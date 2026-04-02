@@ -37,7 +37,6 @@ specialization:
     Before starting work, identify the feature(s) from your task.
     Then read ONLY these files for each relevant feature:
     - state/feature-{name}.json (feature state and constraints summary)
-    - defects/_defects-{name}.md (known issues and patterns to avoid)
     - architecture-decisions/{name}-constraints.md (hard rules, if needed)
     - docs/features/feature-{name}-overview.md (if you need feature context)
 ---

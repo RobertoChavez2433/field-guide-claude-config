@@ -64,7 +64,7 @@ Rules:
 
 ## Summary
 - **Total**: {N} | **Pass**: {P} | **Fail**: {F} | **Skip**: {S}
-- **Defects filed**: {count} -> .claude/defects/_defects-{feature}.md
+- **Defects filed**: {count} -> GitHub Issues
 - **Screenshots**: {count} -> screenshots/
 - **Logs**: {count} -> logs/
 
@@ -187,18 +187,20 @@ Rules:
 
 ## Defect Filing Format
 
-When a flow fails, the wave agent files a defect to `.claude/defects/_defects-{feature}.md`:
+When a flow fails, the wave agent files a defect via GitHub Issues:
 
-```markdown
-### [TEST] {YYYY-MM-DD}: {flow-name} flow failure (auto-test)
-**Status**: OPEN
-**Source**: Automated test run {run-directory-name}
-**Symptom**: {failure description from the flow report}
-**Step**: Step {N} -- {step description}
-**Logcat**: {relevant error lines, max 5 lines}
-**Screenshot**: .claude/test-results/{run-dir}/screenshots/{flow}-{step}-{desc}.png
-**Suggested cause**: {assessment based on logs + screenshots + flow context}
+```bash
+pwsh -File tools/create-defect-issue.ps1 `
+    -Title "[TEST] {YYYY-MM-DD}: {flow-name} flow failure (auto-test)" `
+    -Feature "{feature}" `
+    -Type "defect" `
+    -Priority "high" `
+    -Layer @("{assessed layer}") `
+    -Body "<body below>" `
+    -Ref ".claude/test-results/{run-dir}/screenshots/{flow}-{step}-{desc}.png"
 ```
+
+Body format: The existing markdown template block that follows this line in the source file (Status, Source, Symptom, Step, Logcat, Screenshot, Suggested cause) MUST be preserved as-is. That template becomes the `-Body` parameter value for the script call above.
 
 ## Retention Policy
 
@@ -223,5 +225,5 @@ Skipped (upstream dependency failed):
 
 Report: .claude/test-results/{run-dir}/run-summary.md
 Screenshots: .claude/test-results/{run-dir}/screenshots/ ({count} files)
-Defects filed: N new ({feature1}, {feature2})
+Defects filed: N new GitHub Issues ({feature1}, {feature2})
 ```

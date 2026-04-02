@@ -44,7 +44,6 @@ For each `.claude/` file in scope:
 - `hooks/` (2 files)
 - `autoload/_state.md`
 - `memory/MEMORY.md`
-- `defects/` (~15 files)
 
 Extract file path patterns: `lib/`, `.dart`, `lib/features/`, `lib/core/`
 Extract class name patterns: PascalCase words that look like Dart classes
@@ -64,7 +63,7 @@ Verify:
 - [ ] Constraint files contain `MUST`/`MUST NOT` rules (count >= expected)
 - [ ] CLAUDE.md contains string "Security is non-negotiable" (grep, not line number)
 - [ ] Rule files contain security directive sentinel strings (token storage, RLS patterns)
-- [ ] `active_blockers` in PROJECT-STATE.json count is consistent
+- [ ] Blocker entries in `_state.md` reference GitHub Issue numbers
 
 ### Step 5: Report
 

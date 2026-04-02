@@ -76,7 +76,7 @@ Screen -> Provider -> UseCase -> Repository -> SQLite (local) -> Supabase (sync)
 
 ## Session & Workflow
 - `/resume-session` — Load HOT context | `/end-session` — Save state with auto-archiving
-- State: `.claude/autoload/_state.md` | Defects: `.claude/defects/_defects-{feature}.md` (max 5 per feature)
+- State: `.claude/autoload/_state.md` | Defects: GitHub Issues (labeled by feature/type/priority/layer)
 - Git: Feature branches only, never commit to main. `gh pr create` / `gh pr merge --squash`
 - Planning pipeline: `brainstorming` (spec) → `tailor` (research) → `writing-plans` (plan) → `implement` (execute)
 - **Sizing guide:** XS (single-file mechanical) = no skill needed | S (up to 3 files, known pattern) = skip brainstorming + tailor + writing-plans | M+ = full pipeline. Security-sensitive changes (auth, RLS, sync, data exposure) always require full pipeline regardless of size.
@@ -91,7 +91,7 @@ Screen -> Provider -> UseCase -> Repository -> SQLite (local) -> Supabase (sync)
 | UI prototyping workflow | `.claude/rules/frontend/ui-prototyping.md` |
 | Testing setup & harnesses | `.claude/rules/testing/patrol-testing.md` |
 | Detailed project knowledge | `.claude/memory/MEMORY.md` |
-| Archives | `.claude/logs/state-archive.md`, `.claude/logs/defects-archive.md` |
+| Archives | `.claude/logs/state-archive.md` |
 | Audit system (backlogged) | `.claude/backlogged-plans/2026-02-15-audit-system-design.md` |
 
 ## Repositories

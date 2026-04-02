@@ -23,7 +23,6 @@ specialization:
     Before starting work, identify the feature(s) from your task.
     Then read ONLY these files for each relevant feature:
     - state/feature-{name}.json (feature state and constraints summary)
-    - defects/_defects-{name}.md (known issues and patterns to avoid)
 ---
 
 # QA Testing Agent
@@ -224,15 +223,26 @@ void dispose() {
 
 ## Defect Logging
 
-When finding issues, log to `.claude/defects/_defects-{feature}.md` using format from `/end-session`.
+When finding issues, create a GitHub Issue:
+
+```bash
+pwsh -File tools/create-defect-issue.ps1 `
+    -Title "[CATEGORY] YYYY-MM-DD: Brief Title" `
+    -Feature "{feature}" `
+    -Type "defect" `
+    -Priority "{priority}" `
+    -Layer @("{layer:...}") `
+    -Body "**Pattern**: ...`n**Prevention**: ..." `
+    -Ref "file:line"
+```
 
 ## Debugging Methodology
 @.claude/skills/systematic-debugging/SKILL.md
 
 When debugging issues:
-- Check `defects/_defects-{feature}.md` for known patterns FIRST
+- Check `gh issue list --label "{feature}" --state open` for known patterns FIRST
 - Follow 4-phase framework: Investigate -> Analyze -> Hypothesize -> Implement
-- Log new patterns to `defects/_defects-{feature}.md` after fix
+- Create GitHub Issue for new patterns after fix via `create-defect-issue.ps1`
 
 ## Verification
 
@@ -254,4 +264,4 @@ NO "should pass", "probably works", or assumptions.
 - If tests were run, include pass/fail count only
 
 ## Historical Reference
-- Past test issues: `.claude/logs/defects-archive.md`
+- Past test issues: `gh issue list --label "{feature}" --state closed`

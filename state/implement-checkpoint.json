@@ -1,19 +1,19 @@
 {
-  "plan": ".claude/plans/2026-04-02-data-sync-audit-remediation.md",
+  "plan": ".claude/plans/2026-04-02-defect-tracking-github-issues-migration.md",
   "dispatch_groups": [
     {
       "phases": [
         1
       ],
       "status": "done",
-      "test_gate": "pass"
+      "test_gate": "skip"
     },
     {
       "phases": [
         2
       ],
       "status": "done",
-      "test_gate": "pass"
+      "test_gate": "skip"
     },
     {
       "phases": [
@@ -21,184 +21,34 @@
         4
       ],
       "status": "done",
-      "test_gate": "pass"
+      "test_gate": "skip"
     },
     {
       "phases": [
         5
       ],
       "status": "done",
-      "test_gate": "pass"
-    },
-    {
-      "phases": [
-        6
-      ],
-      "status": "done",
-      "test_gate": "pass"
+      "test_gate": "skip"
     }
   ],
   "phases": [
     {
-      "name": "Phase 1: Dead Code & Quick Fixes",
+      "name": "Phase 1: Setup — Labels & Helper Script",
       "status": "done",
       "reviews": {
         "completeness": {
           "status": "pass",
           "critical": 0,
           "high": 0,
-          "medium": 1,
-          "low": 1,
-          "tests_verified": true,
-          "fix_cycles": 1
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 1,
-          "low": 2,
-          "fix_cycles": 1
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 3,
-          "low": 3,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
           "fix_cycles": 0
-        }
-      },
-      "substeps": {
-        "1.1": "done",
-        "1.2": "done",
-        "1.3": "done",
-        "1.4": "done"
-      }
-    },
-    {
-      "name": "Phase 2: Schema & Migration Cleanup",
-      "status": "done",
-      "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "tests_verified": true,
-          "fix_cycles": 1
         },
         "code_review": {
           "status": "pass",
           "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 2
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 2,
-          "fix_cycles": 2
-        }
-      },
-      "substeps": {
-        "2.1": "done",
-        "2.2": "done"
-      }
-    },
-    {
-      "name": "Phase 3: Boundary Fixes",
-      "status": "done",
-      "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 1,
-          "low": 2,
-          "tests_verified": true,
-          "fix_cycles": 1
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 2,
-          "high": 2,
-          "medium": 5,
-          "low": 5,
-          "fix_cycles": 1
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 2,
-          "medium": 3,
-          "low": 5,
-          "fix_cycles": 1
-        }
-      },
-      "substeps": {
-        "3.1": "done",
-        "3.2": "done"
-      }
-    },
-    {
-      "name": "Phase 4: Structural",
-      "status": "done",
-      "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 3,
-          "low": 3,
-          "tests_verified": true,
-          "fix_cycles": 1
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 4,
-          "low": 4,
-          "fix_cycles": 1
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 2,
-          "medium": 3,
-          "low": 2,
-          "fix_cycles": 1
-        }
-      },
-      "substeps": {
-        "4.1": "done",
-        "4.2": "done",
-        "4.3": "done"
-      }
-    },
-    {
-      "name": "Phase 5: Sign-Out Warning (BLOCKER-38)",
-      "status": "done",
-      "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "tests_verified": true,
-          "fix_cycles": 1
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
+          "high": 1,
           "medium": 2,
           "low": 2,
           "fix_cycles": 1
@@ -207,20 +57,63 @@
           "status": "pass",
           "critical": 0,
           "high": 0,
-          "medium": 0,
-          "low": 3,
+          "medium": 1,
+          "low": 1,
           "fix_cycles": 1
         }
       },
       "substeps": {
-        "5.1.1": "done",
-        "5.1.2": "done",
-        "5.1.3": "done"
+        "1.1": "done",
+        "1.2": "done"
       }
     },
     {
-      "name": "Phase 6: Tests & Cleanup",
+      "name": "Phase 2: Migration — Audit & Create Issues",
       "status": "done",
+      "substeps": {
+        "2.1": "done",
+        "2.2": "done",
+        "2.3": "done"
+      },
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 1,
+          "tests_verified": false,
+          "fix_cycles": 1
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 1,
+          "low": 2,
+          "fix_cycles": 1
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 1,
+          "low": 3,
+          "fix_cycles": 1
+        }
+      }
+    },
+    {
+      "name": "Phase 3: Writer Updates",
+      "status": "done",
+      "substeps": {
+        "3.1": "done",
+        "3.2": "done",
+        "3.3": "done",
+        "3.4": "done",
+        "3.5": "done",
+        "3.6": "done"
+      },
       "reviews": {
         "completeness": {
           "status": "pass",
@@ -228,7 +121,73 @@
           "high": 0,
           "medium": 0,
           "low": 0,
-          "tests_verified": true,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 1,
+          "medium": 1,
+          "low": 1,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 4,
+          "fix_cycles": 0
+        }
+      }
+    },
+    {
+      "name": "Phase 4: Reader Simplifications",
+      "status": "done",
+      "substeps": {
+        "4.1": "done",
+        "4.2": "done"
+      },
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 2,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 2,
+          "fix_cycles": 0
+        }
+      }
+    },
+    {
+      "name": "Phase 5: Cleanup & Documentation",
+      "status": "done",
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 2,
+          "low": 0,
+          "tests_verified": false,
           "fix_cycles": 1
         },
         "code_review": {
@@ -236,7 +195,7 @@
           "critical": 0,
           "high": 0,
           "medium": 0,
-          "low": 0,
+          "low": 2,
           "fix_cycles": 1
         },
         "security": {
@@ -249,50 +208,38 @@
         }
       },
       "substeps": {
-        "6.1": "done",
-        "6.2": "done"
+        "5.1": "done",
+        "5.2": "done"
       }
     }
   ],
   "modified_files": [
-    "lib/features/auth/data/datasources/remote/user_profile_sync_datasource.dart",
-    "lib/features/sync/application/sync_orchestrator.dart",
-    "lib/shared/datasources/datasources.dart",
-    "fg_lint_packages/field_guide_lints/lib/data_safety/rules/require_soft_delete_filter.dart",
-    "lib/core/database/database_service.dart",
-    "lib/core/database/schema_verifier.dart",
-    "test/core/database/migration_v47_test.dart",
-    "test/core/database/schema_verifier_drift_test.dart",
-    "lib/features/settings/data/datasources/local/user_certification_local_datasource.dart",
-    "lib/features/sync/di/sync_initializer.dart",
-    "lib/features/entries/data/repositories/entry_contractors_repository.dart",
-    "lib/features/entries/di/entries_providers.dart",
-    "lib/features/entries/presentation/controllers/contractor_editing_controller.dart",
-    "lib/features/entries/presentation/widgets/entry_contractors_section.dart",
-    "lib/features/entries/presentation/controllers/pdf_data_builder.dart",
-    "lib/features/entries/presentation/screens/home_screen.dart",
-    "lib/features/entries/presentation/screens/entry_editor_screen.dart",
-    "lib/core/di/app_providers.dart",
-    "test/features/settings/data/datasources/local/user_certification_local_datasource_test.dart",
-    "test/features/entries/presentation/controllers/contractor_editing_controller_test.dart",
-    "lib/features/sync/application/sync_engine_factory.dart",
-    "lib/features/sync/application/sync_orchestrator_builder.dart",
-    "lib/features/sync/application/background_sync_handler.dart",
-    "test/features/sync/application/sync_engine_factory_test.dart",
-    "test/features/sync/application/sync_orchestrator_builder_test.dart",
-    "test/features/sync/presentation/widgets/sync_status_icon_test.dart",
-    "test/features/sync/presentation/screens/sync_dashboard_screen_test.dart",
-    "lib/features/settings/presentation/widgets/sign_out_dialog.dart",
-    "lib/shared/testing_keys/settings_keys.dart",
-    "lib/shared/testing_keys/testing_keys.dart",
-    "test/shared/datasources/base_remote_datasource_test.dart",
-    "test/features/auth/data/datasources/remote/user_profile_sync_datasource_test.dart",
-    "test/core/database/schema_verifier_report_test.dart",
-    "test/helpers/sync_orchestrator_test_helper.dart",
-    "test/features/sync/engine/sync_engine_delete_test.dart"
+    "tools/create-defect-issue.ps1",
+    ".claude/autoload/_state.md",
+    ".claude/logs/defects-archive.md",
+    ".claude/skills/end-session/SKILL.md",
+    ".claude/skills/systematic-debugging/SKILL.md",
+    ".claude/skills/systematic-debugging/references/defects-integration.md",
+    ".claude/skills/systematic-debugging/references/debug-session-management.md",
+    ".claude/skills/test/references/output-format.md",
+    ".claude/agents/security-agent.md",
+    ".claude/agents/qa-testing-agent.md",
+    ".claude/agents/code-review-agent.md",
+    ".claude/agents/debug-research-agent.md",
+    ".claude/agents/auth-agent.md",
+    ".claude/agents/frontend-flutter-specialist-agent.md",
+    ".claude/agents/pdf-agent.md",
+    ".claude/agents/backend-data-layer-agent.md",
+    ".claude/agents/backend-supabase-agent.md",
+    ".claude/skills/brainstorming/skill.md",
+    ".claude/skills/audit-config/SKILL.md",
+    ".claude/rules/testing/patrol-testing.md",
+    ".claude/skills/resume-session/SKILL.md",
+    ".claude/logs/README.md",
+    ".claude/logs/archive-index.md"
   ],
-  "build": "pass",
-  "analyze_and_test": "pass",
+  "build": "skip",
+  "analyze_and_test": "skip",
   "integration_reviews": {
     "completeness": {
       "status": "pending",
@@ -319,22 +266,7 @@
       "fix_cycles": 0
     }
   },
-  "decisions": [
-    "Phase 1: SEC-R1 deviation from spec â€” kept SwitchCompanyUseCase and clearLocalCompanyData per plan security rationale (cross-tenant protection)",
-    "Phase 1: Removed dead userId null-guard in sync_orchestrator after updateLastSyncedAt param removal",
-    "Phase 1: Pre-existing findings (pullUserCertifications dead code, SharedPrefs company-switch gap, PII in logs) noted but deferred as out-of-scope for Phase 1",
-    "Phase 2: CRITICAL FK cascade fix â€” added PRAGMA legacy_alter_table=ON/OFF with try/finally around form_responses table rebuild to prevent form_exports cascade deletion",
-    "Phase 2: SchemaVerifier report-only uses Logger.error for missing columns/tables (upgraded from plan's Logger.db WARNING pattern)",
-    "Phase 2: Security LOWs accepted â€” v22 migration string interpolation (historical, const value) and PRAGMA table_info interpolation (can't parameterize PRAGMA, source is const map)",
-    "Phase 3: Removed public contractorsDatasource getter from EntryContractorsRepository; added verifyEntryOwnership method to encapsulate ownership check (review fix)",
-    "Phase 3: Added DatabaseService param to EntryContractorsRepository for ownership query",
-    "Phase 4: Removed old public SyncOrchestrator constructor entirely (no callers existed); only fromBuilder and forTesting remain",
-    "Phase 4: Made SyncEngineFactory.create() synchronous (was unnecessarily async)",
-    "Phase 4: Removed dead _engineFactory static field from BackgroundSyncHandler",
-    "Phase 4: A6 lint baseline unchanged — all violations are await expressions inside callback closures that cannot be extracted without over-engineering",
-    "Phase 4: Security HIGHs (session expiry in background sync, static mutable state race) are pre-existing patterns, not introduced by Phase 4",
-    "Phase 5: SignOutDialog reads SyncOrchestrator from Provider context to avoid circular init dependency"
-  ],
+  "decisions": [],
   "fix_attempts": [],
   "blocked": []
 }

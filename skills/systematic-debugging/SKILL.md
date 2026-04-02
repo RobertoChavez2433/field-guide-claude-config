@@ -96,7 +96,13 @@ This ensures evidence from this session is not mixed with old data.
 
 ### 1.4 Check known defects
 
-Read `.claude/defects/_defects-{feature}.md` for the relevant feature. Check categories: `[ASYNC]`, `[SYNC]`, `[DATA]`, `[CONFIG]`, `[SCHEMA]`, `[FLUTTER]`, `[E2E]`, `[MIGRATION]`.
+Query GitHub Issues for the relevant feature:
+
+```bash
+gh issue list --repo RobertoChavez2433/construction-inspector-tracking-app --label "{feature}" --state open --json number,title,body --limit 20
+```
+
+Scan issue titles and bodies for categories: `[ASYNC]`, `[SYNC]`, `[DATA]`, `[CONFIG]`, `[SCHEMA]`, `[FLUTTER]`, `[E2E]`, `[MIGRATION]`.
 
 If a known pattern matches: apply documented prevention. May resolve without further investigation.
 
@@ -569,19 +575,21 @@ NOTE: Do NOT use `-IncludeDebugServer` unless the user explicitly asks. They may
 
 **Goal**: Record new patterns for future prevention.
 
-If this bug represents a new pattern not already in the feature's defect file:
+If this bug represents a new pattern not already in GitHub Issues for this feature:
 
 1. Identify category: `[ASYNC]`, `[SYNC]`, `[DATA]`, `[CONFIG]`, `[SCHEMA]`, `[FLUTTER]`, `[E2E]`, `[MIGRATION]`
-2. Add to `.claude/defects/_defects-{feature}.md`:
+2. Create a GitHub Issue:
 
-```markdown
-### [SYNC] 2026-03-14: Brief Title
-**Pattern**: What caused the issue
-**Prevention**: How to avoid it next time
-**Ref**: lib/features/sync/engine/sync_engine.dart:142
+```bash
+pwsh -File tools/create-defect-issue.ps1 `
+    -Title "[CATEGORY] YYYY-MM-DD: Brief Title" `
+    -Feature "{feature}" `
+    -Type "defect" `
+    -Priority "{priority}" `
+    -Layer @("{layer:...}") `
+    -Body "**Pattern**: What caused the issue`n**Prevention**: How to avoid it next time" `
+    -Ref "lib/features/sync/engine/sync_engine.dart:142"
 ```
-
-3. If feature file is at 5 defects, archive the oldest to `.claude/logs/defects-archive.md` first.
 
 ---
 

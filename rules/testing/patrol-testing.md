@@ -366,7 +366,7 @@ The report test generates a scorecard automatically. When presenting results, us
 - TestingKeys: `lib/shared/testing_keys/testing_keys.dart`
 - UI Keys Reference: `integration_test/patrol/REQUIRED_UI_KEYS.md`
 - Pipeline Reports: `test/features/pdf/extraction/reports/` (gitignored, per-platform baselines)
-- Defects to Avoid: `.claude/defects/_defects-{feature}.md` (per-feature defect files)
+- Defects to Avoid: `gh issue list --label "{feature}" --state open` (GitHub Issues)
 - Screen Registry: `lib/core/driver/screen_registry.dart`
 
 

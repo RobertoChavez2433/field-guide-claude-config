@@ -24,7 +24,7 @@ Every project goes through this process. A todo list, a single-function utility,
 
 You MUST complete these items in order:
 
-1. **Explore project context** — check files, docs, recent commits, defects
+1. **Explore project context** — check files, docs, recent commits, GitHub Issues
 2. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 3. **Propose 2-3 approaches** — with trade-offs and your recommendation
 4. **Present spec sections** — scaled to complexity, get user approval after each section
@@ -76,7 +76,7 @@ Never overwhelm with a list of questions. Each message should advance understand
 **Goal**: Understand what the user actually wants before proposing anything.
 
 1. Read existing code/documentation relevant to the feature
-2. Check `.claude/defects/_defects-{feature}.md` for related past issues
+2. Check `gh issue list --label "{feature}" --state open` for related past issues
 3. Check `.claude/prds/` for any existing PRD on this feature
 4. Ask clarifying questions ONE AT A TIME until there is zero ambiguity about:
    - **Intent**: What problem are we solving? What does success look like?

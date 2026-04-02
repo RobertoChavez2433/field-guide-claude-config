@@ -47,7 +47,7 @@ That's it. No questions. No context loading. The user's first message IS the int
 Wait for the user to say what they want. Their message determines what happens next:
 - If they name a feature → agents load feature-specific context via their own frontmatter
 - If they ask about status → read `state/PROJECT-STATE.json` or `state/FEATURE-MATRIX.json`
-- If they want to debug → agents load defects and constraints as needed
+- If they want to debug → agents load GitHub Issues and constraints as needed
 
 **Do NOT pre-load any feature context, rules, constraints, or docs.**
 
@@ -58,7 +58,7 @@ When agents are invoked, they load their own context per their frontmatter:
 - **Constraints**: `architecture-decisions/{feature}-constraints.md`
 - **Docs**: `docs/features/feature-{name}-overview.md`, `feature-{name}-architecture.md`
 - **State**: `state/feature-{name}.json`, `state/PROJECT-STATE.json`
-- **Defects**: `defects/_defects-{name}.md`
+- **Defects**: GitHub Issues (gh issue list --label "{feature}")
 
 ## Rules
 - **NO git commands** — not `git status`, not `git log`, not any git operation

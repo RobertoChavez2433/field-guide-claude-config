@@ -145,8 +145,8 @@ CLEANUP (Phase 9)
   └─> Prune 30-day retention
   └─> Stop driver: pwsh -File tools/stop-driver.ps1
 
-DEFECT LOG (Phase 10)
-  └─> Record new patterns to defect file
+DEFECT LOG (GitHub Issues) (Phase 10)
+  └─> Record new patterns to GitHub Issue
 
 END
 ```
@@ -202,7 +202,7 @@ Do NOT re-launch the agent after it completes. Read its output once in Phase 5.
 The agent produces:
 - Code path trace with file:line references
 - Potential root causes ranked by likelihood
-- Related defects found in `.claude/defects/`
+- Related defects found in GitHub Issues
 - Suggested `Logger.hypothesis()` instrumentation points
 
 Integrate these with the actual log evidence from the server. Agent research is a hypothesis source — log evidence is the ground truth.

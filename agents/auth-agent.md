@@ -17,7 +17,6 @@ specialization:
     Before starting work, identify the feature(s) from your task.
     Then read ONLY these files for each relevant feature:
     - state/feature-{name}.json (feature state and constraints summary)
-    - defects/_defects-{name}.md (known issues and patterns to avoid)
     - architecture-decisions/{name}-constraints.md (hard rules, if needed)
     - docs/features/feature-{name}-overview.md (if you need feature context)
 ---
@@ -112,9 +111,8 @@ Key entry points:
 
 Before making changes:
 1. Read existing auth files
-2. Check `.claude/defects/_defects-auth.md` for past issues
-3. Verify deep link configuration
-4. Test on both mobile and desktop
+2. Verify deep link configuration
+3. Test on both mobile and desktop
 
 During implementation:
 - Never log credentials or tokens
