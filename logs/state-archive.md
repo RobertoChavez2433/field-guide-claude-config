@@ -6,6 +6,20 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## April 2026
 
+### Session 708 (2026-04-02)
+**Work**: Fixed CI failures (stale baseline, 4 test failures, summary overflow). Fixed branch protection for solo dev. Merged PR #7. Removed flutter test from implement orchestrator.
+**Decisions**: Lint baseline must be regenerated after file moves. CI summary capped at 200 lines. Branch protection check names must match CI job display names. Tests run in CI only — not during implementation.
+**Next**: Migrate defect tracking to GitHub Issues → writing-plans → implement audit remediation.
+
+## April 2026
+
+### Session 707 (2026-04-02)
+**Work**: Verified pre-prod audit (14 findings: 4 fixed, 10 remaining). Brainstormed + approved spec for 10 findings + BLOCKER-38 + A6 baseline. Ran tailor (4 patterns, 3 flags). Caught A6 lint issue in DI initializers.
+**Decisions**: Remove form_type DEFAULT (Option A). Builder pattern for SyncOrchestrator. Migrations authoritative, SchemaVerifier report-only. Delete clearLocalCompanyData entirely. Extend existing UserCertificationLocalDatasource (don't duplicate). Reduce A6 baseline in Phase 4.
+**Next**: `/writing-plans` → implement → merge PR #7.
+
+## April 2026
+
 ### Session 706 (2026-04-02)
 **Work**: Hardened CI quality gate end-to-end. Fixed D9 regex, added 3 lint rules + baseline system + auto-issue sync. Found/fixed Windows path normalization bug in 8 rules (local→CI parity: 24→93). Added unified Quality Report job. SchemaVerifier now detects drift.
 **Decisions**: Lint baseline gates CI (known pass, new block). Issues auto-managed by CI. Path normalization mandatory in all path-scoped rules. Unified report via 4th job + artifact upload.
