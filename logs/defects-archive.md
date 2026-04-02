@@ -730,3 +730,405 @@ These were active patterns that didn't make the top 15 in defects.md.
 ### 2026-01-21: Mock Repository Method Names Mismatch
 **Issue**: Mock methods don't match test expectations
 **Fix Needed**: Rename mock methods or use mocktail
+
+---
+
+## Migrated to GitHub Issues (2026-04-02)
+
+### Auth (from _defects-auth.md)
+
+#### [CONFIG] GoRouter redirect side-effects fire multiple times (GitHub Issue #19)
+**Pattern**: Non-idempotent methods inside GoRouter redirect fire multiple times per navigation event.
+**Prevention**: Gate side-effects with boolean flag or move to dedicated listener.
+**Ref**: lib/core/router/app_redirect.dart
+
+#### [CONFIG] Gate ordering bypass window for null-profile on onboarding (GitHub Issue #20)
+**Pattern**: Early return null in onboarding gate before profile-check gates allows null-profile bypass.
+**Prevention**: Always let profile-check gates run before returning null for onboarding routes.
+**Ref**: lib/core/router/app_redirect.dart
+
+#### [DATA] loadUserProfile network failure leaves _userProfile null (GitHub Issue #21)
+**Pattern**: loadUserProfile() fetched only from Supabase remote, null on cold start without connectivity.
+**Prevention**: Fall back to local SQLite cache when remote fetch fails.
+**Ref**: lib/features/auth/presentation/providers/auth_provider.dart:656
+
+#### [FLUTTER] Router redirects auth routes before profile loads (GitHub Issue #22)
+**Pattern**: isAuthenticated redirect fires before isLoadingProfile guard.
+**Prevention**: Check isLoadingProfile BEFORE redirecting.
+**Ref**: lib/core/router/app_router.dart:128
+
+#### [DATA] search_companies RPC returns partial columns (GitHub Issue #23)
+**Pattern**: RPC returns partial columns, Company.fromJson() TypeError caught silently.
+**Prevention**: RPC return types must match Dart model factory.
+**Ref**: supabase/migrations search_companies
+
+#### [ASYNC] Inactivity timeout must check before reset on foreground (GitHub Issue #24)
+**Pattern**: updateLastActive() resets timer without checking timeout first.
+**Prevention**: Call checkInactivityTimeout() before updateLastActive() in onResumed.
+**Ref**: lib/main.dart:315-325
+
+#### [CONFIG] clearOnSignOut() defined but never called (GitHub Issue #25)
+**Pattern**: clearOnSignOut() never invoked, stale config persists across sessions.
+**Prevention**: Wire into auth listener immediately when defining it.
+**Ref**: lib/features/auth/presentation/providers/app_config_provider.dart:166
+
+### Database (from _defects-database.md)
+
+#### [DATA] SchemaVerifier only detected missing columns, not drift (GitHub Issue #26)
+**Pattern**: Only checked existence, not type/default/nullability.
+**Prevention**: SchemaVerifier now returns List of ColumnDrift.
+**Ref**: lib/core/database/schema_verifier.dart
+
+#### [CONFIG] UUID vs TEXT PKs mismatch in migrations (GitHub Issue #27)
+**Pattern**: New tables used UUID PKs but app tables use TEXT PKs.
+**Prevention**: Check existing table id types before writing CREATE TABLE.
+**Ref**: supabase/migrations/20260328100000
+
+#### [CONFIG] RLS policies assumed non-existent columns (GitHub Issue #28)
+**Pattern**: One-hop RLS policies for tables without project_id column.
+**Prevention**: Verify actual table schema before writing RLS policies.
+**Ref**: supabase/migrations/20260222100000 Parts 7E, 7H
+
+#### [CONFIG] Catch-up migration triggers without updated_at (GitHub Issue #29)
+**Pattern**: Triggers referenced NEW.updated_at on tables without the column.
+**Prevention**: Add column BEFORE creating trigger.
+**Ref**: supabase/migrations/20260222100000 Part 10C
+
+#### [DATA] Migration ordering index before column (GitHub Issue #30)
+**Pattern**: CREATE INDEX before ALTER TABLE ADD COLUMN.
+**Prevention**: Place column additions before indexes.
+**Ref**: lib/core/database/database_service.dart
+
+#### [DATA] Shared singleton DB flaky test lock (GitHub Issue #31)
+**Pattern**: Multiple tests share production singleton causing WAL lock contention.
+**Prevention**: Use DatabaseService.forTesting() for non-lifecycle tests.
+**Ref**: test/core/database/
+
+### Entries (from _defects-entries.md)
+
+#### [ASYNC] Cache provider refs for pop/lifecycle (GitHub Issue #32)
+**Pattern**: context.read in pop callbacks throws during widget deactivation.
+**Prevention**: Cache provider refs in didChangeDependencies().
+**Ref**: lib/features/entries/presentation/screens/entry_editor_screen.dart
+
+#### [DATA] Custom raw queries must include deleted_at IS NULL (GitHub Issue #33)
+**Pattern**: Direct queries bypass soft-delete filter.
+**Prevention**: Always include WHERE deleted_at IS NULL.
+**Ref**: lib/features/entries/data/repositories/daily_entry_repository.dart
+
+#### [E2E] Driver scroll needs ValueKey (GitHub Issue #34)
+**Pattern**: Scrollable widgets without ValueKey invisible to driver.
+**Prevention**: Add ValueKey to scrollable widgets.
+**Ref**: lib/core/driver/driver_server.dart
+
+#### [E2E] Tap-to-edit sections require explicit tap (GitHub Issue #35)
+**Pattern**: TextFields only render after tapping section card.
+**Prevention**: E2E must tap section card first.
+**Ref**: lib/features/entries/presentation/screens/entry_editor_screen.dart
+
+#### [DATA] createdByUserId never set on entry creation (GitHub Issue #36)
+**Pattern**: DailyEntry constructor omitted createdByUserId.
+**Prevention**: Grep all creation sites when adding attribution fields.
+**Ref**: entry_editor_screen.dart:364
+
+### Forms (from _defects-forms.md)
+
+#### [DATA] _sendTest uses sentinel string in numeric field (GitHub Issue #37)
+**Pattern**: Empty moisture_pcf sets percent_compaction to -- string.
+**Prevention**: Use null instead of sentinel strings.
+**Ref**: lib/features/forms/presentation/screens/mdot_hub_screen.dart:625
+
+#### [FLUTTER] Plan decisions can contradict workflow (GitHub Issue #38)
+**Pattern**: Brainstorming plans may skip needed confirmation gates.
+**Prevention**: Validate against real inspector workflow.
+**Ref**: .claude/plans/completed/2026-02-22-0582b-proctor-2010-redesign.md
+
+#### BUG-1: FormsListScreen race condition (GitHub Issue #39)
+**Pattern**: didChangeDependencies fires before project loads.
+**Prevention**: Watch ProjectProvider and re-trigger.
+**Ref**: lib/features/forms/presentation/screens/forms_list_screen.dart
+
+#### MINOR-2: Header auto-fill partially empty (GitHub Issue #40)
+**Pattern**: No seeded PreferencesService values.
+**Prevention**: Seed values for harness testing.
+**Ref**: form_viewer_screen.dart, harness_seed_data.dart
+
+#### MINOR-3: Empty station displays as label (GitHub Issue #41)
+**Pattern**: Station label shown when value is null.
+**Prevention**: Omit or format as Station: --.
+**Ref**: form_viewer_screen.dart:397
+
+### PDF (from _defects-pdf.md)
+
+#### [ASYNC] pdfrx rendering fails in background isolates (GitHub Issue #42)
+**Pattern**: pdfrx requires full Flutter engine context.
+**Prevention**: Do not run pdfrx in background isolates.
+**Ref**: page_renderer_v2.dart:229-293
+
+#### [DATA] Background isolate missing BinaryMessenger init (GitHub Issue #43)
+**Pattern**: Missing BackgroundIsolateBinaryMessenger.ensureInitialized.
+**Prevention**: Always init in isolates using platform channels.
+**Ref**: extraction_job_runner.dart:334
+
+#### [DATA] Crop boundaries include TELEA artifacts (GitHub Issue #44)
+**Pattern**: Crop edges at grid line center include inpainting artifacts.
+**Prevention**: Inset crop edges beyond grid line center.
+**Ref**: text_recognizer_v2.dart:1175-1219
+
+#### [DATA] halfThick formula mismatch (GitHub Issue #45)
+**Pattern**: Scanner used wrong half-extent formula vs cv.line.
+**Prevention**: Use (thickness + 1) ~/ 2.
+**Ref**: grid_line_remover.dart:855
+
+#### [DATA] Anti-aliased fringe band phantom OCR (GitHub Issue #46)
+**Pattern**: Fringe pixels survive threshold, Tesseract reads phantoms.
+**Prevention**: Measure fringe dynamically, expand removal mask.
+**Ref**: grid_line_remover.dart
+
+### Photos (from _defects-photos.md)
+
+#### [DATA] photos.file_path must be nullable (GitHub Issue #47)
+**Pattern**: NOT NULL constraint silently drops cross-device photo pulls.
+**Prevention**: Device-local columns must be nullable.
+**Ref**: photo_tables.dart:11
+
+#### [ASYNC] TextEditingController used after disposed (GitHub Issue #48)
+**Pattern**: Async callbacks reference disposed controllers.
+**Prevention**: Check mounted before accessing controllers.
+**Ref**: photo_detail_dialog.dart
+
+#### [E2E] inject-photo-direct missing file_path (GitHub Issue #49)
+**Pattern**: Injected photos have null file_path, cannot sync.
+**Prevention**: Set placeholder file_path.
+**Ref**: driver_server.dart
+
+### Projects (from _defects-projects.md)
+
+#### [DATA] Path traversal guard bypassed by encoding (GitHub Issue #50)
+**Pattern**: contains(..) bypassed by URL-encoded variants.
+**Prevention**: Validate path resolves inside known directory prefix.
+**Ref**: project_list_screen.dart:191
+
+#### [DATA] sync_control pulling flag outside transaction (GitHub Issue #51)
+**Pattern**: Crash leaves pulling=1 permanently.
+**Prevention**: Add startup guard to reset pulling flag.
+**Ref**: project_lifecycle_service.dart:101
+
+#### [DATA] ProjectAssignmentProvider creator auto-add (GitHub Issue #52)
+**Pattern**: Auto-adds creator before snapshotting, hasChanges=false.
+**Prevention**: Snapshot from DB state before mutations.
+**Ref**: project_assignment_provider.dart:82-86
+
+#### [FLUTTER] canWrite=true for inspector (GitHub Issue #53)
+**Pattern**: All roles have full write access.
+**Prevention**: Replace with granular permissions.
+**Ref**: user_role.dart:36
+
+#### [CONFIG] SyncOrchestrator not registered as Provider (GitHub Issue #54)
+**Pattern**: context.read crashes, not in MultiProvider tree.
+**Prevention**: Verify Provider registration before context.read.
+**Ref**: main.dart, project_list_screen.dart
+
+#### [DATA] Background sync auto-enrolls ALL projects (GitHub Issue #55)
+**Pattern**: Pull path auto-enrolls all projects into synced_projects.
+**Prevention**: Only enroll via explicit user action.
+**Ref**: sync_engine.dart:1082-1088
+
+#### [DATA] App kill leaves orphaned project (GitHub Issue #56)
+**Pattern**: Eagerly inserted project row with no name persists.
+**Prevention**: Mark as draft, filter from list until saved.
+**Ref**: project_setup_screen.dart:66
+
+#### [DATA] Pre-generated UUID causes FK violations (GitHub Issue #57)
+**Pattern**: Child records fail FK check against non-existent project.
+**Prevention**: Eagerly INSERT minimal project row.
+**Ref**: project_setup_screen.dart:66
+
+#### [DATA] Auth cold-start race empties project list (GitHub Issue #58)
+**Pattern**: loadProjectsByCompany(null) sets empty list, no retry.
+**Prevention**: Add authProvider listener to re-run on companyId change.
+**Ref**: project_provider.dart
+
+#### [SYNC] SQLite missing UNIQUE constraint (GitHub Issue #59)
+**Pattern**: TOCTOU race creates duplicate projects locally.
+**Prevention**: Add UNIQUE INDEX on (company_id, project_number).
+**Ref**: core_tables.dart, project_repository.dart
+
+### Quantities (from _defects-quantities.md)
+
+#### [FLUTTER] DropdownButtonFormField value drift (GitHub Issue #60)
+**Pattern**: setState in onChanged drifts from FormFieldState.
+**Prevention**: Do not call setState with initialValue.
+**Ref**: bid_item_dialog.dart:100
+
+#### [DATA] Item Number sort lexicographic (GitHub Issue #61)
+**Pattern**: String comparison instead of numeric.
+**Prevention**: Use int.tryParse for numeric sorting.
+**Ref**: Quantities screen
+
+#### [DATA] Quantities search field not filtering (GitHub Issue #62)
+**Pattern**: onChanged not wired to filter logic.
+**Prevention**: Wire search to provider filter.
+**Ref**: Quantities screen
+
+### Settings (from _defects-settings.md)
+
+#### [CONFIG] Sentry PII scrubbing bypassed for non-strings (GitHub Issue #63)
+**Pattern**: Only String values scrubbed in extra map.
+**Prevention**: Convert all values to string before scrubbing.
+**Ref**: sentry_pii_filter.dart
+
+#### [CONFIG] MANAGE_EXTERNAL_STORAGE prompts every launch (GitHub Issue #64)
+**Pattern**: Permission requested but not declared in manifest.
+**Prevention**: Never request undeclared permissions.
+**Ref**: main.dart:621-631
+
+#### [CONFIG] get_pending_requests RPC type mismatch (GitHub Issue #65)
+**Pattern**: varchar vs text type mismatch in RETURNS TABLE.
+**Prevention**: Cast columns with ::TEXT.
+**Ref**: supabase/migrations pending_requests_rpc.sql
+
+#### [CONFIG] OrphanScanner references missing column (GitHub Issue #66)
+**Pattern**: photos.company_id does not exist.
+**Prevention**: Verify column exists before querying.
+**Ref**: OrphanScanner
+
+### Sync (from _defects-sync.md)
+
+#### [SYNC] Unconditional change_log wipe (GitHub Issue #67)
+**Pattern**: Wipes change_log even when RPC fails.
+**Prevention**: Gate cleanup on server success.
+**Ref**: soft_delete_service.dart:132-143
+
+#### [SYNC] ConflictAlgorithm.ignore drops valid records (GitHub Issue #68)
+**Pattern**: Silently drops INSERTs on UNIQUE slot collision.
+**Prevention**: Fall back to UPDATE by PK when insert returns 0.
+**Ref**: sync_engine.dart:1530
+
+#### [SYNC] No retry_count filter infinite loop (GitHub Issue #69)
+**Pattern**: Failed entries retried indefinitely.
+**Prevention**: Filter by retry_count < max.
+**Ref**: change_tracker.dart:68
+
+#### [DATA] Child models missing project_id in toMap (GitHub Issue #70)
+**Pattern**: NULL project_id breaks RLS pull.
+**Prevention**: All synced child tables must include project_id.
+**Ref**: entry_quantity.dart, entry_contractors_local_datasource.dart
+
+#### [CONFIG] Seeded data invisible without project_assignments (GitHub Issue #71)
+**Pattern**: Missing assignment row prevents sync enrollment.
+**Prevention**: Always create project_assignments row when seeding.
+**Ref**: sync_engine.dart:1644
+
+#### [CONFIG] enforce_created_by nullifies service role inserts (GitHub Issue #72)
+**Pattern**: auth.uid() returns NULL for service role.
+**Prevention**: Authenticate as real user for seeding.
+**Ref**: supabase/migrations multi_tenant_foundation.sql:358
+
+### Sync Verification (from _defects-sync-verification.md)
+
+#### BUG-SV-1: Assignment uncheck does not persist (GitHub Issue #73)
+**Pattern**: Uncheck updates UI but does not write soft-delete.
+**Prevention**: Fix removal path in ProjectAssignmentProvider.save().
+**Ref**: project_assignment_provider.dart:118-154
+
+#### BUG-SV-2: Contractor card + personnel/equipment sync (GitHub Issue #74)
+**Pattern**: Done button does not collapse, sync_control suppresses triggers.
+**Prevention**: Remove sync_control wrapping, fix toMap().
+**Ref**: entry_personnel_counts_local_datasource.dart, entry_equipment.dart
+
+#### BUG-SV-3: Entry wizard layout mismatch (GitHub Issue #75)
+**Pattern**: Create mode has 3 sections, edit has 9.
+**Prevention**: Design decision needed.
+**Ref**: entry_editor_screen.dart:1064
+
+#### BUG-SV-4: Inspector sees unassigned projects locally (GitHub Issue #76)
+**Pattern**: Local SQLite query lacks assignment gate for inspector role.
+**Prevention**: Add project_assignments join for inspector queries.
+**Ref**: project_provider.dart:649-655
+
+#### BUG-SV-5: inject-photo-direct crashes (GitHub Issue #77)
+**Pattern**: img.decodeImage() returns null with no fallback.
+**Prevention**: Skip EXIF strip on decode failure.
+**Ref**: test_photo_service.dart:78-85
+
+#### RenderFlex overflows (GitHub Issue #78)
+**Pattern**: Layout overflows on contractor cards, entry report, PDF screens.
+**Prevention**: Use Flexible/Expanded wrappers.
+**Ref**: _defects-sync-verification.md
+
+#### Orphan cleaner skips admin sync cycle (GitHub Issue #79)
+**Pattern**: Projects adapter completion flag blocks orphan cleaner.
+**Prevention**: Wait for adapter completion.
+**Ref**: _defects-sync-verification.md
+
+#### Contractor cards redesign (GitHub Issue #80)
+**Pattern**: Project setup cards do not match entry wizard cards.
+**Prevention**: Extract shared contractor card component.
+**Ref**: _defects-sync-verification.md
+
+### Toolbox (from _defects-toolbox.md)
+
+#### [DATA] Legacy 0582B responses fail validation (GitHub Issue #81)
+**Pattern**: New required fields not present in legacy responses.
+**Prevention**: Add backfill or guided completion step.
+**Ref**: form_response_repository.dart:354
+
+#### [FLUTTER] Stale route restoration traps user (GitHub Issue #82)
+**Pattern**: Dynamic-ID routes restored to non-existent entities.
+**Prevention**: Allowlist static routes for persistence.
+**Ref**: main.dart:253
+
+#### [FLUTTER] Flutter Driver cannot interact with dialogs (GitHub Issue #83)
+**Pattern**: Dialog overlays invisible to Driver finders on Windows.
+**Prevention**: Guard dialogs with FLUTTER_DRIVER environment check.
+**Ref**: form_viewer_screen.dart:673
+
+### Tooling (from _defects-tooling.md)
+
+#### [CONFIG] Windows path normalization in lint rules (GitHub Issue #84)
+**Pattern**: Path checks fail on Windows backslashes.
+**Prevention**: Normalize paths with replaceAll.
+**Ref**: fg_lint_packages/field_guide_lints/
+
+#### [CONFIG] Grep checks catch lint source (GitHub Issue #85)
+**Pattern**: Lint rule files contain patterns they check for.
+**Prevention**: Exclude fg_lint_packages/ from grep checks.
+**Ref**: grep-checks.ps1
+
+#### [CONFIG] Destructive git checkout data loss (GitHub Issue #86)
+**Pattern**: git checkout -- wiped unstaged work.
+**Prevention**: Never use destructive git on directories.
+**Ref**: Session 699
+
+#### [CONFIG] PowerShell Set-Content destroys formatting (GitHub Issue #87)
+**Pattern**: Set-Content -NoNewline strips all newlines.
+**Prevention**: Never use PowerShell for mass file edits.
+**Ref**: Session 699
+
+#### [CONFIG] Uncommitted work across sessions (GitHub Issue #88)
+**Pattern**: 18 sessions without commits, no safety net.
+**Prevention**: Commit at end of every session.
+**Ref**: Session 699
+
+### Blockers (from _state.md)
+
+#### BLOCKER-28: SQLite Encryption (GitHub Issue #89)
+**Status**: OPEN - production readiness blocker
+**Ref**: .claude/autoload/_state.md
+
+#### BLOCKER-23: Flutter Keys (GitHub Issue #90)
+**Status**: OPEN - MEDIUM
+**Ref**: .claude/autoload/_state.md
+
+#### BLOCKER-34: Item 38 Superscript (GitHub Issue #91)
+**Status**: OPEN (parked, cosmetic)
+**Ref**: .claude/autoload/_state.md
+
+#### BLOCKER-36: Item 130 Whitewash (GitHub Issue #92)
+**Status**: OPEN (parked, cosmetic)
+**Ref**: .claude/autoload/_state.md
+
+#### BLOCKER-37: Agent Permissions (GitHub Issue #93)
+**Status**: MITIGATED
+**Ref**: .claude/autoload/_state.md

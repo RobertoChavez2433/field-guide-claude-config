@@ -4,20 +4,19 @@
 Located in `../autoload/`:
 - `_state.md` - Current 5 sessions (loaded every session via `/resume-session`)
 
-## Defects (Per-Feature)
-Located in `../defects/`:
-- `_defects-{feature}.md` - Per-feature defect tracking (13 files, max 5 per feature)
+## Defects
+Defect tracking uses **GitHub Issues** with structured labels:
+- **Feature**: bare name (e.g., `sync`, `pdf`, `auth`)
+- **Type**: bare name (e.g., `defect`, `blocker`, `security`, `cosmetic`)
+- **Priority**: bare name (e.g., `critical`, `high`, `medium`, `low`, `parked`)
+- **Layer**: colon format (e.g., `layer:data`, `layer:sync`, `layer:presentation`)
 
 ## Archives (Cold Storage)
 - `state-archive.md` - Sessions 193+, auto-rotated when >5 active in `_state.md`
-- `defects-archive.md` - Older/resolved defects, auto-rotated from per-feature files
+- `defects-archive.md` - Historical defects from pre-migration local tracking (no longer rotated; retained for historical context only)
 - `archive-index.md` - Navigation helper for quick lookup
 
 ## Rotation Rules
 1. When `_state.md` exceeds 5 sessions:
    - Move oldest entry to `state-archive.md`
    - Update `archive-index.md` with new line numbers
-
-2. When a per-feature defect file exceeds 5 entries:
-   - Move oldest/resolved entries to `defects-archive.md`
-   - Update `archive-index.md` with new counts
