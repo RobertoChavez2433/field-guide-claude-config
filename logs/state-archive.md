@@ -6,6 +6,21 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## April 2026
 
+### Session 721 (2026-04-02)
+**Work**: PR #123 — post-UI-refactor cleanup (93 files). AppTextField rollout (77 callsites), lint rule A24, dashboard card standardization, 18 golden tests.
+**Decisions**: Lint rules scan all `/lib/` not just `/presentation/`. Non-functional features removed entirely.
+**Next**: Fix open issues → visual QA of dashboard redesign.
+
+### Session 720 (2026-04-02)
+**Work**: Full UI refactor implementation (9 phases), branch separation, 92+4 lint violation fixes, PRs #101 (merged) and #102 (auto-merging).
+**Decisions**: AppDialog.showCustom added for complex dialogs. Mechanical wrapper swaps only — zero logic changes.
+**Next**: Fix open issues → visual QA of dashboard redesign.
+
+### Session 717 (2026-04-02)
+**Work**: Pushed Supabase migration. Started sync verification (S01). Discovered 3 pre-existing sync bugs (#96, #97, #98). Filed issues. Cleaned up test data.
+**Decisions**: Must fix sync bugs before verification can proceed. Log review is mandatory after every sync operation.
+**Next**: Fix #96-#98 → re-run sync verification S01-S11.
+
 ### Session 716 (2026-04-02)
 **Work**: Issue #8 full resolution (33 violations), CI workflow redesign (tee-based streaming), fixed all 3 pre-existing test failures. PR #94 merged.
 **Decisions**: app_initializer belongs in bootstrap/ not di/. CI should stream output via tee for CLI accessibility.
