@@ -12,17 +12,20 @@ flows directly via curl — no sub-agents, no orchestrator layer.
 
 ## HARD RULES — NEVER SKIP
 
-After **EVERY flow**, complete this checklist:
+### Per-Flow Checklist
 - [ ] Driver response checked (200 = pass, 404/408 = fail)
-- [ ] Logs scanned: `curl -s "http://127.0.0.1:3947/logs?since=<START>&level=error"`
-- [ ] Widget tree verified (for data-creation flows): `/driver/tree?filter=<expected>`
-- [ ] Sync waited + verified (for mutation flows)
-- [ ] `checkpoint.json` updated
-- [ ] `registry.md` Status + Last Run updated
+- [ ] Verify expected state after action (use `/driver/wait` or `/driver/find`, NOT sleep)
 
-After **EVERY tier**, additionally:
+### Per-Tier Checklist
+- [ ] Error log scan: `curl -s "http://127.0.0.1:3947/logs/errors?since=<TIER_START>"`
+- [ ] `checkpoint.json` updated with all flow results
 - [ ] `report.md` updated with tier results table
 - [ ] Screenshot review: only view screenshots for FAILED flows
+
+### Per-Run Outputs (only two files — no registry updates)
+- **`checkpoint.json`** — machine-readable state, updated per-tier
+- **`report.md`** — human-readable results, updated per-tier
+- Do NOT update `registry.md` during runs — it is a reference doc, not a run log
 
 ### HARD RULES — SYNC FLOWS
 
@@ -33,11 +36,131 @@ These rules are **non-negotiable** for S01-S11. Violating them wastes cycles and
 3. **After text entry on Android**, call `POST /driver/dismiss-keyboard` before tapping any buttons. The keyboard covers the bottom of the screen and taps return 200 but never reach the widget.
 4. **After every navigation tap**, verify arrival with `/driver/find?key=<sentinel>` where sentinel is a key known to exist on the target screen.
 5. **Read `lib/shared/testing_keys/*.dart` before each flow** — do not waste cycles querying `/driver/tree` for keys that are already documented.
-6. **Check debug server logs after every sync**: `curl -s "http://127.0.0.1:3947/logs?since=<START>&level=error"` AND `curl -s "http://127.0.0.1:3947/logs?since=<START>&category=sync"`.
+6. **Check debug server logs after every sync**: `curl -s "http://127.0.0.1:3947/logs/errors?since=<START>"` AND `curl -s "http://127.0.0.1:3947/logs?since=<START>&category=sync&format=text"`.
 7. **Toolbox sub-screens need TWO backs to reach dashboard** — Todos/Calculator/Gallery are inside Toolbox, which is itself a sub-screen of Dashboard. Press back once to reach Toolbox hub, again to reach Dashboard.
 
 ## Credentials
 `.claude/test-credentials.secret` — gitignored JSON with admin + inspector accounts.
+
+**WARNING: Special characters in passwords** — The `!` and `$` characters in credential values trigger bash history/variable expansion inside single-quoted curl `-d` strings. Always use `--data-raw` with escaped double quotes for credential fields:
+```bash
+# WRONG — ! triggers history expansion in bash
+curl -s -X POST http://127.0.0.1:4948/driver/text -d '{"key": "login_password_field", "text": "!T1esr11993"}'
+
+# CORRECT — --data-raw with escaped JSON
+curl -s -X POST http://127.0.0.1:4948/driver/text --data-raw "{\"key\": \"login_password_field\", \"text\": \"!T1esr11993\"}"
+```
+
+## Bash Tool Constraints
+
+### Variables Do NOT Persist Between Calls
+Each `Bash` tool invocation starts a **fresh shell**. Variables set in one call do not exist in the next.
+
+```bash
+# WRONG — ID is empty in the second Bash call
+# Call 1:
+TODO_ID="abc-123"
+# Call 2 (separate Bash invocation):
+curl -s -X POST .../tap -d "{\"key\":\"todo_checkbox_${TODO_ID}\"}"  # TODO_ID is empty!
+
+# CORRECT — inline the value, or chain in one call
+curl -s -X POST .../tap -d '{"key":"todo_checkbox_abc-123"}'
+
+# CORRECT — chain commands in one Bash call with &&
+TODO_ID="abc-123" && curl -s -X POST .../tap -d "{\"key\":\"todo_checkbox_${TODO_ID}\"}"
+```
+
+When you discover a dynamic ID (project UUID, entry UUID, todo UUID), either:
+1. **Inline it directly** in subsequent curl calls in the same Bash invocation
+2. **Chain all commands that need the ID** in a single `&&`-joined Bash call
+3. **Copy-paste the literal value** into the next Bash call — do not reference a variable from a prior call
+
+### Wait-Then-Act, Not Sleep-Then-Act
+**NEVER** use `sleep N` followed by an action hoping the UI is ready. **ALWAYS** use `/driver/wait` to confirm the target widget exists before interacting with it.
+
+```bash
+# WRONG — blind sleep, widget may not be ready
+curl -s -X POST .../tap -d '{"key":"add_button"}'
+sleep 1
+curl -s -X POST .../text -d '{"key":"name_field","text":"foo"}'
+
+# CORRECT — wait confirms widget exists before acting
+curl -s -X POST .../tap -d '{"key":"add_button"}'
+curl -s -X POST http://127.0.0.1:4948/driver/wait -d '{"key":"name_field","timeoutMs":5000}'
+curl -s -X POST .../text -d '{"key":"name_field","text":"foo"}'
+```
+
+The **only** acceptable `sleep` is `sleep 0.3` between rapid sequential text entries on the same screen (where all fields are already rendered).
+
+### Dialog Reopen Pattern
+After saving/closing a dialog, the UI needs a frame to rebuild before the same dialog can be reopened. Always verify the dialog closed, then verify the add button is ready, then verify the dialog reopened:
+
+```bash
+# Save first dialog
+curl -s -X POST .../tap -d '{"key":"dialog_save_button"}'
+# Wait for dialog to close — verify by checking a NON-dialog widget reappears
+curl -s -X POST http://127.0.0.1:4948/driver/wait -d '{"key":"add_button","timeoutMs":5000}'
+# Now reopen
+curl -s -X POST .../tap -d '{"key":"add_button"}'
+# Verify dialog opened
+curl -s -X POST http://127.0.0.1:4948/driver/wait -d '{"key":"dialog_name_field","timeoutMs":5000}'
+# Now safe to interact
+curl -s -X POST .../text -d '{"key":"dialog_name_field","text":"second item"}'
+```
+
+## Screen Identification — Sentinel Keys
+
+**Never rely on route alone to determine which screen is active.** go_router shell routes report the parent route — `/projects` could be the project list, project edit, or project create screen.
+
+Use **sentinel key checks** to identify the current screen:
+
+| Screen | Route Reports | Sentinel Key (exists = on this screen) |
+|--------|--------------|---------------------------------------|
+| Dashboard | `/` | `dashboard_new_entry_button` |
+| Calendar | `/calendar` | `calendar_prev_month` |
+| Project List | `/projects` | `project_create_button` + NO `project_save_button` |
+| Project Create/Edit | `/projects` | `project_save_button` + `project_locations_tab` |
+| Entry Editor | `/calendar` or `/` | `entry_editor_scroll` |
+| Settings | `/settings` | `settings_sync_button` |
+| Toolbox Hub | (nested) | `toolbox_home_screen` |
+| Todos | (nested) | `todos_screen` |
+| Calculator | (nested) | `calculator_screen` |
+| Admin Dashboard | (nested) | `settings_admin_dashboard_tile` absent, member tiles present |
+
+When confused about current state, check 2-3 sentinels — **do NOT take a screenshot**. Screenshots consume significant tokens and should be reserved for failure investigation only.
+
+### State Confusion Protocol
+If you are unsure what screen you're on:
+1. `curl -s http://127.0.0.1:4948/driver/current-route` — check route + `hasBottomNav` + `canPop`
+2. `curl -s "http://127.0.0.1:4948/driver/find?key=<sentinel>"` for 2-3 keys from the table above
+3. If still unclear, `curl -s "http://127.0.0.1:4948/driver/tree?depth=5"` — text-only, low cost
+4. **Only** view a screenshot as a last resort after all 3 above fail
+
+## Pre-Run Data Verification
+
+Before starting a `/test full` run, verify the app state is suitable for testing:
+
+### Check for Prior E2E Projects
+```bash
+curl -s "http://127.0.0.1:4948/driver/tree?depth=15" | python3 -c "
+import sys, json, re
+tree = json.load(sys.stdin).get('tree', '')
+cards = re.findall(r'project_card_[a-f0-9-]+', tree)
+print(f'Found {len(cards)} project cards')
+for c in cards: print(f'  {c}')
+"
+```
+
+### Decision Tree
+- **0 projects**: Clean slate — proceed with T05 (create fresh)
+- **E2E project exists from today**: Reuse it — skip T05, verify sub-entities exist, continue from first missing tier
+- **E2E project exists from prior day**: Create fresh with new timestamp — old project may have stale data
+
+### Verifying Freshness of Pre-Existing Data
+When an entity already exists (e.g., entry with contractors from a prior run), verify it's usable:
+1. Check the data is associated with the correct project (not a different E2E run)
+2. Confirm sub-entities match what the current tier expects (e.g., 2 locations, 2 contractors)
+3. Mark the flow as `PASS (pre-existing)` in the checkpoint — do NOT mark as `SKIP`
 
 ## Usage
 
@@ -150,10 +273,9 @@ Write `.claude/test_results/<run>/checkpoint.json` **after every flow**:
 
 ### Per-Flow Execution
 For each flow:
-1. Record start time: `pwsh -Command "Get-Date -Format 'yyyy-MM-ddTHH:mm:ssZ'"`
-2. Execute driver steps (curl commands — see HTTP Driver Endpoints below)
-3. `sleep 1` between navigation actions
-4. After data mutation, poll sync status (30s timeout):
+1. Record tier start time (once per tier, not per flow): `pwsh -Command "Get-Date -Format 'yyyy-MM-ddTHH:mm:ssZ'"`
+2. Execute driver steps — use `/driver/wait` to verify state transitions, NOT `sleep`
+3. After data mutation, poll sync status (30s timeout):
    ```bash
    for i in $(seq 1 30); do
      STATUS=$(curl -s http://127.0.0.1:3947/sync/status 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('state','unknown'))" 2>/dev/null || echo "error")
@@ -161,25 +283,38 @@ For each flow:
      sleep 1
    done
    ```
-5. Check logs: `curl -s "http://127.0.0.1:3947/logs?since=<START>&level=error"`
-6. Take screenshot: `curl -s http://127.0.0.1:4948/driver/screenshot --output "$RESULTS_DIR/<role>-<flow>.png"`
-7. Update `checkpoint.json`
-8. Update `.claude/test-flows/registry.md` (Status + Last Run)
+4. Take screenshot: `curl -s http://127.0.0.1:4948/driver/screenshot --output "$RESULTS_DIR/<role>-<flow>.png"`
 
-## Failure Detection (Without Viewing Screenshots)
+### Per-Tier Wrap-Up
+After all flows in a tier complete:
+1. Check for errors (one curl — no parsing needed):
+   ```bash
+   curl -s "http://127.0.0.1:3947/logs/errors?since=<TIER_START>"
+   ```
+2. Get log summary for the report:
+   ```bash
+   curl -s "http://127.0.0.1:3947/logs/summary?since=<TIER_START>"
+   ```
+3. Update `checkpoint.json` with all flow results
+4. Update `report.md` with tier results table
 
-Use these signals — do NOT view screenshots inline unless failure is detected:
+## Failure Detection
+
+Use these signals to detect failures **without viewing screenshots**:
 
 | Signal | Meaning | Action |
 |--------|---------|--------|
 | Driver returns 404 | Widget not found | Record missing key, FAIL flow |
 | Driver returns 408 | Wait timeout | FAIL flow |
-| `/logs?level=error` has entries | Runtime error | FAIL flow, log the error |
-| `/driver/tree?filter=<text>` missing | Expected data absent | FAIL flow |
+| `/logs/errors` shows new errors | Runtime error | FAIL flow, log the error |
 | `/driver/find?key=X` → `exists: false` | Widget doesn't exist | FAIL flow |
 | Sync doesn't reach idle in 30s | Sync failure | Capture `/sync/status`, FAIL flow |
 
-**Screenshots**: Save to disk ALWAYS. View ONLY when a failure signal is detected.
+### Screenshot Rules
+- **Save to disk**: ALWAYS, after every flow (`curl --output`)
+- **View inline**: ONLY when a failure signal above is detected
+- **State confusion is NOT a failure** — use sentinel key checks (see "Screen Identification"), not screenshots
+- Each inline screenshot view costs significant context tokens — prefer `/driver/find` checks which are free
 
 ## Compaction Protocol (Every 2 Tiers)
 
@@ -229,7 +364,57 @@ Inspector-specific flows: T85-T91 (Role Verification tier).
 1. Sign out: `settings_nav_button` → `settings_sign_out_tile` → `sign_out_confirm_button`
 2. Wait for `login_screen`
 3. Log in with target role credentials
-4. Update `checkpoint.json` with new `current_role`
+4. Run post-login normalization (see below)
+5. Update `checkpoint.json` with new `current_role`
+
+### Post-Login State Normalization
+
+After every login (initial or role switch), the app may land on intermediate screens before the dashboard is usable. **Always run these checks after login:**
+
+**Step 1: Handle consent screen** — The consent/ToS screen appears after sign-out + re-login or on first launch. Check and handle:
+```bash
+ROUTE=$(curl -s http://127.0.0.1:4948/driver/current-route | python3 -c "import sys,json; print(json.load(sys.stdin).get('route',''))")
+if [ "$ROUTE" = "/consent" ]; then
+  # Scroll to bottom to enable accept button
+  for i in $(seq 1 10); do
+    curl -s -X POST http://127.0.0.1:4948/driver/scroll -d '{"key":"consent_scroll_view","dx":0,"dy":-500}'
+    sleep 0.3
+  done
+  sleep 0.5
+  curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"consent_accept_button"}'
+  curl -s -X POST http://127.0.0.1:4948/driver/wait -d '{"key":"dashboard_nav_button","timeoutMs":10000}'
+fi
+```
+
+**Step 2: Verify project selected** — The dashboard requires an active project. If no project is selected, the "New Entry" button won't appear:
+```bash
+EXISTS=$(curl -s "http://127.0.0.1:4948/driver/find?key=dashboard_new_entry_button" | python3 -c "import sys,json; print(json.load(sys.stdin).get('exists',False))")
+if [ "$EXISTS" = "False" ]; then
+  # Navigate to projects, select first available
+  curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"projects_nav_button"}'
+  sleep 1
+  # Find and tap first project card (use tree search)
+  CARD=$(curl -s "http://127.0.0.1:4948/driver/tree?depth=15" | python3 -c "
+import sys, json
+tree = json.load(sys.stdin).get('tree','')
+for line in tree.split('\n'):
+    if 'project_card_' in line:
+        import re
+        m = re.search(r\"project_card_[a-f0-9-]+\", line)
+        if m: print(m.group(0)); break
+")
+  if [ -n "$CARD" ]; then
+    curl -s -X POST http://127.0.0.1:4948/driver/tap -d "{\"key\":\"$CARD\"}"
+    sleep 1
+    curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"dashboard_nav_button"}'
+  fi
+fi
+```
+
+**Step 3: Dismiss overlays** — Clear any stale snackbars or banners:
+```bash
+curl -s -X POST http://127.0.0.1:4948/driver/dismiss-overlays -d '{}'
+```
 
 ## Report Format
 
@@ -336,6 +521,81 @@ curl -s -X POST http://127.0.0.1:4948/driver/scroll -d '{"key":"entry_editor_scr
 ```bash
 curl -s -X POST http://127.0.0.1:4948/driver/scroll-to-key -d '{"scrollable":"entry_editor_scroll","target":"entry_wizard_save_draft","maxScrolls":10}'
 ```
+
+## Debug Server Endpoints (port 3947)
+
+The debug server provides structured log collection and querying. Use the right endpoint for the job — **prefer the plain-text convenience endpoints** which require zero parsing.
+
+### Quick Reference — Which Endpoint to Use
+
+| Task | Endpoint | Output |
+|------|----------|--------|
+| **"Any errors since tier started?"** | `GET /logs/errors?since=<ISO>` | Plain text, deduplicated |
+| **"Show me recent log activity"** | `GET /logs?format=text&last=20` | Plain text, formatted |
+| **"Checkpoint stats for report"** | `GET /logs/summary?since=<ISO>` | JSON: `{total, errors, byLevel, byCategory}` |
+| **"Sync logs only"** | `GET /logs?category=sync&format=text&since=<ISO>` | Plain text, filtered |
+| **"Need structured data"** | `GET /logs?format=json&level=error` | JSON array (standard) |
+| **"Raw streaming (30K entries)"** | `GET /logs?last=N` | NDJSON (default, legacy) |
+| **"Is sync done?"** | `GET /sync/status` | JSON: `{state, ...}` |
+| **"Server alive?"** | `GET /health` | JSON: `{status, entries, ...}` |
+
+### /logs/errors (primary testing endpoint)
+Returns error-level logs as pre-formatted, deduplicated plain text. **This is the main endpoint to use after every tier.**
+
+```bash
+# One curl, no parsing, done.
+curl -s "http://127.0.0.1:3947/logs/errors?since=2026-04-03T10:00:00Z"
+# Output:
+# OK: 0 errors
+# — or —
+# ERRORS: 2 unique (5 total)
+#   10:05:12 [sync  ] pullCompanyMembers failed: no such column: deleted_at
+#   10:05:12 [app   ] SchemaVerifier: 1 missing columns detected
+```
+
+### /logs/summary (checkpoint reporting)
+Returns counts by level and category. Useful for writing the stats line in `report.md`.
+
+```bash
+curl -s "http://127.0.0.1:3947/logs/summary?since=2026-04-03T10:00:00Z"
+# {"total":47,"byLevel":{"info":44,"error":3},"byCategory":{"sync":20,"nav":15,"db":12},"errors":3,"since":"2026-04-03T10:00:00Z"}
+```
+
+### /logs?format=text (human-readable activity)
+Returns all matching logs as formatted plain text lines. Good for debugging a specific flow.
+
+```bash
+curl -s "http://127.0.0.1:3947/logs?format=text&category=sync&last=10"
+# 10:05:12 INFO  sync   Sync started
+# 10:05:14 ERROR sync   pullCompanyMembers failed: no such column: deleted_at
+# 10:05:15 INFO  sync   Sync cycle: pushed=0 pulled=0 errors=1
+```
+
+### /logs?format=json (structured data)
+Returns a standard JSON array. Use when you need to programmatically inspect log entries.
+
+```bash
+curl -s "http://127.0.0.1:3947/logs?format=json&level=error&last=5"
+# Standard JSON array — use json.load(sys.stdin) safely
+```
+
+### /logs (default — NDJSON)
+Legacy format. Returns newline-delimited JSON. **Prefer `?format=text` or `?format=json` instead** — they avoid the python parsing boilerplate that NDJSON requires.
+
+### Filter parameters (apply to all /logs variants)
+| Parameter | Type | Behavior |
+|-----------|------|----------|
+| `category` | string | Exact match: `sync`, `nav`, `db`, `auth`, `ui`, `pdf`, `ocr` |
+| `level` | string | Exact match: `info`, `error`, `hypothesis` |
+| `since` | ISO 8601 | Entries received after this timestamp |
+| `last` | integer | Return only last N entries (applied after other filters) |
+| `hypothesis` | string | Exact match on hypothesis tag (e.g., `H001`) |
+| `deviceId` | string | Exact match on device ID |
+| `format` | string | Output format: `text`, `json`, or omit for NDJSON |
+
+### Hot restart log delay
+
+After `POST /driver/hot-restart`, the Logger HTTP transport takes 3-5 seconds to reconnect. **Do not assume the transport is broken if logs are empty immediately after restart.** Trigger a UI action (e.g., tap a nav button) and check for log entries before investigating further.
 
 ## Flow Dependencies
 
@@ -477,8 +737,8 @@ Always use `POST /driver/back` twice, or tap `dashboard_nav_button` to return to
 4. As last resort, use `/driver/tree?filter=<partial>` to discover the actual key
 
 ### Sync appears to fail
-1. Check debug server logs: `curl -s "http://127.0.0.1:3947/logs?since=<START>&category=sync"`
-2. Check for error-level logs: `curl -s "http://127.0.0.1:3947/logs?since=<START>&level=error"`
+1. Check sync logs: `curl -s "http://127.0.0.1:3947/logs?category=sync&format=text&last=10"`
+2. Check for errors: `curl -s "http://127.0.0.1:3947/logs/errors?since=<START>"`
 3. Dismiss any error snackbars: `POST /driver/dismiss-overlays`
 4. Retry sync via UI (settings_nav_button → settings_sync_button)
 5. If still failing, take screenshot and record as bug
@@ -514,7 +774,8 @@ Always use `POST /driver/back` twice, or tap `dashboard_nav_button` to return to
 | `project_remove_<id>` | Delete project (triggers two-step confirmation) |
 
 ## Windows Bash Constraints
-- **NO `jq`** — use `python3 -c "import json..."` for JSON parsing
+- **NO `jq`** — use `python3 -c "import json..."` for JSON parsing (but prefer `?format=text` endpoints which need no parsing)
 - **NO multi-line heredocs with curl**
 - **ALWAYS `pwsh -Command "..."`** for PowerShell
-- Special chars (`!`, `$`) in curl JSON: use double-quoted -d flag
+- **Special chars (`!`, `$`) in curl JSON** — see Credentials section for `--data-raw` pattern. Applies to ALL curl calls with user-supplied text, not just credentials.
+- **Bash variables don't persist between Bash tool calls** — see "Bash Tool Constraints" section
