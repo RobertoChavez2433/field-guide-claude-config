@@ -1,0 +1,210 @@
+# Construction Inspector App
+
+Cross-platform mobile/desktop app for construction inspectors. Offline-first with cloud sync.
+
+**HARD CONSTRAINT: Security is non-negotiable. No shortcuts that bypass approval flows, weaken RLS, or create privilege escalation paths.**
+
+## App Identity
+| Property | Value |
+|----------|-------|
+| Package name | `construction_inspector` |
+| App ID | `com.fieldguideapp.inspector` |
+| Version | `0.1.2+3` |
+| Dart SDK | `^3.10.7` |
+| Flutter (CI-pinned) | `3.38.9` |
+| Android | minSdk 31 / targetSdk 36 / compileSdk 36 |
+| iOS | deployment target 13.0 |
+
+## Project Structure
+```
+lib/
+├── core/
+│   ├── analytics/       # Analytics barrel
+│   ├── bootstrap/       # 8-phase app initialization (AppInitializer, CoreServices, etc.)
+│   ├── config/          # Supabase, Sentry, test mode, app terminology
+│   ├── database/        # SQLite schema (v50, 35 tables) + schema verifier
+│   │   └── schema/      # 16 domain-organized schema files
+│   ├── design_system/   # 23 reusable app components (AppScaffold, AppDialog, AppText, etc.)
+│   ├── di/              # DI root (AppBootstrap, AppProviders, AppDependencies)
+│   ├── driver/          # HTTP test driver infrastructure (8 files)
+│   ├── logging/         # Logger + route observer
+│   ├── router/          # go_router setup + 7 route files
+│   └── theme/           # Theme data, DesignConstants, FieldGuideColors
+├── shared/
+│   ├── datasources/     # Base local/remote datasource classes
+│   ├── domain/          # Shared domain barrel
+│   ├── models/          # Shared models (PagedResult)
+│   ├── providers/       # Base ChangeNotifier providers (BaseListProvider, PagedListProvider)
+│   ├── repositories/    # Base repository class
+│   ├── services/        # PreferencesService
+│   ├── testing_keys/    # 16 widget test key files organized by feature
+│   ├── utils/           # Date, enum, string, math, navigation, snackbar utilities
+│   ├── validation/      # Reusable validators
+│   └── widgets/         # Shared UI widgets (empty state, permission dialog, etc.)
+├── features/            # 17 features (see Feature Inventory below)
+└── services/            # Cross-cutting: document, image, permission, photo, soft_delete, startup_cleanup
+```
+
+### Feature Inventory
+| Feature | Layers | Notes |
+|---------|--------|-------|
+| auth | data, domain, presentation, di, services | Full stack + auth_service, password_validator |
+| calculator | data, domain, presentation, di | Standard 4-layer |
+| contractors | data, domain, presentation, di | 6 local datasources, 5 remote, 6 models |
+| dashboard | domain, presentation | Presentation-heavy, no data layer |
+| entries | data, domain, presentation, di | Largest presentation: controllers, report_widgets, 9 use cases |
+| forms | data, domain, presentation, di | Complex data: registries (11 files), validators, pdf, services (7) |
+| gallery | domain, presentation, di | Thin: provider + screen only |
+| locations | data, domain, presentation, di | Standard 4-layer |
+| pdf | data, domain, presentation, di, services | Heaviest services: extraction/ (50+ files), OCR pipeline |
+| photos | data, domain, presentation, di | Standard 4-layer |
+| projects | data, domain, presentation, di | project_lifecycle_service, 4 use cases, 15 widgets |
+| quantities | data, domain, presentation, di, utils | Standard + budget_sanity_checker |
+| settings | data, domain, presentation, di | 6 repositories, consent/support, 9 screens |
+| sync | data, domain, presentation, di, application, engine, adapters, config | Most complex: 65+ files, 22 adapters, SyncMode, DirtyScopeTracker |
+| todos | data, domain, presentation, di | Standard 4-layer, minimal |
+| toolbox | domain, presentation | Hub for calculator/forms/gallery/todos |
+| weather | domain, presentation, di, services | No data layer, weather_service |
+
+## Key Files
+| File | Purpose |
+|------|---------|
+| `lib/main.dart` | Production entry point (Sentry, zone-guarded bootstrap) |
+| `lib/main_driver.dart` | Test/driver entry point (HTTP driver server) |
+| `lib/core/di/app_providers.dart` | All providers composed in tier order (Tier 0-5) |
+| `lib/core/bootstrap/app_initializer.dart` | Phased dependency creation and auth listener |
+| `lib/core/router/app_router.dart` | go_router routes (shell + full-screen) |
+| `lib/core/database/database_service.dart` | SQLite schema v50, 35 tables |
+| `lib/core/design_system/` | 23 app-level UI components |
+| `lib/features/sync/` | 5-layer sync system (see Sync Architecture) |
+
+## Data Flow
+```
+Screen -> Provider -> UseCase -> Repository -> Datasource -> SQLite (local) -> Supabase (sync)
+```
+- **Providers**: `ChangeNotifier` via `provider` package (52 providers, sole state management)
+- **Repositories**: Abstract interfaces in `domain/repositories/`, implementations in `data/repositories/`
+- **Datasources**: `GenericLocalDatasource<T>` (SQLite), `BaseRemoteDatasource<T>` (Supabase)
+- **Sync**: SQLite triggers auto-populate `change_log` — no per-row `sync_status` field
+
+## Sync Architecture
+```
+Presentation: SyncProvider, SyncDashboardScreen, ConflictViewerScreen
+Application:  SyncOrchestrator, SyncLifecycleManager, BackgroundSyncHandler, FcmHandler, RealtimeHintHandler
+Engine:       SyncEngine, ChangeTracker, ConflictResolver, IntegrityChecker, DirtyScopeTracker, SyncMutex
+Adapters:     22 TableAdapter subclasses (one per syncable entity, declare FK ordering + scope type)
+Domain/Data:  SyncResult, SyncMode (full/quick/maintenance), DirtyScope model
+```
+
+## Analyzer Error Fixes — Hard Rules
+1. **NEVER add `// ignore:` or `// ignore_for_file:` comments.** Zero exceptions. Fix the code.
+2. **NEVER suppress, disable, or relax lint rules** in `analysis_options.yaml` to reduce error count.
+3. **NEVER cast to `dynamic`** or use `as Object` to silence type errors.
+4. **NEVER widen a type** (e.g. `String` -> `String?`, `int` -> `num`) just to silence an error.
+5. **Every fix must compile AND preserve behavior.** If unsure what the code does, read it first.
+6. **If a fix requires changing >1 file's public API**, stop and explain the approach before proceeding.
+
+## Custom Lint Package
+`fg_lint_packages/field_guide_lints/` — 35+ rules in 4 categories:
+
+| Category | Count | Examples |
+|----------|-------|---------|
+| Architecture | ~13 | no Supabase singleton, no raw SQL in presentation/DI, no service construction in widgets |
+| Data Safety | ~8 | unguarded firstWhere, path traversal guard, soft delete filter, toMap completeness |
+| Sync Integrity | ~10 | change_log cleanup guards, conflict algorithm safety, sync time success-only |
+| Test Quality | ~7 | no hardcoded keys, no ignore-for-file, no skip without issue ref |
+
+## CI/CD
+3 workflows in `.github/workflows/`:
+
+| Workflow | Jobs | Purpose |
+|----------|------|---------|
+| `quality-gate.yml` | Analyze+Test, Architecture Validation, Security Scan | Main pipeline (push + PR) |
+| `stale-branches.yml` | 1 | Auto-delete merged branches |
+| `labeler.yml` | 1 | Auto-label PRs |
+
+## Database
+- **Engine**: sqflite (mobile) + sqflite_common_ffi (desktop)
+- **Schema version**: 50
+- **Tables**: 35 (core 5, entries 3, contractors 2, personnel 2, quantities 2, photos 1, documents 1, toolbox 4, exports 2, consent 1, support 1, sync 8, extraction 2)
+- **Supabase**: 53 migrations, 1 edge function (`daily-sync-push`), Postgres 17, Realtime enabled
+
+## Domain Rules (lazy-loaded via paths: frontmatter)
+| Rule | Loads When |
+|------|------------|
+| `rules/architecture.md` | Any lib/**/*.dart |
+| `rules/platform-standards.md` | Android/iOS config files |
+| `rules/frontend/flutter-ui.md` | lib/**/presentation/** |
+| `rules/frontend/ui-prototyping.md` | lib/**/presentation/screens/** |
+| `rules/backend/data-layer.md` | lib/**/data/** |
+| `rules/backend/supabase-sql.md` | Supabase work |
+| `rules/auth/supabase-auth.md` | lib/features/auth/** |
+| `rules/pdf/pdf-generation.md` | lib/features/pdf/** |
+| `rules/sync/sync-patterns.md` | lib/features/sync/** |
+| `rules/database/schema-patterns.md` | lib/core/database/** |
+| `rules/testing/patrol-testing.md` | test/**, integration_test/** |
+
+## Quick Reference Commands
+
+**CRITICAL**: Git Bash silently fails on Flutter. ALWAYS use pwsh wrapper.
+
+### Build & Run
+1. `pwsh -File tools/build.ps1 -Platform android` — Release APK
+2. `pwsh -File tools/build.ps1 -Platform windows` — Windows build
+3. `pwsh -File tools/build.ps1 -Platform android -BuildType debug` — Debug APK
+4. `pwsh -Command "flutter run -d windows"` — Desktop dev
+
+### Testing & Diagnostics
+5. `pwsh -Command "flutter test"` — All tests
+6. `pwsh -Command "flutter pub get"` — Get dependencies
+7. `pwsh -Command "flutter analyze"` — Static analysis
+
+### Supabase CLI
+8. `npx supabase db push` — Push pending migrations to remote
+9. `npx supabase db pull` — Pull remote schema changes
+10. `npx supabase db diff` — Diff local vs remote schema
+
+### Process Management
+11. `pwsh -Command "Stop-Process -Name 'construction_inspector' -Force -ErrorAction SilentlyContinue"` — Kill app ONLY
+
+### Common Mistakes
+- NEVER run flutter/dart directly in Git Bash — ALWAYS use `pwsh -Command "..."`
+- NEVER use wc, sed, awk, grep as Bash — use Read/Edit/Grep tools instead
+- ALWAYS use `-ErrorAction SilentlyContinue` on Stop-Process
+- ALWAYS set `timeout: 600000` on `flutter run` commands (default 120s too short)
+- ALWAYS quote paths with spaces
+- **NEVER run `Stop-Process -Name 'dart'`** — kills MCP servers. Only kill `construction_inspector`.
+
+## Session & Workflow
+- `/resume-session` — Load HOT context | `/end-session` — Save state with auto-archiving
+- State: `.claude/autoload/_state.md` | Defects: GitHub Issues (labeled by feature/type/priority/layer)
+- Git: Feature branches only, never commit to main. `gh pr create` / `gh pr merge --squash`
+- Planning pipeline: `brainstorming` (spec) -> `tailor` (research) -> `writing-plans` (plan) -> `implement` (execute)
+- **Sizing guide:** XS (single-file mechanical) = no skill needed | S (up to 3 files, known pattern) = skip brainstorming + tailor + writing-plans | M+ = full pipeline. Security-sensitive changes (auth, RLS, sync, data exposure) always require full pipeline regardless of size.
+
+## Pointers (on-demand, NOT auto-loaded)
+| What | Where |
+|------|-------|
+| Agents (14 definitions) | `.claude/agents/` — loaded via skills: frontmatter |
+| Skills (12 definitions) | `.claude/skills/` — loaded on-demand by agents or user |
+| Directory structure | `.claude/docs/directory-reference.md` |
+| Platform requirements | `.claude/rules/platform-standards.md` |
+| UI prototyping workflow | `.claude/rules/frontend/ui-prototyping.md` |
+| Testing setup & harnesses | `.claude/rules/testing/patrol-testing.md` |
+| Detailed project knowledge | `.claude/memory/MEMORY.md` |
+| Archives | `.claude/logs/state-archive.md` | |
+
+## Repositories
+| Repo | URL |
+|------|-----|
+| App Code | https://github.com/Field-Guide/construction-inspector-tracking-app |
+| Claude Config | https://github.com/Field-Guide/field-guide-claude-config |
+| CodeMunch Fork | https://github.com/RobertoChavez2433/dart_tree_sitter_fork |
+
+`.claude/` is gitignored from app repo and tracked separately.
+
+## Context Efficiency
+- **Prefer parallel Agent calls** over `run_in_background`.
+- Cap **Explore agents at 3 per session**. Only spawn subagents for 5+ tool-call tasks.
+- Don't echo back file contents already in context. Prefer file:line references over code blocks.
+- Summarize subagent results in 3-5 bullets, not full output.

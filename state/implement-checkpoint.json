@@ -1,85 +1,385 @@
 {
   "plan": ".claude/plans/2026-04-03-idr-pdf-mapping-and-location-activities.md",
   "dispatch_groups": [
-    {"phases": [1, 2], "status": "pending", "test_gate": "pending"},
-    {"phases": [3, 4], "status": "pending", "test_gate": "pending"},
-    {"phases": [5], "status": "pending", "test_gate": "pending"},
-    {"phases": [6, 7], "status": "pending", "test_gate": "pending"}
+    {
+      "phases": [
+        1
+      ],
+      "status": "done",
+      "test_gate": "skipped-expected-errors"
+    },
+    {
+      "phases": [
+        2
+      ],
+      "status": "done",
+      "test_gate": "pass-data-domain-only"
+    },
+    {
+      "phases": [
+        3,
+        4
+      ],
+      "status": "done",
+      "test_gate": "pass-lib-only"
+    },
+    {
+      "phases": [
+        5
+      ],
+      "status": "done",
+      "test_gate": "pass-analyze-only"
+    },
+    {
+      "phases": [
+        6,
+        7
+      ],
+      "status": "done",
+      "test_gate": "pass-zero-issues"
+    }
   ],
   "phases": [
     {
-      "name": "Phase 1: Data Model — Remove locationId from DailyEntry",
-      "status": "pending",
+      "name": "Phase 1: Data Model â€” Remove locationId from DailyEntry",
+      "status": "done",
       "reviews": {
-        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
-        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
-        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      },
+      "substeps": {
+        "1.1": "done"
       }
     },
     {
       "name": "Phase 2: Data & Domain Layer Cleanup",
-      "status": "pending",
+      "status": "done",
       "reviews": {
-        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
-        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
-        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 1,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 1,
+          "fix_cycles": 1
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      },
+      "substeps": {
+        "2.1": "done",
+        "2.2": "done",
+        "2.3": "done",
+        "2.4": "done",
+        "2.5": "done"
       }
     },
     {
-      "name": "Phase 3: EntryEditingController — Per-Location Activities",
-      "status": "pending",
+      "name": "Phase 3: EntryEditingController â€” Per-Location Activities",
+      "status": "done",
       "reviews": {
-        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
-        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
-        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 1,
+          "tests_verified": false
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 1
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 1
+        }
+      },
+      "substeps": {
+        "3.1": "done",
+        "3.2": "done",
+        "3.3": "done"
       }
     },
     {
       "name": "Phase 4: UI Components",
-      "status": "pending",
+      "status": "done",
       "reviews": {
-        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
-        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
-        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 1,
+          "tests_verified": false
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 1
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 1
+        }
+      },
+      "substeps": {
+        "4.1": "done",
+        "4.2": "done",
+        "4.3": "done",
+        "4.4": "done",
+        "4.5": "done",
+        "4.6": "done"
       }
     },
     {
       "name": "Phase 5: PDF Mapping Rebuild",
-      "status": "pending",
+      "status": "done",
       "reviews": {
-        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
-        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
-        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 1
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 1
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 1
+        }
+      },
+      "substeps": {
+        "5.1": "done",
+        "5.2": "done",
+        "5.3": "done",
+        "5.4": "done",
+        "5.5": "done"
       }
     },
     {
       "name": "Phase 6: Verification Tooling & Tests",
-      "status": "pending",
+      "status": "done",
       "reviews": {
-        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
-        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
-        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0,
+          "tests_verified": false
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      },
+      "substeps": {
+        "6.1": "done",
+        "6.2": "done",
+        "6.3": "done",
+        "6.3b": "done",
+        "6.4": "done",
+        "6.5": "done",
+        "6.6": "done"
       }
     },
     {
       "name": "Phase 7: Final Cleanup",
-      "status": "pending",
+      "status": "done",
       "reviews": {
-        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
-        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
-        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0,
+          "tests_verified": false
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      },
+      "substeps": {
+        "7.1": "done",
+        "7.2": "done"
       }
     }
   ],
-  "modified_files": [],
-  "build": "pending",
-  "analyze_and_test": "pending",
+  "modified_files": [
+    "lib/features/entries/data/models/daily_entry.dart",
+    "lib/features/entries/domain/repositories/daily_entry_repository.dart",
+    "lib/features/entries/data/repositories/daily_entry_repository.dart",
+    "lib/features/entries/data/datasources/local/daily_entry_local_datasource.dart",
+    "lib/features/entries/data/datasources/remote/daily_entry_remote_datasource.dart",
+    "lib/features/entries/domain/usecases/filter_entries_use_case.dart",
+    "lib/features/entries/presentation/providers/daily_entry_provider.dart",
+    "lib/features/sync/adapters/daily_entry_adapter.dart",
+    "lib/features/entries/presentation/controllers/entry_editing_controller.dart",
+    "lib/features/entries/presentation/widgets/entry_activities_section.dart",
+    "lib/features/entries/presentation/widgets/draft_entry_tile.dart",
+    "lib/features/entries/presentation/widgets/widgets.dart",
+    "lib/features/entries/presentation/screens/entry_editor_screen.dart",
+    "lib/features/entries/presentation/screens/home_screen.dart",
+    "lib/features/entries/presentation/screens/entries_list_screen.dart",
+    "lib/features/entries/presentation/screens/drafts_list_screen.dart",
+    "lib/features/entries/presentation/screens/entry_review_screen.dart",
+    "lib/features/entries/presentation/screens/review_summary_screen.dart",
+    "lib/core/router/routes/entry_routes.dart",
+    "lib/core/driver/flow_registry.dart",
+    "lib/core/driver/screen_registry.dart",
+    "lib/core/driver/harness_seed_data.dart",
+    "lib/shared/testing_keys/entries_keys.dart",
+    "lib/shared/testing_keys/testing_keys.dart",
+    "lib/features/pdf/services/pdf_service.dart",
+    "lib/features/entries/presentation/controllers/pdf_data_builder.dart",
+    "tools/verify_idr_mapping.py",
+    "test/services/pdf_field_mapping_test.dart",
+    "test/features/entries/presentation/controllers/activities_serialization_test.dart",
+    "test/features/pdf/services/pdf_formatting_helpers_test.dart",
+    "test/helpers/test_helpers.dart",
+    "test/data/models/daily_entry_test.dart",
+    "test/data/repositories/daily_entry_repository_test.dart",
+    "test/helpers/mocks/mock_repositories.dart",
+    "test/presentation/providers/daily_entry_provider_test.dart",
+    "test/services/pdf_service_test.dart",
+    "test/features/entries/presentation/widgets/entry_forms_section_test.dart",
+    "test/features/entries/presentation/screens/entry_editor_screen_test.dart",
+    "test/features/entries/presentation/screens/entry_editor_report_test.dart",
+    "test/features/gallery/presentation/screens/gallery_screen_test.dart",
+    "test/features/entries/presentation/providers/daily_entry_provider_filter_test.dart",
+    "test/features/entries/domain/usecases/filter_entries_use_case_test.dart",
+    "test/helpers/mock_database.dart"
+  ],
+  "build": "pass",
+  "analyze_and_test": "pass-analyze-zero-issues",
   "integration_reviews": {
-    "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
-    "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
-    "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
+    "completeness": {
+      "status": "pending",
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "fix_cycles": 0
+    },
+    "code_review": {
+      "status": "pending",
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "fix_cycles": 0
+    },
+    "security": {
+      "status": "pending",
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "fix_cycles": 0
+    }
   },
-  "decisions": [],
+  "decisions": [
+    "Phase 4: Deleted entry_basics_section.dart (confirmed unused dead code)"
+  ],
   "fix_attempts": [],
-  "blocked": []
+  "blocked": [],
+  "deleted_files": [
+    "lib/features/entries/presentation/widgets/entry_basics_section.dart"
+  ]
 }
