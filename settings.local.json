@@ -28,7 +28,8 @@
       "WebFetch(domain:api.anthropic.com)",
       "mcp__jcodemunch__*",
       "mcp__html-sync__*",
-      "mcp__plugin_context7_context7__*"
+      "mcp__plugin_context7_context7__*",
+      "WebFetch(domain:dcm.dev)"
     ]
   },
   "enableAllProjectMcpServers": true,
