@@ -1,47 +1,45 @@
 # Session State
 
-**Last Updated**: 2026-04-04 | **Session**: 731
+**Last Updated**: 2026-04-04 | **Session**: 732
 
 ## Current Phase
-- **Phase**: CLAUDE.md + 11 rule files overhauled. All numbers verified against codebase. Three plans still ready for /implement.
-- **Status**: Clean tree on `codex/reimplement-entry-ui-continuity` branch. Claude config changes committed and pushed.
+- **Phase**: Analyzer Zero — 1054 remaining violations after dart fix. Full 6-phase plan written, reviewed (3 adversarial cycles), and ready for /implement.
+- **Status**: On `fix/analyzer-zero` branch. dart fix --apply committed. Plan at `.claude/plans/2026-04-04-analyzer-zero.md`.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (731)
+### What Was Done This Session (732)
 
-1. **CLAUDE.md + 11 rule files overhauled**:
-   - CodeMunch indexed (9593 symbols), 6 verification agents, 11 implementation agents, 3 review agents
-   - Fixed 10 incorrect numbers in CLAUDE.md (tables 35→36, providers 52→~32, migrations 53→57, lint rules 35+→52, etc.)
-   - Added Gotchas section (10 cross-cutting one-liners that prevent AI mistakes)
-   - Added 7 pointer rows (flusseract, HTTP driver, debug server, scripts, rollbacks, golden tests, audit)
-   - Cut Analyzer Error Fixes section, consolidated lint table, removed Feature Inventory Notes column
-   - Updated repo URLs to Field-Guide org
-   - Rule files updated: architecture (v50, tiers, DI containers, AppTerminology), schema-patterns (v50×4, PRAGMA, helpers, SchemaVerifier), sync-patterns (5 missing classes, DirtyScopeTracker, SyncMode, SyncConfig, trigger suppression, file tree), flutter-ui (24 components, A18-A24, actionsBuilder, pop-before-signOut), supabase-sql (RLS to get_my_company_id, edge function, Postgres 17), supabase-auth (PasswordValidator, AuthDeps, use cases, auth listener), patrol-testing (HTTP driver, Patrol demoted, golden tests, CI-first, 4-tier strategy), platform-standards (minSdk 31, Gradle 8.13, iOS 13.0, Patrol removed), data-layer (v50, auto-filter, SchemaVerifier, _addColumnIfNotExists), pdf-generation (extraction structure, QualityThresholds, flusseract)
-   - Personal final review caught 4 issues agents missed (repo URLs, ui-prototyping trigger, audit pointer, lint category counts)
+1. **Analyzed 2268 analyzer violations** from new lint rules (analysis_options.yaml tiers 1-5):
+   - All violations are built-in Dart rules, zero from custom lint rules
+   - 6 research agents analyzed patterns systemically (cast_nullable, catches, futures, dynamic calls, equals/hashcode, runtimeType)
+   - Distribution: 72% lib/, 23% test/, 5% integration_test/. PDF feature = 29% of all.
 
-### What Was Done Session 730
+2. **Track 1 — dart fix --apply**: Eliminated 1214 violations (54%), 334 files changed.
+   - Remaining: 1054 violations needing manual/architectural fixes.
 
-1. **Tailor + Writing-Plans** for Private Sync Hint Channels spec:
-   - Tailor: 18 files analyzed, 6 patterns discovered, 34 methods mapped, 42 ground truth verified
-   - Plan: 7 phases, 10 sub-phases, ~40 steps
-   - 3-cycle adversarial review: Cycle 1 all REJECT (4H+5M security, 3C+4S+5M code, 1C+2H+2L completeness) → 18 findings fixed → Cycle 2 (2 APPROVE + 1 CONDITIONAL, 13 findings already pre-applied) → Cycle 3 all 3 APPROVE
+3. **Wrote spec**: `.claude/specs/2026-04-04-analyzer-zero.md` — 6-phase plan with architectural solutions.
 
-2. **Key architectural decisions**:
-   - Broadcast fan-out moved from SQL triggers to edge function (eliminates SSRF + unbounded trigger latency)
-   - `_callRegistrationRpc()` extracted for DRY (used by both `registerAndSubscribe` and `_refreshRegistration`)
-   - RLS split into 4 policies with company_id subquery validation
-   - `deviceInstallId` uses async `ensureDeviceInstallId()` pattern (not fire-and-forget)
-   - Subscription limit (10/user), channel UNIQUE constraint, ON CONFLICT upsert for race safety
+4. **Ran tailor**: `.claude/tailor/2026-04-04-analyzer-zero/` — 5 patterns, 34 methods, 42 ground truth verified.
 
-3. **Plan**: `.claude/plans/2026-04-04-private-sync-hint-channels.md`
-4. **Tailor**: `.claude/tailor/2026-04-04-private-sync-hint-channels-codex/`
-5. **Reviews**: `.claude/plans/review_sweeps/private-sync-hint-channels-2026-04-04/` (9 files, 3 cycles)
+5. **Wrote implementation plan**: `.claude/plans/2026-04-04-analyzer-zero.md` — 6 phases:
+   - Phase 1: Policy decisions (remove do_not_use_environment + strict_raw_type)
+   - Phase 2: Mechanical fixes (catches, @immutable, StageNames, unawaited, strings, doc_ignores, dynamic calls, small rules)
+   - Phase 3: SafeRow extension for SQLite cast fixes
+   - Phase 4: SafeAction mixin + provider refactor (DRY)
+   - Phase 5: RepositoryResult.safeCall + repository refactor (DRY)
+   - Phase 6: _resolveParam<T>() type-promotion for copyWith sentinel casts
+
+6. **3-reviewer adversarial review** (cycle 1):
+   - Code Review: REJECT → fixed (TesseractConfigV2 path, missing models, phantom rule, super.dbService, requireBool)
+   - Security Review: APPROVE WITH CONDITIONS → fixed (sync engine catch exception list, SafeRow NOT NULL docs)
+   - Completeness Review: REJECT → fixed (missing SafeAction/safeCall phases, copyWith ignore→type-promotion, use_if_null rule)
+   - All findings addressed. Cycle 2 not yet run.
 
 ### What Needs to Happen Next
-1. **Execute plans** via `/implement` — three plans ready: IDR PDF mapping + Sync Strategy + Private Hint Channels
-2. **Prior session carry-over**: Commit S726 changes + PR, push Supabase migration, merge PR #140
-3. **Run E2E skipped tiers** — Forms (T35-T37), Edits (T59-T67), Deletes (T68-T77)
+1. **Run /implement** on `.claude/plans/2026-04-04-analyzer-zero.md` (6 phases → 0 violations)
+2. **Optional**: Run cycle 2 adversarial reviews before implementing
+3. **Prior session carry-over**: Commit S726 changes + PR, push Supabase migration, merge PR #140
 
 ### User Preferences (Critical)
 - **Fresh test projects only**: NEVER use existing projects during test runs — always create from scratch
@@ -51,6 +49,7 @@
 - **Verify before editing**: Do not make speculative edits — understand root cause first.
 - **Do NOT suppress errors**: Fix correctly without changing functions. User was emphatic about this.
 - **All findings must be fixed**: User requires ALL review findings addressed, not just blocking ones.
+- **No // ignore to suppress lint**: User explicitly rejected using ignore comments to silence lint violations. Fix the root cause.
 
 ## Blockers
 
@@ -65,6 +64,11 @@
 
 ## Recent Sessions
 
+### Session 732 (2026-04-04)
+**Work**: Analyzed 2268 lint violations, ran dart fix (1214 eliminated), wrote spec+tailor+plan for remaining 1054. 3-reviewer adversarial review cycle with all findings fixed. New abstractions: SafeRow, SafeAction mixin, RepositoryResult.safeCall, _resolveParam<T>().
+**Decisions**: No // ignore for lint suppression. Type-promotion helper for copyWith instead. Sync engine catches must use catch(Object e) not on Exception. SafeAction/safeCall are DRY phases (violations fixed mechanically first, then refactored).
+**Next**: /implement 6-phase analyzer-zero plan.
+
 ### Session 731 (2026-04-04)
 **Work**: Full CLAUDE.md + 11 rule files overhaul. CodeMunch-powered architecture verification. 20 agents total (6 research, 11 implementation, 3 review). Personal final review caught 4 agent errors.
 **Decisions**: CLAUDE.md is map/pointer not encyclopedia. Gotchas section for cross-cutting AI pitfalls. Rule files are the detailed reference. Lint category counts verified (23/11/10/8=52).
@@ -75,26 +79,11 @@
 **Decisions**: Fan-out in edge function (not SQL triggers). DRY _callRegistrationRpc extraction. RLS 4-policy split. Async ensureDeviceInstallId. ON CONFLICT upsert. 10-sub limit.
 **Next**: /implement 3 plans → commit S726 changes → merge PR #140.
 
-### Session 729 (2026-04-04)
-**Work**: 3-cycle adversarial review of Smarter Sync Strategy plan (3867 lines). 34 total findings across 3 cycles → all fixed. All 3 reviewers APPROVE.
-**Decisions**: Phase 3/4 consolidated. service_role_key for triggers. Constructor-injected companyId over userMetadata. Nullable DirtyScopeTracker. Security Risk Acceptance for broadcast channel auth.
-**Next**: /implement both plans → commit S726 changes → merge PR #140.
-
-### Session 728 (2026-04-03)
-**Work**: Writing-plans for IDR PDF mapping + location-scoped activities. 7 phases, 22 sub-phases, ~55 steps. 3-cycle adversarial review (20 findings fixed). All 3 reviewers APPROVE.
-**Decisions**: activitiesDisplayText helper for raw JSON display. Signature fallback preserved. _isEmptyDraft delegates to controller. EntryBasicsSection confirmed dead code (delete). Orphaned location chips render from JSON names.
-**Next**: /implement → commit S726 changes → merge PR #140.
-
-### Session 727 (2026-04-03)
-**Work**: Brainstormed IDR PDF mapping rebuild + location-scoped activities. Spec approved (10 sections). Tailor complete (25 files, 5 patterns, 34 methods, 42 ground truth).
-**Decisions**: JSON in existing activities column (not junction table). Remove locationId from DailyEntry. Remove filterByLocation entirely. Template untouchable. Both Python + Dart verification tooling.
-**Next**: /writing-plans → /implement → commit S726 changes.
-
 ## Test Results
 
 ### Flutter Unit Tests (S726)
 - **Full suite**: 3784 pass / 2 fail (pre-existing: OCR test + DLL lock)
-- **Analyze**: 0 issues
+- **Analyze**: 0 issues (pre-dart-fix baseline)
 - **Database tests**: 65 pass, drift=0
 - **Sync tests**: 704 pass
 
