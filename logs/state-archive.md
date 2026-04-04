@@ -86,6 +86,11 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## April 2026
 
+### Session 725 (2026-04-03)
+**Work**: Tailored + planned Entry UI Continuity Codex spec (8 concerns: contractor cards, weather/header, export/PDF, calculator, calendar). 3-cycle adversarial review — 28 findings fixed, all 3 reviewers APPROVE.
+**Decisions**: Personnel steppers + equipment chips stay (layout-only unification). EntryPdfExportUseCase simplified to metadata-only (PdfDataBuilder.generate is inherently UI-layer). Weather condition mapping needed (API strings ≠ enum names).
+**Next**: Execute plan → fix #141 → merge PR #140.
+
 ### Session 701 (2026-04-01)
 **Work**: Full lint cleanup redo. 977 custom lint + 73 analyzer + 18 lint package warnings → 0. 466 files across 6 commits.
 **Decisions**: Parallel opus agents. No ignore comments. Catch-all patterns preserved. Pre-commit hook hardened.

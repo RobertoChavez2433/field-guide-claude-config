@@ -3,7 +3,7 @@
   "name": "Sync Engine",
   "status": "in_progress",
   "description": "Bidirectional offline-first sync between SQLite and Supabase with last-write-wins conflict resolution and soft-delete awareness",
-  "current_phase": "S667: 5 sync bugs fixed (S02-1/2 project_id, S03-1 photo nullable, S10-1 UNIQUE fallback, S10-2 retry cap + ID remap guard). DB v42. Needs commit + device retest.",
+  "current_phase": "S729: Smarter Sync Strategy plan reviewed and approved (3-cycle, 34 findings fixed). 8 phases: SyncMode enum, DirtyScopeTracker, engine mode support, orchestrator routing, lifecycle/startup, FCM+Realtime hints, global sync UI, integration wiring. Ready for /implement.",
   "docs": {
     "overview": "docs/features/feature-sync-overview.md",
     "architecture": "docs/features/feature-sync-architecture.md",

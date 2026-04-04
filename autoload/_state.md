@@ -1,30 +1,33 @@
 # Session State
 
-**Last Updated**: 2026-04-03 | **Session**: 728
+**Last Updated**: 2026-04-04 | **Session**: 729
 
 ## Current Phase
-- **Phase**: IDR PDF mapping rebuild + location-scoped activities — plan written and approved. Ready for /implement.
-- **Status**: Uncommitted changes on `codex/reimplement-entry-ui-continuity` branch. Plan written to `.claude/plans/`. No code changes this session.
+- **Phase**: Two plans approved and ready for /implement: (1) IDR PDF mapping + location activities, (2) Smarter Sync Strategy. No code changes this session.
+- **Status**: Uncommitted changes on `codex/reimplement-entry-ui-continuity` branch. Plans in `.claude/plans/`. Review sweeps complete.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (728)
+### What Was Done This Session (729)
 
-1. **Writing-plans skill** completed:
-   - 7 phases, 22 sub-phases, ~55 steps
-   - 25 production files, 20+ test files, 4 new files
-   - 5 agents: backend-data-layer, backend-supabase, frontend-flutter-specialist, pdf, qa-testing
+1. **3-cycle adversarial review** of Smarter Sync Strategy plan (3867 lines):
+   - Cycle 1: 26 unique findings (6C/7S/5M code + 2G/4P completeness + 2C/5H/7M security) → all fixed
+   - Cycle 2: 7 new findings (tracker not wired to factory, lint A1 violation, userMetadata always null, return type propagation) → all fixed
+   - Cycle 3: All 3 reviewers APPROVE (1 remaining Medium fixed inline)
 
-2. **3-cycle adversarial review** — 20 findings found and fixed:
-   - Cycle 1: 16 findings (5 critical, 2 high, 5 medium, 3 significant, 1 low) → all fixed
-   - Cycle 2: 4 findings (1 critical already fixed, 3 significant) → all fixed
-   - Cycle 3: All 3 reviewers APPROVE
+2. **Key fixes applied to plan**:
+   - Phase 3/4 consolidated (duplicate elimination)
+   - `anon_key` → `service_role_key` in broadcast triggers
+   - `userMetadata` → constructor-injected `companyId` for cross-tenant validation
+   - DirtyScopeTracker wiring chain completed (builder → orchestrator → factory → engine)
+   - `realtime_url` null guards, tableName validation, max scope cap (500)
+   - Security Risk Acceptance note for broadcast channel auth limitations
 
-3. **Plan**: `.claude/plans/2026-04-03-idr-pdf-mapping-and-location-activities.md`
-4. **Review reports**: `.claude/plans/review_sweeps/idr-pdf-mapping-2026-04-03/`
+3. **Plan**: `.claude/plans/2026-04-03-sync-strategy.md`
+4. **Review reports**: `.claude/plans/review_sweeps/sync-strategy-2026-04-03/` (9 files, 3 cycles)
 
 ### What Needs to Happen Next
-1. **Execute plan** via `/implement`
+1. **Execute plans** via `/implement` — two plans ready: IDR PDF mapping + Sync Strategy
 2. **Prior session carry-over**: Commit S726 changes + PR, push Supabase migration, merge PR #140
 3. **Run E2E skipped tiers** — Forms (T35-T37), Edits (T59-T67), Deletes (T68-T77)
 
@@ -49,6 +52,11 @@
 
 ## Recent Sessions
 
+### Session 729 (2026-04-04)
+**Work**: 3-cycle adversarial review of Smarter Sync Strategy plan (3867 lines). 34 total findings across 3 cycles → all fixed. All 3 reviewers APPROVE.
+**Decisions**: Phase 3/4 consolidated. service_role_key for triggers. Constructor-injected companyId over userMetadata. Nullable DirtyScopeTracker. Security Risk Acceptance for broadcast channel auth.
+**Next**: /implement both plans → commit S726 changes → merge PR #140.
+
 ### Session 728 (2026-04-03)
 **Work**: Writing-plans for IDR PDF mapping + location-scoped activities. 7 phases, 22 sub-phases, ~55 steps. 3-cycle adversarial review (20 findings fixed). All 3 reviewers APPROVE.
 **Decisions**: activitiesDisplayText helper for raw JSON display. Signature fallback preserved. _isEmptyDraft delegates to controller. EntryBasicsSection confirmed dead code (delete). Orphaned location chips render from JSON names.
@@ -63,11 +71,6 @@
 **Work**: Resolved 13 GitHub issues (#141-150, #154-157). Proactive schema audit found 4 new issues. v50 migration (user_profiles + inspector_forms deleted_at). IntegrityChecker skipIntegrityCheck. Schema_verifier gaps filled. H001-H004 markers removed.
 **Decisions**: Proactive audit approach over reactive whack-a-mole. skipIntegrityCheck property over filtering by skipPull. #148 closed as not-a-bug (test data issue).
 **Next**: Commit + PR → push Supabase migration → merge PR #140.
-
-### Session 725 (2026-04-03)
-**Work**: Tailored + planned Entry UI Continuity Codex spec (8 concerns: contractor cards, weather/header, export/PDF, calculator, calendar). 3-cycle adversarial review — 28 findings fixed, all 3 reviewers APPROVE.
-**Decisions**: Personnel steppers + equipment chips stay (layout-only unification). EntryPdfExportUseCase simplified to metadata-only (PdfDataBuilder.generate is inherently UI-layer). Weather condition mapping needed (API strings ≠ enum names).
-**Next**: Execute plan → fix #141 → merge PR #140.
 
 ## Test Results
 

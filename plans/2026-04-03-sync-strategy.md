@@ -361,6 +361,7 @@ Create `lib/features/sync/engine/dirty_scope_tracker.dart`. This is a new file i
 import 'package:construction_inspector/core/logging/logger.dart';
 import 'package:construction_inspector/features/sync/config/sync_config.dart';
 import 'package:construction_inspector/features/sync/domain/sync_types.dart';
+import 'package:construction_inspector/features/sync/engine/sync_registry.dart';
 
 /// Tracks which sync scopes have been invalidated by remote change hints.
 ///
@@ -389,7 +390,48 @@ class DirtyScopeTracker {
   ///
   /// FROM SPEC: "Supabase-originated foreground invalidation hints ...
   /// FCM background invalidation hints ... dirty-scope tracking locally"
+  /// Maximum number of dirty scopes before graceful degradation to company-wide.
+  /// WHY: Prevents unbounded memory growth from hint flooding attacks.
+  static const int maxDirtyScopes = 500;
+
+  /// Known adapter table names for validation.
+  /// WHY: Reject unknown table names from untrusted hint sources (FCM, Realtime)
+  /// to prevent unbounded growth from garbage table names.
+  static Set<String>? _knownTableNames;
+  static Set<String> get _validTableNames {
+    return _knownTableNames ??=
+        SyncRegistry.instance.adapters.map((a) => a.tableName).toSet();
+  }
+
   void markDirty({String? projectId, String? tableName}) {
+    // SECURITY: Validate tableName against known adapter table names.
+    // WHY: Reject unknown table names from untrusted remote hints to prevent
+    // unbounded growth of the dirty scope set from spoofed hint payloads.
+    if (tableName != null && _validTableNames.isNotEmpty &&
+        !_validTableNames.contains(tableName)) {
+      Logger.sync(
+        '[DirtyScopeTracker] markDirty: REJECTED unknown tableName=$tableName',
+      );
+      return;
+    }
+
+    // SECURITY: Graceful degradation when too many scopes accumulate.
+    // WHY: Prevents memory exhaustion from hint flooding. When exceeded,
+    // replace all scopes with a single company-wide scope (triggers full pull).
+    if (_dirtyScopes.length >= maxDirtyScopes) {
+      Logger.sync(
+        '[DirtyScopeTracker] markDirty: max scopes ($maxDirtyScopes) exceeded, '
+        'degrading to company-wide scope',
+      );
+      _dirtyScopes.clear();
+      _dirtyScopes.add(DirtyScope(
+        projectId: null,
+        tableName: null,
+        markedAt: DateTime.now().toUtc(),
+      ));
+      return;
+    }
+
     final scope = DirtyScope(
       projectId: projectId,
       tableName: tableName,
@@ -721,6 +763,8 @@ Expected output: `No issues found!`
 
 ## Phase 3: SyncEngine Mode Support
 
+> **LINE-DRIFT WARNING:** Phase 3 replaces ~150 lines of `pushAndPull()` in `sync_engine.dart`. All line references to `sync_engine.dart` in subsequent phases (4, 5, 6, 7, 8) may be off by that amount. Implementing agents should search by method name (e.g., `_pull`, `pushAndPull`, `createForBackgroundSync`), not by line number.
+
 ### Sub-phase 3.1: Add SyncMode Parameter to SyncEngine.pushAndPull
 
 **Files:**
@@ -978,52 +1022,67 @@ Replace the body of `pushAndPull()` (lines 217-360) with the mode-aware implemen
         case SyncMode.maintenance:
           // FROM SPEC: "deferred or background work ... integrity checks ...
           // orphan cleanup ... company member pulls ... last_synced_at update"
-          // WHY: Maintenance mode runs ONLY integrity/orphan/prune work.
-          // No push, no pull. This is for background periodic maintenance.
+          // WHY: Maintenance mode pushes pending local changes (so they don't
+          // accumulate between background cycles), runs integrity/orphan/prune
+          // work, but skips the broad per-table pull sweep. Company member
+          // pulls and last_synced_at update are handled in
+          // syncLocalAgencyProjects (gated by mode == full || mode == maintenance).
           Logger.sync('Maintenance sync started');
+
+          // FROM SPEC: Push is included so pending local changes don't accumulate
+          // indefinitely between 4-hour background cycles.
+          final maintenancePushResult = await _push();
+          Logger.sync('Maintenance push complete: ${maintenancePushResult.pushed} pushed, '
+              '${maintenancePushResult.errors} errors');
 
           // Prune old data
           await _changeTracker.pruneProcessed();
           await _conflictResolver.pruneExpired();
           await _cleanupExpiredConflicts();
 
-          // Integrity check (forced -- maintenance mode always runs it)
-          try {
-            final integrityResults = await _integrityChecker.run();
-            for (final result in integrityResults) {
-              await _storeIntegrityResult(result);
-              if (result.driftDetected) {
-                await _clearCursor(result.tableName);
+          // Integrity check (respects shouldRun() 4-hour time gate)
+          // WHY: shouldRun() prevents rapid re-runs if maintenance sync is
+          // triggered more frequently than expected (e.g., manual + background).
+          if (!await _integrityChecker.shouldRun()) {
+            Logger.sync('Maintenance: integrity check skipped (not due yet)');
+          } else {
+            try {
+              final integrityResults = await _integrityChecker.run();
+              for (final result in integrityResults) {
+                await _storeIntegrityResult(result);
+                if (result.driftDetected) {
+                  await _clearCursor(result.tableName);
+                }
               }
-            }
-            // FROM SPEC: "orphan cleanup"
-            final orphans = await _orphanScanner.scan(companyId, autoDelete: true);
-            if (orphans.isNotEmpty) {
-              await _storeMetadata(
-                'orphan_count',
-                orphans.length.toString(),
-              );
-            }
+              // FROM SPEC: "orphan cleanup"
+              final orphans = await _orphanScanner.scan(companyId, autoDelete: true);
+              if (orphans.isNotEmpty) {
+                await _storeMetadata(
+                  'orphan_count',
+                  orphans.length.toString(),
+                );
+              }
 
-            // Purge orphaned local records
-            // WHY: Need to load synced project IDs for the orphan purge filter.
-            await _loadSyncedProjectIds();
-            final purgedCount = await _integrityChecker.purgeOrphans(
-              syncedProjectIds: _syncedProjectIds.toSet(),
-              changeTracker: _changeTracker,
-            );
-            if (purgedCount > 0) {
-              Logger.sync('Maintenance orphan purge: $purgedCount local records soft-deleted');
+              // Purge orphaned local records
+              // WHY: Need to load synced project IDs for the orphan purge filter.
+              await _loadSyncedProjectIds();
+              final purgedCount = await _integrityChecker.purgeOrphans(
+                syncedProjectIds: _syncedProjectIds.toSet(),
+                changeTracker: _changeTracker,
+              );
+              if (purgedCount > 0) {
+                Logger.sync('Maintenance orphan purge: $purgedCount local records soft-deleted');
+              }
+            } catch (e) {
+              Logger.error('Maintenance integrity check failed', error: e);
             }
-          } catch (e) {
-            Logger.error('Maintenance integrity check failed', error: e);
           }
 
           // Prune expired dirty scopes
           _dirtyScopeTracker?.pruneExpired();
 
           Logger.sync('Maintenance sync completed');
-          // combined stays at default (0 pushed, 0 pulled)
+          combined = maintenancePushResult;
       }
 
       cycleCompleted = true;
@@ -1149,14 +1208,16 @@ However, update the call site in the factory to document this:
 
 This is a comment-only change at line 194-200. No functional modification.
 
-### Sub-phase 3.2: Update SyncEngineFactory to Accept DirtyScopeTracker
+### Sub-phase 3.2: Update SyncEngineFactory to Use DirtyScopeTracker Setter
 
 **Files:**
 - Modify: `lib/features/sync/application/sync_engine_factory.dart:10-38`
 
 **Agent**: `backend-supabase-agent`
 
-#### Step 3.2.1: Add DirtyScopeTracker parameter to SyncEngineFactory.create
+> **CANONICAL DESIGN:** SyncEngineFactory uses a `setDirtyScopeTracker()` setter (not a `create()` parameter) because the factory is created before the tracker in the initialization sequence. This is the single authoritative design -- Phase 4.2.1 and Phase 8.1.1 reference this same approach.
+
+#### Step 3.2.1: Add DirtyScopeTracker field and setter to SyncEngineFactory
 
 At `lib/features/sync/application/sync_engine_factory.dart`, add the import for DirtyScopeTracker at the top of the file (after existing imports):
 
@@ -1164,21 +1225,31 @@ At `lib/features/sync/application/sync_engine_factory.dart`, add the import for 
 import 'package:construction_inspector/features/sync/engine/dirty_scope_tracker.dart';
 ```
 
-Then modify the `create` method (lines 25-38) to accept and forward the `DirtyScopeTracker`:
+Then add a field and setter, and update the `create` method (lines 25-38) to use the stored tracker:
 
 ```dart
+  // WHY: Stored as a field so all engines created by this factory share the
+  // same dirty scope state. The tracker persists across sync cycles.
+  // NOTE: Nullable because the factory may be created before the tracker.
+  DirtyScopeTracker? _dirtyScopeTracker;
+
+  /// Set the dirty scope tracker. Called once during initialization.
+  /// WHY: Setter rather than constructor param because SyncEngineFactory is
+  /// created before DirtyScopeTracker in the initialization sequence.
+  void setDirtyScopeTracker(DirtyScopeTracker tracker) {
+    _dirtyScopeTracker = tracker;
+  }
+
   /// Create a SyncEngine for foreground sync operations.
   ///
   /// NOTE: SyncEngine constructor requires db, supabase, companyId, userId
   /// (see sync_engine.dart lines 153-160). lockedBy defaults to 'foreground'.
-  /// [dirtyScopeTracker] is optional -- when provided, enables dirty-scope-aware
-  /// quick sync pulls.
+  /// FROM SPEC: DirtyScopeTracker passed so engine can filter pulls by dirty scope.
   SyncEngine? create({
     required Database db,
     required SupabaseClient supabase,
     required String companyId,
     required String userId,
-    DirtyScopeTracker? dirtyScopeTracker,
   }) {
     ensureAdaptersRegistered();
     return SyncEngine(
@@ -1186,7 +1257,9 @@ Then modify the `create` method (lines 25-38) to accept and forward the `DirtySc
       supabase: supabase,
       companyId: companyId,
       userId: userId,
-      dirtyScopeTracker: dirtyScopeTracker,
+      // WHY: Pass tracker so SyncEngine._pull() can check dirty scopes during
+      // quick sync mode. Null-safe — engine handles null tracker gracefully.
+      dirtyScopeTracker: _dirtyScopeTracker,
     );
   }
 ```
@@ -1221,7 +1294,8 @@ Add a new field to the `SyncOrchestrator` class after line 37 (`final SyncEngine
   // WHY: Single DirtyScopeTracker instance shared across all sync cycles.
   // Injected via builder so it can also be accessed by RealtimeHintHandler
   // and FcmHandler for marking scopes dirty.
-  final DirtyScopeTracker _dirtyScopeTracker;
+  // NOTE: Nullable because consumers use null checks (e.g., `if (tracker != null)`).
+  final DirtyScopeTracker? _dirtyScopeTracker;
 ```
 
 #### Step 3.3.2: Update SyncOrchestrator.fromBuilder constructor
@@ -1243,14 +1317,21 @@ At `lib/features/sync/application/sync_orchestrator.dart`, modify the `fromBuild
        _userProfileSyncDatasource = userProfileSyncDatasource,
        _syncContextProvider = syncContextProvider,
        _appConfigProvider = appConfigProvider,
-       _dirtyScopeTracker = dirtyScopeTracker ?? DirtyScopeTracker() {
+       _dirtyScopeTracker = dirtyScopeTracker {
+    // WHY: The engine factory uses a setter-injected tracker (Phase 3.2).
+    // Wire it here so the factory's tracker is non-null when create() is called.
+    // Without this, the factory's _dirtyScopeTracker stays null and quick-sync
+    // dirty-scope filtering is dead code.
+    if (dirtyScopeTracker != null) {
+      _engineFactory.setDirtyScopeTracker(dirtyScopeTracker!);
+    }
     if (_isMockMode) {
       _mockAdapter = MockSyncAdapter();
     }
   }
 ```
 
-WHY: `dirtyScopeTracker ?? DirtyScopeTracker()` provides a default instance when not injected, maintaining backward compatibility with existing builder call sites.
+WHY: `dirtyScopeTracker` is nullable -- callers that don't provide it get null. The engine factory receives its tracker via the `setDirtyScopeTracker()` setter called inside the `fromBuilder` constructor body, ensuring the core dirty-scope optimization is wired at construction time.
 
 Update the test constructor similarly:
 
@@ -1262,22 +1343,26 @@ Update the test constructor similarly:
         _userProfileSyncDatasource = null,
         _syncContextProvider = (() => (companyId: null, userId: null)),
         _appConfigProvider = null,
-        _dirtyScopeTracker = DirtyScopeTracker() {
+        _dirtyScopeTracker = null {
     _mockAdapter = MockSyncAdapter();
   }
 ```
 
-#### Step 3.3.3: Update _createEngine to pass DirtyScopeTracker
+#### Step 3.3.3: Verify _createEngine does NOT pass DirtyScopeTracker
 
-At `lib/features/sync/application/sync_orchestrator.dart`, the `_createEngine` method (around lines 213-238) calls `_engineFactory.create(...)`. Update the call at lines 231-236:
+At `lib/features/sync/application/sync_orchestrator.dart`, the `_createEngine` method (around lines 213-238) calls `_engineFactory.create(...)`. The factory uses the canonical setter approach (`setDirtyScopeTracker()`) from Phase 3.2, so `create()` does NOT accept a `dirtyScopeTracker` parameter. The factory internally uses its `_dirtyScopeTracker` field, which was set during initialization.
+
+Verify the existing call at lines 231-236 does NOT include `dirtyScopeTracker`:
 
 ```dart
+    // NOTE: Do NOT pass dirtyScopeTracker here. The factory uses the canonical
+    // setter approach (Phase 3.2) — it already has the tracker via
+    // setDirtyScopeTracker() called during SyncInitializer.create().
     final engine = _engineFactory.create(
       db: db,
       supabase: client,
       companyId: companyId,
       userId: userId,
-      dirtyScopeTracker: _dirtyScopeTracker,
     );
 ```
 
@@ -1350,6 +1435,14 @@ Also update the background retry timer (around lines 388-408). The background re
 ```dart
     _backgroundRetryTimer = Timer(const Duration(seconds: 60), () async {
       if (_disposed) return;
+      // SECURITY: Check session validity before retry to avoid auth errors.
+      // WHY: The session may have expired during the 60-second wait. Attempting
+      // sync with an expired session would produce auth errors and waste resources.
+      final hasSession = _supabaseClient?.auth.currentSession != null;
+      if (!hasSession) {
+        Logger.sync('Background retry: no active session, skipping');
+        return;
+      }
       try {
         final dnsOk = await checkDnsReachability();
         if (dnsOk && !_disposed) {
@@ -1400,7 +1493,8 @@ At `lib/features/sync/application/sync_orchestrator.dart`, add a public getter a
   /// The dirty scope tracker for marking scopes dirty from external sources
   /// (FCM hints, Realtime hints).
   /// FROM SPEC: "dirty-scope tracking locally"
-  DirtyScopeTracker get dirtyScopeTracker => _dirtyScopeTracker;
+  /// NOTE: Nullable — consumers must null-check before use.
+  DirtyScopeTracker? get dirtyScopeTracker => _dirtyScopeTracker;
 ```
 
 WHY: FcmHandler and RealtimeHintHandler (future phases) need access to the tracker to mark scopes dirty when hints arrive. They access the orchestrator, so exposing the tracker via getter is the cleanest wiring path.
@@ -1570,10 +1664,9 @@ If the builder is in a separate file, modify that file instead. Add:
 
   /// Set the dirty scope tracker for targeted quick sync pulls.
   /// FROM SPEC: "dirty-scope tracking locally"
-  SyncOrchestratorBuilder withDirtyScopeTracker(DirtyScopeTracker tracker) {
-    _dirtyScopeTracker = tracker;
-    return this;
-  }
+  // WHY: Public field matches existing builder pattern (dbService, supabaseClient, etc.)
+  // The existing builder uses public fields, NOT fluent setters.
+  // Set this field before calling build() to wire dirty-scope tracking.
 ```
 
 And in the `build()` method, add `dirtyScopeTracker: _dirtyScopeTracker` to the `SyncOrchestrator.fromBuilder(...)` call.
@@ -1602,22 +1695,22 @@ This verifies:
 4. `SyncEngine.pushAndPull(mode:)` signature is correct
 5. `SyncEngine._pull(onlyDirtyScopes:)` parameter addition is correct
 6. `SyncEngine` constructor accepts optional `dirtyScopeTracker`
-7. `SyncEngineFactory.create(dirtyScopeTracker:)` forwards correctly
+7. `SyncEngineFactory.setDirtyScopeTracker()` setter and internal `_dirtyScopeTracker` field work correctly
 8. `SyncOrchestrator.syncLocalAgencyProjects(mode:)` chains through `_syncWithRetry(mode:)` to `_doSync(mode:)` to `engine.pushAndPull(mode:)`
 9. All imports resolve (no circular dependencies)
 10. No lint rule violations (A1, A2, A9, S2, S4 for engine files)
 
-## Phase 4: Orchestrator Mode Routing
+## Phase 4: Orchestrator Mode Routing (merged into Phase 3)
 
-Route `SyncMode` through the orchestrator layer so all trigger sources can request quick, full, or maintenance sync. SyncOrchestrator has 26 direct dependents (risk 0.79), so the signature change MUST use a default parameter value for backward compatibility.
+> **MERGED:** Most of Phase 4 has been consolidated into Phase 3 to avoid duplicate modifications to the same files (`sync_orchestrator.dart`, `sync_engine_factory.dart`). Only sub-phases with **unique** content are retained below. Sub-phases marked "(merged into Phase 3)" should be SKIPPED by the implementing agent.
 
 ---
 
 ### Sub-phase 4.1: Add SyncMode parameter to SyncOrchestrator.syncLocalAgencyProjects
 
+> **NOTE:** Steps 4.1.2-4.1.5 are merged into Phase 3 (Steps 3.3.4-3.3.6). Only Steps 4.1.1 (test file) and 4.1.6 (post-sync mode gating) are unique.
+
 **Files:**
-- Modify: `lib/features/sync/application/sync_orchestrator.dart:241-318`
-- Modify: `lib/features/sync/application/sync_orchestrator.dart:413-448`
 - Test: `test/features/sync/application/sync_orchestrator_mode_routing_test.dart`
 
 **Agent**: `backend-supabase-agent`
@@ -1633,7 +1726,6 @@ Create a test file that verifies the orchestrator passes the correct SyncMode to
 // _doSync to engine.pushAndPull(mode). Ensures backward compat (default = full).
 import 'package:flutter_test/flutter_test.dart';
 import 'package:construction_inspector/features/sync/domain/sync_types.dart';
-import 'package:construction_inspector/features/sync/engine/sync_mode.dart';
 
 // NOTE: Uses the same mock orchestrator pattern as fcm_handler_test.dart.
 // We test the mode parameter is accepted and defaults correctly.
@@ -1664,124 +1756,9 @@ void main() {
 }
 ```
 
-#### Step 4.1.2: Add SyncMode import and modify syncLocalAgencyProjects signature
+#### Steps 4.1.2-4.1.5: (merged into Phase 3, Steps 3.3.4-3.3.6)
 
-Modify `lib/features/sync/application/sync_orchestrator.dart` to accept a `SyncMode` parameter with a default of `SyncMode.full`. This preserves backward compatibility for all 26+ callers.
-
-At the top of the file, after the existing imports (line 22), add:
-
-```dart
-// lib/features/sync/application/sync_orchestrator.dart — add import after line 22
-import '../engine/sync_mode.dart';
-```
-
-Then modify `syncLocalAgencyProjects` at line 241 to accept the mode parameter:
-
-```dart
-// lib/features/sync/application/sync_orchestrator.dart:241
-// WHY: Default SyncMode.full preserves backward compatibility for all 26 callers
-// that pass no mode argument. Only trigger sources (lifecycle, fcm, realtime)
-// will explicitly pass SyncMode.quick or SyncMode.maintenance.
-// FROM SPEC: "The app will support three sync modes: Quick, Full, Maintenance"
-Future<SyncResult> syncLocalAgencyProjects({
-  SyncMode mode = SyncMode.full,
-}) async {
-```
-
-The rest of the method body stays identical until line 254 where we add analytics tracking for the mode:
-
-```dart
-// lib/features/sync/application/sync_orchestrator.dart:254 (after Analytics.trackManualSync())
-// NOTE: Log the sync mode for observability
-Logger.sync('SyncOrchestrator: starting sync mode=${mode.name}');
-```
-
-#### Step 4.1.3: Pass SyncMode through _syncWithRetry to _doSync
-
-Modify `_syncWithRetry` (line 325) and `_doSync` (line 413) to accept and forward the mode parameter.
-
-```dart
-// lib/features/sync/application/sync_orchestrator.dart:325
-// WHY: Mode must flow through the retry wrapper so each retry attempt
-// uses the same mode as the original request.
-Future<SyncResult> _syncWithRetry({
-  SyncMode mode = SyncMode.full,
-}) async {
-```
-
-Inside `_syncWithRetry`, at the call to `_doSync()` (approximately line 350 in the for loop body):
-
-```dart
-      // lib/features/sync/application/sync_orchestrator.dart — inside _syncWithRetry for loop
-      // WHY: Forward mode to _doSync so the engine receives it
-      lastResult = await _doSync(mode: mode);
-```
-
-Also update the background retry timer callback (approximately line 403) to use full mode:
-
-```dart
-      // lib/features/sync/application/sync_orchestrator.dart — background retry timer
-      // WHY: Background retry always uses full mode — it's a recovery path
-      // FROM SPEC: "Full sync is fallback, not default" — retry IS the fallback
-      if (dnsOk && !_disposed) {
-        await syncLocalAgencyProjects(mode: SyncMode.full);
-      }
-```
-
-#### Step 4.1.4: Modify _doSync to pass SyncMode to engine.pushAndPull
-
-```dart
-// lib/features/sync/application/sync_orchestrator.dart:413
-// WHY: _doSync is the single sync cycle executor — it must forward mode to the engine
-Future<SyncResult> _doSync({
-  SyncMode mode = SyncMode.full,
-}) async {
-    // Mock mode — unchanged
-    if (_isMockMode && _mockAdapter != null) {
-      return await _mockAdapter!.syncAll();
-    }
-
-    // Real mode via SyncEngine
-    final engine = await _createEngine();
-    if (engine == null) {
-      return const SyncResult(
-        errors: 1,
-        errorMessages: ['No auth context available for sync'],
-      );
-    }
-
-    try {
-      engine.onPullComplete = onPullComplete;
-      engine.onCircuitBreakerTrip = (tableName, recordId, count) {
-        onCircuitBreakerTrip?.call(tableName, recordId, count);
-      };
-      // FROM SPEC: Route sync mode to the engine
-      // NOTE: pushAndPull(mode:) signature added in Phase 3
-      final engineResult = await engine.pushAndPull(mode: mode);
-      return SyncResult(
-        pushed: engineResult.pushed,
-        pulled: engineResult.pulled,
-        errors: engineResult.errors,
-        errorMessages: engineResult.errorMessages,
-        rlsDenials: engineResult.rlsDenials,
-        skippedPush: engineResult.skippedPush,
-      );
-    } catch (e, stack) {
-      Logger.error('SyncOrchestrator: SyncEngine error: $e', error: e, stack: stack);
-      return SyncResult(errors: 1, errorMessages: ['SyncEngine error: $e']);
-    }
-  }
-```
-
-#### Step 4.1.5: Update the syncLocalAgencyProjects call in _syncWithRetry to pass mode
-
-Update the call at line 260 where `syncLocalAgencyProjects` calls `_syncWithRetry`:
-
-```dart
-// lib/features/sync/application/sync_orchestrator.dart:260
-// WHY: Forward mode through the retry wrapper
-final result = await _syncWithRetry(mode: mode);
-```
+> **SKIP:** These steps are identical to Phase 3 Steps 3.3.4 (syncLocalAgencyProjects), 3.3.5 (_syncWithRetry), 3.3.6 (_doSync). Phase 3 is the canonical location for these modifications. Do not apply these changes again.
 
 #### Step 4.1.6: Gate post-sync actions by mode
 
@@ -1804,12 +1781,12 @@ if (!result.hasErrors) {
 
   _appConfigProvider?.recordSyncSuccess();
 
-  // FROM SPEC: Company member pull and last_synced_at update only on full sync
+  // FROM SPEC: Company member pull and last_synced_at update on full and maintenance sync
   // WHY: Quick sync is the low-latency path — these heavyweight operations
   // (network round-trips to pull profiles, update timestamps) add latency
   // without benefiting the user's immediate data freshness needs.
-  // Maintenance sync also skips these — it focuses on integrity/cleanup.
-  if (mode == SyncMode.full) {
+  // FROM SPEC: Maintenance sync includes "company member pulls" and "last_synced_at update".
+  if (mode == SyncMode.full || mode == SyncMode.maintenance) {
     final ctx = _syncContextProvider();
     final companyId = ctx.companyId;
 
@@ -1843,187 +1820,27 @@ Expected: No analysis errors. Warnings about unused imports are acceptable at th
 
 ---
 
-### Sub-phase 4.2: Update SyncEngineFactory to accept DirtyScopeTracker
+### Sub-phase 4.2: Update SyncEngineFactory to accept DirtyScopeTracker (merged into Phase 3)
 
-**Files:**
-- Modify: `lib/features/sync/application/sync_engine_factory.dart:25-38`
-- Modify: `lib/features/sync/application/sync_orchestrator.dart:230-237`
+> **MERGED:** This sub-phase is consolidated into Phase 3.2 (SyncEngineFactory setter approach) and Phase 3.3.1-3.3.3 (SyncOrchestrator DirtyScopeTracker field). The canonical SyncEngineFactory design uses a `setDirtyScopeTracker()` setter (Phase 3.2), NOT a `create()` parameter.
 
 **Agent**: `backend-supabase-agent`
 
-#### Step 4.2.1: Add DirtyScopeTracker parameter to SyncEngineFactory.create
+#### Step 4.2.1: (merged into Phase 3, Step 3.2.1)
 
-```dart
-// lib/features/sync/application/sync_engine_factory.dart
-// WHY: F5 — Factory must forward DirtyScopeTracker to SyncEngine so dirty-scope
-// filtering works during quick sync pull phase.
-// NOTE: DirtyScopeTracker is created in Phase 2 at lib/features/sync/engine/dirty_scope_tracker.dart
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+> **SKIP:** Phase 3.2 is the canonical location for SyncEngineFactory modifications. The factory uses `setDirtyScopeTracker()` setter, not a `create()` parameter. Do not apply the parameter-based approach shown in the original Phase 4.2.1.
 
-import 'package:construction_inspector/features/sync/engine/sync_engine.dart';
-import 'package:construction_inspector/features/sync/engine/sync_registry.dart';
-import 'package:construction_inspector/features/sync/engine/dirty_scope_tracker.dart';
+#### Step 4.2.2: (merged into Phase 3, Steps 3.3.1-3.3.3)
 
-class SyncEngineFactory {
-  bool _adaptersRegistered = false;
+> **SKIP:** Phase 3.3.1 adds the nullable `DirtyScopeTracker?` field to SyncOrchestrator. Phase 3.3.2 updates the constructors. Phase 3.3.3 verifies `_createEngine` does NOT pass `dirtyScopeTracker` (the factory uses its own setter-injected tracker). Do not apply these changes again.
 
-  /// Ensure sync adapters are registered (idempotent).
-  void ensureAdaptersRegistered() {
-    if (!_adaptersRegistered) {
-      registerSyncAdapters();
-      _adaptersRegistered = true;
-    }
-  }
+#### Step 4.2.3: (merged into Phase 3, Step 3.5.1)
 
-  /// Create a SyncEngine for foreground sync operations.
-  ///
-  /// NOTE: SyncEngine constructor requires db, supabase, companyId, userId
-  /// (see sync_engine.dart lines 153-160). lockedBy defaults to 'foreground'.
-  /// FROM SPEC: DirtyScopeTracker is optional — null means pull all adapters (full mode).
-  SyncEngine? create({
-    required Database db,
-    required SupabaseClient supabase,
-    required String companyId,
-    required String userId,
-    DirtyScopeTracker? dirtyScopeTracker,
-  }) {
-    ensureAdaptersRegistered();
-    return SyncEngine(
-      db: db,
-      supabase: supabase,
-      companyId: companyId,
-      userId: userId,
-      dirtyScopeTracker: dirtyScopeTracker,
-    );
-  }
+> **SKIP:** Phase 3.5 is the canonical location for SyncOrchestratorBuilder changes. Do not apply these changes again.
 
-  /// Create a SyncEngine for background sync operations.
-  ///
-  /// WHY: Background sync always uses full mode (no dirty scope tracker).
-  /// createForBackgroundSync resolves companyId/userId from Supabase auth.
-  Future<SyncEngine?> createForBackground({
-    required Database database,
-    required SupabaseClient supabase,
-  }) async {
-    ensureAdaptersRegistered();
-    return SyncEngine.createForBackgroundSync(
-      database: database,
-      supabase: supabase,
-    );
-  }
-}
-```
+#### Step 4.2.4: (merged into Phase 3, Step 3.3.7)
 
-#### Step 4.2.2: Update _createEngine in SyncOrchestrator to pass DirtyScopeTracker
-
-The SyncOrchestrator needs a `DirtyScopeTracker` field. Add it to the constructor and the builder.
-
-In `lib/features/sync/application/sync_orchestrator.dart`, add a field after line 37:
-
-```dart
-// lib/features/sync/application/sync_orchestrator.dart — after line 37
-// FROM SPEC: "dirty-scope tracking locally" — tracker is injected via builder
-// WHY: Nullable because offline-only mode (mock) has no need for dirty tracking
-final DirtyScopeTracker? _dirtyScopeTracker;
-```
-
-Add the import at the top of the file:
-
-```dart
-// lib/features/sync/application/sync_orchestrator.dart — add import
-import '../engine/dirty_scope_tracker.dart';
-```
-
-Update the `SyncOrchestrator.fromBuilder` constructor (line 107-123) to accept the tracker:
-
-```dart
-// lib/features/sync/application/sync_orchestrator.dart:107-123
-SyncOrchestrator.fromBuilder({
-    required DatabaseService dbService,
-    SupabaseClient? supabaseClient,
-    required SyncEngineFactory engineFactory,
-    UserProfileSyncDatasource? userProfileSyncDatasource,
-    required ({String? companyId, String? userId}) Function() syncContextProvider,
-    AppConfigProvider? appConfigProvider,
-    DirtyScopeTracker? dirtyScopeTracker,
-  }) : _dbService = dbService,
-       _supabaseClient = supabaseClient,
-       _engineFactory = engineFactory,
-       _userProfileSyncDatasource = userProfileSyncDatasource,
-       _syncContextProvider = syncContextProvider,
-       _appConfigProvider = appConfigProvider,
-       _dirtyScopeTracker = dirtyScopeTracker {
-    if (_isMockMode) {
-      _mockAdapter = MockSyncAdapter();
-    }
-  }
-```
-
-Update the test constructor (line 126-134) to set the tracker to null:
-
-```dart
-// lib/features/sync/application/sync_orchestrator.dart:126-134
-@visibleForTesting
-SyncOrchestrator.forTesting(this._dbService)
-    : _supabaseClient = null,
-      _engineFactory = SyncEngineFactory(),
-      _userProfileSyncDatasource = null,
-      _syncContextProvider = (() => (companyId: null, userId: null)),
-      _appConfigProvider = null,
-      _dirtyScopeTracker = null {
-    _mockAdapter = MockSyncAdapter();
-  }
-```
-
-Update `_createEngine` (line 230-237) to pass the tracker:
-
-```dart
-// lib/features/sync/application/sync_orchestrator.dart:230-237
-// WHY: F5 — Factory centralizes engine creation, now with dirty scope support
-final engine = _engineFactory.create(
-  db: db,
-  supabase: client,
-  companyId: companyId,
-  userId: userId,
-  dirtyScopeTracker: _dirtyScopeTracker,
-);
-return engine;
-```
-
-#### Step 4.2.3: Update SyncOrchestratorBuilder to pass DirtyScopeTracker
-
-```dart
-// lib/features/sync/application/sync_orchestrator_builder.dart
-// Add import at top
-import 'package:construction_inspector/features/sync/engine/dirty_scope_tracker.dart';
-
-// Add field in the class body (after appConfigProvider field)
-DirtyScopeTracker? dirtyScopeTracker;
-
-// Update the build() method's return statement to pass it through:
-return SyncOrchestrator.fromBuilder(
-  dbService: dbService!,
-  supabaseClient: supabaseClient,
-  engineFactory: engineFactory ?? SyncEngineFactory(),
-  userProfileSyncDatasource: userProfileSyncDatasource,
-  syncContextProvider: resolvedProvider,
-  appConfigProvider: appConfigProvider,
-  dirtyScopeTracker: dirtyScopeTracker,
-);
-```
-
-#### Step 4.2.4: Expose DirtyScopeTracker getter on SyncOrchestrator
-
-Add a public getter so trigger sources (FCM, Realtime) can mark scopes dirty:
-
-```dart
-// lib/features/sync/application/sync_orchestrator.dart — after _dirtyScopeTracker field
-// WHY: Trigger sources (FcmHandler, RealtimeHintHandler) need to mark scopes
-// dirty before triggering quick sync. The orchestrator owns the tracker instance.
-// FROM SPEC: "dirty-scope tracking locally"
-DirtyScopeTracker? get dirtyScopeTracker => _dirtyScopeTracker;
-```
+> **SKIP:** Phase 3.3.7 is the canonical location for the `dirtyScopeTracker` getter on SyncOrchestrator. The getter returns `DirtyScopeTracker?` (nullable). Do not apply again.
 
 #### Step 4.2.5: Verify compilation
 
@@ -2059,7 +1876,6 @@ Modify SyncLifecycleManager to use quick sync on resume and SyncInitializer to t
 // correctly to syncLocalAgencyProjects.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:construction_inspector/features/sync/domain/sync_types.dart';
-import 'package:construction_inspector/features/sync/engine/sync_mode.dart';
 import 'package:construction_inspector/features/sync/application/sync_lifecycle_manager.dart';
 import 'package:construction_inspector/features/sync/application/sync_orchestrator.dart';
 import 'package:construction_inspector/core/database/database_service.dart';
@@ -2115,7 +1931,7 @@ void main() {
 
 ```dart
 // lib/features/sync/application/sync_lifecycle_manager.dart — add after line 4
-import '../engine/sync_mode.dart';
+import '../domain/sync_types.dart';
 ```
 
 #### Step 5.1.3: Modify _triggerSync to use quick mode
@@ -2205,6 +2021,14 @@ Future<void> _handleResumed() async {
     // WHY: Even when not stale, push any pending local changes and
     // pull dirty scopes that may have been marked by FCM/Realtime hints
     // while the app was backgrounded.
+    //
+    // FOLLOW-UP (FIX-20): Check SharedPreferences 'fcm_background_hint_pending'
+    // flag. If true, background FCM hints arrived while the app was closed/backgrounded
+    // and the in-memory DirtyScopeTracker has no dirty scopes. Upgrade to full sync
+    // to ensure those remote changes are pulled. Clear the flag after sync.
+    // See Phase 6.1.4 (lines ~2634-2642) for where the flag is set.
+    // NOTE: This is documented as a deferred follow-up. The initial implementation
+    // uses quick sync on resume, which is push-only when no dirty scopes exist.
     Logger.sync('SyncLifecycleManager: App resumed, triggering quick sync');
     onStaleDataWarning?.call(false);
     _triggerDnsAwareSync(forced: false);
@@ -2236,7 +2060,7 @@ After step 8 (register lifecycle observer) at line 122, and before the return st
 ```dart
 // lib/features/sync/application/sync_initializer.dart — after line 122
 // Add import at top of file (after line 24)
-import 'package:construction_inspector/features/sync/engine/sync_mode.dart';
+import 'package:construction_inspector/features/sync/domain/sync_types.dart';
 ```
 
 Then insert the startup sync between line 122 and 124:
@@ -2287,7 +2111,7 @@ Add the import at the top of the file:
 
 ```dart
 // lib/features/sync/application/background_sync_handler.dart — add after line 10
-import 'package:construction_inspector/features/sync/engine/sync_mode.dart';
+import 'package:construction_inspector/features/sync/domain/sync_types.dart';
 ```
 
 Update the `backgroundSyncCallback` function at line 58:
@@ -2349,7 +2173,6 @@ import 'package:construction_inspector/features/sync/application/fcm_handler.dar
 import 'package:construction_inspector/features/sync/application/sync_orchestrator.dart';
 import 'package:construction_inspector/features/sync/domain/sync_types.dart';
 import 'package:construction_inspector/features/sync/engine/dirty_scope_tracker.dart';
-import 'package:construction_inspector/features/sync/engine/sync_mode.dart';
 import 'package:construction_inspector/core/database/database_service.dart';
 
 /// Tracks calls to syncLocalAgencyProjects and their modes.
@@ -2368,8 +2191,12 @@ class _TrackingOrchestrator extends SyncOrchestrator {
     return const SyncResult();
   }
 
+  // WHY: Single instance stored as field so dirty marks persist across accesses.
+  // Creating a new instance per getter call would lose all dirty state.
+  final DirtyScopeTracker _tracker = DirtyScopeTracker();
+
   @override
-  DirtyScopeTracker? get dirtyScopeTracker => DirtyScopeTracker();
+  DirtyScopeTracker? get dirtyScopeTracker => _tracker;
 }
 
 void main() {
@@ -2435,13 +2262,36 @@ void main() {
 }
 ```
 
-#### Step 6.1.2: Modify FcmHandler to import SyncMode and DirtyScopeTracker
+#### Step 6.1.2: Modify FcmHandler imports and constructor
+
+Add imports after line 6:
 
 ```dart
 // lib/features/sync/application/fcm_handler.dart — add imports after line 6
 import 'package:construction_inspector/features/sync/engine/dirty_scope_tracker.dart';
-import 'package:construction_inspector/features/sync/engine/sync_mode.dart';
+import 'package:construction_inspector/features/sync/domain/sync_types.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 ```
+
+Update the FcmHandler constructor to accept a `companyId` parameter instead of using `Supabase.instance.client` (which violates lint rule A1):
+
+```dart
+  // WHY: companyId injected via constructor from authProvider.userProfile?.companyId
+  // at creation time in SyncInitializer. This avoids both the lint A1 violation
+  // (no Supabase.instance.client outside DI root) and the userMetadata path
+  // which does not exist in this codebase.
+  final String? _companyId;
+
+  FcmHandler({
+    SyncOrchestrator? syncOrchestrator,
+    String? companyId,
+  })  : _syncOrchestrator = syncOrchestrator,
+        _companyId = companyId;
+```
+
+NOTE: The implementing agent must read the existing FcmHandler constructor to merge this change with any existing parameters. The `_companyId` field replaces the need for `Supabase.instance.client.auth.currentUser?.userMetadata?['company_id']` which is always null in this codebase.
+
+IMPORTANT: At the FcmHandler creation site in `sync_initializer.dart` (~line 94), pass `companyId: authProvider.userProfile?.companyId` to enable cross-tenant hint validation. Without this, `_companyId` is null and company-mismatch guards become no-ops.
 
 #### Step 6.1.3: Rewrite handleForegroundMessage with hint parsing
 
@@ -2473,6 +2323,21 @@ void handleForegroundMessage(RemoteMessage message) {
       return;
     }
     _lastFcmSyncTrigger = now;
+
+    // SECURITY: Validate company_id from hint against current user's company.
+    // WHY: Ignore hints for other companies to prevent unnecessary sync work
+    // from spoofed or misdirected FCM messages.
+    final hintCompanyId = message.data['company_id'] as String?;
+    // NOTE: _companyId is injected via constructor from
+    // authProvider.userProfile?.companyId at creation time in SyncInitializer.
+    if (hintCompanyId != null && _companyId != null &&
+        hintCompanyId != _companyId) {
+      Logger.sync(
+        'FCM hint: ignored — company mismatch '
+        '(hint=$hintCompanyId, user=$_companyId)',
+      );
+      return;
+    }
 
     // FROM SPEC: Parse hint payload and mark dirty scopes
     // WHY: "The client should treat these as invalidation hints, not trusted
@@ -2529,6 +2394,22 @@ Future<void> fcmBackgroundMessageHandler(RemoteMessage message) async {
       // WHY: Cannot mark dirty scopes here — no access to in-memory tracker.
       // The hint is logged so it appears in device logs for debugging.
       // The next foreground resume will trigger a quick sync.
+      //
+      // KNOWN LIMITATION: Background FCM hints cannot mark in-memory dirty
+      // scopes (tracker is lost on restart). On next app resume, the quick sync
+      // will have no dirty scopes and run push-only. To address this, set a
+      // SharedPreferences flag that the lifecycle manager reads on startup:
+      //   - If flag is set, upgrade startup sync from quick to full.
+      //   - Clear the flag after the full sync completes.
+      // This is a pragmatic alternative to persisting dirty scopes to SQLite.
+      // Implementation deferred to a follow-up if background hint accuracy
+      // proves insufficient in field testing.
+      try {
+        // ignore: unawaited_futures
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setBool('fcm_background_hint_pending', true);
+        });
+      } catch (e) { /* SharedPreferences may not be available in isolate: $e */ }
       Logger.sync(
         'FCM background hint: type=$messageType '
         'project=$projectId table=$tableName',
@@ -2536,9 +2417,10 @@ Future<void> fcmBackgroundMessageHandler(RemoteMessage message) async {
     } else if (messageType == 'daily_sync') {
       Logger.sync('FCM background daily_sync trigger received');
     }
-  } catch (_) {
-    // WHY: A9 exception — background handler must never crash.
-    // Logger itself may fail in a fresh isolate. Swallow silently.
+  } catch (e) {
+    // WHY: A9 compliance — best-effort log even in background isolate.
+    // Logger itself may fail in a fresh isolate, so wrap in inner try/catch.
+    try { Logger.sync('FCM background error: $e'); } catch (_) { /* Logger unavailable in isolate */ }
   }
 }
 ```
@@ -2572,7 +2454,7 @@ Expected: No analysis errors.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:construction_inspector/features/sync/application/realtime_hint_handler.dart';
 import 'package:construction_inspector/features/sync/engine/dirty_scope_tracker.dart';
-import 'package:construction_inspector/features/sync/engine/sync_mode.dart';
+import 'package:construction_inspector/features/sync/domain/sync_types.dart';
 
 void main() {
   group('RealtimeHintHandler', () {
@@ -2614,8 +2496,8 @@ void main() {
         tableName: 'daily_entries',
       );
 
-      expect(tracker.isDirty('daily_entries', 'proj-456'), isTrue);
-      expect(tracker.isDirty('photos', 'proj-456'), isFalse);
+      expect(tracker.isDirty('daily_entries', projectId: 'proj-456'), isTrue);
+      expect(tracker.isDirty('photos', projectId: 'proj-456'), isFalse);
     });
   });
 }
@@ -2639,7 +2521,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:construction_inspector/core/logging/logger.dart';
 import 'package:construction_inspector/features/sync/application/sync_orchestrator.dart';
 import 'package:construction_inspector/features/sync/engine/dirty_scope_tracker.dart';
-import 'package:construction_inspector/features/sync/engine/sync_mode.dart';
+import 'package:construction_inspector/features/sync/domain/sync_types.dart';
 
 /// Parsed hint payload from Supabase Realtime broadcast.
 // WHY: Typed record avoids stringly-typed map access scattered through the handler.
@@ -2676,6 +2558,11 @@ class RealtimeHintHandler {
   final SupabaseClient _supabaseClient;
   final SyncOrchestrator _syncOrchestrator;
 
+  // WHY: companyId injected via constructor from authProvider.userProfile?.companyId
+  // at creation time in SyncInitializer. The userMetadata?['company_id'] path does
+  // not exist in this codebase — authProvider.userProfile is the canonical source.
+  final String? _companyId;
+
   /// The Supabase Realtime channel subscription.
   RealtimeChannel? _channel;
 
@@ -2691,8 +2578,10 @@ class RealtimeHintHandler {
   RealtimeHintHandler({
     required SupabaseClient supabaseClient,
     required SyncOrchestrator syncOrchestrator,
+    String? companyId,
   })  : _supabaseClient = supabaseClient,
-        _syncOrchestrator = syncOrchestrator;
+        _syncOrchestrator = syncOrchestrator,
+        _companyId = companyId;
 
   /// Parse a raw broadcast payload into a typed [HintPayload].
   ///
@@ -2722,10 +2611,25 @@ class RealtimeHintHandler {
       return;
     }
 
+    // SECURITY: Verify the companyId matches the authenticated user's company.
+    // WHY: Broadcast channels have no server-side authorization. Without this
+    // guard, a caller could subscribe to another company's hint channel.
+    // NOTE: Server-side Realtime Policies should also be configured as a
+    // separate hardening step (see FIX-F SECURITY RISK ACCEPTANCE below).
+    if (_companyId != null && _companyId != companyId) {
+      Logger.sync(
+        'RealtimeHintHandler: SECURITY — companyId mismatch '
+        '(requested=$companyId, user=$_companyId). Refusing to subscribe.',
+      );
+      return;
+    }
+
     // WHY: Channel name is scoped to company_id to prevent cross-tenant hint delivery.
     // IMPORTANT: This is a broadcast channel (no RLS), so the channel name itself
     // provides the scoping. The server-side trigger must only broadcast to the
     // correct company channel.
+    // NOTE: Server-side Realtime Policies should be configured as a separate
+    // hardening step to enforce channel-level access control.
     final channelName = 'sync_hints:$companyId';
 
     _channel = _supabaseClient
@@ -2761,6 +2665,19 @@ class RealtimeHintHandler {
     Logger.sync('RealtimeHintHandler: received hint payload');
 
     final hint = parseHintPayload(payload);
+
+    // SECURITY: Validate company_id from hint against current user's company.
+    // WHY: Even though the channel is scoped by company_id, validate the payload
+    // to defend against spoofed broadcasts on the same channel.
+    // NOTE: _companyId is injected via constructor from authProvider.userProfile?.companyId.
+    if (hint.companyId != null && _companyId != null &&
+        hint.companyId != _companyId) {
+      Logger.sync(
+        'RealtimeHintHandler: SECURITY — hint company_id mismatch '
+        '(hint=${hint.companyId}, user=$_companyId). Ignoring.',
+      );
+      return;
+    }
 
     // Mark dirty scope via the orchestrator's tracker
     final tracker = _syncOrchestrator.dirtyScopeTracker;
@@ -2889,6 +2806,8 @@ Then after step 6 (FCM initialization, line 100), wire the Realtime handler:
       realtimeHintHandler = RealtimeHintHandler(
         supabaseClient: supabaseClient,
         syncOrchestrator: syncOrchestrator,
+        // SECURITY: Pass companyId for cross-tenant hint validation.
+        companyId: authProvider.userProfile?.companyId,
       );
 
       // Subscribe if we already have a company context
@@ -2948,96 +2867,129 @@ Expected: No analysis errors.
 -- - Payload contains only IDs and metadata, never row data
 -- - Client treats hints as invalidation signals, not data replacements
 
--- Step 1: Create the broadcast helper function
-CREATE OR REPLACE FUNCTION public.broadcast_sync_hint()
+-- Step 0: Ensure http extension is available for extensions.http_post()
+-- WHY: The trigger function calls extensions.http_post() to broadcast via
+-- Supabase Realtime API. Without this extension, the function will fail
+-- silently on every row modification (RAISE WARNING only).
+CREATE EXTENSION IF NOT EXISTS http WITH SCHEMA extensions;
+
+-- Step 1: Create static per-table-type broadcast helper functions
+-- WHY: Avoids information_schema.columns queries on every row modification.
+-- Two function variants: one for tables with direct company_id, one for
+-- tables with project_id (that resolves company_id via projects table).
+-- This is more performant for high-churn tables like daily_entries and photos.
+
+-- Variant A: Tables with direct company_id column (projects)
+CREATE OR REPLACE FUNCTION public.broadcast_sync_hint_company()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
 AS $$
 DECLARE
+  v_row record;
   v_company_id uuid;
-  v_project_id uuid;
-  v_table_name text;
-  v_channel_name text;
   v_payload jsonb;
+  v_channel_name text;
 BEGIN
-  v_table_name := TG_TABLE_NAME;
+  v_row := COALESCE(NEW, OLD);
+  v_company_id := (v_row).company_id;
 
-  -- Resolve company_id from the row.
-  -- Different tables store company_id differently:
-  -- - Some have a direct company_id column (projects, project_assignments)
-  -- - Some are project-scoped (join through projects table)
-  -- - Some are entry-scoped (join through daily_entries → projects)
-  --
-  -- For simplicity, we check for direct company_id first,
-  -- then project_id → projects.company_id lookup.
-  -- NOTE: Use COALESCE(NEW, OLD) for DELETE operations where NEW is null.
-  DECLARE
-    v_row record;
-  BEGIN
-    v_row := COALESCE(NEW, OLD);
-
-    -- Direct company_id column
-    IF v_row IS NOT NULL AND EXISTS (
-      SELECT 1 FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = TG_TABLE_NAME
-        AND column_name = 'company_id'
-    ) THEN
-      v_company_id := (v_row).company_id;
-    END IF;
-
-    -- Fallback: project_id → projects.company_id
-    IF v_company_id IS NULL AND v_row IS NOT NULL AND EXISTS (
-      SELECT 1 FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = TG_TABLE_NAME
-        AND column_name = 'project_id'
-    ) THEN
-      v_project_id := (v_row).project_id;
-      SELECT p.company_id INTO v_company_id
-      FROM public.projects p
-      WHERE p.id = v_project_id;
-    END IF;
-
-    -- Extract project_id if present
-    IF v_project_id IS NULL AND v_row IS NOT NULL AND EXISTS (
-      SELECT 1 FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = TG_TABLE_NAME
-        AND column_name = 'project_id'
-    ) THEN
-      v_project_id := (v_row).project_id;
-    END IF;
-  END;
-
-  -- Cannot resolve company — skip broadcast
   IF v_company_id IS NULL THEN
     RETURN COALESCE(NEW, OLD);
   END IF;
 
-  -- Build the hint payload
-  -- FROM SPEC: company_id, project_id, table_name, changed_at, optional scope_type
+  -- SECURITY FIX-H: Guard against missing realtime_url setting.
+  -- current_setting(..., true) returns NULL if not set. Without this guard,
+  -- http_post would fail on every row modification.
+  IF current_setting('supabase.realtime_url', true) IS NULL THEN
+    RETURN COALESCE(NEW, OLD);
+  END IF;
+
   v_payload := jsonb_build_object(
     'company_id', v_company_id::text,
-    'project_id', v_project_id::text,
-    'table_name', v_table_name,
+    'project_id', NULL,
+    'table_name', TG_TABLE_NAME,
     'changed_at', now()::text
   );
-
   v_channel_name := 'sync_hints:' || v_company_id::text;
 
-  -- Broadcast via Supabase Realtime
-  -- NOTE: pg_notify sends to the Realtime server which routes to the
-  -- correct broadcast channel. This is the standard Supabase Realtime
-  -- broadcast pattern for server-initiated messages.
-  -- WHY: PERFORM (not SELECT) because we don't need the return value.
   PERFORM
     extensions.http_post(
       url := current_setting('supabase.realtime_url', true) || '/api/broadcast',
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
-        'apikey', current_setting('supabase.anon_key', true)
+        -- WHY: service_role_key (not anon_key) because this is server-side code
+        -- running in a SECURITY DEFINER function. The anon key is public and would
+        -- allow any client to broadcast to any company channel.
+        'apikey', current_setting('supabase.service_role_key', true)
+      ),
+      body := jsonb_build_object(
+        'channel', v_channel_name,
+        'event', 'sync_hint',
+        'payload', v_payload
+      )
+    );
+
+  RETURN COALESCE(NEW, OLD);
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE WARNING 'broadcast_sync_hint_company failed: %', SQLERRM;
+    RETURN COALESCE(NEW, OLD);
+END;
+$$;
+
+-- Variant B: Tables with project_id column (resolves company_id via projects)
+-- WHY: Most synced tables have project_id, not company_id. The single JOIN
+-- to projects is far cheaper than querying information_schema on every row.
+CREATE OR REPLACE FUNCTION public.broadcast_sync_hint_project()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_row record;
+  v_project_id uuid;
+  v_company_id uuid;
+  v_payload jsonb;
+  v_channel_name text;
+BEGIN
+  v_row := COALESCE(NEW, OLD);
+  v_project_id := (v_row).project_id;
+
+  IF v_project_id IS NULL THEN
+    RETURN COALESCE(NEW, OLD);
+  END IF;
+
+  -- Resolve company_id via projects table
+  SELECT p.company_id INTO v_company_id
+  FROM public.projects p
+  WHERE p.id = v_project_id;
+
+  IF v_company_id IS NULL THEN
+    RETURN COALESCE(NEW, OLD);
+  END IF;
+
+  -- SECURITY FIX-H: Guard against missing realtime_url setting.
+  IF current_setting('supabase.realtime_url', true) IS NULL THEN
+    RETURN COALESCE(NEW, OLD);
+  END IF;
+
+  -- FROM SPEC: company_id, project_id, table_name, changed_at, optional scope_type
+  v_payload := jsonb_build_object(
+    'company_id', v_company_id::text,
+    'project_id', v_project_id::text,
+    'table_name', TG_TABLE_NAME,
+    'changed_at', now()::text
+  );
+  v_channel_name := 'sync_hints:' || v_company_id::text;
+
+  PERFORM
+    extensions.http_post(
+      url := current_setting('supabase.realtime_url', true) || '/api/broadcast',
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        -- WHY: service_role_key for server-side SECURITY DEFINER function
+        'apikey', current_setting('supabase.service_role_key', true)
       ),
       body := jsonb_build_object(
         'channel', v_channel_name,
@@ -3052,7 +3004,7 @@ EXCEPTION
     -- WHY: Trigger must never fail the original INSERT/UPDATE/DELETE.
     -- Broadcast is best-effort — if it fails, the client will eventually
     -- pick up changes via periodic sync or manual refresh.
-    RAISE WARNING 'broadcast_sync_hint failed: %', SQLERRM;
+    RAISE WARNING 'broadcast_sync_hint_project failed: %', SQLERRM;
     RETURN COALESCE(NEW, OLD);
 END;
 $$;
@@ -3070,38 +3022,47 @@ $$;
 -- NOTE: Low-churn tables (inspector_forms, bid_items, etc.) are pulled
 -- during periodic maintenance sync — no need for real-time hints.
 
+-- Tables with direct company_id: projects
+-- WHY: projects has a company_id column directly — use the company variant.
+CREATE OR REPLACE TRIGGER sync_hint_projects
+  AFTER INSERT OR UPDATE OR DELETE ON public.projects
+  FOR EACH ROW EXECUTE FUNCTION public.broadcast_sync_hint_company();
+
+-- Tables with project_id: daily_entries, contractors, entry_quantities, photos, form_responses
+-- WHY: These tables have project_id — use the project variant which resolves
+-- company_id via a single JOIN to projects (no information_schema queries).
 CREATE OR REPLACE TRIGGER sync_hint_daily_entries
   AFTER INSERT OR UPDATE OR DELETE ON public.daily_entries
-  FOR EACH ROW EXECUTE FUNCTION public.broadcast_sync_hint();
+  FOR EACH ROW EXECUTE FUNCTION public.broadcast_sync_hint_project();
 
 CREATE OR REPLACE TRIGGER sync_hint_contractors
   AFTER INSERT OR UPDATE OR DELETE ON public.contractors
-  FOR EACH ROW EXECUTE FUNCTION public.broadcast_sync_hint();
+  FOR EACH ROW EXECUTE FUNCTION public.broadcast_sync_hint_project();
 
 CREATE OR REPLACE TRIGGER sync_hint_entry_quantities
   AFTER INSERT OR UPDATE OR DELETE ON public.entry_quantities
-  FOR EACH ROW EXECUTE FUNCTION public.broadcast_sync_hint();
+  FOR EACH ROW EXECUTE FUNCTION public.broadcast_sync_hint_project();
 
 CREATE OR REPLACE TRIGGER sync_hint_photos
   AFTER INSERT OR UPDATE OR DELETE ON public.photos
-  FOR EACH ROW EXECUTE FUNCTION public.broadcast_sync_hint();
-
-CREATE OR REPLACE TRIGGER sync_hint_projects
-  AFTER INSERT OR UPDATE OR DELETE ON public.projects
-  FOR EACH ROW EXECUTE FUNCTION public.broadcast_sync_hint();
+  FOR EACH ROW EXECUTE FUNCTION public.broadcast_sync_hint_project();
 
 CREATE OR REPLACE TRIGGER sync_hint_form_responses
   AFTER INSERT OR UPDATE OR DELETE ON public.form_responses
-  FOR EACH ROW EXECUTE FUNCTION public.broadcast_sync_hint();
+  FOR EACH ROW EXECUTE FUNCTION public.broadcast_sync_hint_project();
 
 -- Step 3: Grant execute permission
 -- WHY: The trigger runs as SECURITY DEFINER but needs the http extension.
 -- Ensure the function can access the http_post extension.
 GRANT USAGE ON SCHEMA extensions TO postgres;
 
-COMMENT ON FUNCTION public.broadcast_sync_hint() IS
-  'Broadcasts sync invalidation hints via Supabase Realtime broadcast channel. '
-  'Attached to high-value tables to notify connected clients of data changes. '
+COMMENT ON FUNCTION public.broadcast_sync_hint_company() IS
+  'Broadcasts sync hints for tables with direct company_id column. '
+  'Best-effort: failures do not block the original DML operation.';
+
+COMMENT ON FUNCTION public.broadcast_sync_hint_project() IS
+  'Broadcasts sync hints for tables with project_id column. '
+  'Resolves company_id via projects table JOIN. '
   'Best-effort: failures do not block the original DML operation.';
 ```
 
@@ -3112,6 +3073,81 @@ pwsh -Command "npx supabase db lint --level warning"
 ```
 
 Expected: No critical lint errors in the new migration file. Warnings about unused variables are acceptable.
+
+---
+
+### Sub-phase 6.4b: Update FCM Edge Function to Send Hint Payloads
+
+**Files:**
+- Modify: `supabase/functions/daily-sync-push/index.ts`
+
+**Agent**: `backend-supabase-agent`
+
+#### Step 6.4b.1: Extend FCM edge function to send hint payloads
+
+The existing `supabase/functions/daily-sync-push/index.ts` handles server-to-device FCM push. It currently sends `type: daily_sync` with no hint fields. Extend it to send targeted invalidation hint payloads when invoked with scope parameters.
+
+Modify the FCM data message payload construction to support hint mode:
+
+```typescript
+// supabase/functions/daily-sync-push/index.ts
+//
+// FROM SPEC: "send a small invalidation payload" via FCM data messages
+// WHY: Without this change, FCM messages only contain type=daily_sync and
+// the client-side hint parsing code (Phase 6.1.3) will always fall through
+// to the backward-compat path with no project_id/table_name. The entire
+// "Background / Closed-App Path" from the spec would be non-functional.
+
+// When the function receives hint parameters (from the broadcast trigger
+// or a direct invocation), include them in the FCM data payload:
+const buildFcmPayload = (
+  tokens: string[],
+  hintParams?: {
+    company_id: string;
+    project_id?: string;
+    table_name?: string;
+    changed_at?: string;
+  }
+) => {
+  // NOTE: FCM data messages (not notification messages) are required for
+  // background processing on both Android and iOS.
+  const data: Record<string, string> = hintParams
+    ? {
+        type: 'sync_hint',
+        company_id: hintParams.company_id,
+        ...(hintParams.project_id && { project_id: hintParams.project_id }),
+        ...(hintParams.table_name && { table_name: hintParams.table_name }),
+        ...(hintParams.changed_at && { changed_at: hintParams.changed_at }),
+      }
+    : {
+        // Backward compat: no hint params means legacy daily_sync trigger
+        type: 'daily_sync',
+      };
+
+  return {
+    tokens,
+    data,
+    // WHY: High priority ensures background handler fires on Android
+    android: { priority: 'high' as const },
+    apns: { headers: { 'apns-priority': '10' } },
+  };
+};
+```
+
+The implementing agent must:
+1. Read the current `index.ts` to understand the existing FCM send pattern
+2. Add the `hintParams` optional parameter to the existing send function
+3. Update the request handler to extract hint params from the request body
+4. Preserve backward compatibility: requests without hint params still send `type: daily_sync`
+5. Test that the function still deploys successfully
+
+#### Step 6.4b.2: Verify edge function deployment
+
+```
+npx supabase functions deploy daily-sync-push --no-verify-jwt
+```
+
+Expected: Function deploys successfully with the updated payload construction.
 
 ---
 
@@ -3357,7 +3393,8 @@ Replace the `_buildActionsSection` method (lines 292-323):
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        // WHY: A13 lint — use theme color, not hardcoded Colors.white
+                        color: Theme.of(context).colorScheme.onPrimary,
                       ),
                     )
                   : const Icon(Icons.sync),
@@ -3400,15 +3437,14 @@ Replace the `_buildActionsSection` method (lines 292-323):
 
 #### Step 7.2.4: Add SnackBarHelper and Colors imports to SyncDashboardScreen
 
-The SyncDashboardScreen needs imports for `SnackBarHelper` and `Colors`. Check existing imports at lines 1-9. The `SnackBarHelper` is available via `package:construction_inspector/shared/shared.dart`. Check if already imported.
+The SyncDashboardScreen needs an import for `SnackBarHelper`. The file does NOT currently import `shared.dart` (verified: existing imports are `design_system.dart` and `testing_keys.dart`). Add this import:
 
 ```dart
 // lib/features/sync/presentation/screens/sync_dashboard_screen.dart
-// Add if not already present (shared.dart includes SnackBarHelper):
+// WHY: SnackBarHelper is needed for success/warning snackbars on sync completion.
+// This import is NOT already present — add it after the existing imports.
 import 'package:construction_inspector/shared/shared.dart';
 ```
-
-Review existing imports: the file already imports `design_system.dart` (which provides `AppScaffold`, `AppText`) and `testing_keys.dart`. The `shared.dart` barrel provides `SnackBarHelper` and `TestingKeys`. Since `SyncTestingKeys` is imported separately from `testing_keys.dart`, add `shared.dart` for `SnackBarHelper` if not present.
 
 Also add import for `SyncTestingKeys` if the file currently accesses it through `testing_keys.dart`:
 ```dart
@@ -3431,6 +3467,7 @@ Create `test/features/sync/presentation/providers/sync_provider_mode_test.dart`:
 import 'package:flutter_test/flutter_test.dart';
 import 'package:construction_inspector/features/sync/presentation/providers/sync_provider.dart';
 import 'package:construction_inspector/features/sync/domain/sync_types.dart';
+import 'package:construction_inspector/core/database/database_service.dart';
 
 // NOTE: We use a minimal mock that tracks the mode parameter.
 // The SyncOrchestrator is complex; we only need to verify the mode is passed.
@@ -3438,9 +3475,9 @@ class _TrackingSyncOrchestrator extends SyncOrchestrator {
   SyncMode? lastMode;
   int syncCallCount = 0;
 
-  // WHY: Minimal constructor — SyncOrchestrator requires specific setup.
+  // WHY: Minimal constructor — SyncOrchestrator.forTesting requires a DatabaseService.
   // This is a test-only subclass that overrides syncLocalAgencyProjects.
-  _TrackingSyncOrchestrator() : super._testOnly();
+  _TrackingSyncOrchestrator(DatabaseService dbService) : super.forTesting(dbService);
 
   @override
   Future<SyncResult> syncLocalAgencyProjects({
@@ -3467,7 +3504,8 @@ void main() {
     test('fullSync passes SyncMode.full to orchestrator', () async {
       // WHY: Verify the explicit full sync path reaches the orchestrator
       // with the correct mode parameter.
-      final orchestrator = _TrackingSyncOrchestrator();
+      final mockDbService = DatabaseService();
+      final orchestrator = _TrackingSyncOrchestrator(mockDbService);
       final provider = SyncProvider(orchestrator);
 
       final result = await provider.fullSync();
@@ -3483,7 +3521,8 @@ void main() {
     test('sync calls orchestrator with default mode', () async {
       // WHY: Verify the existing sync() method still works and calls the
       // orchestrator (mode defaults to SyncMode.full in the orchestrator).
-      final orchestrator = _TrackingSyncOrchestrator();
+      final mockDbService = DatabaseService();
+      final orchestrator = _TrackingSyncOrchestrator(mockDbService);
       final provider = SyncProvider(orchestrator);
 
       await provider.sync();
@@ -3499,7 +3538,7 @@ void main() {
 }
 ```
 
-**IMPORTANT**: This test depends on the `SyncOrchestrator` having a `_testOnly()` constructor or being mockable. If the orchestrator does not have a test constructor, the implementing agent must create a mock using Mockito `@GenerateMocks([SyncOrchestrator])` instead. The test structure above is illustrative -- the implementing agent should use the project's established mocking pattern (Mockito with `@GenerateMocks`).
+**IMPORTANT**: This test depends on the `SyncOrchestrator` having a `forTesting(DatabaseService)` constructor (at `sync_orchestrator.dart:127`) or being mockable. If the orchestrator does not have a test constructor, the implementing agent must create a mock using Mockito `@GenerateMocks([SyncOrchestrator])` instead. The test structure above is illustrative -- the implementing agent should use the project's established mocking pattern (Mockito with `@GenerateMocks`).
 
 #### Step 7.2.6: Verify static analysis passes
 
@@ -3525,87 +3564,15 @@ Expected: No analysis issues.
 
 **Agent**: `backend-supabase-agent`
 
-#### Step 8.1.1: Add DirtyScopeTracker parameter to SyncEngineFactory
+#### Step 8.1.1: Verify SyncEngineFactory uses setter approach (already done in Phase 3.2)
 
-Modify `lib/features/sync/application/sync_engine_factory.dart` to accept and pass `DirtyScopeTracker` to the `SyncEngine` constructor. The `SyncEngine` constructor was extended in Phase 2 to accept an optional `DirtyScopeTracker`.
-
-Add the import and modify the `create` method:
-
-```dart
-// lib/features/sync/application/sync_engine_factory.dart
-// Add import after line 8 (after sync_registry import):
-// WHY: DirtyScopeTracker enables targeted pull during quick sync.
-// FROM SPEC: "quick sync pulls only affected scopes whenever possible"
-import 'package:construction_inspector/features/sync/engine/dirty_scope_tracker.dart';
-
-class SyncEngineFactory {
-  bool _adaptersRegistered = false;
-
-  // WHY: Stored as a field so all engines created by this factory share the
-  // same dirty scope state. The tracker persists across sync cycles.
-  // NOTE: Nullable because the factory may be created before the tracker.
-  DirtyScopeTracker? _dirtyScopeTracker;
-
-  /// Set the dirty scope tracker. Called once during initialization.
-  /// WHY: Setter rather than constructor param because SyncEngineFactory is
-  /// created before DirtyScopeTracker in the initialization sequence.
-  void setDirtyScopeTracker(DirtyScopeTracker tracker) {
-    _dirtyScopeTracker = tracker;
-  }
-
-  /// Ensure sync adapters are registered (idempotent).
-  void ensureAdaptersRegistered() {
-    if (!_adaptersRegistered) {
-      registerSyncAdapters();
-      _adaptersRegistered = true;
-    }
-  }
-
-  /// Create a SyncEngine for foreground sync operations.
-  ///
-  /// NOTE: SyncEngine constructor requires db, supabase, companyId, userId
-  /// (see sync_engine.dart lines 153-160). lockedBy defaults to 'foreground'.
-  /// FROM SPEC: DirtyScopeTracker passed so engine can filter pulls by dirty scope.
-  SyncEngine? create({
-    required Database db,
-    required SupabaseClient supabase,
-    required String companyId,
-    required String userId,
-  }) {
-    ensureAdaptersRegistered();
-    return SyncEngine(
-      db: db,
-      supabase: supabase,
-      companyId: companyId,
-      userId: userId,
-      // WHY: Pass tracker so SyncEngine._pull() can check dirty scopes during
-      // quick sync mode. Null-safe — engine handles null tracker gracefully.
-      dirtyScopeTracker: _dirtyScopeTracker,
-    );
-  }
-
-  /// Create a SyncEngine for background sync operations.
-  ///
-  /// Delegates to [SyncEngine.createForBackgroundSync] which resolves
-  /// companyId/userId internally from the Supabase auth session.
-  /// WHY: createForBackgroundSync only takes {database, supabase} --
-  /// it reads userId from auth and companyId from user_profiles.
-  /// NOTE: Background sync does NOT use dirty scope tracking (it runs
-  /// maintenance mode with full integrity checks).
-  Future<SyncEngine?> createForBackground({
-    required Database database,
-    required SupabaseClient supabase,
-  }) async {
-    ensureAdaptersRegistered();
-    return SyncEngine.createForBackgroundSync(
-      database: database,
-      supabase: supabase,
-    );
-  }
-}
-```
+> **NOTE:** Phase 3.2 is the canonical location for SyncEngineFactory changes. It adds the `_dirtyScopeTracker` field, `setDirtyScopeTracker()` setter, and passes the tracker to `SyncEngine` in `create()`. The factory's `create()` method does NOT accept a `dirtyScopeTracker` parameter -- the tracker is set once via the setter during initialization.
+>
+> The implementing agent should verify Phase 3.2 was applied correctly. No additional changes needed here.
 
 #### Step 8.1.2: Create and wire DirtyScopeTracker in SyncInitializer
+
+> **NOTE:** This step overlaps with Phase 6.3.3 (Step 6.3.3). If Phase 6.3.3 was already applied, this step is a NO-OP. The implementing agent should verify that `DirtyScopeTracker` is already created and wired in `SyncInitializer.create()` before applying.
 
 Modify `lib/features/sync/application/sync_initializer.dart`. Add DirtyScopeTracker creation between Step 2 (wire UserProfileSyncDatasource) and Step 3 (build orchestrator). The tracker must be created before the orchestrator so it can be injected into the engine factory.
 
@@ -3651,6 +3618,8 @@ Alternative wiring (if builder does not support dirtyScopeTracker):
 
 #### Step 8.1.3: Wire RealtimeHintHandler in SyncInitializer (Supabase Realtime)
 
+> **NOTE:** This step overlaps with Phase 6.3.3 (Step 6.3.3). If Phase 6.3.3 was already applied, this step is a NO-OP. The implementing agent should verify that `RealtimeHintHandler` is already created and wired in `SyncInitializer.create()` before applying.
+
 Add creation of `RealtimeHintHandler` in `SyncInitializer.create()` after FCM initialization (after line 100). This handler subscribes to Supabase Broadcast for foreground invalidation hints.
 
 Add import:
@@ -3667,36 +3636,44 @@ After Step 6 (FCM initialization, after line 100), add:
     // change hints in real time. The handler marks scopes dirty and triggers
     // a quick sync to pull only affected data.
     // NOTE: Only created when supabaseClient is available (online mode).
+    RealtimeHintHandler? realtimeHintHandler;
     if (supabaseClient != null) {
-      final realtimeHandler = RealtimeHintHandler(
+      realtimeHintHandler = RealtimeHintHandler(
         supabaseClient: supabaseClient,
-        dirtyScopeTracker: dirtyScopeTracker,
         syncOrchestrator: syncOrchestrator,
+        // SECURITY: Pass companyId for cross-tenant hint validation.
+        companyId: authProvider.userProfile?.companyId,
       );
-      // WHY: initialize() subscribes to the broadcast channel. Non-blocking
-      // because realtime is a best-effort foreground optimization.
-      // ignore: unawaited_futures
-      realtimeHandler
-          .initialize()
-          .catchError((e) => Logger.sync('Realtime hint handler init failed: $e'));
+      // WHY: subscribe() subscribes to the company-scoped broadcast channel.
+      // Non-blocking because realtime is a best-effort foreground optimization.
+      // NOTE: companyId is required for channel scoping. Guard against null.
+      final companyId = authProvider.userProfile?.companyId;
+      if (companyId != null) {
+        realtimeHintHandler.subscribe(companyId);
+      }
     }
 ```
 
-#### Step 8.1.4: Update SyncInitializer return type to include DirtyScopeTracker
+#### Step 8.1.4: Update SyncInitializer return type to include RealtimeHintHandler
 
-If downstream consumers (like `sync_providers.dart`) need access to the `DirtyScopeTracker`, update the return record. Otherwise, the tracker is self-contained within the initializer.
-
-The `DirtyScopeTracker` is wired into the engine factory and realtime handler at creation time. It does not need to be returned unless `sync_providers.dart` needs to expose it as a Provider. For now, keep it internal:
+The return type must include `RealtimeHintHandler?` so the caller (AppInitializer) can dispose it on sign-out. This is consistent with Phase 6.3.2 which already defines the return type with three fields.
 
 ```dart
-    // No change to return type — DirtyScopeTracker is fully wired internally.
-    // It lives in the engine factory and realtime handler, both of which are
-    // created and wired in this method.
+    // WHY: RealtimeHintHandler must be returned so the caller can dispose it
+    // on sign-out, preventing stale WebSocket connections leaking hints from
+    // the previous user's company to the newly signed-in user (Security M6).
+    // NOTE: This is consistent with Phase 6.3.2's return type definition.
     return (
       orchestrator: syncOrchestrator,
       lifecycleManager: syncLifecycleManager,
+      realtimeHintHandler: realtimeHintHandler,
     );
 ```
+
+The caller (AppInitializer / app_dependencies.dart) must:
+1. Destructure the new field: `final (:orchestrator, :lifecycleManager, :realtimeHintHandler) = ...`
+2. Store `realtimeHintHandler` for disposal
+3. Call `realtimeHintHandler?.dispose()` during sign-out cleanup
 
 ---
 
@@ -3748,29 +3725,53 @@ Update the doc comment on `sync()` (line 282) to clarify its role now that multi
 
 ---
 
-### Sub-phase 8.3: Wire DirtyScopeTracker into sync_providers.dart
+### Sub-phase 8.3: Update SyncProviders.initialize and app_initializer.dart
 
 **Files:**
 - Modify: `lib/features/sync/di/sync_providers.dart:49-91`
+- Modify: `lib/core/config/app_initializer.dart` (or `app_dependencies.dart`, wherever `SyncProviders.initialize()` is called)
 
 **Agent**: `backend-supabase-agent`
 
-#### Step 8.3.1: No changes needed to sync_providers.dart
+#### Step 8.3.1: Update SyncProviders.initialize return type
 
-After review, `sync_providers.dart` delegates initialization to `SyncInitializer.create()` and exposes providers via `providers()`. The `DirtyScopeTracker` is created and wired INSIDE `SyncInitializer.create()` -- it does not need to be surfaced as a Provider because:
+`SyncProviders.initialize()` wraps `SyncInitializer.create()` and returns its result. Since Phase 8.1.4 updates `SyncInitializer.create()` to return a record including `RealtimeHintHandler?`, the wrapper must be updated to propagate that field.
 
+Update the return type of `SyncProviders.initialize()` to match the new `SyncInitializer.create()` return type:
+
+```dart
+// lib/features/sync/di/sync_providers.dart
+// WHY: SyncInitializer.create() now returns (orchestrator:, lifecycleManager:, realtimeHintHandler:).
+// SyncProviders.initialize() must propagate realtimeHintHandler so the caller
+// (AppInitializer) can dispose it on sign-out, preventing stale WebSocket leaks.
+static Future<({
+  SyncOrchestrator orchestrator,
+  SyncLifecycleManager lifecycleManager,
+  RealtimeHintHandler? realtimeHintHandler,
+})> initialize(...) async {
+  // ... delegates to SyncInitializer.create() and returns its full result
+}
+```
+
+NOTE: The `DirtyScopeTracker` itself does NOT need to be surfaced as a Provider:
 1. No UI widget directly reads `DirtyScopeTracker`
 2. The tracker is injected into `SyncEngineFactory` and `RealtimeHintHandler` at creation time
 3. The `SyncProvider` does not need direct access to the tracker
 
-If a future phase requires exposing `DirtyScopeTracker` as a Provider (e.g., for a debug screen showing dirty scopes), the implementing agent can add it to the return record and the providers list at that time.
+#### Step 8.3.2: Update app_initializer.dart destructuring
+
+In `lib/core/config/app_initializer.dart` (or `app_dependencies.dart`), update the call site that destructures `SyncProviders.initialize()`:
 
 ```dart
-// NO CHANGES to sync_providers.dart in this phase.
-// WHY: DirtyScopeTracker is fully self-contained within SyncInitializer.create().
-// It is injected into the engine factory and realtime handler, both of which
-// are created in the same method. No external consumer needs Provider access.
+// WHY: Must destructure the new realtimeHintHandler field to store it for
+// disposal on sign-out. Without this, the code won't compile since the
+// return record now has 3 fields instead of 2.
+final (:orchestrator, :lifecycleManager, :realtimeHintHandler) =
+    await SyncProviders.initialize(...);
+// Store realtimeHintHandler for disposal during sign-out cleanup
 ```
+
+The implementing agent must find the existing destructuring pattern and add `:realtimeHintHandler` to it, plus wire `realtimeHintHandler?.dispose()` into the sign-out cleanup path.
 
 ---
 
@@ -3844,7 +3845,7 @@ pwsh -Command "flutter analyze"
 Expected: No analysis issues. If issues arise, they are likely:
 - Missing imports for `SyncMode` (added in Phase 1, should be in `sync_types.dart`)
 - Missing `DirtyScopeTracker` parameter in `SyncEngine` constructor (added in Phase 2)
-- Missing `RealtimeHintHandler` class (created in Phase 5)
+- Missing `RealtimeHintHandler` class (created in Phase 6.2)
 - Lint rule violations in new code (A9 silent catch, A22 raw snackbar, etc.)
 
 The implementing agent must resolve all analysis issues before marking Phase 8 complete.
@@ -3865,3 +3866,21 @@ Confirm all new testing keys are properly structured:
 - Used in `sync_dashboard_screen.dart` on the `FilledButton.icon`
 
 The implementing agent should verify the key is accessible from test files via the `SyncTestingKeys` class.
+
+---
+
+## SECURITY RISK ACCEPTANCE — Supabase Broadcast Channel Authorization
+
+**Finding**: Supabase Broadcast channels have no built-in server-side authorization. Any authenticated Supabase user who knows a `company_id` UUID can subscribe to `sync_hints:<company_id>` and receive hint payloads (table names, project IDs, change timestamps). This leaks operational activity patterns but NOT row data.
+
+**Mitigations in this plan**:
+1. **Client-side guard**: `RealtimeHintHandler.subscribe()` validates `companyId` against the authenticated user's company before subscribing (Phase 6.2).
+2. **Hint handlers validate**: Both `FcmHandler` and `RealtimeHintHandler` compare `hint.companyId` against the current user's company and ignore mismatches (Phase 6.1.3, 6.2).
+3. **Payloads contain only IDs**: No row data, PII, or business content in hint payloads — only UUIDs and table names.
+4. **RLS still enforced on pull**: Even if a client marks a dirty scope from a cross-tenant hint, the actual data pull goes through Supabase RLS policies which enforce company/project scoping.
+
+**Accepted risk**: A determined attacker with valid Supabase credentials could observe which tables and projects are being modified in another company, revealing activity patterns (when inspectors are active, which projects are being worked on). This is an information leakage risk, not a data access risk.
+
+**Follow-up hardening** (tracked separately, not blocking this plan):
+- Add Supabase Realtime Authorization Policies restricting broadcast channel subscriptions by `app_metadata.company_id` JWT claim
+- This requires Supabase platform support for custom Realtime policies — evaluate availability and implement when supported

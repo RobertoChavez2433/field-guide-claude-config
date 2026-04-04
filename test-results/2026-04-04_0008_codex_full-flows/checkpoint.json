@@ -5,17 +5,65 @@
   "current_role": "admin",
   "completed": {
     "admin": {
-      "T02": "PASS_WITH_ERRORS"
+      "T02": "PASS_WITH_ERRORS",
+      "T05": "PASS",
+      "T06": "PASS",
+      "T07": "PASS",
+      "T08": "FAIL",
+      "T09": "BLOCKED",
+      "T10": "BLOCKED",
+      "T11": "PASS",
+      "T12": "PASS",
+      "T13": "PASS",
+      "T14": "PASS",
+      "T15": "PASS",
+      "T16": "PASS_WITH_ERRORS",
+      "T17": "BLOCKED",
+      "T18": "BLOCKED",
+      "T19": "BLOCKED",
+      "T20": "PASS",
+      "T22": "PASS",
+      "T41": "PASS_WITH_ERRORS"
     },
     "inspector": {},
-    "sync": {},
+    "sync": {
+      "ADMIN_FINAL_SYNC": "PASS",
+      "SUPABASE_VERIFY": "FAIL"
+    },
     "manual": {}
   },
-  "next_flow": "T05",
-  "bugs": [],
+  "next_flow": "T23",
+  "bugs": [
+    "#163",
+    "#164",
+    "#165",
+    "#166",
+    "#167",
+    "#168"
+  ],
+  "ctx": {
+    "projectId": "f5c773bf-974d-4285-8ed1-66ca594e82d9",
+    "locationIds": [
+      "8d677c92-112f-4357-8246-b31a295ebcdd",
+      "2ca56ab8-bbc4-4031-a532-f516d8514acf"
+    ],
+    "entryId": "e9926da5-aa6a-4149-8c79-20fcec3693f9",
+    "bidItemIds": [
+      "339cbf5a-d807-4526-be41-7a33014a8e80",
+      "efe5f632-e218-4bcb-ad0e-0a8a687543a6"
+    ],
+    "entryQuantityIds": [
+      "d0540d98-75d7-45f7-9050-ef346b173e78"
+    ],
+    "photoIds": [
+      "22c83530-265f-4b5f-a793-76176fe13412"
+    ]
+  },
   "observations": [
     "Started from an already-authenticated admin session on dashboard; auth cold-login not exercised first.",
-    "T02 navigation passed functionally, but debug logs recorded RenderFlex overflows during tab navigation.",
-    "T02 navigation passed functionally, but debug logs recorded RenderFlex overflows during tab navigation."
+    "Weather auto-populate fired on initial daily entry load and logged a fetched weather payload before manual weather edits.",
+    "Bottom-nav taps can be shadowed by overlays; POST /driver/navigate was more reliable for route control during this run.",
+    "Dual-device sync verification could not run because only one ADB device was connected.",
+    "Final admin-side sync cleared pendingCount from 15 to 0, but Supabase verification script failed with Invalid API key."
   ]
 }
