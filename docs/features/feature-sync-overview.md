@@ -2,7 +2,7 @@
 feature: sync
 type: overview
 scope: Cloud Synchronization & Multi-Backend Support
-updated: 2026-03-30
+updated: 2026-04-03
 ---
 
 # Sync Feature Overview
@@ -11,15 +11,25 @@ updated: 2026-03-30
 
 The Sync feature enables offline-first data synchronization between the local SQLite database and cloud backends. It abstracts backend selection (currently Supabase for Local Agency mode, future AASHTOWare for MDOT mode) through an adapter pattern, allowing inspectors to work offline and automatically push/pull changes when connected.
 
+## Target Direction
+
+- Keep incremental local push via `change_log`
+- Stop using broad full project-wide sync as the default foreground behavior
+- Split sync behavior into `Quick sync`, `Full sync`, and `Maintenance sync`
+- Use Supabase-originated foreground invalidation hints plus FCM background invalidation hints
+- Expose a global manual full-sync action in the shared app chrome
+
 ## Key Responsibilities
 
 - **Multi-Backend Routing**: Route sync operations to the correct backend adapter based on project mode
 - **Push Operations**: Sync local pending changes (projects, entries, photos) to cloud backend
 - **Pull Operations**: Fetch remote changes and merge into local SQLite database
+- **Sync Modes**: Run low-latency quick sync for startup/foreground, broader full sync for explicit user refresh, and deferred maintenance sync for integrity/profile work
 - **Conflict Resolution**: Handle data conflicts when same entity modified offline and remotely
 - **Sync Status Tracking**: Maintain pending/synced/error state for all syncable entities
 - **Connectivity Monitoring**: Detect online/offline transitions and trigger deferred syncs
 - **Rate Limiting**: Debounce rapid sync requests to prevent excessive network traffic
+- **Remote Invalidation**: Use Supabase hints while the app is open and FCM data messages while it is backgrounded or closed
 
 ## Key Files
 
@@ -99,6 +109,7 @@ The Sync feature enables offline-first data synchronization between the local SQ
 - **AASHTOWare** (future): OpenAPI endpoint for MDOT mode
 - **Connectivity Service**: Device connectivity status for online/offline detection
 - **FCM**: Push notifications to wake sync on remote changes
+- **Supabase Broadcast / Realtime**: Foreground invalidation hints for remote changes
 
 ## Integration Points
 
@@ -126,21 +137,29 @@ Sync is **fully offline-capable**. All local operations queue changes to SQLite 
 - Changes queued automatically
 - Background sync triggered on reconnect (or user manually via Settings)
 
-### Sync on Reconnect
+### Sync on Reconnect / Foreground
 - Connectivity service detects online transition
-- Auto-triggers `syncAll()` if enabled in app settings
-- FCM push can also wake sync remotely
-- User can also manually trigger from Settings screen
+- Quick sync should handle common freshness work
+- FCM push can wake sync remotely for background/closed-app changes
+- Supabase-originated hints should drive targeted foreground catch-up
+- User can also manually trigger a broader full sync from the main app chrome or sync dashboard
 
 ## Edge Cases & Limitations
 
 - **No Real-Time Collaboration**: If 2 inspectors edit same project offline, last-write-wins (simple conflict resolution)
-- **No Selective Sync**: Sync operations are all-or-nothing per entity type (all entries or none)
+- **Current Baseline**: Pull is still broader than ideal because the client lacks a true remote delta feed; this is the main target for improvement
 - **Pending Cascade**: If entry has pending photo, entry itself marked pending (transitive pending)
 - **No Bandwidth Limits**: Large photo syncs may consume significant bandwidth on metered connections
 - **Auth Required**: Supabase adapter requires authentication; offline-only works for local inspection workflows
 - **Debounce Window**: Rapid sync requests debounced (coalesced) to reduce server load
 - **Circuit Breaker**: `SyncControlService` can pause sync after repeated failures; visible in `SyncDashboardScreen`
+
+## Intent Foundation
+
+The current foundation for the next sync phase is documented in:
+
+- `.claude/specs/2026-04-03-sync-strategy-codex-spec.md`
+- `.codex/plans/2026-04-03-startup-sync-performance-plan.md`
 
 ## Detailed Specifications
 

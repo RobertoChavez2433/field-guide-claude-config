@@ -9,6 +9,10 @@
 - MUST acquire `SyncMutex` before any push/pull cycle (prevents concurrent sync runs)
 - MUST NOT retry indefinitely (max retry count configured in `SyncEngineConfig`)
 - MUST NOT trust client-provided `company_id` in sync payloads — server RLS validates `company_id` from JWT `app_metadata` via `get_my_company_id()`
+- MUST keep `change_log` as the local source of truth for incremental push
+- MUST NOT default startup/foreground auto-sync to a broad full project-wide `pushAndPull()` path
+- MUST keep manual full sync available as an explicit fallback / recovery action
+- MUST treat Supabase Broadcast / Realtime and FCM as invalidation-hint channels, not as sources of truth replacing normal sync writes
 
 ## Soft Guidelines (Violations = Discuss)
 
@@ -18,6 +22,10 @@
 - Performance target: < 5 seconds for 100-record sync cycle
 - Run `IntegrityChecker` post-sync to validate FK consistency
 - Run `OrphanScanner` to detect local records with no valid FK parent
+- Prefer `Quick sync`, `Full sync`, and `Maintenance sync` as separate orchestration modes
+- Prefer targeted remote invalidation over broad cursor sweeps when enough scope information is available
+- Use Supabase-originated hints for foreground responsiveness and FCM data messages for background / closed-app wake-up
+- Keep profile/member pull and other housekeeping work off the critical foreground freshness path whenever practical
 
 ## Core Components
 
@@ -37,6 +45,14 @@
 | `SyncLifecycleManager` | `application/sync_lifecycle_manager.dart` | Triggers sync on app foreground / reconnect |
 | `BackgroundSyncHandler` | `application/background_sync_handler.dart` | Schedules and runs background sync tasks |
 | `TableAdapter` | `adapters/table_adapter.dart` | Abstract base class for all 22 concrete adapters |
+
+## Sync Mode Intent
+
+| Mode | Required Intent |
+|------|-----------------|
+| `Quick sync` | Fast user-facing freshness path; must avoid broad full project-wide sync by default |
+| `Full sync` | Explicit user-requested broad refresh and recovery path |
+| `Maintenance sync` | Deferred integrity / cleanup / profile maintenance work |
 
 ## change_log Schema (Local-Only SQLite)
 

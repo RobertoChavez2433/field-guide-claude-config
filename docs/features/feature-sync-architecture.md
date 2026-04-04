@@ -2,7 +2,7 @@
 feature: sync
 type: architecture
 scope: Cloud Synchronization & Multi-Backend Support
-updated: 2026-03-30
+updated: 2026-04-03
 ---
 
 # Sync Feature Architecture
@@ -58,6 +58,14 @@ updated: 2026-03-30
 └─────────────────────────────────────────────────────────────┘
 ```
 
+## Sync Modes
+
+| Mode | Purpose | Intended Behavior |
+|------|---------|-------------------|
+| `Quick sync` | Startup / foreground / background catch-up | Push local `change_log`, then perform only limited targeted pull work; do not default to broad full project-wide `pushAndPull()` |
+| `Full sync` | Manual user-invoked refresh | Broader push + pull sweep across synced scopes |
+| `Maintenance sync` | Deferred correctness work | Integrity checks, orphan cleanup, profile/member pull, `last_synced_at` update |
+
 ## Engine Layer
 
 **Location**: `lib/features/sync/engine/`
@@ -84,9 +92,9 @@ updated: 2026-03-30
 | Class | File | Purpose |
 |-------|------|---------|
 | `SyncOrchestrator` | `sync_orchestrator.dart` | Routes sync to `SyncEngine` (real) or `MockSyncAdapter` (test). Handles retry with exponential backoff, auth context polling, background retry timer, and post-sync profile pulls. |
-| `SyncLifecycleManager` | `sync_lifecycle_manager.dart` | `WidgetsBindingObserver`. Triggers debounced sync on `paused`/`detached`; checks staleness on `resumed`. |
+| `SyncLifecycleManager` | `sync_lifecycle_manager.dart` | `WidgetsBindingObserver`. Triggers sync on lifecycle transitions; should evolve toward one-shot startup quick sync plus resume freshness checks. |
 | `BackgroundSyncHandler` | `background_sync_handler.dart` | WorkManager task runner. Runs in a fresh Dart isolate on Android/iOS. |
-| `FcmHandler` | `fcm_handler.dart` | Initializes Firebase Messaging, stores FCM tokens, and dispatches foreground `daily_sync` messages to `SyncOrchestrator`. Rate-limited to 60s between triggers. |
+| `FcmHandler` | `fcm_handler.dart` | Initializes Firebase Messaging, stores FCM tokens, and handles background/closed-app invalidation hints. Current `daily_sync` behavior is a baseline, not the target final shape. |
 
 `BucketCount` is a value class defined alongside `SyncOrchestrator`. It holds `total` and a per-table `breakdown` map for grouped pending-count display on the dashboard.
 
@@ -201,6 +209,15 @@ Key methods:
 | `SyncStatusIcon` | `widgets/sync_status_icon.dart` |
 | `DeletionNotificationBanner` | `widgets/deletion_notification_banner.dart` |
 
+### Shared App Chrome Direction
+
+- The shared shell app bar should expose a manual full-sync action.
+- The existing compact sync icon is the natural integration point.
+- The action should support:
+  - idle sync icon
+  - active spinner/progress state
+  - manual full-sync invocation without opening Settings
+
 ## DI Wiring
 
 **Location**: `lib/features/sync/di/sync_providers.dart` — `SyncProviders` class.
@@ -224,15 +241,15 @@ Key methods:
 ## Sync Operation Flow
 
 ```
-User triggers sync (Settings screen, Dashboard, or auto-reconnect)
+User triggers sync (startup, app chrome, Dashboard, or auto-reconnect)
     ↓
-SyncProvider.syncAll()
+SyncProvider chooses sync mode
     ↓
-SyncOrchestrator.syncLocalAgencyProjects()
+SyncOrchestrator runs Quick sync or Full sync
     ↓
   [DNS reachability check]  ← HTTP HEAD to Supabase health endpoint
     ↓
-SyncEngine.pushAndPull()
+SyncEngine executes the requested sync path
     ↓
 SyncMutex.acquire()                         # Prevents concurrent syncs
     ↓
@@ -256,6 +273,29 @@ onSyncComplete callback fires
 SyncProvider.notifyListeners() → UI rebuilds
 ```
 
+## Remote Invalidation Direction
+
+The current architecture already has strong local incremental push via `change_log`, but remote freshness is still broader than ideal.
+
+Target remote invalidation model:
+
+### Foreground
+
+- Supabase Broadcast / Realtime emits change hints while the app is open
+- client marks company/project/table scopes dirty
+- quick sync pulls only affected scopes when possible
+
+### Background / Closed App
+
+- server emits FCM data messages as invalidation hints
+- client wakes or schedules work
+- quick sync catches up later
+
+### Fallback
+
+- manual full sync remains available from the shared app chrome
+- broad pull sweep remains the safety-net path
+
 ## Change Tracking Pattern
 
 SQLite triggers automatically insert into `change_log` on every INSERT, UPDATE, and DELETE to tracked tables. `ChangeTracker` reads unprocessed entries (`processed=0`) to determine what to push. There is no `sync_queue` table.
@@ -278,6 +318,15 @@ SyncEngine pushes records, marks entries processed=1
 - **Pull (offline)**: Skipped. Local data unchanged.
 - **Staleness**: `SyncLifecycleManager` tracks `lastSyncTime`. On resume after >24h, forces a sync. If DNS unreachable, emits `isStaleDataWarning` to `SyncProvider`.
 - **Retry**: `SyncOrchestrator` retries up to 3 times with exponential backoff (5s, 10s, 20s). On exhaustion, schedules a 60s background retry via `Timer`. Non-transient errors (RLS, auth, schema) skip retry.
+
+## Architectural Tension To Resolve
+
+The major remaining architectural mismatch is:
+
+- push is incremental and efficient because it uses `change_log`
+- pull is still a broad cursor-driven per-table sweep because the client does not yet have a proper remote delta feed
+
+That is the main reason `Quick sync` vs `Full sync` now exists as an intended architectural split.
 
 ## Circuit Breaker
 
