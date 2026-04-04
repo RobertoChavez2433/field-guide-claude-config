@@ -6,4 +6,6 @@ test_results/
 autoload/_state.md
 state/*.json
 debug-sessions/
+projects/
+worktrees/
 *.secret
