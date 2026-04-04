@@ -1,32 +1,32 @@
 # Session State
 
-**Last Updated**: 2026-04-03 | **Session**: 725
+**Last Updated**: 2026-04-03 | **Session**: 728
 
 ## Current Phase
-- **Phase**: Entry UI Continuity Codex spec tailored and planned. 3-cycle adversarial review passed (all 3 reviewers APPROVE).
-- **Status**: PR #140 still open. Implementation plan ready at `.claude/plans/2026-04-03-entry-ui-continuity-codex.md`. No code changes this session — planning only.
+- **Phase**: IDR PDF mapping rebuild + location-scoped activities — plan written and approved. Ready for /implement.
+- **Status**: Uncommitted changes on `codex/reimplement-entry-ui-continuity` branch. Plan written to `.claude/plans/`. No code changes this session.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (725)
+### What Was Done This Session (728)
 
-1. **Tailor skill** on `2026-04-03-entry-ui-continuity-codex-spec.md` — CodeMunch research (9 mandatory steps), 7 patterns discovered, 34 methods mapped, 42 ground truth items verified (1 flagged). Output: `.claude/tailor/2026-04-03-entry-ui-continuity-codex/`
+1. **Writing-plans skill** completed:
+   - 7 phases, 22 sub-phases, ~55 steps
+   - 25 production files, 20+ test files, 4 new files
+   - 5 agents: backend-data-layer, backend-supabase, frontend-flutter-specialist, pdf, qa-testing
 
-2. **Writing-plans skill** — Wrote 8-phase implementation plan (3 new files, 9 modified, up to 3 deleted). All phases use `frontend-flutter-specialist-agent`.
+2. **3-cycle adversarial review** — 20 findings found and fixed:
+   - Cycle 1: 16 findings (5 critical, 2 high, 5 medium, 3 significant, 1 low) → all fixed
+   - Cycle 2: 4 findings (1 critical already fixed, 3 significant) → all fixed
+   - Cycle 3: All 3 reviewers APPROVE
 
-3. **3-cycle adversarial review** — 28 findings fixed across 2 fix cycles:
-   - Cycle 1: REJECT/REJECT (5 critical API mismatches, export architecture gap, 4 major issues)
-   - Cycle 2: REJECT/APPROVE/APPROVE (3 new critical — EntryProvider→DailyEntryProvider, wrong imports, unimplementable use case)
-   - Cycle 3: APPROVE/APPROVE/APPROVE (1 minor `isFailure`→`!result.isSuccess` fix applied)
-
-4. **User feedback captured**: Personnel counter steppers and equipment chips must stay — card unification is layout/spacing only, not control replacement.
+3. **Plan**: `.claude/plans/2026-04-03-idr-pdf-mapping-and-location-activities.md`
+4. **Review reports**: `.claude/plans/review_sweeps/idr-pdf-mapping-2026-04-03/`
 
 ### What Needs to Happen Next
-1. **Execute plan** — `/implement .claude/plans/2026-04-03-entry-ui-continuity-codex.md`
-2. **Fix #141** (user_profiles.deleted_at) — quick v50 migration
-3. **Merge PR #140** — all tested flows pass, CI green
-4. **Remove hypothesis markers** H001-H004 (cleanup phases 8-9)
-5. **Commit debug server + test skill changes** to feature branch
+1. **Execute plan** via `/implement`
+2. **Prior session carry-over**: Commit S726 changes + PR, push Supabase migration, merge PR #140
+3. **Run E2E skipped tiers** — Forms (T35-T37), Edits (T59-T67), Deletes (T68-T77)
 
 ### User Preferences (Critical)
 - **Fresh test projects only**: NEVER use existing projects during test runs — always create from scratch
@@ -49,51 +49,39 @@
 
 ## Recent Sessions
 
+### Session 728 (2026-04-03)
+**Work**: Writing-plans for IDR PDF mapping + location-scoped activities. 7 phases, 22 sub-phases, ~55 steps. 3-cycle adversarial review (20 findings fixed). All 3 reviewers APPROVE.
+**Decisions**: activitiesDisplayText helper for raw JSON display. Signature fallback preserved. _isEmptyDraft delegates to controller. EntryBasicsSection confirmed dead code (delete). Orphaned location chips render from JSON names.
+**Next**: /implement → commit S726 changes → merge PR #140.
+
+### Session 727 (2026-04-03)
+**Work**: Brainstormed IDR PDF mapping rebuild + location-scoped activities. Spec approved (10 sections). Tailor complete (25 files, 5 patterns, 34 methods, 42 ground truth).
+**Decisions**: JSON in existing activities column (not junction table). Remove locationId from DailyEntry. Remove filterByLocation entirely. Template untouchable. Both Python + Dart verification tooling.
+**Next**: /writing-plans → /implement → commit S726 changes.
+
+### Session 726 (2026-04-03)
+**Work**: Resolved 13 GitHub issues (#141-150, #154-157). Proactive schema audit found 4 new issues. v50 migration (user_profiles + inspector_forms deleted_at). IntegrityChecker skipIntegrityCheck. Schema_verifier gaps filled. H001-H004 markers removed.
+**Decisions**: Proactive audit approach over reactive whack-a-mole. skipIntegrityCheck property over filtering by skipPull. #148 closed as not-a-bug (test data issue).
+**Next**: Commit + PR → push Supabase migration → merge PR #140.
+
 ### Session 725 (2026-04-03)
 **Work**: Tailored + planned Entry UI Continuity Codex spec (8 concerns: contractor cards, weather/header, export/PDF, calculator, calendar). 3-cycle adversarial review — 28 findings fixed, all 3 reviewers APPROVE.
 **Decisions**: Personnel steppers + equipment chips stay (layout-only unification). EntryPdfExportUseCase simplified to metadata-only (PdfDataBuilder.generate is inherently UI-layer). Weather condition mapping needed (API strings ≠ enum names).
 **Next**: Execute plan → fix #141 → merge PR #140.
 
-### Session 724 (2026-04-03)
-**Work**: E2E test run (28 PASS / 0 FAIL). Filed #141 (user_profiles.deleted_at). Debug server upgraded with /logs/errors, /logs/summary, ?format=text|json. Test skill overhauled — 9 fixes.
-**Decisions**: No Navigator.pop lint rule needed — API design prevents the bug. No pre-written test scripts.
-**Next**: Fix #141 → merge PR #140 → run skipped tiers → hypothesis cleanup.
-
-### Session 723 (2026-04-03)
-**Work**: Hypothesis marker verification for 7-issue fix PR (#140). H001/H002 confirmed via driver. Test skill updated with 5 fixes. Discovered user_profiles.deleted_at missing column.
-**Decisions**: Test skill NDJSON documentation is critical. Hypothesis verification belongs in debugging skill, not test skill.
-**Next**: Full E2E rerun → hypothesis cleanup → merge PR #140.
-
-### Session 722 (2026-04-03)
-**Work**: Fixed 7 GitHub Issues (#99, #100, #134, #135, #137, #138, #139). Created PR #140. CI green. All issues closed.
-**Decisions**: actionsBuilder pattern over exposing dialogContext directly. Dialog pop before auth.signOut to prevent race.
-**Next**: Hypothesis verification → full E2E rerun.
-
-## Active Debug Session
-
-Systematic debugging session in progress (Phase 7-9 incomplete):
-- **Phase 7 (FIX)**: Complete — all 7 fixes implemented
-- **Phase 8 (INSTRUMENTATION REVIEW)**: PENDING — need to decide keep/remove for H001-H004
-- **Phase 9 (CLEANUP)**: PENDING — must remove hypothesis markers
-- **Phase 10 (DEFECT LOG)**: PENDING
-
 ## Test Results
+
+### Flutter Unit Tests (S726)
+- **Full suite**: 3784 pass / 2 fail (pre-existing: OCR test + DLL lock)
+- **Analyze**: 0 issues
+- **Database tests**: 65 pass, drift=0
+- **Sync tests**: 704 pass
 
 ### E2E Test Run (S724)
 - **Run**: 2026-04-03_10-06 (Windows)
 - **Results**: 28 PASS / 0 FAIL / 30 SKIP / 6 MANUAL
-- **Pass rate (tested)**: 100% (28/28)
-- **Skipped**: Lifecycle (T26-T30), Forms (T35-T37), Edits (T59-T67), Deletes (T68-T77) — need sequential data creation
-- **Key finding**: PR #140 fixes verified — zero crashes, zero dialog failures
-- **Only errors**: Pre-existing schema issues (#141 + 5 other tables)
 - **Report**: `.claude/test_results/2026-04-03_10-06/report.md`
-
-### Flutter Unit Tests
-- **Full suite (S722 CI)**: All pass (PR #140 Quality Gate green)
-- **Analyze (S722)**: 0 issues
-- **Custom lint (S722)**: 0 violations
 
 ## Reference
 - **PR #140**: OPEN (7-issue fix — sentry + dialog + schema + sync + pdf + overflow)
-- **Issue #141**: OPEN (user_profiles.deleted_at missing column — filed S724)
 - **GitHub Issues**: #89 (sqlcipher), #91-#92 (OCR), #127-#129 (enhancements)

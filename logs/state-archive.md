@@ -6,6 +6,21 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## April 2026
 
+### Session 724 (2026-04-03)
+**Work**: E2E test run (28 PASS / 0 FAIL). Filed #141 (user_profiles.deleted_at). Debug server upgraded with /logs/errors, /logs/summary, ?format=text|json. Test skill overhauled — 9 fixes.
+**Decisions**: No Navigator.pop lint rule needed — API design prevents the bug. No pre-written test scripts.
+**Next**: Fix #141 → merge PR #140 → run skipped tiers → hypothesis cleanup.
+
+### Session 723 (2026-04-03)
+**Work**: Hypothesis marker verification for 7-issue fix PR (#140). H001/H002 confirmed via driver. Test skill updated with 5 fixes. Discovered user_profiles.deleted_at missing column.
+**Decisions**: Test skill NDJSON documentation is critical. Hypothesis verification belongs in debugging skill, not test skill.
+**Next**: Full E2E rerun → hypothesis cleanup → merge PR #140.
+
+### Session 722 (2026-04-03)
+**Work**: Fixed 7 GitHub Issues (#99, #100, #134, #135, #137, #138, #139). Created PR #140. CI green. All issues closed.
+**Decisions**: actionsBuilder pattern over exposing dialogContext directly. Dialog pop before auth.signOut to prevent race.
+**Next**: Hypothesis verification → full E2E rerun.
+
 ### Session 721 (2026-04-02)
 **Work**: PR #123 — post-UI-refactor cleanup (93 files). AppTextField rollout (77 callsites), lint rule A24, dashboard card standardization, 18 golden tests.
 **Decisions**: Lint rules scan all `/lib/` not just `/presentation/`. Non-functional features removed entirely.

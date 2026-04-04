@@ -1,0 +1,21 @@
+{
+  "run_id": "2026-04-04_0008_codex_full-flows",
+  "platform": "android:RFCNC0Y975L",
+  "results_dir": "C:\\Users\\rseba\\Projects\\Field_Guide_App\\.claude\\test-results\\2026-04-04_0008_codex_full-flows",
+  "current_role": "admin",
+  "completed": {
+    "admin": {
+      "T02": "PASS_WITH_ERRORS"
+    },
+    "inspector": {},
+    "sync": {},
+    "manual": {}
+  },
+  "next_flow": "T05",
+  "bugs": [],
+  "observations": [
+    "Started from an already-authenticated admin session on dashboard; auth cold-login not exercised first.",
+    "T02 navigation passed functionally, but debug logs recorded RenderFlex overflows during tab navigation.",
+    "T02 navigation passed functionally, but debug logs recorded RenderFlex overflows during tab navigation."
+  ]
+}

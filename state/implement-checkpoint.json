@@ -1,509 +1,85 @@
 {
-  "plan": ".claude/plans/2026-04-02-ui-refactor-gap-closure.md",
+  "plan": ".claude/plans/2026-04-03-idr-pdf-mapping-and-location-activities.md",
   "dispatch_groups": [
-    {
-      "phases": [
-        1
-      ],
-      "status": "done",
-      "test_gate": "pass"
-    },
-    {
-      "phases": [
-        2
-      ],
-      "status": "done",
-      "test_gate": "pass"
-    },
-    {
-      "phases": [
-        3
-      ],
-      "status": "done",
-      "test_gate": "pass"
-    },
-    {
-      "phases": [
-        4,
-        5,
-        6,
-        7
-      ],
-      "status": "done",
-      "test_gate": "pass"
-    },
-    {
-      "phases": [
-        8
-      ],
-      "status": "done",
-      "test_gate": "pass"
-    },
-    {
-      "phases": [
-        9
-      ],
-      "status": "done",
-      "test_gate": "pass"
-    }
+    {"phases": [1, 2], "status": "pending", "test_gate": "pending"},
+    {"phases": [3, 4], "status": "pending", "test_gate": "pending"},
+    {"phases": [5], "status": "pending", "test_gate": "pending"},
+    {"phases": [6, 7], "status": "pending", "test_gate": "pending"}
   ],
   "phases": [
     {
-      "name": "Phase 1: AppDialog Enhancement",
-      "status": "done",
+      "name": "Phase 1: Data Model — Remove locationId from DailyEntry",
+      "status": "pending",
       "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "tests_verified": true,
-          "fix_cycles": 0
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 1,
-          "low": 4,
-          "fix_cycles": 1
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 0
-        }
+        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
+        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
+        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
       }
     },
     {
-      "name": "Phase 2: Dashboard Redesign",
-      "status": "done",
-      "substeps": {
-        "2.1": "done",
-        "2.2": "done",
-        "2.3": "done",
-        "2.4": "done",
-        "2.5": "done",
-        "2.6": "done",
-        "2.7": "done",
-        "2.8": "done"
-      },
+      "name": "Phase 2: Data & Domain Layer Cleanup",
+      "status": "pending",
       "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "tests_verified": true,
-          "fix_cycles": 1
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 2,
-          "fix_cycles": 1
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 0
-        }
+        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
+        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
+        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
       }
     },
     {
-      "name": "Phase 3: Modal Standardization",
-      "status": "done",
+      "name": "Phase 3: EntryEditingController — Per-Location Activities",
+      "status": "pending",
       "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 2,
-          "low": 0,
-          "tests_verified": true,
-          "fix_cycles": 1
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 1,
-          "high": 2,
-          "medium": 6,
-          "low": 5,
-          "fix_cycles": 1
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 3,
-          "low": 6,
-          "fix_cycles": 1
-        }
-      },
-      "substeps": {
-        "3.1": "done",
-        "3.2": "done",
-        "3.3": "done",
-        "3.4": "done"
+        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
+        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
+        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
       }
     },
     {
-      "name": "Phase 4: Typography Migration",
-      "status": "done",
+      "name": "Phase 4: UI Components",
+      "status": "pending",
       "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 2,
-          "tests_verified": true,
-          "fix_cycles": 1
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 0
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 0
-        }
-      },
-      "substeps": {
-        "4.1": "done",
-        "4.2": "done",
-        "4.3": "done",
-        "4.4": "done",
-        "4.5": "done",
-        "4.6": "done"
+        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
+        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
+        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
       }
     },
     {
-      "name": "Phase 5: Dialog Input Migration (AppTextField)",
-      "status": "done",
+      "name": "Phase 5: PDF Mapping Rebuild",
+      "status": "pending",
       "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "tests_verified": true,
-          "fix_cycles": 0
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 0
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 0
-        }
-      },
-      "substeps": {
-        "5.1": "done"
+        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
+        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
+        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
       }
     },
     {
-      "name": "Phase 6: Snackbar Cleanup",
-      "status": "done",
+      "name": "Phase 6: Verification Tooling & Tests",
+      "status": "pending",
       "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 2,
-          "low": 1,
-          "tests_verified": true,
-          "fix_cycles": 0
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 3,
-          "low": 2,
-          "fix_cycles": 0
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 0
-        }
-      },
-      "substeps": {
-        "6.1": "done"
+        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
+        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
+        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
       }
     },
     {
-      "name": "Phase 7: Cleanup â€” ValueKey, Page Transitions",
-      "status": "done",
+      "name": "Phase 7: Final Cleanup",
+      "status": "pending",
       "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "tests_verified": true,
-          "fix_cycles": 0
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 2,
-          "low": 2,
-          "fix_cycles": 1
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 0
-        }
-      },
-      "substeps": {
-        "7.1": "done",
-        "7.2": "done"
-      }
-    },
-    {
-      "name": "Phase 8: Design System Enforcement Lint Rules",
-      "status": "done",
-      "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 1,
-          "low": 2,
-          "tests_verified": true,
-          "fix_cycles": 1
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 1,
-          "high": 2,
-          "medium": 2,
-          "low": 2,
-          "fix_cycles": 1
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 3,
-          "fix_cycles": 0
-        }
-      },
-      "substeps": {
-        "8.1": "done",
-        "8.2": "done",
-        "8.3": "done",
-        "8.4": "done",
-        "8.5": "done",
-        "8.6": "done",
-        "8.7": "done"
-      }
-    },
-    {
-      "name": "Phase 9: Quality Gate Verification",
-      "status": "done",
-      "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "tests_verified": true,
-          "fix_cycles": 0
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 0
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 0
-        }
-      },
-      "substeps": {
-        "9.1": "done"
+        "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "tests_verified": false, "fix_cycles": 0},
+        "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
+        "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
       }
     }
   ],
-  "modified_files": [
-    "lib/core/design_system/app_dialog.dart",
-    "test/core/design_system/app_dialog_test.dart",
-    "lib/features/dashboard/presentation/widgets/dashboard_stat_card.dart",
-    "lib/features/dashboard/presentation/widgets/budget_overview_card.dart",
-    "lib/features/dashboard/presentation/widgets/tracked_item_row.dart",
-    "lib/features/dashboard/presentation/widgets/alert_item_row.dart",
-    "lib/features/dashboard/presentation/widgets/weather_summary_card.dart",
-    "lib/features/dashboard/presentation/widgets/todays_entry_card.dart",
-    "lib/features/dashboard/presentation/widgets/widgets.dart",
-    "lib/features/dashboard/presentation/screens/project_dashboard_screen.dart",
-    "lib/features/weather/presentation/providers/weather_provider.dart",
-    "lib/features/weather/di/weather_providers.dart",
-    "lib/shared/widgets/confirmation_dialog.dart",
-    "lib/features/settings/presentation/widgets/sign_out_dialog.dart",
-    "lib/features/todos/presentation/screens/todos_screen.dart",
-    "lib/features/entries/presentation/screens/entry_editor_screen.dart",
-    "lib/features/settings/presentation/screens/personnel_types_screen.dart",
-    "lib/features/entries/presentation/widgets/contractor_editor_widget.dart",
-    "lib/features/entries/presentation/widgets/entry_forms_section.dart",
-    "lib/features/forms/presentation/screens/form_viewer_screen.dart",
-    "lib/features/forms/presentation/screens/forms_list_screen.dart",
-    "lib/features/settings/presentation/screens/admin_dashboard_screen.dart",
-    "lib/features/settings/presentation/screens/trash_screen.dart",
-    "lib/features/settings/presentation/screens/settings_screen.dart",
-    "lib/features/entries/presentation/screens/entries_list_screen.dart",
-    "lib/features/entries/presentation/widgets/add_personnel_type_dialog.dart",
-    "lib/features/entries/presentation/widgets/add_equipment_dialog.dart",
-    "lib/features/entries/presentation/screens/report_widgets/report_add_personnel_type_dialog.dart",
-    "lib/features/entries/presentation/screens/report_widgets/report_weather_edit_dialog.dart",
-    "lib/features/entries/presentation/screens/report_widgets/report_delete_personnel_type_dialog.dart",
-    "lib/features/entries/presentation/screens/report_widgets/report_add_quantity_dialog.dart",
-    "lib/features/calculator/presentation/screens/calculator_screen.dart",
-    "lib/features/pdf/services/pdf_service.dart",
-    "lib/features/entries/presentation/screens/review_summary_screen.dart",
-    "lib/features/forms/presentation/screens/mdot_hub_screen.dart",
-    "lib/features/settings/presentation/widgets/member_detail_sheet.dart",
-    "lib/features/entries/presentation/screens/home_screen.dart",
-    "lib/features/gallery/presentation/screens/gallery_screen.dart",
-    "lib/features/forms/presentation/screens/form_gallery_screen.dart",
-    "lib/features/projects/presentation/widgets/project_switcher.dart",
-    "lib/features/pdf/presentation/widgets/extraction_banner.dart",
-    "lib/features/quantities/presentation/widgets/bid_item_detail_sheet.dart",
-    "lib/features/projects/presentation/screens/project_list_screen.dart",
-    "lib/features/projects/presentation/widgets/pay_item_source_dialog.dart",
-    "lib/features/sync/presentation/widgets/deletion_notification_banner.dart",
-    "lib/features/photos/presentation/widgets/photo_thumbnail.dart",
-    "lib/features/auth/presentation/screens/login_screen.dart",
-    "lib/features/auth/presentation/screens/register_screen.dart",
-    "lib/features/sync/presentation/screens/sync_dashboard_screen.dart",
-    "lib/features/projects/presentation/screens/project_setup_screen.dart",
-    "lib/features/projects/presentation/widgets/assignments_step.dart",
-    "lib/features/entries/presentation/widgets/photo_detail_dialog.dart",
-    "lib/features/entries/presentation/widgets/form_selection_dialog.dart",
-    "lib/features/entries/presentation/widgets/entry_photos_section.dart",
-    "lib/features/entries/presentation/widgets/entry_form_card.dart",
-    "lib/features/entries/presentation/widgets/entry_basics_section.dart",
-    "lib/features/entries/presentation/widgets/entry_action_bar.dart",
-    "lib/features/entries/presentation/widgets/draft_entry_tile.dart",
-    "lib/features/entries/presentation/widgets/bid_item_picker_sheet.dart",
-    "lib/features/entries/presentation/screens/entry_review_screen.dart",
-    "lib/features/entries/presentation/screens/report_widgets/report_debug_pdf_actions_dialog.dart",
-    "lib/features/entries/presentation/screens/report_widgets/report_pdf_actions_dialog.dart",
-    "lib/features/entries/presentation/screens/report_widgets/report_photo_detail_dialog.dart",
-    "lib/features/forms/presentation/widgets/hub_quick_test_content.dart",
-    "lib/features/forms/presentation/widgets/hub_proctor_content.dart",
-    "lib/features/quantities/presentation/widgets/bid_item_card.dart",
-    "lib/features/quantities/presentation/widgets/quantity_summary_header.dart",
-    "lib/features/quantities/presentation/screens/quantities_screen.dart",
-    "lib/features/pdf/presentation/screens/pdf_import_preview_screen.dart",
-    "lib/features/pdf/presentation/screens/mp_import_preview_screen.dart",
-    "lib/features/pdf/presentation/widgets/extraction_detail_sheet.dart",
-    "lib/features/settings/presentation/widgets/sync_section.dart",
-    "lib/features/settings/presentation/screens/help_support_screen.dart",
-    "lib/features/settings/presentation/screens/legal_document_screen.dart",
-    "lib/shared/widgets/contextual_feedback_overlay.dart",
-    "lib/features/projects/presentation/widgets/add_contractor_dialog.dart",
-    "lib/features/projects/presentation/widgets/add_location_dialog.dart",
-    "lib/features/projects/presentation/widgets/bid_item_dialog.dart",
-    "lib/core/router/app_router.dart",
-    "lib/features/settings/presentation/screens/consent_screen.dart",
-    "lib/features/projects/presentation/widgets/add_equipment_dialog.dart",
-    "lib/features/entries/presentation/controllers/pdf_data_builder.dart",
-    "fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_alert_dialog.dart",
-    "fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_show_dialog.dart",
-    "fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_bottom_sheet.dart",
-    "fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_scaffold.dart",
-    "fg_lint_packages/field_guide_lints/lib/architecture/rules/no_direct_snackbar.dart",
-    "fg_lint_packages/field_guide_lints/lib/architecture/rules/no_inline_text_style.dart",
-    "fg_lint_packages/field_guide_lints/lib/architecture/architecture_rules.dart",
-    "fg_lint_packages/field_guide_lints/lib/field_guide_lints.dart",
-    ".claude/rules/architecture.md",
-    "fg_lint_packages/field_guide_lints/test/architecture/no_raw_alert_dialog_test.dart",
-    "fg_lint_packages/field_guide_lints/test/architecture/no_raw_show_dialog_test.dart",
-    "fg_lint_packages/field_guide_lints/test/architecture/no_raw_bottom_sheet_test.dart",
-    "fg_lint_packages/field_guide_lints/test/architecture/no_raw_scaffold_test.dart",
-    "fg_lint_packages/field_guide_lints/test/architecture/no_direct_snackbar_test.dart",
-    "fg_lint_packages/field_guide_lints/test/architecture/no_inline_text_style_test.dart"
-  ],
-  "build": "pass",
-  "analyze_and_test": "pass",
+  "modified_files": [],
+  "build": "pending",
+  "analyze_and_test": "pending",
   "integration_reviews": {
-    "completeness": {
-      "status": "pending",
-      "critical": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "fix_cycles": 0
-    },
-    "code_review": {
-      "status": "pending",
-      "critical": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "fix_cycles": 0
-    },
-    "security": {
-      "status": "pending",
-      "critical": 0,
-      "high": 0,
-      "medium": 0,
-      "low": 0,
-      "fix_cycles": 0
-    }
+    "completeness": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
+    "code_review": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0},
+    "security": {"status": "pending", "critical": 0, "high": 0, "medium": 0, "low": 0, "fix_cycles": 0}
   },
-  "decisions": [
-    "Phase 9 verification: flutter analyze PASS, dashboard fully compliant (11/15 checks pass). Remaining 4 failures are pre-existing AlertDialog/showDialog/TextStyle/ScaffoldMessenger leakage in files outside plan scope — not regressions."
-  ],
+  "decisions": [],
   "fix_attempts": [],
   "blocked": []
 }
