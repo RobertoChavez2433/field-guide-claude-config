@@ -70,7 +70,7 @@ Sync ensures that data created offline on a mobile device reaches the cloud and 
 
 ### Remote Invalidation
 - `FcmHandler` receives FCM data messages that act as invalidation hints for background/closed-app catch-up
-- Supabase-originated invalidation hints are the preferred foreground signal for “what changed remotely,” but they must not use predictable tenant-wide channels
+- Supabase-originated invalidation hints are the preferred foreground signal for “what changed remotely,” but they must flow through authenticated private per-device channels backed by `sync_hint_subscriptions`
 - Invalidation signals should identify scope, not force a blind full sync
 - Broad full-sync remains available as a fallback and user-invoked action
 

@@ -141,7 +141,7 @@ Sync is **fully offline-capable**. All local operations queue changes to SQLite 
 - Connectivity service detects online transition
 - Quick sync should handle common freshness work
 - FCM push can wake sync remotely for background/closed-app changes
-- Supabase-originated hints should drive targeted foreground catch-up through private opaque channels, not predictable tenant channels
+- Supabase-originated hints now drive targeted foreground catch-up through `sync_hint_subscriptions` + `register_sync_hint_channel()` private opaque channels, not predictable tenant channels
 - User can also manually trigger a broader full sync from the main app chrome or sync dashboard
 
 ## Edge Cases & Limitations

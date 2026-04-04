@@ -116,6 +116,7 @@ Adapters are registered in `SyncRegistry` in FK dependency order (parents before
 
 - Foreground Broadcast delivery must use opaque server-issued channels, not `sync_hints:{company_id}`
 - Channel assignment must come from an authenticated server-side registration flow
+- Active recipient resolution must come from server-side subscription state (`sync_hint_subscriptions` / `get_active_sync_hint_channels()`), not client-derived channel naming
 - Broadcast hints remain metadata-only invalidation signals
 - Record contents still require normal auth + RLS-protected sync pull
 

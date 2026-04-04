@@ -94,6 +94,7 @@ Update 2026-04-04:
 
 - foreground hints should no longer use predictable tenant channels
 - Supabase Broadcast remains acceptable only through server-issued opaque private channels
+- the concrete implementation path is `register_sync_hint_channel()` + `sync_hint_subscriptions` on the server and `RealtimeHintHandler` subscribing only to the returned opaque channel
 - see `.claude/specs/2026-04-04-private-sync-hint-channels-codex-spec.md`
 
 Expected hint payload shape:

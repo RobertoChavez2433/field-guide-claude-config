@@ -95,7 +95,7 @@ updated: 2026-04-04
 | `SyncLifecycleManager` | `sync_lifecycle_manager.dart` | `WidgetsBindingObserver`. Triggers sync on lifecycle transitions; should evolve toward one-shot startup quick sync plus resume freshness checks. |
 | `BackgroundSyncHandler` | `background_sync_handler.dart` | WorkManager task runner. Runs in a fresh Dart isolate on Android/iOS. |
 | `FcmHandler` | `fcm_handler.dart` | Initializes Firebase Messaging, stores FCM tokens, and handles background/closed-app invalidation hints. Current `daily_sync` behavior is a baseline, not the target final shape. |
-| `RealtimeHintHandler` | `realtime_hint_handler.dart` | Foreground invalidation handler. Directionally, it should bind only to server-issued opaque private hint channels. |
+| `RealtimeHintHandler` | `realtime_hint_handler.dart` | Foreground invalidation handler. Registers with `register_sync_hint_channel()`, subscribes only to the returned opaque channel, refreshes registration while foregrounded, and deactivates on teardown. |
 
 `BucketCount` is a value class defined alongside `SyncOrchestrator`. It holds `total` and a per-table `breakdown` map for grouped pending-count display on the dashboard.
 
@@ -230,7 +230,8 @@ Key methods:
 4. Wires `AuthProvider` listener to update company/user context on auth changes
 5. Wires `onPullComplete` for auto-enrollment on `project_assignments` pull
 6. Initializes `FcmHandler` on mobile (fire-and-forget)
-7. Wires `AppConfigProvider` for stale-banner clearance on sync success
+7. Loads `device_install_id` from `PreferencesService` and passes it into `RealtimeHintHandler`
+8. Wires `AppConfigProvider` for stale-banner clearance on sync success
 
 `SyncProviders.providers()` returns the `MultiProvider` list:
 - `Provider<SyncRegistry>` (singleton, value)
@@ -302,13 +303,15 @@ Target remote invalidation model:
 
 Foreground invalidation must not use predictable tenant-wide channels like `sync_hints:{company_id}`.
 
-Target model:
+Current model:
 
 - client persists a local `device_install_id`
-- auth-ready startup registers a private sync-hint subscription through an authenticated RPC
-- server returns an opaque channel name
+- auth-ready startup calls `register_sync_hint_channel()` through `RealtimeHintHandler`
+- server stores one active row per install in `sync_hint_subscriptions`
+- server returns `subscription_id`, opaque `channel_name`, `expires_at`, and `refresh_after`
 - client subscribes only to that opaque channel
-- server-side trigger fan-out resolves active device subscriptions for the company and broadcasts to each device channel
+- `daily-sync-push` resolves recipients through `get_active_sync_hint_channels()`
+- SQL triggers only call `invoke_daily_sync_push()`; Broadcast fan-out now happens in the edge function, not directly in trigger SQL
 
 This keeps Broadcast advisory and SQLite-first while eliminating predictable tenant-channel metadata leakage.
 
