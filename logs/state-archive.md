@@ -6,6 +6,16 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## April 2026
 
+### Session 726 (2026-04-03)
+**Work**: Resolved 13 GitHub issues (#141-150, #154-157). Proactive schema audit found 4 new issues. v50 migration (user_profiles + inspector_forms deleted_at). IntegrityChecker skipIntegrityCheck. Schema_verifier gaps filled. H001-H004 markers removed.
+**Decisions**: Proactive audit approach over reactive whack-a-mole. skipIntegrityCheck property over filtering by skipPull. #148 closed as not-a-bug (test data issue).
+**Next**: Commit + PR → push Supabase migration → merge PR #140.
+
+### Session 725 (2026-04-03)
+**Work**: Resolved 6 GitHub issues (#141-146). v49 migration adding user_profiles.deleted_at. Schema verifier audit for 16 synced tables.
+**Decisions**: Always add deleted_at + deleted_by together (schema pattern). SkipIntegrityCheck for non-synced tables.
+**Next**: Continue issue resolution → commit + PR.
+
 ### Session 724 (2026-04-03)
 **Work**: E2E test run (28 PASS / 0 FAIL). Filed #141 (user_profiles.deleted_at). Debug server upgraded with /logs/errors, /logs/summary, ?format=text|json. Test skill overhauled — 9 fixes.
 **Decisions**: No Navigator.pop lint rule needed — API design prevents the bug. No pre-written test scripts.

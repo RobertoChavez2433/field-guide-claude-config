@@ -1,0 +1,17 @@
+Warning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.
+STATUS: DONE
+PHASES_EXECUTED: 5
+PARALLEL_BATCHES: Batch1(5)
+FILES: lib/features/pdf/services/pdf_service.dart, lib/features/entries/presentation/controllers/pdf_data_builder.dart
+PER_PHASE_REVIEWS:
+  Phase 5: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:1
+TOTAL_FIX_CYCLES: 1
+DECISIONS: none
+
+**Phase 5 Summary:**
+- **5.1**: Generated debug PDF with numbered field labels, rendered to images, extracted 179 field metadata
+- **5.2**: Visually mapped all fields across 3 pages — resolved `Text14` as Project Rep, confirmed all "guessing" field names, fixed equipment field name typos
+- **5.3**: Rebuilt pdf_service.dart mappings — added `Text14` (Project Rep), `yio` (Extras & Overruns), activities overflow (Text3→Text4 split at 2000 chars), materials/attachments truncation safety (1500 chars), changed all "guessing" → "verified"
+- **5.4**: Added `_formatActivitiesForPdf()` to PdfDataBuilder — JSON→concatenated text with location headers, legacy plain-text passthrough
+- **5.5**: `flutter analyze` — 0 issues
+- **Fix cycle**: 7 findings fixed (1 HIGH overflow clarity, 3 MEDIUM robustness/DRY/logging, 3 LOW consistency/clarity)

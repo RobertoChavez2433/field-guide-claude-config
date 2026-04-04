@@ -1,0 +1,18 @@
+All done. Here's the final status:
+
+```
+STATUS: DONE
+PHASES_EXECUTED: 6, 7
+PARALLEL_BATCHES: Batch1(6) Batch2(7)
+FILES: tools/verify_idr_mapping.py, test/services/pdf_field_mapping_test.dart, test/features/entries/presentation/controllers/activities_serialization_test.dart, test/features/pdf/services/pdf_formatting_helpers_test.dart, test/helpers/test_helpers.dart, test/data/models/daily_entry_test.dart, test/data/repositories/daily_entry_repository_test.dart, test/helpers/mocks/mock_repositories.dart, test/presentation/providers/daily_entry_provider_test.dart, test/services/pdf_service_test.dart, test/features/entries/presentation/widgets/entry_forms_section_test.dart, test/features/entries/presentation/screens/entry_editor_screen_test.dart, test/features/entries/presentation/screens/entry_editor_report_test.dart, test/features/gallery/presentation/screens/gallery_screen_test.dart, test/features/entries/presentation/providers/daily_entry_provider_filter_test.dart, test/features/entries/domain/usecases/filter_entries_use_case_test.dart, test/helpers/mock_database.dart, lib/features/entries/presentation/screens/entry_editor_screen.dart
+PER_PHASE_REVIEWS:
+  Phase 6: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:0
+  Phase 7: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:0
+TOTAL_FIX_CYCLES: 0
+DECISIONS: Phase 7 removed one stale locationId comment from entry_editor_screen.dart; harness_seed_data.dart already clean (no locationId in DailyEntry constructor)
+```
+
+**Key results:**
+- **Phase 6**: Created 4 new test/verification files, fixed locationId references across 13 test files, resolving all 87 analyze errors → **0 issues**
+- **Phase 7**: Dead code audit confirmed all locationId remnants properly removed; remaining `locationId` references are legitimate (Photo model, per-activity location architecture) → **0 issues**
+- **Flutter analyze: 0 issues** — gate passed
