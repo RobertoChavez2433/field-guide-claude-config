@@ -108,7 +108,7 @@ Domain:       SyncResult, SyncStatus, SyncErrorKind, ClassifiedSyncError, SyncDi
 ## Pointers (on-demand, NOT auto-loaded)
 | What | Where |
 |------|-------|
-| Agents (10 definitions) | `.claude/agents/` — loaded via skills: frontmatter |
+| Agents (10 definitions) | `.claude/agents/` — role-based agents; domain context is loaded via `.claude/skills/implement/references/worker-rules.md` and `.claude/skills/implement/references/reviewer-rules.md` |
 | Skills (12 definitions) | `.claude/skills/` — loaded on-demand by agents or user |
 | Directory structure | `.claude/docs/directory-reference.md` |
 | Embedded OCR package | `packages/flusseract/` |

@@ -17,13 +17,13 @@ Technical how-to guides for common features and patterns.
 
 | Guide | Purpose | Used By |
 |-------|---------|---------|
-| [Chunked Sync Usage](implementation/chunked-sync-usage.md) | Configuring and using chunked data sync with progress tracking | backend-supabase-agent |
+| [Chunked Sync Usage](implementation/chunked-sync-usage.md) | Configuring and using chunked data sync with progress tracking | implement workers touching sync and realtime code |
 
 ## How Agents Reference These
 
-Agents load relevant implementation guides based on their specialization:
+Implementers and reviewers load these guides on demand after the routing tables load the slim rule files.
 
-### Backend Supabase Agent
+### Sync Implementation Work
 - Uses `guides/implementation/chunked-sync-usage.md` for large dataset sync
 
 ### QA Testing Agent

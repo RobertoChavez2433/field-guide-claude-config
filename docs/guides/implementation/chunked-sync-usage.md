@@ -1,6 +1,6 @@
 # Chunked Sync Usage Guide
 
-> **Used By**: [backend-supabase-agent](../../../agents/backend-supabase-agent.md) for large dataset sync, progress tracking, and performance optimization during offline-to-online transitions
+> **Used By**: Implement workers touching sync and realtime code for large dataset sync, progress tracking, and performance optimization during offline-to-online transitions
 
 ## Overview
 

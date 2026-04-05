@@ -10,37 +10,37 @@ Each feature has two documents:
 
 ## Features
 
-| Feature | Primary Agent | Overview | Architecture |
-|---------|---------------|----------|--------------|
-| Auth | auth-agent | [overview](feature-auth-overview.md) | [architecture](feature-auth-architecture.md) |
-| PDF | pdf-agent | [overview](feature-pdf-overview.md) | [architecture](feature-pdf-architecture.md) |
-| Sync | backend-supabase-agent | [overview](feature-sync-overview.md) | [architecture](feature-sync-architecture.md) |
-| Contractors | backend-data-layer-agent | [overview](feature-contractors-overview.md) | [architecture](feature-contractors-architecture.md) |
-| Dashboard | frontend-flutter-specialist-agent | [overview](feature-dashboard-overview.md) | [architecture](feature-dashboard-architecture.md) |
-| Entries | frontend-flutter-specialist-agent | [overview](feature-entries-overview.md) | [architecture](feature-entries-architecture.md) |
-| Locations | backend-data-layer-agent | [overview](feature-locations-overview.md) | [architecture](feature-locations-architecture.md) |
-| Photos | backend-data-layer-agent | [overview](feature-photos-overview.md) | [architecture](feature-photos-architecture.md) |
-| Projects | backend-data-layer-agent | [overview](feature-projects-overview.md) | [architecture](feature-projects-architecture.md) |
-| Quantities | backend-data-layer-agent | [overview](feature-quantities-overview.md) | [architecture](feature-quantities-architecture.md) |
-| Settings | frontend-flutter-specialist-agent | [overview](feature-settings-overview.md) | [architecture](feature-settings-architecture.md) |
-| Toolbox | backend-data-layer-agent | [overview](feature-toolbox-overview.md) | [architecture](feature-toolbox-architecture.md) |
-| Weather | frontend-flutter-specialist-agent | [overview](feature-weather-overview.md) | [architecture](feature-weather-architecture.md) |
+| Feature | Primary Rule Context | Overview | Architecture |
+|---------|----------------------|----------|--------------|
+| Auth | `rules/auth/supabase-auth.md` | [overview](feature-auth-overview.md) | [architecture](feature-auth-architecture.md) |
+| PDF | `rules/pdf/pdf-generation.md` | [overview](feature-pdf-overview.md) | [architecture](feature-pdf-architecture.md) |
+| Sync | `rules/sync/sync-patterns.md` + `rules/backend/supabase-sql.md` | [overview](feature-sync-overview.md) | [architecture](feature-sync-architecture.md) |
+| Contractors | `rules/backend/data-layer.md` | [overview](feature-contractors-overview.md) | [architecture](feature-contractors-architecture.md) |
+| Dashboard | `rules/frontend/flutter-ui.md` | [overview](feature-dashboard-overview.md) | [architecture](feature-dashboard-architecture.md) |
+| Entries | `rules/frontend/flutter-ui.md` + `rules/backend/data-layer.md` | [overview](feature-entries-overview.md) | [architecture](feature-entries-architecture.md) |
+| Locations | `rules/backend/data-layer.md` | [overview](feature-locations-overview.md) | [architecture](feature-locations-architecture.md) |
+| Photos | `rules/backend/data-layer.md` + `rules/pdf/pdf-generation.md` | [overview](feature-photos-overview.md) | [architecture](feature-photos-architecture.md) |
+| Projects | `rules/backend/data-layer.md` + `rules/architecture.md` | [overview](feature-projects-overview.md) | [architecture](feature-projects-architecture.md) |
+| Quantities | `rules/backend/data-layer.md` | [overview](feature-quantities-overview.md) | [architecture](feature-quantities-architecture.md) |
+| Settings | `rules/frontend/flutter-ui.md` | [overview](feature-settings-overview.md) | [architecture](feature-settings-architecture.md) |
+| Toolbox | `rules/frontend/flutter-ui.md` | [overview](feature-toolbox-overview.md) | [architecture](feature-toolbox-architecture.md) |
+| Weather | `rules/frontend/flutter-ui.md` + `rules/architecture.md` | [overview](feature-weather-overview.md) | [architecture](feature-weather-architecture.md) |
 
-## How Agents Use This
+## How Implementers And Reviewers Use This
 
-Each agent loads relevant feature documentation via their `specialization.shared_rules` frontmatter. This provides context for:
+Routing tables load slim rules first. These feature docs provide deeper context when the task needs:
 - Understanding feature scope and constraints
 - Identifying feature-to-feature dependencies
 - Implementing feature-specific patterns
 - Maintaining architectural consistency
 
-### Agent Specializations
+### Typical Consumers
 
 - **auth-agent** → Auth docs
 - **pdf-agent** → PDF docs
-- **backend-supabase-agent** → Sync docs
-- **frontend-flutter-specialist-agent** → Dashboard, Entries, Settings, Weather docs
-- **backend-data-layer-agent** → Contractors, Locations, Photos, Projects, Quantities, Toolbox docs
+- **implement workers touching sync code** → Sync docs
+- **implement workers touching presentation code** → Dashboard, Entries, Settings, Weather, Toolbox docs
+- **implement workers touching data-layer code** → Contractors, Locations, Photos, Projects, Quantities docs
 - **code-review-agent** → All feature docs (read-only)
 - **qa-testing-agent** → All feature docs (test perspective)
 

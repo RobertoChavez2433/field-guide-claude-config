@@ -39,7 +39,7 @@ Write a detailed implementation plan following the plan format template exactly.
 
 1. **Complete code in every step** — never "add validation here", always the actual Dart/SQL/YAML code with annotations
 2. **WHY/NOTE/FROM SPEC/IMPORTANT annotations** — explain business reason, pattern references, spec traceability
-3. **Exact file paths with line numbers** for modifications — e.g., `lib/core/di/app_initializer.dart:115-143`
+3. **Exact file paths with line numbers** for modifications — e.g., `lib/core/bootstrap/app_initializer.dart:115-143`
 4. **Verification commands** after each implementation step — `pwsh -Command "flutter test ..."` with expected output
 5. **Step granularity** — each step is ONE atomic action (2-5 minutes): write test → verify fail → implement → verify pass
 6. **Agent routing** — every sub-phase specifies which agent implements it (from the routing table)

@@ -1,7 +1,7 @@
 # Documentation Index
 
 **Restructured**: 2026-02-13
-**Status**: All docs organized, current, and referenced by agents
+**Status**: Live docs organized by feature, guide, and rule context
 
 ---
 
@@ -15,10 +15,10 @@ Complete documentation for all 17 features. Each feature has:
 - **`feature-{name}-overview.md`** - Quick reference (purpose, capabilities, data model, sync strategy)
 - **`feature-{name}-architecture.md`** - Technical deep-dive (patterns, implementation details)
 
-**Agents that load feature docs**: code-review-agent, qa-testing-agent (cross-cutting)
-**Agents that load specific features**: Based on their specialization (frontend, backend-data, backend-supabase, auth, pdf agents)
+**Cross-cutting readers**: code-review-agent, qa-testing-agent, completeness-review-agent
+**Implementation flow**: domain context comes from routing tables in `.claude/skills/implement/references/worker-rules.md` and `.claude/skills/implement/references/reviewer-rules.md`; feature docs are loaded as needed for deeper context
 
-👉 See [features/README.md](features/README.md) for feature-to-agent mapping
+👉 See [features/README.md](features/README.md) for feature-to-rule mapping
 
 ### 📁 `guides/` - Implementation & Testing Guides (6 files)
 
@@ -37,7 +37,7 @@ How-to guides and references organized by type:
 
 #### `guides/implementation/` (3 files)
 - **`chunked-sync-usage.md`** - Large dataset sync with progress tracking
-  - Used by: **backend-supabase-agent**
+  - Used by: **implement workers touching sync/realtime code**
   - Configuration, progress callbacks, chunking strategy
   - For: Sync coordinator, large entry/photo datasets
 
@@ -47,16 +47,16 @@ How-to guides and references organized by type:
   - For: SyncCoordinator, SyncEngine, SyncQueryService, verification model
 
 - **`shared-analyzer-safe-patterns.md`** - Cross-cutting analyzer-safe abstractions
-  - Used by: **general-purpose**, **frontend-flutter-specialist-agent**, **backend-data-layer-agent**
+  - Used by: **implement workers and reviewers touching shared analyzer-safe code**
   - Documents `SafeRow`, hook-based `SafeAction`, and repository/copyWith decisions from analyzer-zero
   - For: Shared provider, repository, and SQLite row access patterns
 
 #### `guides/` (root-level, 1 file)
 - **`ui-prototyping-workflow.md`** - UI prototyping and mockup workflow
-  - Used by: **frontend-flutter-specialist-agent**
+  - Used by: **implement workers doing UI prototyping**
   - Mockup conventions, iteration process, design-to-code handoff
 
-👉 See [guides/README.md](guides/README.md) for guide-to-agent mapping
+👉 See [guides/README.md](guides/README.md) for guide-to-context mapping
 
 ---
 
@@ -73,35 +73,28 @@ Standalone audit and report documents at the `.claude/docs/` root:
 
 ## Agent Integration
 
-### How Agents Load Docs
+### How Context Loads
 
-Each agent has **frontmatter** that declares what docs it needs:
+The repo now uses **role-based agents** plus **domain routing tables**:
 
-```yaml
-specialization:
-  shared_rules:       # Architecture & constraint files
-    - architecture.md
-  guides:             # Implementation guides (NEW)
-    - docs/guides/implementation/feature-guide.md
-  state_files:        # Current state files
-    - PROJECT-STATE.json
-  prd: prds/...       # Product requirements (if applicable)
-```
+- Implementers and fixers load domain rules from `.claude/skills/implement/references/worker-rules.md`
+- Reviewers load domain rules from `.claude/skills/implement/references/reviewer-rules.md`
+- Feature docs, PRDs, and guides are read on demand when a task needs deeper context than the slim rule files provide
 
 ### Agent-to-Guide References
 
-| Agent | Guides |
+| Role | Guides |
 |-------|--------|
 | **qa-testing-agent** | Manual Testing Checklist, E2E Test Setup |
-| **backend-supabase-agent** | Chunked Sync Usage |
-| **code-review-agent** | All feature docs (read-only) |
+| **implement workers touching sync code** | Chunked Sync Usage |
+| **code-review-agent** | Feature docs and implementation guides as needed |
 
 ---
 
 ## Key Improvements
 
 ✅ **Eliminated Clutter**: 31 docs in root → Organized into `features/` and `guides/`
-✅ **Agent Integration**: All guides now referenced in agent frontmatter
+✅ **Routing Table Integration**: Implement and review flows load slim rules first, then deeper docs as needed
 ✅ **Current Format**: Each guide header shows which agent(s) use it
 ✅ **Navigation**: Feature and guide READMEs provide clear mapping
 ✅ **Findability**: Agents can quickly locate relevant guidance
@@ -133,5 +126,5 @@ specialization:
 
 - [PRDs](../prds/) - Product requirement documents (17 features)
 - [Architecture Decisions](../architecture-decisions/) - Constraints per feature
-- [Agents](../agents/) - Agent definitions with frontmatter
+- [Agents](../agents/) - Role-based agent definitions
 - [Rules](../rules/) - Architecture & domain rules
