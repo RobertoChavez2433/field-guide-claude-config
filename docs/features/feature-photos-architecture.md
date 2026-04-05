@@ -140,6 +140,8 @@ abstract class PhotoRepository implements BaseRepository<Photo> {
 
 All results are wrapped in `RepositoryResult<T>` (success/failure discriminated union) or `PagedResult<T>` for paginated queries.
 
+Cross-cutting note: analyzer-zero introduced shared safety guidance for repository/provider bases and SQLite row access. See `../guides/implementation/shared-analyzer-safe-patterns.md` for the durable reference instead of duplicating that behavior here.
+
 ### Repository Implementation: `PhotoRepositoryImpl`
 
 **File**: `lib/features/photos/data/repositories/photo_repository_impl.dart`

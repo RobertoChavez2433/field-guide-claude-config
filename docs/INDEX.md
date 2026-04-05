@@ -20,7 +20,7 @@ Complete documentation for all 17 features. Each feature has:
 
 👉 See [features/README.md](features/README.md) for feature-to-agent mapping
 
-### 📁 `guides/` - Implementation & Testing Guides (4 files)
+### 📁 `guides/` - Implementation & Testing Guides (5 files)
 
 How-to guides and references organized by type:
 
@@ -35,11 +35,16 @@ How-to guides and references organized by type:
   - Device setup, animation settings, permissions, CI/CD integration
   - Test flags, environment configuration, common issues
 
-#### `guides/implementation/` (1 file)
+#### `guides/implementation/` (2 files)
 - **`chunked-sync-usage.md`** - Large dataset sync with progress tracking
   - Used by: **backend-supabase-agent**
   - Configuration, progress callbacks, chunking strategy
   - For: Sync orchestrator, large entry/photo datasets
+
+- **`shared-analyzer-safe-patterns.md`** - Cross-cutting analyzer-safe abstractions
+  - Used by: **general-purpose**, **frontend-flutter-specialist-agent**, **backend-data-layer-agent**
+  - Documents `SafeRow`, hook-based `SafeAction`, and repository/copyWith decisions from analyzer-zero
+  - For: Shared provider, repository, and SQLite row access patterns
 
 #### `guides/` (root-level, 1 file)
 - **`ui-prototyping-workflow.md`** - UI prototyping and mockup workflow
@@ -101,6 +106,7 @@ specialization:
 ## Quick Navigation
 
 - **Handling large data syncs?** → [Chunked Sync Usage](guides/implementation/chunked-sync-usage.md)
+- **Looking for shared analyzer-safe abstractions?** → [Shared Analyzer-Safe Patterns](guides/implementation/shared-analyzer-safe-patterns.md)
 - **Setting up E2E tests?** → [E2E Test Setup](guides/testing/e2e-test-setup.md)
 - **Running QA coverage?** → [Manual Testing Checklist](guides/testing/manual-testing-checklist.md)
 
@@ -110,10 +116,10 @@ specialization:
 |---------|-------|---------|
 | Features | 34 | Feature overviews & architecture |
 | Testing Guides | 2 | Test setup & QA coverage |
-| Implementation Guides | 1 | Feature-specific implementation how-tos |
+| Implementation Guides | 2 | Feature-specific and cross-cutting implementation how-tos |
 | UI Prototyping Guide | 1 | UI prototyping and mockup workflow |
 | Root Audits & Reports | 4 | Audits, build guides, and reports |
-| **Total** | **43** | Complete project documentation |
+| **Total** | **44** | Complete project documentation |
 
 ---
 

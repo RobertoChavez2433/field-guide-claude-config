@@ -39,6 +39,7 @@
 
 ## Documentation System
 - `.claude/docs/` — Feature overviews + architecture docs (lazy-loaded by agents)
+- `.claude/docs/guides/implementation/shared-analyzer-safe-patterns.md` — Cross-cutting analyzer-zero guidance for `SafeRow`, hook-based `SafeAction`, and repository/copyWith follow-through
 - `.claude/architecture-decisions/` — Feature-specific constraints + shared rules
 - `.claude/state/` — JSON state files; primary tracking via FEATURE-MATRIX.json (feature status) and PROJECT-STATE.json (blockers and priorities)
 - Agents load feature docs on demand via FEATURE-MATRIX.json (feature status and doc paths) and PROJECT-STATE.json (blockers and priorities).

@@ -1,45 +1,28 @@
 # Session State
 
-**Last Updated**: 2026-04-04 | **Session**: 732
+**Last Updated**: 2026-04-04 | **Session**: 733
 
 ## Current Phase
-- **Phase**: Analyzer Zero — 1054 remaining violations after dart fix. Full 6-phase plan written, reviewed (3 adversarial cycles), and ready for /implement.
-- **Status**: On `fix/analyzer-zero` branch. dart fix --apply committed. Plan at `.claude/plans/2026-04-04-analyzer-zero.md`.
+- **Phase**: Analyzer Zero — implementation complete, PR #185 open with auto-merge. CI fixing in progress.
+- **Status**: On `fix/analyzer-zero` branch. All analyzer + custom lint violations fixed. Awaiting CI green.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (732)
+### What Was Done This Session (733)
 
-1. **Analyzed 2268 analyzer violations** from new lint rules (analysis_options.yaml tiers 1-5):
-   - All violations are built-in Dart rules, zero from custom lint rules
-   - 6 research agents analyzed patterns systemically (cast_nullable, catches, futures, dynamic calls, equals/hashcode, runtimeType)
-   - Distribution: 72% lib/, 23% test/, 5% integration_test/. PDF feature = 29% of all.
-
-2. **Track 1 — dart fix --apply**: Eliminated 1214 violations (54%), 334 files changed.
-   - Remaining: 1054 violations needing manual/architectural fixes.
-
-3. **Wrote spec**: `.claude/specs/2026-04-04-analyzer-zero.md` — 6-phase plan with architectural solutions.
-
-4. **Ran tailor**: `.claude/tailor/2026-04-04-analyzer-zero/` — 5 patterns, 34 methods, 42 ground truth verified.
-
-5. **Wrote implementation plan**: `.claude/plans/2026-04-04-analyzer-zero.md` — 6 phases:
-   - Phase 1: Policy decisions (remove do_not_use_environment + strict_raw_type)
-   - Phase 2: Mechanical fixes (catches, @immutable, StageNames, unawaited, strings, doc_ignores, dynamic calls, small rules)
-   - Phase 3: SafeRow extension for SQLite cast fixes
-   - Phase 4: SafeAction mixin + provider refactor (DRY)
-   - Phase 5: RepositoryResult.safeCall + repository refactor (DRY)
-   - Phase 6: _resolveParam<T>() type-promotion for copyWith sentinel casts
-
-6. **3-reviewer adversarial review** (cycle 1):
-   - Code Review: REJECT → fixed (TesseractConfigV2 path, missing models, phantom rule, super.dbService, requireBool)
-   - Security Review: APPROVE WITH CONDITIONS → fixed (sync engine catch exception list, SafeRow NOT NULL docs)
-   - Completeness Review: REJECT → fixed (missing SafeAction/safeCall phases, copyWith ignore→type-promotion, use_if_null rule)
-   - All findings addressed. Cycle 2 not yet run.
+1. **Implemented all 6 phases** of analyzer-zero plan (from S732). Eliminated all 1054 remaining violations.
+2. **Fixed 7 pre-existing custom lint violations** flagged by VS Code Problems panel:
+   - Added `background_sync_callback.dart` to A1 (avoid_supabase_singleton) and A2 (no_direct_database_construction) allowlists
+   - Restructured `AppConfigProvider.recordSyncSuccess()` to satisfy S8 (sync_time_on_success_only)
+   - Added Logger calls to silent catches in `HomeScreen` and `PagedListProvider` (A9)
+   - Replaced `print()` with `debugPrint()` in 2 test files + 8 integration tests (~256 replacements)
+   - Removed all `// ignore_for_file:` directives from test/integration_test files
+3. **CI fixes**: Added `background_sync_callback.dart` to CI security scan grep allowlist. Removed redundant `dart:typed_data` imports from 4 integration tests.
+4. **PR #185** created with auto-merge enabled. Awaiting CI green.
 
 ### What Needs to Happen Next
-1. **Run /implement** on `.claude/plans/2026-04-04-analyzer-zero.md` (6 phases → 0 violations)
-2. **Optional**: Run cycle 2 adversarial reviews before implementing
-3. **Prior session carry-over**: Commit S726 changes + PR, push Supabase migration, merge PR #140
+1. **Monitor PR #185 CI** — if green, auto-merge will squash-merge. If red, investigate.
+2. **Prior session carry-over**: Commit S726 changes + PR, push Supabase migration, merge PR #140
 
 ### User Preferences (Critical)
 - **Fresh test projects only**: NEVER use existing projects during test runs — always create from scratch
@@ -64,6 +47,11 @@
 
 ## Recent Sessions
 
+### Session 733 (2026-04-04)
+**Work**: Implemented analyzer-zero plan. Fixed all analyzer + custom lint violations. CI fixes for security scan allowlist + integration test lint. PR #185 open with auto-merge.
+**Decisions**: background_sync_callback.dart allowlist is legitimate (WorkManager isolate, same as background_sync_handler). debugPrint replaces print in all test/integration_test files.
+**Next**: Monitor PR #185 CI. Prior carry-over: S726 changes, Supabase migration, PR #140.
+
 ### Session 732 (2026-04-04)
 **Work**: Analyzed 2268 lint violations, ran dart fix (1214 eliminated), wrote spec+tailor+plan for remaining 1054. 3-reviewer adversarial review cycle with all findings fixed. New abstractions: SafeRow, SafeAction mixin, RepositoryResult.safeCall, _resolveParam<T>().
 **Decisions**: No // ignore for lint suppression. Type-promotion helper for copyWith instead. Sync engine catches must use catch(Object e) not on Exception. SafeAction/safeCall are DRY phases (violations fixed mechanically first, then refactored).
@@ -72,11 +60,6 @@
 ### Session 731 (2026-04-04)
 **Work**: Full CLAUDE.md + 11 rule files overhaul. CodeMunch-powered architecture verification. 20 agents total (6 research, 11 implementation, 3 review). Personal final review caught 4 agent errors.
 **Decisions**: CLAUDE.md is map/pointer not encyclopedia. Gotchas section for cross-cutting AI pitfalls. Rule files are the detailed reference. Lint category counts verified (23/11/10/8=52).
-**Next**: /implement 3 plans → commit S726 changes → merge PR #140.
-
-### Session 730 (2026-04-04)
-**Work**: Tailor + writing-plans for Private Sync Hint Channels. 3-cycle adversarial review (31+ findings across 3 cycles → all fixed). All 3 reviewers APPROVE.
-**Decisions**: Fan-out in edge function (not SQL triggers). DRY _callRegistrationRpc extraction. RLS 4-policy split. Async ensureDeviceInstallId. ON CONFLICT upsert. 10-sub limit.
 **Next**: /implement 3 plans → commit S726 changes → merge PR #140.
 
 ## Test Results

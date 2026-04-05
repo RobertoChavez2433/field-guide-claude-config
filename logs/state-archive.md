@@ -6,6 +6,11 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## April 2026
 
+### Session 730 (2026-04-04)
+**Work**: Tailor + writing-plans for Private Sync Hint Channels. 3-cycle adversarial review (31+ findings across 3 cycles → all fixed). All 3 reviewers APPROVE.
+**Decisions**: Fan-out in edge function (not SQL triggers). DRY _callRegistrationRpc extraction. RLS 4-policy split. Async ensureDeviceInstallId. ON CONFLICT upsert. 10-sub limit.
+**Next**: /implement 3 plans → commit S726 changes → merge PR #140.
+
 ### Session 726 (2026-04-03)
 **Work**: Resolved 13 GitHub issues (#141-150, #154-157). Proactive schema audit found 4 new issues. v50 migration (user_profiles + inspector_forms deleted_at). IntegrityChecker skipIntegrityCheck. Schema_verifier gaps filled. H001-H004 markers removed.
 **Decisions**: Proactive audit approach over reactive whack-a-mole. skipIntegrityCheck property over filtering by skipPull. #148 closed as not-a-bug (test data issue).

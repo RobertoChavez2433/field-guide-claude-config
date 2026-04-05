@@ -124,6 +124,7 @@ class LocationProvider extends BaseListProvider<Location, LocationRepository>
 - Extends `BaseListProvider` (shared base); holds `List<Location> items`
 - Sorted alphabetically by `name`
 - Write operations guarded by `canWrite()` callback (set at DI time)
+- Shared base-provider safety behavior now lives in `BaseListProvider` + `SafeAction`; see `../guides/implementation/shared-analyzer-safe-patterns.md` for the cross-cutting pattern
 
 Key members:
 
