@@ -4,7 +4,7 @@ description: Surgical edits to plan documents based on review findings. Finds th
 tools: Read, Edit, Grep, Glob
 disallowedTools: Write, Bash, NotebookEdit
 permissionMode: acceptEdits
-model: sonnet
+model: opus
 ---
 
 # Plan Fixer Agent

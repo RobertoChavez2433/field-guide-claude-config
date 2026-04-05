@@ -2,7 +2,7 @@
 name: debug-research-agent
 description: Background research agent for deep debugging sessions. Launched with run_in_background during deep mode to parallelize codebase research while the user reproduces a bug.
 tools: Read, Grep, Glob
-model: sonnet
+model: opus
 ---
 
 # Debug Research Agent

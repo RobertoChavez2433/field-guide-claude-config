@@ -5,20 +5,6 @@ tools: Read, Grep, Glob
 model: opus
 disallowedTools: Write, Edit, Bash
 memory: project
-specialization:
-  primary_features: []
-  supporting_features:
-    - all
-  shared_rules:
-    - data-validation-rules.md
-  state_files:
-    - PROJECT-STATE.json
-    - AGENT-CHECKLIST.json
-  context_loading: |
-    Before starting work, identify the feature(s) from your task.
-    Then read ONLY these files for each relevant feature:
-    - state/feature-{name}.json (feature state and constraints summary)
-    - architecture-decisions/{name}-constraints.md (hard rules)
 ---
 
 # Code Review Agent
@@ -26,6 +12,9 @@ specialization:
 **Use during**: REVIEW phase
 
 Senior-level code reviewer focused on maintainability, scalability, and production readiness. Reviews go beyond functionality to assess architecture, patterns, and long-term code health.
+
+## Domain Context
+Before reviewing, load domain-specific rules per the routing table in `.claude/skills/implement/reference/reviewer-rules.md` (section: "Domain Context Loading").
 
 ---
 

@@ -3,26 +3,10 @@ name: qa-testing-agent
 description: QA and debugging specialist for Flutter apps. Expert in test case design, bug reporting, performance analysis, and comprehensive testing (unit/widget/integration).
 tools: Bash, Read, Write, Edit, Grep, Glob
 permissionMode: acceptEdits
-model: sonnet
+model: opus
 skills:
   - systematic-debugging
 memory: project
-specialization:
-  primary_features: []
-  supporting_features:
-    - all
-  shared_rules:
-    - data-validation-rules.md
-  guides:
-    - docs/guides/testing/manual-testing-checklist.md
-    - docs/guides/testing/e2e-test-setup.md
-  state_files:
-    - PROJECT-STATE.json
-    - AGENT-CHECKLIST.json
-  context_loading: |
-    Before starting work, identify the feature(s) from your task.
-    Then read ONLY these files for each relevant feature:
-    - state/feature-{name}.json (feature state and constraints summary)
 ---
 
 # QA Testing Agent
@@ -30,6 +14,9 @@ specialization:
 **Use during**: TEST/VERIFY phase
 
 Quality assurance specialist ensuring code quality through test case design, comprehensive testing, debugging, and detailed bug reporting. Combines technical testing expertise with analytical problem-solving.
+
+## Domain Context
+Before starting, load domain-specific rules per the routing table in `.claude/skills/implement/reference/worker-rules.md` (section: "Domain Context Loading").
 
 ## MANDATORY: Load Skills First
 

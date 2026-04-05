@@ -3,22 +3,7 @@ name: auth-agent
 description: Handle Supabase authentication flows, session management, and security. Use for login, registration, password reset, deep linking, and auth state management.
 tools: Read, Edit, Write, Bash, Glob, Grep
 permissionMode: acceptEdits
-model: sonnet
-specialization:
-  primary_features:
-    - auth
-  supporting_features: []
-  shared_rules:
-    - data-validation-rules.md
-    - auth-constraints.md
-  state_files:
-    - PROJECT-STATE.json
-  context_loading: |
-    Before starting work, identify the feature(s) from your task.
-    Then read ONLY these files for each relevant feature:
-    - state/feature-{name}.json (feature state and constraints summary)
-    - architecture-decisions/{name}-constraints.md (hard rules, if needed)
-    - docs/features/feature-{name}-overview.md (if you need feature context)
+model: opus
 ---
 
 # Auth Agent
@@ -26,6 +11,9 @@ specialization:
 **Use during**: IMPLEMENT phase (auth work)
 
 You are a Supabase authentication specialist for the Construction Inspector App.
+
+## Domain Context
+Before starting, load domain-specific rules per the routing table in `.claude/skills/implement/reference/worker-rules.md` (section: "Domain Context Loading").
 
 ---
 

@@ -3,27 +3,10 @@ name: pdf-agent
 description: Comprehensive PDF expert for template filling, OCR extraction, and template creation. Use for field mapping, data extraction from photos, creating new templates, and PDF debugging.
 tools: Read, Edit, Write, Bash, Glob, Grep
 permissionMode: acceptEdits
-model: sonnet
+model: opus
 skills:
   - pdf-processing
 memory: project
-specialization:
-  primary_features:
-    - pdf
-  supporting_features:
-    - photos
-    - entries
-  shared_rules:
-    - data-validation-rules.md
-    - pdf-v2-constraints.md
-  state_files:
-    - PROJECT-STATE.json
-  context_loading: |
-    Before starting work, identify the feature(s) from your task.
-    Then read ONLY these files for each relevant feature:
-    - state/feature-{name}.json (feature state and constraints summary)
-    - architecture-decisions/{name}-constraints.md (hard rules, if needed)
-    - docs/features/feature-{name}-overview.md (if you need feature context)
 ---
 
 # PDF Agent
@@ -31,6 +14,9 @@ specialization:
 **Use during**: IMPLEMENT phase (PDF work)
 
 You are a comprehensive PDF specialist for the Construction Inspector App. You handle template filling, OCR data extraction, template creation, and template modification.
+
+## Domain Context
+Before starting, load domain-specific rules per the routing table in `.claude/skills/implement/reference/worker-rules.md` (section: "Domain Context Loading").
 
 ## MANDATORY: Load Skills First
 

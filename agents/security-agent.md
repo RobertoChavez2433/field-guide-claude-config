@@ -5,22 +5,6 @@ tools: Read, Grep, Glob
 model: opus
 disallowedTools: Write, Edit, Bash
 memory: project
-specialization:
-  primary_features: []
-  supporting_features:
-    - all
-  shared_rules:
-    - data-validation-rules.md
-    - auth-constraints.md
-    - sync-constraints.md
-  state_files:
-    - PROJECT-STATE.json
-  context_loading: |
-    Before starting work, read these files for baseline context:
-    - state/PROJECT-STATE.json (project state)
-    - architecture-decisions/auth-constraints.md (auth hard rules)
-    - architecture-decisions/sync-constraints.md (sync hard rules)
-    - architecture-decisions/data-validation-rules.md (validation rules)
 ---
 
 # Security Agent
@@ -28,6 +12,9 @@ specialization:
 **Use during**: REVIEW phase (security audits)
 
 Read-only security auditor that scans the entire codebase for vulnerabilities, misconfigurations, and data protection gaps. Produces structured reports and files findings as GitHub Issues so they are visible and trackable.
+
+## Domain Context
+Before reviewing, load domain-specific rules per the routing table in `.claude/skills/implement/reference/reviewer-rules.md` (section: "Domain Context Loading").
 
 ---
 
