@@ -27,6 +27,8 @@ Compared against PowerSync, Brick, ElectricSQL, synclayer, syncitron, and Flutte
 - PowerSync's `SyncStatus` (immutable value class with stream, separate upload/download errors) is the gold standard for status exposure
 - PowerSync separates file/attachment sync into a dedicated state machine
 - "Functional Core, Imperative Shell" — decision classes do no I/O, I/O classes make no decisions
+- Android's offline-first guidance treats the local datasource as the app-facing source of truth and treats background sync as queued work drained when online, with retry/backoff and single-flight execution
+- Modern sync SDKs expose richer diagnostics than a single status enum: persisted last-sync timestamps, differentiated error types, progress, and typed sync lifecycle signals
 - Your engine is more sophisticated than any surveyed package (FK ordering, multi-tenant scoping, trigger-based change log, circuit breaker). The refactor preserves all of this.
 
 ### Scope
@@ -35,6 +37,8 @@ Compared against PowerSync, Brick, ElectricSQL, synclayer, syncitron, and Flutte
 - Decompose SyncEngine into ~10 focused classes with clean I/O boundaries
 - Consolidate triple status tracking into single immutable SyncStatus value class with stream
 - Consolidate triplicated error classification into SyncErrorClassifier
+- Refactor the sync control plane (lifecycle triggers, realtime hints, DNS/connectivity checks, retry scheduling, background sync coordination) behind injectable boundaries
+- Add a dedicated diagnostics surface so sync runs, errors, progress, and trigger origin are easier to inspect and test
 - Fix layer violations (SQL in orchestrator, raw orchestrator exposure in provider, Postgres knowledge in provider)
 - Reduce 13 boilerplate adapters to data-driven configuration
 - Update all existing sync tests to target new class boundaries
@@ -61,7 +65,9 @@ Compared against PowerSync, Brick, ElectricSQL, synclayer, syncitron, and Flutte
 - [ ] No class exceeds 500 lines
 - [ ] Error classification exists in exactly one place (SyncErrorClassifier)
 - [ ] Sync status has exactly one source of truth (SyncStatus)
+- [ ] Diagnostics have a typed source of truth separate from SyncStatus
 - [ ] All 6 currently untestable code paths have dedicated tests
+- [ ] Lifecycle/realtime/background trigger behavior has dedicated tests
 - [ ] CI green: analyzer zero, all existing tests pass, all new tests pass
 - [ ] Adapter file count reduced from 24 to ~12
 - [ ] All sync documentation updated
@@ -118,6 +124,18 @@ All three pattern-match on overlapping strings: `'42501'`, `'23505'`, `'23503'`,
 - SyncOrchestrator calls `UserProfileSyncDatasource.pullCompanyMembers()` (unrelated concern)
 - SyncEngine depends on `image` package for EXIF stripping
 
+### Control Plane Spread
+
+Sync behavior is not defined by `SyncEngine` alone. It is also spread across:
+
+- `SyncOrchestrator` retry loop, DNS reachability, background retry timer, and status callbacks
+- `SyncLifecycleManager` stale-data rules, forced-sync rules, startup hint consumption, and app lifecycle triggers
+- `RealtimeHintHandler` dirty-scope invalidation, quick-sync throttling, and queued follow-up sync behavior
+- `BackgroundSyncHandler` background maintenance execution and foreground/background overlap guards
+- `SyncInitializer` callback wiring (`onPullComplete`, enrollment hooks) that materially changes sync behavior
+
+If this control plane is left implicit, the refactor will improve engine granularity while keeping the overall sync system hard to reason about and hard to test.
+
 ### Adapter Boilerplate
 
 13 of 22 adapters are pure configuration with zero custom logic. They could be data-driven.
@@ -127,6 +145,9 @@ All three pattern-match on overlapping strings: `'42501'`, `'23505'`, `'23503'`,
 - 9 `@visibleForTesting` seams on SyncEngine
 - SyncOrchestrator retry loop untestable (can't inject fake SyncEngine)
 - FK rescue, enrollment, dirty-scope pull, DNS check, pending buckets — all untestable private methods
+- Realtime hint throttling / queued follow-up sync behavior is coupled to `SyncOrchestrator`
+- Lifecycle-triggered forced/full/quick sync policy is not expressed as a testable abstraction
+- Debug server lifecycle posts are not modeled as a typed diagnostics interface
 
 ---
 
@@ -147,6 +168,17 @@ All three pattern-match on overlapping strings: `'42501'`, `'23505'`, `'23503'`,
 | `FkRescueHandler` | `engine/fk_rescue_handler.dart` | Fetches missing FK parents from Supabase during pull | SupabaseSync, LocalSyncStore | ~80 |
 | `MaintenanceHandler` | `engine/maintenance_handler.dart` | Integrity check, orphan scan, conflict/change_log pruning, storage cleanup orchestration | IntegrityChecker, OrphanScanner, StorageCleanup, ChangeTracker | ~100 |
 
+### New Class Map — Control Plane / Application Layer
+
+| Class | File | Responsibility | Dependencies | Lines (~) |
+|-------|------|---------------|--------------|-----------|
+| `SyncCoordinator` | `application/sync_coordinator.dart` | Owns sync run lifecycle for foreground callers; single entry point for `full`/`quick`/`maintenance` requests | SyncEngineFactory, SyncStatusStore, SyncDiagnosticsStore, SyncRetryPolicy, PostSyncHooks | ~220 |
+| `SyncRetryPolicy` | `application/sync_retry_policy.dart` | Encapsulates retryability, backoff, retry cancellation, and background retry scheduling decisions | SyncErrorClassifier, Clock/Timer abstraction | ~120 |
+| `ConnectivityProbe` | `application/connectivity_probe.dart` | Owns reachability / DNS / health-endpoint checks behind an interface | HTTP client, config | ~80 |
+| `SyncTriggerPolicy` | `application/sync_trigger_policy.dart` | Decides quick/full/forced sync from lifecycle, stale-data, and realtime hint inputs | SyncStatusStore, DirtyScopeTracker | ~120 |
+| `PostSyncHooks` | `application/post_sync_hooks.dart` | Runs app-level follow-up concerns after a successful sync (profile refresh, config freshness callback, enrollment trigger bridge) | callback list / injected hooks | ~100 |
+| `SyncQueryService` | `application/sync_query_service.dart` | Dashboard/query-facing access to pending buckets, integrity results, conflict counts, and other diagnostics | LocalSyncStore | ~120 |
+
 ### Existing Engine Classes (Unchanged)
 
 - `ChangeTracker` — already well-scoped
@@ -164,8 +196,21 @@ All three pattern-match on overlapping strings: `'42501'`, `'23505'`, `'23503'`,
 
 | Class | File | Purpose |
 |-------|------|---------|
-| `SyncStatus` | `domain/sync_status.dart` | Immutable value class: separate `uploadError`/`downloadError`, `downloadProgress`, push/pull state. Stream with deduplication. Replaces mutable fields across 3 classes. |
-| `SyncError` | `domain/sync_error.dart` | Classified error enum: `rlsDenial`, `fkViolation`, `uniqueViolation`, `rateLimited`, `authExpired`, `networkError`, `transient`, `permanent` |
+| `SyncStatus` | `domain/sync_status.dart` | Immutable status value: uploading/downloading flags, persisted `lastSyncedAt`, download progress, connectivity/auth state. Stream with deduplication. Replaces mutable fields across 3 classes. |
+| `SyncErrorKind` | `domain/sync_error.dart` | Error category enum: `rlsDenial`, `fkViolation`, `uniqueViolation`, `rateLimited`, `authExpired`, `networkError`, `transient`, `permanent` |
+| `ClassifiedSyncError` | `domain/sync_error.dart` | Rich error result carrying `kind`, `retryable`, `shouldRefreshAuth`, user-safe message, log detail, and optional change-log disposition |
+| `SyncDiagnosticsSnapshot` | `domain/sync_diagnostics.dart` | Immutable dashboard/query snapshot: pending buckets, integrity results, undismissed conflicts, circuit-breaker records, recent run summary |
+| `SyncEvent` | `domain/sync_event.dart` | Typed lifecycle events for diagnosability: run started/completed, retry scheduled, auth refreshed, quick sync throttled, circuit breaker tripped, file phase failed |
+
+### Status vs Diagnostics Split
+
+`SyncStatus` is intentionally **not** the dumping ground for every sync concern.
+
+- `SyncStatus` = current app-facing transport state (uploading/downloading, connectivity/auth, persisted last sync, progress)
+- `SyncDiagnosticsSnapshot` = inspectable operational state for dashboards and debugging (pending buckets, integrity, conflict counts, circuit-breaker records, recent run facts)
+- `SyncEvent` = transient lifecycle signals for logs, tests, and debug tooling
+
+This prevents the replacement for triple status tracking from turning into the next god object.
 
 ### Adapter Simplification
 
@@ -174,7 +219,7 @@ All three pattern-match on overlapping strings: `'42501'`, `'23505'`, `'23503'`,
 **After**:
 - `TableAdapter` base class — kept, slightly slimmed
 - 9 adapter classes with genuine custom logic (file adapters, consent, support, inspector form, form response, daily entry, equipment, entry equipment, document)
-- `AdapterConfig` — data class for simple adapter registration
+- `AdapterConfig` — richer data class for simple adapter registration
 - Data-driven registration for 13 simple adapters:
 
 ```dart
@@ -186,43 +231,65 @@ static final simpleAdapters = [
 ];
 ```
 
+`AdapterConfig` must be able to express more than table/scope/FKs. For this codebase it may need fields for:
+
+- `converters`
+- `pullFilter` variants / direct-scope specialization
+- `supportsSoftDelete`
+- `skipPull`
+- `skipIntegrityCheck`
+- `userStampColumns`
+- `naturalKeyColumns`
+- `includesNullProjectBuiltins`
+- record-name extraction strategy
+
+If an adapter needs custom decision logic beyond declarative fields, it remains a concrete class.
+
 **File count**: 24 → ~12 adapter files
 
 ### Application Layer Fixes
 
 | Current Problem | Fix |
 |----------------|-----|
-| SyncOrchestrator contains SQL queries (pending buckets, integrity results) | Move to `LocalSyncStore` or new `SyncQueryService` datasource |
-| SyncOrchestrator calls `AppConfigProvider.recordSyncSuccess()` | Replace with callback |
+| SyncOrchestrator contains SQL queries (pending buckets, integrity results) | Move to `SyncQueryService` backed by `LocalSyncStore` |
+| SyncOrchestrator calls `AppConfigProvider.recordSyncSuccess()` | Replace with post-sync hook |
 | SyncOrchestrator calls `UserProfileSyncDatasource.pullCompanyMembers()` | Extract to post-sync hook |
+| Retry timer / DNS / retryability policy lives inside orchestrator | Move to `SyncRetryPolicy` + `ConnectivityProbe` |
+| Lifecycle + realtime hint behavior is spread across handlers | Centralize mode-selection rules in `SyncTriggerPolicy` |
 
 ### Presentation Layer Fixes
 
 | Current Problem | Fix |
 |----------------|-----|
-| SyncProvider exposes raw orchestrator (`get orchestrator`) | Remove. Expose specific methods/getters instead. |
+| SyncProvider exposes raw orchestrator (`get orchestrator`) | Remove. Depend on `SyncStatus` + `SyncQueryService` instead. |
 | SyncProvider contains `_sanitizeSyncError()` with Postgres codes | Delete. Use SyncErrorClassifier output. |
 | SyncProvider tracks status independently | Subscribe to SyncStatus stream. |
+| Dashboard reads mixed status/diagnostics concerns | Read diagnostics from `SyncDiagnosticsSnapshot` / `SyncQueryService`, not from transport status |
 
 ### Dependency Flow (After)
 
 ```
-SyncProvider ──listens──> SyncStatus stream
+SyncProvider ──reads──> SyncStatus stream + SyncDiagnosticsSnapshot
      |
      | triggers
      v
-SyncOrchestrator ──creates──> SyncEngine (slim coordinator)
-                                   |
-                          +--------+--------+
-                          v        v        v
-                    PushHandler PullHandler MaintenanceHandler
-                          |        |
-                    +-----+--------+-----+
-                    v                    v
-              SupabaseSync         LocalSyncStore
-                    |                    |
-                    v                    v
-             SupabaseClient          Database
+SyncCoordinator <── SyncTriggerPolicy / RealtimeHintHandler / LifecycleManager
+     |
+     +── uses ──> SyncRetryPolicy + ConnectivityProbe + PostSyncHooks
+     |
+     v
+SyncEngine (slim coordinator)
+     |
+     +--------+--------+
+     v        v        v
+PushHandler PullHandler MaintenanceHandler
+     |        |
+     +-----+--------+
+     v              v
+SupabaseSync   LocalSyncStore <── SyncQueryService
+     |              |
+     v              v
+SupabaseClient   Database
 ```
 
 No class reaches more than 2 layers down. Every arrow is an injectable dependency.
@@ -266,6 +333,10 @@ Capture current behavior as immutable contracts. Named `characterization_*_test.
 |-----------|-----------------|
 | `characterization_error_classification_test.dart` | Every known error pattern -> classification + change_log state |
 | `characterization_sync_modes_test.dart` | quick/full/maintenance -> exact operation sequence per mode |
+| `characterization_retry_policy_test.dart` | DNS failure, transient network, auth refresh, retry cancellation -> exact retry/scheduling behavior |
+| `characterization_realtime_hint_test.dart` | hint -> dirty scope mark, quick-sync throttle, queued follow-up sync behavior |
+| `characterization_lifecycle_trigger_test.dart` | app resume + staleness + connectivity -> exact quick/full/forced sync decision |
+| `characterization_diagnostics_test.dart` | debug events / pending buckets / integrity / conflict counts stay observable |
 
 **Estimated: ~15 test files, ~120-150 test cases.** Written against current monolith. Run unchanged against refactored code.
 
@@ -281,7 +352,10 @@ Written TDD-style before each class exists. Define public API and expected behav
 | `pull_handler_contract_test.dart` | Given pages -> calls LocalSyncStore.upsertPulledRecord, invokes ConflictResolver, calls EnrollmentHandler after assignments, respects dirty scopes |
 | `file_sync_handler_contract_test.dart` | Three-phase sequence, EXIF strip when flagged, storage path validated, phase-2 failure cleans up phase-1 |
 | `sync_error_classifier_contract_test.dart` | Exhaustive: every Postgres code, network pattern, auth pattern -> correct SyncError variant |
-| `sync_status_contract_test.dart` | Immutability, stream deduplication, separate uploadError/downloadError, copyWith, equality |
+| `sync_status_contract_test.dart` | Immutability, stream deduplication, persisted lastSyncedAt, separate uploadError/downloadError, copyWith, equality |
+| `sync_retry_policy_contract_test.dart` | Classified error -> retry / no-retry / refresh-auth / schedule-background-retry decision |
+| `sync_trigger_policy_contract_test.dart` | Lifecycle + staleness + dirty hints -> quick/full/forced sync choice |
+| `sync_diagnostics_contract_test.dart` | Snapshot assembly and event emission stay typed and UI-safe |
 | `enrollment_handler_contract_test.dart` | New assignments -> synced_projects inserts, already-enrolled -> no-op, orphan cleanup |
 | `fk_rescue_handler_contract_test.dart` | Missing parent -> fetch + write + return true, not on server -> return false |
 | `maintenance_handler_contract_test.dart` | Correct call order, respects integrityCheckInterval, logs to sync_metadata |
@@ -314,6 +388,9 @@ Per-class focused tests that go deeper than characterization:
 | `file_sync_handler_test.dart` | EXIF strip on corrupt image, storage 409, upload timeout, phase-1 success + phase-2 failure cleanup, zero-byte file |
 | `sync_error_classifier_test.dart` | Every Supabase error code, compound errors, unknown codes -> permanent default |
 | `sync_status_test.dart` | Rapid state transitions, concurrent updates, stream deduplication |
+| `sync_retry_policy_test.dart` | retry exhaustion, timer cancellation, background retry scheduling, auth-refresh branch |
+| `sync_trigger_policy_test.dart` | stale/offline warning, forced sync, queued follow-up quick sync, startup hint consumption |
+| `sync_diagnostics_test.dart` | event emission, recent run summaries, dashboard snapshot consistency |
 | `enrollment_handler_test.dart` | Multiple new assignments, already-enrolled no-op, orphan with pending changes |
 | `fk_rescue_handler_test.dart` | Rescue during trigger suppression, different company rejection, recursive rescue |
 | `maintenance_handler_test.dart` | Interval skip, zero orphans, zero expired entries |
@@ -333,6 +410,9 @@ Full 2-device sync flows via the test driver infrastructure:
 | **Quick-Sync-Dirty-Scope** | Trigger realtime hint for specific project+table. Quick sync. Verify only dirty scope pulled. |
 | **Enrollment-Flow** | Admin assigns user to new project via Supabase. User syncs. Verify auto-enrolled, data begins pulling. |
 | **Circuit-Breaker-Recovery** | Create ping-pong conflict. Verify circuit breaker trips. Dismiss. Verify sync resumes. |
+| **Resume-Stale-ForcedSync** | App resumes after stale threshold. Verify forced full sync when online, warning-only when offline. |
+| **Hint-While-Syncing** | Realtime hint arrives mid-sync. Verify dirty scope retained and exactly one follow-up quick sync runs. |
+| **Retry-Exhaustion-Recovery** | All retries fail. Verify retry scheduling, cancellation on manual sync, and typed diagnostics/event output. |
 
 These update existing `.claude/test-flows/sync/` flow definitions.
 
@@ -347,10 +427,13 @@ These update existing `.claude/test-flows/sync/` flow definitions.
 Architectural rules enforced permanently:
 
 - No class in `engine/` may depend on `SupabaseClient` or `Database` directly — only through `SupabaseSync` and `LocalSyncStore`
+- Exception: `SupabaseSync` and `LocalSyncStore` are the explicit boundary classes allowed to wrap `SupabaseClient` and `Database`
 - No `@visibleForTesting` methods — use interfaces or constructor injection
 - Every new sync class must have a corresponding `_test.dart` file before merge
 - SyncStatus is the only source of truth for sync state
 - SyncErrorClassifier is the only error classifier — no Postgres code matching elsewhere
+- Retry policy, connectivity policy, and lifecycle trigger policy must each live in exactly one place
+- Dashboard/inspection data must come from diagnostics/query surfaces, not from raw orchestrator exposure
 
 ---
 
@@ -363,14 +446,15 @@ Each phase is a separate PR. No phase starts until the previous phase's PR is me
 | Phase | What | Depends On |
 |-------|------|-----------|
 | **P0** | Write characterization tests against current monolith | Nothing |
-| **P1** | Extract `SyncErrorClassifier` + `SyncStatus` + `SyncError` (domain types) | P0 |
+| **P1** | Extract `SyncErrorClassifier` + `SyncStatus` + `SyncErrorKind`/`ClassifiedSyncError` + diagnostics domain types | P0 |
 | **P2** | Extract `LocalSyncStore` + `SupabaseSync` (I/O boundaries) | P1 |
 | **P3** | Extract `PushHandler` + `FileSyncHandler` | P2 |
 | **P4** | Extract `PullHandler` + `EnrollmentHandler` + `FkRescueHandler` | P2 |
 | **P5** | Extract `MaintenanceHandler` + slim down `SyncEngine` coordinator | P3, P4 |
-| **P6** | Fix layer violations (orchestrator SQL, provider exposure, status consolidation) | P5 |
-| **P7** | Adapter simplification (data-driven config for 13 simple adapters) | P5 |
-| **P8** | Integration verification (L5 2-device flows) + documentation updates | P6, P7 |
+| **P6** | Extract control-plane abstractions (`SyncRetryPolicy`, `ConnectivityProbe`, `SyncTriggerPolicy`, `PostSyncHooks`) | P5 |
+| **P7** | Fix layer violations (query service, provider exposure removal, status/diagnostics consolidation) | P6 |
+| **P8** | Adapter simplification (data-driven config for 13 simple adapters) | P5 |
+| **P9** | Integration verification (L5 2-device flows) + documentation updates | P7, P8 |
 
 ### Why This Order
 
@@ -378,9 +462,10 @@ Each phase is a separate PR. No phase starts until the previous phase's PR is me
 - **P1 (domain types)**: No behavior change — just extracting types. Low risk, unblocks all subsequent phases.
 - **P2 (I/O boundaries)**: Most important extraction. Once LocalSyncStore and SupabaseSync exist, every subsequent handler can be tested against mocks.
 - **P3 and P4 can be parallelized** if working in separate branches.
-- **P6 after P5**: Layer violations easier to fix once engine is decomposed.
-- **P7 (adapters)**: Independent of engine decomposition, sequenced to avoid merge conflicts.
-- **P8 last**: Integration verification validates the complete system.
+- **P6 after P5**: Control-plane extraction must happen before provider/query cleanup or the callback mesh will remain implicit.
+- **P7 after P6**: Layer violations are easier to fix once the control plane has explicit boundaries.
+- **P8 (adapters)**: Independent of engine decomposition, sequenced to avoid merge conflicts.
+- **P9 last**: Integration verification validates the complete system.
 
 ### Per-Phase Verification Gate
 
@@ -401,6 +486,9 @@ Every phase must pass:
 | `.claude/test-flows/sync/framework.md` | Update to reference new class boundaries and test approach |
 | `.claude/test-flows/sync/*.md` | Update individual flow files for 2-device verification |
 | `.claude/docs/directory-reference.md` | Update sync directory listing |
+| `.claude/docs/INDEX.md` | Add references to sync architecture, control plane, diagnostics, and test-flow docs |
+| `.claude/docs/guides/implementation/sync-architecture.md` | New durable guide covering engine layer, control plane, status vs diagnostics split, and testing strategy |
+| `.codex/CLAUDE_CONTEXT_BRIDGE.md` | Add targeted sync file map so future Codex sessions can find the control-plane and diagnostics docs without broad `.claude/` browsing |
 
 ---
 
@@ -412,6 +500,9 @@ Every phase must pass:
 | Extraction changes trigger suppression timing | Medium | Critical | LocalSyncStore owns all trigger suppression. Dedicated characterization test. |
 | SyncRegistry singleton migration breaks adapter order | Low | High | Inject registry. Characterization test verifies FK order preserved. |
 | Adapter config-driven registration loses subtle override | Low | Medium | Diff each adapter against AdapterConfig fields. Any with logic stays as class. |
+| `SyncStatus` grows into another god object | Medium | High | Split transport status from diagnostics snapshot and transient events up front |
+| Control-plane behavior regresses while engine extraction stays green | Medium | High | Add dedicated retry/lifecycle/realtime characterization tests before extraction |
+| Rich error model still leaves retry/UI policy duplicated | Medium | High | `ClassifiedSyncError` must carry retry/auth/UI metadata, not just an enum tag |
 | 2-device flows reveal integration issue | Medium | Medium | This is why L5 exists. Fix before merge. |
 | Long-lived branch with merge conflicts | Medium | Medium | Each phase is a separate PR. Merge frequently. |
 
@@ -426,8 +517,10 @@ Every phase must pass:
 | `@visibleForTesting` methods | 9 | 0 |
 | Adapter files | 24 | ~12 |
 | Status sources of truth | 3 | 1 (SyncStatus) |
+| Diagnostics sources of truth | implicit / scattered | 1 (`SyncDiagnosticsSnapshot` + `SyncQueryService`) |
 | Error classifier locations | 3 | 1 (SyncErrorClassifier) |
 | Untestable code paths | 6 | 0 |
+| Untyped sync callback mesh | 5+ callbacks / ad hoc timers | 0 |
 | Test files (sync) | 77 | ~105 |
 | Test cases (sync) | 683 | ~1,000+ |
 
@@ -443,6 +536,8 @@ Every phase must pass:
 | Granularity | Fine-grained (10 classes) with EnrollmentHandler + FkRescueHandler extracted | Coarser (5 classes) keeping enrollment/rescue in PullHandler | User requested maximum granularity; each concern independently testable |
 | Adapter reduction | Data-driven config for simple adapters | Keep all 22 class files | 13 adapters are pure boilerplate; config is less code to maintain |
 | New patterns | None — reduce complexity, don't add it | Command pattern, event sourcing | User explicitly rejected adding depth; goal is flatter, not deeper |
+| Error model | Rich `ClassifiedSyncError`, not enum-only | Plain `SyncError` enum as the sole output | Retry policy, auth refresh, UI messaging, and logging need one classification result, not four separate re-parses |
+| Status modeling | Split `SyncStatus` from diagnostics/events | Put all sync-facing state into `SyncStatus` | Keeps transport state small and prevents the replacement from becoming another god object |
 | Testing strategy | 6-layer verification pyramid with characterization-first | Test-after or test-alongside | Testing is the top priority; characterization tests are the safety net |
 | Test execution | CI on PR only; targeted local runs | Full `flutter test` locally or per-commit CI | Full suite is too slow locally; CI on PR is sufficient |
 | L5 integration | Full 2-device flows via test driver | Manual smoke testing | Must match existing test skill rigor |
