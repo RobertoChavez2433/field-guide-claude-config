@@ -4,81 +4,133 @@ Exact CLI commands for each agent type. All paths MUST be absolute.
 
 **Base path**: `C:/Users/rseba/Projects/Field_Guide_App`
 
+**Output model**: All agents use `--bare` for clean headless execution and `--json-schema` for
+structured output. No files are written by agents — everything flows through stdout.
+
+**Live visibility**: Foreground agents pipe through `tee` to show tool calls on terminal via
+`stream-filter.py`, then `extract-result.py` extracts only the `structured_output` JSON.
+
+**Background agents**: Use `--output-format json` (not stream-json) since there's no terminal
+to stream to. Parse `structured_output` from the JSON result directly.
+
 ---
 
-## Implementer
+## Implementer (foreground, live visibility)
 
 ```bash
-unset CLAUDECODE && claude -p "Execute the implementation task described in your system prompt. Write your phase state JSON to the specified path when complete." \
+CLAUDECODE= claude --bare \
+  -p "You are implementing Phase N. Read the plan at <PLAN_PATH> (lines X-Y for your phase). Read the spec at <SPEC_PATH>. Implement exactly as specified. Run lint verification before completing." \
   --model sonnet \
-  --allowedTools "Read,Edit,Write,Glob,Grep" \
-  --permission-mode dontAsk \
-  --max-turns 80 \
-  --output-format json \
-  --append-system-prompt-file "C:/Users/rseba/Projects/Field_Guide_App/.claude/outputs/phase-N-prompt.md" \
-  --no-session-persistence \
-  2>&1 | tee "C:/Users/rseba/Projects/Field_Guide_App/.claude/outputs/phase-N-output.json"
-```
-
-Replace `N` with the actual phase number.
-
----
-
-## Reviewer (completeness / code / security)
-
-```bash
-unset CLAUDECODE && claude -p "Execute the review task described in your system prompt. Write your findings JSON to the specified path." \
-  --model opus \
-  --allowedTools "Read,Glob,Grep,Write" \
-  --permission-mode dontAsk \
-  --max-turns 80 \
-  --output-format json \
-  --append-system-prompt-file "C:/Users/rseba/Projects/Field_Guide_App/.claude/outputs/phase-N-review-TYPE-prompt.md" \
-  --no-session-persistence \
-  2>&1 | tee "C:/Users/rseba/Projects/Field_Guide_App/.claude/outputs/phase-N-review-TYPE-output.json"
-```
-
-Replace `N` with phase number and `TYPE` with `completeness`, `code`, or `security`.
-
-Note: Reviewers need `Write` in allowedTools to write their findings JSON file, but their system prompt restricts them to ONLY write findings files — no source code modification.
-
----
-
-## Lint Fixer
-
-```bash
-unset CLAUDECODE && claude -p "Fix the lint violations described in your system prompt. Run both lint commands after fixing to verify." \
-  --model sonnet \
+  --tools "Read,Edit,Write,Glob,Grep,Bash" \
   --allowedTools "Read,Edit,Write,Glob,Grep,Bash(pwsh*)" \
-  --permission-mode dontAsk \
+  --permission-mode acceptEdits \
   --max-turns 80 \
-  --output-format json \
-  --append-system-prompt-file "C:/Users/rseba/Projects/Field_Guide_App/.claude/outputs/batch-N-lint-fixer-prompt.md" \
+  --output-format stream-json \
+  --verbose \
+  --json-schema '<IMPLEMENTER_SCHEMA>' \
+  --append-system-prompt-file "C:/Users/rseba/Projects/Field_Guide_App/.claude/skills/implement/reference/worker-rules.md" \
   --no-session-persistence \
-  2>&1 | tee "C:/Users/rseba/Projects/Field_Guide_App/.claude/outputs/batch-N-lint-fixer-output.json"
+  2>&1 | tee >(python3 .claude/tools/stream-filter.py > /dev/tty) \
+  | python3 .claude/tools/extract-result.py
 ```
 
-Replace `N` with the batch number.
+Replace `N` with the phase number, `<PLAN_PATH>` and `<SPEC_PATH>` with absolute paths,
+and `X-Y` with the line range for the phase in the plan file.
+
+The `-p` prompt is constructed inline by the orchestrator — no prompt files.
 
 ---
 
-## Review Fixer (per-phase)
+## Reviewer (background, parallel x3)
 
 ```bash
-unset CLAUDECODE && claude -p "Fix the review findings described in your system prompt." \
-  --model sonnet \
-  --allowedTools "Read,Edit,Write,Glob,Grep" \
+CLAUDECODE= claude --bare \
+  -p "Review Phase N implementation. Plan: <PLAN_PATH> (lines X-Y). Spec: <SPEC_PATH>. Files to review: <FILE_LIST>. You are the <TYPE> reviewer." \
+  --model opus \
+  --tools "Read,Glob,Grep" \
+  --allowedTools "Read,Glob,Grep" \
   --permission-mode dontAsk \
-  --max-turns 80 \
+  --max-turns 40 \
   --output-format json \
-  --append-system-prompt-file "C:/Users/rseba/Projects/Field_Guide_App/.claude/outputs/phase-N-fixer-prompt.md" \
-  --no-session-persistence \
-  2>&1 | tee "C:/Users/rseba/Projects/Field_Guide_App/.claude/outputs/phase-N-fixer-output.json"
+  --json-schema '<FINDINGS_SCHEMA>' \
+  --append-system-prompt-file "C:/Users/rseba/Projects/Field_Guide_App/.claude/skills/implement/reference/reviewer-rules.md" \
+  --append-system-prompt-file "C:/Users/rseba/Projects/Field_Guide_App/.claude/agents/<TYPE>-agent.md" \
+  --no-session-persistence
 ```
 
-Replace `N` with the phase number.
+Replace `<TYPE>` with one of:
+- `completeness-review` (uses `completeness-review-agent.md`)
+- `code-review` (uses `code-review-agent.md`)
+- `security` (uses `security-agent.md`)
 
-Note: Review fixers do NOT run lint. Lint runs at the batch level after fixers complete.
+Reviewers use `--output-format json` (not stream-json) since they run in background.
+Result is compact findings JSON parsed from `structured_output`.
+
+---
+
+## Fixer (foreground, live visibility)
+
+```bash
+CLAUDECODE= claude --bare \
+  -p "Fix these findings. Plan: <PLAN_PATH>. Spec: <SPEC_PATH>. Only fix CRITICAL, HIGH, and MEDIUM findings. Skip LOW. Findings: <CONSOLIDATED_FINDINGS_JSON>" \
+  --model sonnet \
+  --tools "Read,Edit,Write,Glob,Grep,Bash" \
+  --allowedTools "Read,Edit,Write,Glob,Grep,Bash(pwsh*)" \
+  --permission-mode acceptEdits \
+  --max-turns 80 \
+  --output-format stream-json \
+  --verbose \
+  --json-schema '<FIXER_SCHEMA>' \
+  --append-system-prompt-file "C:/Users/rseba/Projects/Field_Guide_App/.claude/skills/implement/reference/worker-rules.md" \
+  --append-system-prompt-file "C:/Users/rseba/Projects/Field_Guide_App/.claude/agents/code-fixer-agent.md" \
+  --no-session-persistence \
+  2>&1 | tee >(python3 .claude/tools/stream-filter.py > /dev/tty) \
+  | python3 .claude/tools/extract-result.py
+```
+
+---
+
+## JSON Schemas
+
+### Implementer Schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "phase": { "type": "integer" },
+    "status": { "enum": ["done", "failed", "blocked"] },
+    "files_created": { "type": "array", "items": { "type": "string" } },
+    "files_modified": { "type": "array", "items": { "type": "string" } },
+    "substeps": { "type": "object" },
+    "decisions": { "type": "array", "items": { "type": "string" } },
+    "lint_clean": { "type": "boolean" },
+    "notes": { "type": "string" }
+  },
+  "required": ["phase", "status", "files_created", "files_modified", "substeps", "decisions", "lint_clean"]
+}
+```
+
+### Findings Schema (all 3 reviewer types)
+
+See `findings-schema.json` for the canonical schema.
+
+### Fixer Schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "findings_received": { "type": "integer" },
+    "findings_fixed": { "type": "integer" },
+    "findings_skipped": { "type": "integer" },
+    "skipped_reasons": { "type": "array", "items": { "type": "string" } },
+    "files_modified": { "type": "array", "items": { "type": "string" } },
+    "lint_clean": { "type": "boolean" }
+  },
+  "required": ["findings_received", "findings_fixed", "findings_skipped", "files_modified", "lint_clean"]
+}
+```
 
 ---
 
@@ -86,12 +138,16 @@ Note: Review fixers do NOT run lint. Lint runs at the batch level after fixers c
 
 | Flag | Purpose |
 |------|---------|
-| `unset CLAUDECODE` | Bypass nested-session protection |
+| `CLAUDECODE=` | Bypass nested-session protection (replaces `unset CLAUDECODE`) |
+| `--bare` | Headless mode — no interactive UI, clean context |
 | `--model` | `sonnet` for implementers/fixers, `opus` for reviewers |
-| `--allowedTools` | Restricts available tools per agent type |
-| `--permission-mode dontAsk` | Non-interactive, no permission prompts |
-| `--max-turns` | Prevents runaway agents (80 for all agent types) |
-| `--output-format json` | Structured output capture |
-| `--append-system-prompt-file` | Injects the task-specific prompt |
+| `--tools` | Declares available tools per agent type |
+| `--allowedTools` | Auto-approved tools (no permission prompts) |
+| `--permission-mode` | `acceptEdits` for writers, `dontAsk` for read-only |
+| `--max-turns` | Prevents runaway agents (80 implementers/fixers, 40 reviewers) |
+| `--output-format` | `stream-json` (foreground) or `json` (background) |
+| `--verbose` | Include tool calls in stream (foreground only) |
+| `--json-schema` | Structured output schema — agent returns typed JSON |
+| `--append-system-prompt-file` | Injects static rules (worker/reviewer) + agent definition |
 | `--no-session-persistence` | Ephemeral — don't pollute session history |
-| `2>&1 \| tee` | Capture output to file AND display |
+| `tee >(...) \| extract-result.py` | Live visibility + clean structured output extraction |

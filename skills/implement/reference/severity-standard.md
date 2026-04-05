@@ -2,18 +2,30 @@
 
 ## Severity Levels
 
-| Level | Definition |
-|-------|------------|
-| CRITICAL | Blocks pipeline. Breaks functionality, security vulnerability, or plan requirement completely missing. |
-| HIGH | Significant issue. Wrong behavior, missing error handling. |
-| MEDIUM | Quality issue. Suboptimal pattern, missing edge case. |
-| LOW | Nitpick. Style, naming, minor improvement. |
+| Level | Definition | Blocks Approval? |
+|-------|------------|-----------------|
+| CRITICAL | Breaks functionality, security vulnerability, or spec requirement completely missing. | YES |
+| HIGH | Significant issue. Wrong behavior, missing error handling, key requirement partially missing. | YES |
+| MEDIUM | Quality issue. Suboptimal pattern, missing edge case, doesn't fully match spec intent. | YES |
+| LOW | Nitpick. Style, naming, minor improvement. | NO (logged only) |
 
-ALL severity levels get fixed. No deferrals.
+## Verdict Rules
+
+- **"approve"** — Zero findings at CRITICAL, HIGH, or MEDIUM severity
+- **"reject"** — One or more findings at CRITICAL, HIGH, or MEDIUM severity
+
+LOW findings are reported but do NOT affect verdict. They are logged to the checkpoint's
+`low_findings` array for reference but never block a phase.
+
+## Fix Scope
+
+- Fixer agents fix CRITICAL, HIGH, and MEDIUM findings only
+- LOW findings are skipped by fixers — they are logged, not fixed
+- This prevents fix churn on stylistic issues while ensuring all substantive issues are addressed
 
 ## Finding Format (for reviewers)
 
-Reviewers output findings as structured JSON (see `findings-schema.json`).
+Reviewers output findings via `--json-schema` structured output (see `findings-schema.json`).
 
 Each finding MUST include:
 
@@ -27,8 +39,3 @@ Each finding MUST include:
 | `finding` | Clear description of the issue |
 | `fix_guidance` | Specific, actionable fix instruction |
 | `spec_reference` | Which spec requirement this relates to (completeness only; `null` for code/security) |
-
-## Verdict Rules
-
-- `"approve"` — Zero findings of any severity
-- `"reject"` — One or more findings of any severity

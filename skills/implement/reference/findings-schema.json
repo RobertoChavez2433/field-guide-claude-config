@@ -1,24 +1,36 @@
 {
-  "phase": 3,
-  "review_type": "completeness|code_review|security",
-  "verdict": "approve|reject",
-  "findings": [
-    {
-      "id": "F1",
-      "severity": "critical|high|medium|low",
-      "category": "completeness|code-quality|security",
-      "file": "lib/features/sync/engine/push_handler.dart",
-      "line": 42,
-      "finding": "Missing null check on company_id before push",
-      "fix_guidance": "Add null guard: if (companyId == null) throw SyncError.noCompany()",
-      "spec_reference": "Section 4.1, R3"
+  "type": "object",
+  "properties": {
+    "phase": { "type": "integer" },
+    "review_type": { "enum": ["completeness", "code_review", "security"] },
+    "verdict": { "enum": ["approve", "reject"] },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "severity": { "enum": ["critical", "high", "medium", "low"] },
+          "category": { "type": "string" },
+          "file": { "type": "string" },
+          "line": { "type": ["integer", "null"] },
+          "finding": { "type": "string" },
+          "fix_guidance": { "type": "string" },
+          "spec_reference": { "type": ["string", "null"] }
+        },
+        "required": ["id", "severity", "category", "file", "finding", "fix_guidance"]
+      }
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "critical": { "type": "integer" },
+        "high": { "type": "integer" },
+        "medium": { "type": "integer" },
+        "low": { "type": "integer" }
+      },
+      "required": ["critical", "high", "medium", "low"]
     }
-  ],
-  "summary": {
-    "critical": 0,
-    "high": 1,
-    "medium": 2,
-    "low": 0,
-    "total": 3
-  }
+  },
+  "required": ["phase", "review_type", "verdict", "findings", "summary"]
 }
