@@ -1,0 +1,5 @@
+Analyzing Field_Guide_App...                                    
+
+  error - The method 'notifyListeners' isn't defined for the type 'RealtimeHintHandler' - lib\features\sync\application\realtime_hint_handler.dart:148:7 - undefined_method
+
+1 issue found. (ran in 6.6s)

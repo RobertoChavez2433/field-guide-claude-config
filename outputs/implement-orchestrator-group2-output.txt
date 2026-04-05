@@ -1,8 +1,13 @@
+Checkpoint updated. All assigned phases complete.
+
 STATUS: DONE
-PHASES_EXECUTED: 2
-PARALLEL_BATCHES: Batch1(2)
-FILES: lib/features/dashboard/presentation/widgets/dashboard_stat_card.dart, lib/features/dashboard/presentation/widgets/budget_overview_card.dart, lib/features/dashboard/presentation/widgets/tracked_item_row.dart, lib/features/dashboard/presentation/widgets/alert_item_row.dart, lib/features/dashboard/presentation/widgets/weather_summary_card.dart, lib/features/dashboard/presentation/widgets/todays_entry_card.dart, lib/features/dashboard/presentation/widgets/widgets.dart, lib/features/dashboard/presentation/screens/project_dashboard_screen.dart, lib/features/weather/presentation/providers/weather_provider.dart, lib/features/weather/di/weather_providers.dart
+PHASES_EXECUTED: 2.1, 2.2, 2.3
+PARALLEL_BATCHES: Batch1(2.1) Batch2(2.2, 2.3)
+FILES: ~145 catch-block files in lib/test/integration_test, 27 @immutable model files, 18 PDF stage files, plus 6 fixer-touched files (sync_orchestrator.dart, sync_lifecycle_manager.dart, background_sync_handler.dart, sync_engine.dart, project_provider.dart, auth_provider.dart)
 PER_PHASE_REVIEWS:
-  Phase 2: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:2) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:1
+  Phase 2.1: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:1,L:3) security=PASS(C:0,H:0,M:3,L:0) fix_cycles:1
+  Phase 2.2: completeness=PASS(C:0,H:0,M:0,L:2) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:0
+  Phase 2.3: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:0
 TOTAL_FIX_CYCLES: 1
-DECISIONS: BudgetOverviewCard keeps custom gradient header (intentional plan decision, not migrated to AppGlassCard)
+ANALYZER: 590 issues remaining (down from 1011). All 3 targeted rules at zero: avoid_catches_without_on_clauses=0, avoid_equals_and_hash_code_on_mutable_classes=0, no_runtimetype_tostring=0
+DECISIONS: sync_lifecycle_manager.dart and background_sync_handler.dart catches upgraded to on Object catch (beyond plan scope, per security review findings)

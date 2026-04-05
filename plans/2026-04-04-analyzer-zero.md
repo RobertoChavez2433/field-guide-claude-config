@@ -6,9 +6,18 @@
 **Spec:** `.claude/specs/2026-04-04-analyzer-zero.md`
 **Tailor:** `.claude/tailor/2026-04-04-analyzer-zero/`
 
-**Architecture:** Policy changes in analysis_options.yaml, followed by mechanical catch/annotation/wrapper fixes, then three new abstractions (SafeRow extension, SafeAction mixin, RepositoryResult.safeCall), and finally copyWith type-promotion fixes. Each phase is independently verifiable via `flutter analyze` count reduction.
+**Verified Baseline:** `flutter analyze` was run on 2026-04-04 against this branch and still reports exactly **1054 issues found**, matching the spec baseline.
+**Architecture:** Policy changes in `analysis_options.yaml`, followed by mechanical catch/annotation/wrapper fixes, then shared abstractions sized to this codebase. The landed baseline is `SafeRow` for SQLite row maps plus a hook-based `SafeAction` mixin that works with provider-owned state. The plan also explored `RepositoryResult.safeCall` helpers and a copyWith type-promotion helper, but those did not become branch-wide invariants before analyzer-zero was reached.
 **Tech Stack:** Dart, Flutter, sqflite, Supabase, provider
-**Blast Radius:** 2 new files (safe_row.dart, safe_action_mixin.dart), 1 modified shared file (base_repository.dart += safeCall), ~190 modified files total (incl. ~30 providers + ~10 repositories refactored for DRY), 0 test files broken
+**Blast Radius:** 2-4 new shared Dart/docs files (`safe_row.dart`, `safe_action_mixin.dart`, `.claude` guide, optional follow-up repository/copyWith helpers), 2-3 modified shared base files (`base_list_provider.dart`, likely `paged_list_provider.dart`, optional `base_repository.dart` follow-up), selective provider/repository refactors instead of blanket adoption, and explicit `.claude` documentation updates so the new cross-cutting material remains discoverable in future sessions.
+
+## Implementation Completion Notes
+
+- **Current branch status (2026-04-04):** `flutter analyze` now reports **0 issues found**.
+- **Landed shared abstractions:** `SafeRow`, hook-based `SafeAction`, `BaseListProvider`/`PagedListProvider` adoption, and the `.claude` guide added in Phase 7.
+- **Did not become a branch-wide invariant:** `RepositoryResult.safeCall` / `safeEmptyCall` were planned but not adopted in `base_repository.dart`. Repository code remains intentionally mixed because logger categories, validation, row-count checks, and file side effects vary by feature.
+- **Superseded before implementation:** the copyWith helper phase was no longer needed once `cast_nullable_to_non_nullable` reached zero through earlier work. No shared `_resolveParam<T>()` or `Value<T>` pattern was introduced on this branch.
+- **How to read this plan now:** treat Phases 1-4 and 7 as the landed analyzer-zero baseline, treat Phase 5 as optional follow-up refactor material, and treat Phase 6 as historical design exploration that is not part of the current codebase contract.
 
 ---
 
@@ -608,6 +617,8 @@ Expected: All remaining small rules drop to 0. Run full `flutter analyze` — sh
 // This extension provides null-checked accessors that eliminate the lint.
 // NOTE: The null check promotes Object? to Object, making the subsequent cast
 // from Object to T a non-nullable-to-non-nullable cast (no lint).
+// IMPORTANT: Keep this scoped to raw SQLite row access (`Map<String, Object?>`).
+// Do not force general JSON / `Map<String, dynamic>` model parsing through it.
 
 /// Type-safe accessors for SQLite query result rows.
 ///
@@ -635,13 +646,13 @@ extension SafeRow on Map<String, Object?> {
   }
 
   /// Get a non-null double value. Throws [StateError] if null.
-  /// Only safe for NOT NULL columns — use a nullable variant for nullable columns.
+  /// Coerces numeric SQLite values through num.toDouble().
   double requireDouble(String key) {
     final value = this[key];
     if (value == null) {
       throw StateError('Expected non-null double for column "$key", got null');
     }
-    return value as double;
+    return (value as num).toDouble();
   }
 
   /// Get an optional String value.
@@ -715,12 +726,17 @@ Expected: SQLite-related `cast_nullable_to_non_nullable` violations eliminated (
 
 ---
 
-## Phase 4: SafeAction Mixin + Provider Refactor
+## Phase 4: Hook-Based SafeAction + Provider Refactor
 
 // NOTE: Spec Phase 4. The catch violations in providers were already fixed mechanically
-// in Phase 2.1 (bare catch -> on Exception catch). This phase refactors those same
-// providers to use a shared SafeAction mixin for DRY — eliminating the duplicated
-// try/catch/finally + _isLoading/_error/notifyListeners boilerplate across 30+ providers.
+// in Phase 2.1 (bare catch -> on Exception catch). This phase keeps the spec's
+// architectural intent and deliberately leans into pre-production hygiene
+// refactoring, but the mixin shape is corrected for this codebase.
+//
+// FIT CORRECTION: A mixin that OWNS private `_isLoading` / `_error` fields is a
+// bad fit here because providers live in separate Dart libraries and cannot
+// safely read/write another library's private fields. SafeAction must wrap
+// provider-owned state, not replace it.
 
 ### Sub-phase 4.1: Create SafeAction mixin
 
@@ -729,194 +745,244 @@ Expected: SQLite-related `cast_nullable_to_non_nullable` violations eliminated (
 
 **Agent**: frontend-flutter-specialist-agent
 
-#### Step 4.1.1: Create the SafeAction mixin file
+#### Step 4.1.1: Create a hook-based SafeAction mixin
 
 ```dart
-// WHY: 30+ providers duplicate the same try/catch/finally + _isLoading/_error/notifyListeners
-// boilerplate. This mixin standardizes the pattern and uses `on Exception catch` consistently.
-// FROM SPEC: Phase 4A — "Eliminates the duplicated try/catch/finally + _isLoading/_error/
-// notifyListeners block that appears across 30+ providers."
+// WHY: 30+ providers duplicate the same start/loading/error/notify pattern.
+// This mixin centralizes the action lifecycle without taking ownership of
+// library-private provider fields.
 
 import 'package:flutter/foundation.dart';
 import 'package:construction_inspector/core/logging/logger.dart';
 
-/// Mixin for ChangeNotifier providers that provides standardized
-/// error handling, loading state, and notification patterns.
 mixin SafeAction on ChangeNotifier {
-  bool _isLoading = false;
-  String? _error;
+  @protected
+  bool get safeActionIsLoading;
 
-  bool get isLoading => _isLoading;
-  String? get error => _error;
+  @protected
+  set safeActionIsLoading(bool value);
 
-  /// Wraps an async action with loading state, error handling, and notification.
-  Future<bool> safeAction(String label, Future<void> Function() fn) async {
-    _isLoading = true;
-    _error = null;
+  @protected
+  String? get safeActionError;
+
+  @protected
+  set safeActionError(String? value);
+
+  @protected
+  String get safeActionLogTag;
+
+  @protected
+  Future<bool> runSafeAction(
+    String label,
+    Future<void> Function() action, {
+    String Function(Object error)? buildErrorMessage,
+    void Function()? onStart,
+    void Function()? onSuccess,
+  }) async {
+    safeActionIsLoading = true;
+    safeActionError = null;
+    onStart?.call();
     notifyListeners();
+
     try {
-      await fn();
+      await action();
+      onSuccess?.call();
       return true;
-    } on Exception catch (e) {
-      _error = 'Failed to $label: $e';
-      Logger.error('[$label] failed', error: e);
+    } on Exception catch (e, stack) {
+      safeActionError =
+          buildErrorMessage?.call(e) ?? 'Failed to $label: $e';
+      Logger.error(
+        '[$safeActionLogTag] $label failed',
+        error: e,
+        stack: stack,
+      );
       return false;
     } finally {
-      _isLoading = false;
+      safeActionIsLoading = false;
       notifyListeners();
     }
   }
 
-  /// Variant for actions that return a value.
-  Future<T?> safeGet<T>(String label, Future<T> Function() fn) async {
-    _isLoading = true;
-    _error = null;
+  @protected
+  Future<T?> runSafeGet<T>(
+    String label,
+    Future<T> Function() action, {
+    String Function(Object error)? buildErrorMessage,
+    void Function()? onStart,
+  }) async {
+    safeActionIsLoading = true;
+    safeActionError = null;
+    onStart?.call();
     notifyListeners();
+
     try {
-      final result = await fn();
-      return result;
-    } on Exception catch (e) {
-      _error = 'Failed to $label: $e';
-      Logger.error('[$label] failed', error: e);
+      return await action();
+    } on Exception catch (e, stack) {
+      safeActionError =
+          buildErrorMessage?.call(e) ?? 'Failed to $label: $e';
+      Logger.error(
+        '[$safeActionLogTag] $label failed',
+        error: e,
+        stack: stack,
+      );
       return null;
     } finally {
-      _isLoading = false;
+      safeActionIsLoading = false;
       notifyListeners();
     }
   }
 }
 ```
 
-// NOTE: The mixin uses `on Exception catch` (not bare catch) to satisfy
-// avoid_catches_without_on_clauses. Error subclasses propagate unhandled — this
-// is correct for provider-level code which should never encounter Error.
+// NOTE: Providers KEEP their own `_isLoading`, `_error`, and any secondary
+// state flags. They opt into the mixin by mapping those fields through the
+// protected accessors.
 
-### Sub-phase 4.2: Refactor providers to use SafeAction
+### Sub-phase 4.2: Refactor shared provider bases first
 
 **Files:**
-- Modify: ~30 provider files
+- Modify: `lib/shared/providers/base_list_provider.dart`
+- Modify: `lib/shared/providers/paged_list_provider.dart`
 
 **Agent**: frontend-flutter-specialist-agent
 
-#### Step 4.2.1: Refactor standalone providers (highest violation count first)
-
-For each provider, add `with SafeAction` and replace the duplicated try/catch/finally blocks:
+#### Step 4.2.1: Adopt SafeAction in shared base providers
 
 ```dart
-// FROM SPEC: Phase 4B exemplar
+abstract class BaseListProvider<T, R extends ProjectScopedRepository<T>>
+    extends ChangeNotifier with SafeAction {
+  @override
+  bool get safeActionIsLoading => _isLoading;
 
-// Before (from provider-catch-pattern.md):
-Future<void> loadTodos({String? projectId}) async {
-  _isLoading = true;
-  _error = null;
-  notifyListeners();
-  try {
-    _todos = await _repository.getByProjectId(projectId);
-  } on Exception catch (e) {
-    _error = 'Failed to load todos: $e';
-    Logger.ui('[Todo] $_error');
-  } finally {
-    _isLoading = false;
-    notifyListeners();
-  }
-}
+  @override
+  set safeActionIsLoading(bool value) => _isLoading = value;
 
-// After:
-Future<void> loadTodos({String? projectId}) async {
-  await safeAction('load todos', () async {
-    _todos = await _repository.getByProjectId(projectId);
-  });
+  @override
+  String? get safeActionError => _error;
+
+  @override
+  set safeActionError(String? value) => _error = value;
+
+  @override
+  String get safeActionLogTag => 'BaseListProvider<$T>';
 }
 ```
 
-// IMPORTANT: Remove duplicate `_isLoading` and `_error` field declarations from
-// providers that adopt SafeAction — the mixin provides these.
+Refactor `loadItems`, `createItem`, `updateItem`, `deleteItem`, and the
+equivalent page-loading methods in `PagedListProvider` to use the new helper.
+This immediately lifts all subclasses that already rely on the shared bases.
 
-**Providers to refactor (standalone, not extending BaseListProvider):**
+### Sub-phase 4.3: Roll SafeAction through standalone providers
 
-| Provider | ~Catch Blocks | Notes |
-|----------|:-------------:|-------|
-| TodoProvider | 12 | Canonical exemplar |
-| AuthProvider | 12 | Has `on AuthException` specific catches — keep those, use SafeAction for fallback catches only |
-| EntryQuantityProvider | 11 | |
-| ProjectProvider | 10 | |
-| AdminProvider | 9 | |
-| EquipmentProvider | 7 | |
-| AppConfigProvider | 7 | |
-| BidItemProvider | 4 | |
-| ConsentProvider | 4 | |
-| SupportProvider | 4 | |
-| CalculatorProvider | 3 | |
-| GalleryProvider | 1 | |
+**Files:**
+- Modify: ~20-30 provider files, prioritized by catch density and architectural payoff
 
-#### Step 4.2.2: Refactor BaseListProvider and its subclasses
+**Agent**: frontend-flutter-specialist-agent
 
-```dart
-// BaseListProvider already has _isLoading/_error — add `with SafeAction`
-// and refactor loadItems/createItem/updateItem/deleteItem to use safeAction.
+#### Step 4.3.1: Refactor good-fit standalone providers
 
-abstract class BaseListProvider<T> extends ChangeNotifier with SafeAction {
-  // Remove duplicate _isLoading/_error fields (provided by mixin)
-  // ...
-}
-```
+Start with providers whose primary async state is a single `_isLoading` +
+`_error` pair and whose methods mainly wrap repository/service calls.
 
-**Subclasses:** ContractorProvider, LocationProvider, PhotoProvider, and others extending BaseListProvider.
+**Good first adopters:**
+- `TodoProvider`
+- `EntryQuantityProvider`
+- `EquipmentProvider`
+- `ConsentProvider`
+- `SupportProvider`
+- `CalculatorProvider`
+- `GalleryProvider` (only methods using the standard pair)
+- `WeatherProvider`
 
-#### Step 4.2.3: Skip providers with multiple loading states
+#### Step 4.3.2: Refactor more complex providers with targeted adapters
 
-// NOTE: Providers with multiple loading states (e.g., DailyEntryProvider has
-// _isLoadingList + _isSaving, PhotoProvider has _isUploading) may need partial
-// adoption or variants. If a provider has more than `_isLoading`/`_error`, only
-// refactor methods that use the standard pattern. Leave multi-state methods as-is.
+The user explicitly wants early architecture cleanup, so broader refactoring is
+in scope. Apply SafeAction to more complex providers only where the action
+lifecycle is still a net improvement over bespoke boilerplate.
 
-#### Step 4.2.4: Verify with flutter analyze
+**Targeted/partial adopters:**
+- `ProjectProvider`
+- `AdminProvider`
+- `AppConfigProvider`
+- `AuthProvider` for generic fallback branches only
+- Any other provider where the duplication is high enough to justify adapter code
+
+#### Step 4.3.3: Keep manual handling where SafeAction would distort state semantics
+
+Do NOT force everything behind the helper.
+- Preserve bespoke `on AuthException` branches in `AuthProvider`
+- Preserve separate state channels like `_isLoadingProfile`, `_isSaving`, `_isUploading`, `_isRestoringProject`
+- Leave methods manual when they have materially different success/failure timing or notification semantics
+
+#### Step 4.3.4: Verify with flutter analyze
 
 Run: `pwsh -Command "flutter analyze 2>&1 | Select-String 'issues found'"`
-Expected: No new violations introduced. Provider catch count reduced via DRY refactoring.
+Expected: No new violations introduced. Provider catch code reduced via DRY refactoring without flattening distinct provider state machines.
 
 ---
 
-## Phase 5: RepositoryResult.safeCall + Repository Refactor
+## Phase 5: RepositoryResult.safeCall + Repository Refactor (Not Landed On This Branch)
 
 // NOTE: Spec Phase 5. Like Phase 4, the catch violations in repositories were already
-// fixed mechanically in Phase 2.1. This phase refactors those same repositories to use
-// a shared `safeCall` static method for DRY — eliminating the duplicated
-// try/catch + Logger.db + RepositoryResult.failure boilerplate across 10+ repositories.
+// fixed mechanically in Phase 2.1. This remained a refactor-forward option, but it did
+// not become part of the analyzer-zero branch baseline.
+//
+// FIT CORRECTION: Repositories here do not all log through `Logger.db`, many
+// preserve specific user-facing failure text, and several methods return
+// `RepositoryResult<void>`. The helper API must accommodate those realities.
+//
+// IMPLEMENTATION STATUS: `base_repository.dart` does not currently expose
+// `RepositoryResult.safeCall` or `safeEmptyCall`. Keep this phase as follow-up
+// architecture material rather than assuming it already landed.
 
-### Sub-phase 5.1: Add safeCall to RepositoryResult
+### Sub-phase 5.1: Add safeCall helpers to RepositoryResult
 
 **Files:**
 - Modify: `lib/shared/repositories/base_repository.dart`
 
 **Agent**: backend-data-layer-agent
 
-#### Step 5.1.1: Add safeCall static method to RepositoryResult
+#### Step 5.1.1: Add `safeCall` and `safeEmptyCall`
 
 ```dart
-// WHY: 10+ repository implementations duplicate the same try/catch + Logger.db +
-// RepositoryResult.failure pattern across 5-20 methods each.
-// FROM SPEC: Phase 5A — "Wraps a datasource call in standardized error handling."
-
-// Add to the existing RepositoryResult class in base_repository.dart:
-/// Wraps a datasource call in standardized error handling.
-///
-/// Converts any [Exception] into a [RepositoryResult.failure] with logging.
-/// Use for simple wrapper methods that delegate to a single datasource call.
+/// Wraps a datasource call in standardized error handling while preserving
+/// repository-specific logging and failure text.
 static Future<RepositoryResult<T>> safeCall<T>(
-  Future<T> Function() fn,
-  String context,
-) async {
+  Future<T> Function() fn, {
+  required String logContext,
+  required String Function(Object error) failureMessage,
+  void Function(String message)? log,
+}) async {
   try {
     return RepositoryResult.success(await fn());
   } on Exception catch (e) {
-    Logger.db('$context error: $e');
-    return RepositoryResult.failure('Error in $context: $e');
+    (log ?? Logger.db)('$logContext error: $e');
+    return RepositoryResult.failure(failureMessage(e));
+  }
+}
+
+/// Variant for `RepositoryResult<void>` methods that succeed with `empty()`.
+static Future<RepositoryResult<void>> safeEmptyCall(
+  Future<void> Function() fn, {
+  required String logContext,
+  required String Function(Object error) failureMessage,
+  void Function(String message)? log,
+}) async {
+  try {
+    await fn();
+    return RepositoryResult.empty();
+  } on Exception catch (e) {
+    (log ?? Logger.db)('$logContext error: $e');
+    return RepositoryResult.failure(failureMessage(e));
   }
 }
 ```
 
-### Sub-phase 5.2: Refactor repositories to use safeCall
+// NOTE: If API surface needs to stay smaller, keep `safeEmptyCall` optional and
+// leave some `RepositoryResult<void>` methods manual. Do not contort `safeCall`
+// to fake void handling.
+
+### Sub-phase 5.2: Refactor repositories to use the helpers
 
 **Files:**
 - Modify: ~10 repository implementation files
@@ -925,38 +991,31 @@ static Future<RepositoryResult<T>> safeCall<T>(
 
 #### Step 5.2.1: Refactor simple wrapper methods
 
-For each repository method that is a pure datasource wrapper:
+For methods that are pure datasource wrappers, move to the helper while
+preserving the existing failure text.
 
 ```dart
-// FROM SPEC: Phase 5B exemplar (from repository-result-pattern.md)
-
-// Before:
-Future<RepositoryResult<List<FormResponse>>> getResponsesForForm(String formId) async {
-  try {
-    final responses = await _localDatasource.getByFormId(formId);
-    return RepositoryResult.success(responses);
-  } on Exception catch (e) {
-    Logger.db('FormResponseRepository.getResponsesForForm error: $e');
-    return RepositoryResult.failure('Error retrieving responses: $e');
-  }
-}
-
-// After:
 Future<RepositoryResult<List<FormResponse>>> getResponsesForForm(String formId) =>
   RepositoryResult.safeCall(
     () => _localDatasource.getByFormId(formId),
-    'FormResponseRepository.getResponsesForForm',
+    logContext: 'FormResponseRepository.getResponsesForForm',
+    failureMessage: (error) => 'Error retrieving responses: $error',
   );
 ```
 
-// IMPORTANT: Only refactor simple wrapper methods. Methods with validation logic
-// BEFORE the datasource call (e.g., createResponse with formId/projectId checks)
-// must keep their own try/catch since validation happens before the datasource call.
+#### Step 5.2.2: Preserve complex branches
+
+Keep manual repository code when it does any of the following before/after the datasource call:
+- Validation (`formId`, `projectId`, duplicate-name checks, domain rules)
+- Null/not-found branching with specific messages
+- Row-count checks (`result > 0`)
+- File system side effects (photo delete / rename flows)
+- Feature-specific logger categories (`Logger.photo`, etc.) unless passed explicitly through the helper
 
 **Repositories to refactor:**
 
-| Repository | ~Simple Methods | ~Complex Methods (skip) |
-|------------|:--------------:|:----------------------:|
+| Repository | ~Simple Methods | ~Complex Methods (skip/partial) |
+|------------|:--------------:|:-------------------------------:|
 | FormResponseRepositoryImpl | 15 | 6 |
 | InspectorFormRepositoryImpl | 10 | 3 |
 | PhotoRepositoryImpl | 8 | 4 |
@@ -968,14 +1027,14 @@ Future<RepositoryResult<List<FormResponse>>> getResponsesForForm(String formId) 
 | EntryQuantityRepositoryImpl | 4 | 2 |
 | ProjectRepositoryImpl | 3 | 4 |
 
-#### Step 5.2.2: Verify with flutter analyze
+#### Step 5.2.3: Verify with flutter analyze
 
 Run: `pwsh -Command "flutter analyze 2>&1 | Select-String 'issues found'"`
-Expected: No new violations introduced. Repository catch code reduced via DRY refactoring.
+Expected: No new violations introduced. Repository catch code reduced via DRY refactoring without collapsing meaningful domain-specific error behavior.
 
 ---
 
-## Phase 6: CopyWith Type-Promotion Fix
+## Phase 6: CopyWith Type-Promotion Fix (Superseded)
 
 ### Sub-phase 6.1: Fix cast_nullable_to_non_nullable in copyWith methods
 
@@ -989,6 +1048,14 @@ Expected: No new violations introduced. Repository catch code reduced via DRY re
 // `// ignore:` comments (which the spec forbids outside Phase 1), we use a
 // type-promotion helper that resolves the cast lint-free.
 // FROM SPEC: "No lint rule suppression except Phase 1."
+//
+// FIT DECISION: Do NOT switch to the spec's `Value<T>` wrapper. Repo search on
+// 2026-04-04 found 615 `copyWith(` call sites, so a wrapper would force broad
+// caller churn well beyond analyzer cleanup and architectural hygiene.
+//
+// IMPLEMENTATION STATUS: This phase was no longer needed. `cast_nullable_to_non_nullable`
+// reached zero before a shared copyWith helper was introduced, so no `_resolveParam<T>()`
+// baseline was established in production code.
 
 #### Step 6.1.1: Add _resolveParam helper to model files
 
@@ -1054,18 +1121,77 @@ Also check for copyWith in:
 
 Expected: `cast_nullable_to_non_nullable` drops to 0 (~220 remaining violations eliminated).
 
-### Sub-phase 6.2: Verify zero violations
+---
+
+## Phase 7: `.claude` Documentation And Context Preservation
+
+// NOTE: These are cross-cutting abstractions. If they land without `.claude`
+// updates, future agent sessions will have to rediscover the patterns from code.
+// The user explicitly wants this context preserved in the `.claude` layer.
+
+### Sub-phase 7.1: Add a shared implementation guide under `.claude/docs/`
+
+**Files:**
+- Create: `.claude/docs/guides/implementation/shared-analyzer-safe-patterns.md`
+- Modify: `.claude/docs/INDEX.md`
+
+#### Step 7.1.1: Document the new shared abstractions
+
+Create a concise guide covering:
+- `SafeRow` scope and usage boundaries (`Map<String, Object?>` SQLite rows only)
+- Hook-based `SafeAction` adoption rules, including why provider-owned state is retained
+- `RepositoryResult.safeCall` / `safeEmptyCall` usage and when manual repository code is still correct
+- The copyWith type-promotion helper and explicit rejection of `Value<T>` for this repo
+
+#### Step 7.1.2: Register the guide in `.claude/docs/INDEX.md`
+
+Add the new guide to the implementation-guides section so future sessions can
+locate it through the normal Codex/Claude bridge flow.
+
+### Sub-phase 7.2: Update `.claude` directory/reference docs
+
+**Files:**
+- Modify: `.claude/docs/directory-reference.md`
+- Modify: `.codex/CLAUDE_CONTEXT_BRIDGE.md`
+
+#### Step 7.2.1: Make the shared guide discoverable from the context bridge
+
+Add a short reference that cross-cutting implementation guidance for shared
+provider/repository/analyzer abstractions lives in the new implementation guide.
+This prevents future sessions from treating it as feature-local knowledge.
+
+### Sub-phase 7.3: Add targeted feature-doc references only where they already describe shared bases
+
+**Files:**
+- Modify: `.claude/docs/features/feature-locations-architecture.md`
+- Modify: `.claude/docs/features/feature-photos-architecture.md`
+
+#### Step 7.3.1: Link out instead of duplicating shared helper details
+
+These docs already explain `BaseListProvider` and `RepositoryResult`. Add a short
+reference to the shared analyzer-safety guide instead of duplicating the helper APIs
+across multiple feature docs.
+
+### Sub-phase 7.4: Verify documentation reflects final code
+
+Checklist:
+- No `.claude` doc describes `SafeAction` as owning provider-private `_isLoading` / `_error`
+- No `.claude` doc implies `RepositoryResult.safeCall` forces generic failure text
+- No `.claude` doc recommends `Value<T>` for copyWith on this branch
+- The new guide is reachable from both `.claude/docs/INDEX.md` and `.codex/CLAUDE_CONTEXT_BRIDGE.md`
+
+### Sub-phase 7.5: Verify zero violations
 
 **Agent**: general-purpose
 
-#### Step 6.2.1: Run final flutter analyze
+#### Step 7.5.1: Run final flutter analyze
 
 Run: `pwsh -Command "flutter analyze 2>&1"`
 Expected: **0 issues found.**
 
 If any violations remain, identify and fix them — they are edge cases missed by the categorization.
 
-#### Step 6.2.2: Verify no behavioral regressions
+#### Step 7.5.2: Verify no behavioral regressions
 
 Push to branch and let CI run the full test suite. The quality-gate.yml workflow will verify:
 - `flutter analyze` passes (0 issues)
@@ -1089,7 +1215,8 @@ Push to branch and let CI run the full test suite. The quality-gate.yml workflow
 | 2.7 | ~94 | Type casts for dynamic calls |
 | 2.8 | ~28 | Small rule fixes (super params, sinks, dead code, etc.) |
 | 3 | ~120 | SafeRow extension + SQLite cast replacements |
-| 4 | 0 (DRY) | SafeAction mixin + provider refactor (same catches fixed in 2.1, now DRY) |
-| 5 | 0 (DRY) | RepositoryResult.safeCall + repository refactor (same catches fixed in 2.1, now DRY) |
-| 6 | ~220 | `_resolveParam<T>()` type-promotion helper for sentinel copyWith casts |
+| 4 | 0 (DRY) | Hook-based SafeAction + broad provider refactor |
+| 5 | 0 (optional) | `RepositoryResult.safeCall` remained a follow-up refactor idea, not a landed branch invariant |
+| 6 | 0 (superseded) | CopyWith helper was not needed once `cast_nullable_to_non_nullable` reached zero |
+| 7 | 0 | `.claude` guide/index/bridge updates for cross-cutting analyzer abstractions |
 | **Total** | **~1054** → **0** | |

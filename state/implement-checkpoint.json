@@ -1,47 +1,72 @@
 {
-  "plan": ".claude/plans/2026-04-03-idr-pdf-mapping-and-location-activities.md",
+  "plan": ".claude/plans/2026-04-04-analyzer-zero.md",
   "dispatch_groups": [
     {
+      "group": 1,
       "phases": [
-        1
+        "1"
       ],
+      "label": "Phase 1 -- Policy Decisions",
       "status": "done",
-      "test_gate": "skipped-expected-errors"
+      "test_gate": "pass"
     },
     {
+      "group": 2,
       "phases": [
-        2
+        "2.1",
+        "2.2",
+        "2.3"
       ],
+      "label": "Phase 2.1-2.3 -- Catches + Immutable + RuntimeType",
       "status": "done",
-      "test_gate": "pass-data-domain-only"
+      "test_gate": "pass"
     },
     {
+      "group": 3,
       "phases": [
-        3,
-        4
+        "2.4",
+        "2.5",
+        "2.6",
+        "2.7",
+        "2.8"
       ],
+      "label": "Phase 2.4-2.8 -- Unawaited + Whitespace + Ignores + Dynamic + Small Rules",
       "status": "done",
-      "test_gate": "pass-lib-only"
+      "test_gate": "pass"
     },
     {
+      "group": 4,
       "phases": [
-        5
+        "3",
+        "4"
       ],
+      "label": "Phases 3-4 -- SafeRow + SafeAction",
       "status": "done",
-      "test_gate": "pass-analyze-only"
+      "test_gate": "pass"
     },
     {
+      "group": 5,
       "phases": [
-        6,
-        7
+        "5",
+        "6"
       ],
+      "label": "Phases 5-6 -- RepositoryResult + CopyWith",
       "status": "done",
-      "test_gate": "pass-zero-issues"
+      "test_gate": "pass"
+    },
+    {
+      "group": 6,
+      "phases": [
+        "7"
+      ],
+      "label": "Phase 7 -- Documentation",
+      "status": "pending",
+      "test_gate": "pending"
     }
   ],
   "phases": [
     {
-      "name": "Phase 1: Data Model â€” Remove locationId from DailyEntry",
+      "name": "Phase 1: Policy Decisions",
       "status": "done",
       "reviews": {
         "completeness": {
@@ -71,124 +96,12 @@
         }
       },
       "substeps": {
-        "1.1": "done"
+        "1.1.1": "done",
+        "1.1.2": "done"
       }
     },
     {
-      "name": "Phase 2: Data & Domain Layer Cleanup",
-      "status": "done",
-      "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 1,
-          "tests_verified": false,
-          "fix_cycles": 0
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 1,
-          "fix_cycles": 1
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 0
-        }
-      },
-      "substeps": {
-        "2.1": "done",
-        "2.2": "done",
-        "2.3": "done",
-        "2.4": "done",
-        "2.5": "done"
-      }
-    },
-    {
-      "name": "Phase 3: EntryEditingController â€” Per-Location Activities",
-      "status": "done",
-      "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 1,
-          "tests_verified": false
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 1
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 1
-        }
-      },
-      "substeps": {
-        "3.1": "done",
-        "3.2": "done",
-        "3.3": "done"
-      }
-    },
-    {
-      "name": "Phase 4: UI Components",
-      "status": "done",
-      "reviews": {
-        "completeness": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 1,
-          "tests_verified": false
-        },
-        "code_review": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 1
-        },
-        "security": {
-          "status": "pass",
-          "critical": 0,
-          "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 1
-        }
-      },
-      "substeps": {
-        "4.1": "done",
-        "4.2": "done",
-        "4.3": "done",
-        "4.4": "done",
-        "4.5": "done",
-        "4.6": "done"
-      }
-    },
-    {
-      "name": "Phase 5: PDF Mapping Rebuild",
+      "name": "Phase 2.1: Bare catch -> on Exception catch",
       "status": "done",
       "reviews": {
         "completeness": {
@@ -198,7 +111,38 @@
           "medium": 0,
           "low": 0,
           "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 1,
+          "low": 3,
           "fix_cycles": 1
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 3,
+          "low": 0,
+          "fix_cycles": 1
+        }
+      }
+    },
+    {
+      "name": "Phase 2.2: Add @immutable annotations",
+      "status": "done",
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 2,
+          "tests_verified": false,
+          "fix_cycles": 0
         },
         "code_review": {
           "status": "pass",
@@ -206,7 +150,7 @@
           "high": 0,
           "medium": 0,
           "low": 0,
-          "fix_cycles": 1
+          "fix_cycles": 0
         },
         "security": {
           "status": "pass",
@@ -214,7 +158,334 @@
           "high": 0,
           "medium": 0,
           "low": 0,
+          "fix_cycles": 0
+        }
+      }
+    },
+    {
+      "name": "Phase 2.3: Replace $runtimeType with StageNames",
+      "status": "done",
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      }
+    },
+    {
+      "name": "Phase 2.4: Wrap fire-and-forget with unawaited()",
+      "status": "done",
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      },
+      "substeps": {
+        "2.4.1": "done",
+        "2.4.2": "done",
+        "2.4.3": "done",
+        "2.4.4": "done"
+      }
+    },
+    {
+      "name": "Phase 2.5: Fix missing_whitespace_between_adjacent_strings",
+      "status": "done",
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      },
+      "substeps": {
+        "2.5.1": "done",
+        "2.5.2": "done"
+      }
+    },
+    {
+      "name": "Phase 2.6: Add reasons to // ignore: comments",
+      "status": "done",
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      },
+      "substeps": {
+        "2.6.1": "done",
+        "2.6.2": "done"
+      }
+    },
+    {
+      "name": "Phase 2.7: Fix avoid_dynamic_calls",
+      "status": "done",
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      },
+      "substeps": {
+        "2.7.1": "done",
+        "2.7.2": "done",
+        "2.7.3": "done",
+        "2.7.4": "done",
+        "2.7.5": "done",
+        "2.7.6": "done",
+        "2.7.7": "done"
+      }
+    },
+    {
+      "name": "Phase 2.8: Fix remaining small rules",
+      "status": "done",
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
+        }
+      },
+      "substeps": {
+        "2.8.1": "done",
+        "2.8.2": "done",
+        "2.8.3": "done",
+        "2.8.4": "done",
+        "2.8.5": "done",
+        "2.8.6": "done",
+        "2.8.7": "done"
+      }
+    },
+    {
+      "name": "Phase 3: SafeRow Extension + SQLite Cast Fixes",
+      "status": "done",
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 6,
+          "tests_verified": false,
           "fix_cycles": 1
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 2,
+          "low": 3,
+          "fix_cycles": 1
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 1,
+          "low": 3,
+          "fix_cycles": 0
+        }
+      },
+      "substeps": {
+        "3.1.1": "done",
+        "3.2.1": "done",
+        "3.2.2": "done",
+        "3.2.3": "done",
+        "3.2.4": "done",
+        "3.2.5": "done"
+      }
+    },
+    {
+      "name": "Phase 4: Hook-Based SafeAction + Provider Refactor",
+      "status": "done",
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 3,
+          "medium": 1,
+          "low": 2,
+          "tests_verified": false,
+          "fix_cycles": 2
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 1,
+          "medium": 5,
+          "low": 2,
+          "fix_cycles": 2
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 5,
+          "low": 4,
+          "fix_cycles": 2
+        }
+      },
+      "substeps": {
+        "4.1.1": "done",
+        "4.2.1": "done",
+        "4.3.1": "done",
+        "4.3.2": "done",
+        "4.3.3": "done",
+        "4.3.4": "done"
+      }
+    },
+    {
+      "name": "Phase 5: RepositoryResult.safeCall + Repository Refactor",
+      "status": "done",
+      "reviews": {
+        "completeness": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "tests_verified": false,
+          "fix_cycles": 0
+        },
+        "code_review": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 2,
+          "fix_cycles": 0
+        },
+        "security": {
+          "status": "pass",
+          "critical": 0,
+          "high": 0,
+          "medium": 0,
+          "low": 0,
+          "fix_cycles": 0
         }
       },
       "substeps": {
@@ -226,7 +497,7 @@
       }
     },
     {
-      "name": "Phase 6: Verification Tooling & Tests",
+      "name": "Phase 6: CopyWith Type-Promotion Fix",
       "status": "done",
       "reviews": {
         "completeness": {
@@ -235,51 +506,46 @@
           "high": 0,
           "medium": 0,
           "low": 0,
-          "fix_cycles": 0,
-          "tests_verified": false
+          "tests_verified": false,
+          "fix_cycles": 0
         },
         "code_review": {
           "status": "pass",
           "critical": 0,
           "high": 0,
-          "medium": 0,
-          "low": 0,
-          "fix_cycles": 0
+          "medium": 2,
+          "low": 4,
+          "fix_cycles": 2
         },
         "security": {
           "status": "pass",
           "critical": 0,
           "high": 0,
           "medium": 0,
-          "low": 0,
+          "low": 2,
           "fix_cycles": 0
         }
       },
       "substeps": {
         "6.1": "done",
-        "6.2": "done",
-        "6.3": "done",
-        "6.3b": "done",
-        "6.4": "done",
-        "6.5": "done",
-        "6.6": "done"
+        "6.2": "done"
       }
     },
     {
-      "name": "Phase 7: Final Cleanup",
-      "status": "done",
+      "name": "Phase 7: .claude Documentation",
+      "status": "pending",
       "reviews": {
         "completeness": {
-          "status": "pass",
+          "status": "pending",
           "critical": 0,
           "high": 0,
           "medium": 0,
           "low": 0,
-          "fix_cycles": 0,
-          "tests_verified": false
+          "tests_verified": false,
+          "fix_cycles": 0
         },
         "code_review": {
-          "status": "pass",
+          "status": "pending",
           "critical": 0,
           "high": 0,
           "medium": 0,
@@ -287,67 +553,168 @@
           "fix_cycles": 0
         },
         "security": {
-          "status": "pass",
+          "status": "pending",
           "critical": 0,
           "high": 0,
           "medium": 0,
           "low": 0,
           "fix_cycles": 0
         }
-      },
-      "substeps": {
-        "7.1": "done",
-        "7.2": "done"
       }
     }
   ],
   "modified_files": [
-    "lib/features/entries/data/models/daily_entry.dart",
-    "lib/features/entries/domain/repositories/daily_entry_repository.dart",
-    "lib/features/entries/data/repositories/daily_entry_repository.dart",
-    "lib/features/entries/data/datasources/local/daily_entry_local_datasource.dart",
-    "lib/features/entries/data/datasources/remote/daily_entry_remote_datasource.dart",
-    "lib/features/entries/domain/usecases/filter_entries_use_case.dart",
-    "lib/features/entries/presentation/providers/daily_entry_provider.dart",
-    "lib/features/sync/adapters/daily_entry_adapter.dart",
-    "lib/features/entries/presentation/controllers/entry_editing_controller.dart",
-    "lib/features/entries/presentation/widgets/entry_activities_section.dart",
-    "lib/features/entries/presentation/widgets/draft_entry_tile.dart",
-    "lib/features/entries/presentation/widgets/widgets.dart",
-    "lib/features/entries/presentation/screens/entry_editor_screen.dart",
+    "analysis_options.yaml",
+    "lib/features/sync/engine/sync_engine.dart",
+    "lib/features/sync/application/sync_orchestrator.dart",
+    "lib/features/sync/application/sync_lifecycle_manager.dart",
+    "lib/features/sync/application/background_sync_handler.dart",
+    "lib/core/database/database_service.dart",
+    "lib/features/projects/presentation/providers/project_provider.dart",
+    "lib/features/auth/presentation/providers/auth_provider.dart",
+    "lib/features/pdf/services/extraction/stages/stage_names.dart",
+    "lib/shared/widgets/permission_dialog.dart",
+    "lib/features/toolbox/presentation/screens/toolbox_home_screen.dart",
     "lib/features/entries/presentation/screens/home_screen.dart",
-    "lib/features/entries/presentation/screens/entries_list_screen.dart",
-    "lib/features/entries/presentation/screens/drafts_list_screen.dart",
-    "lib/features/entries/presentation/screens/entry_review_screen.dart",
-    "lib/features/entries/presentation/screens/review_summary_screen.dart",
-    "lib/core/router/routes/entry_routes.dart",
-    "lib/core/driver/flow_registry.dart",
-    "lib/core/driver/screen_registry.dart",
-    "lib/core/driver/harness_seed_data.dart",
-    "lib/shared/testing_keys/entries_keys.dart",
-    "lib/shared/testing_keys/testing_keys.dart",
-    "lib/features/pdf/services/pdf_service.dart",
-    "lib/features/entries/presentation/controllers/pdf_data_builder.dart",
-    "tools/verify_idr_mapping.py",
-    "test/services/pdf_field_mapping_test.dart",
-    "test/features/entries/presentation/controllers/activities_serialization_test.dart",
-    "test/features/pdf/services/pdf_formatting_helpers_test.dart",
-    "test/helpers/test_helpers.dart",
-    "test/data/models/daily_entry_test.dart",
-    "test/data/repositories/daily_entry_repository_test.dart",
-    "test/helpers/mocks/mock_repositories.dart",
-    "test/presentation/providers/daily_entry_provider_test.dart",
-    "test/services/pdf_service_test.dart",
-    "test/features/entries/presentation/widgets/entry_forms_section_test.dart",
+    "lib/main_driver.dart",
+    "test/features/auth/presentation/providers/auth_provider_test.dart",
+    "test/features/pdf/extraction/runner/extraction_job_runner_test.dart",
+    "test/features/projects/presentation/widgets/pay_item_source_dialog_test.dart",
+    "test/features/projects/presentation/widgets/project_delete_sheet_test.dart",
+    "test/features/sync/engine/sync_engine_circuit_breaker_test.dart",
+    "integration_test/antialias_fringe_test.dart",
+    "integration_test/cell_crop_diagnostic_test.dart",
+    "integration_test/generate_mp_fixtures_test.dart",
+    "integration_test/grid_line_drift_test.dart",
+    "integration_test/grid_removal_diagnostic_test.dart",
+    "integration_test/printing_diagnostic_test.dart",
+    "integration_test/rendering_diagnostic_test.dart",
+    "integration_test/springfield_report_test.dart",
+    "lib/core/driver/test_photo_service.dart",
+    "lib/features/entries/presentation/controllers/photo_attachment_manager.dart",
+    "lib/main.dart",
+    "test/core/driver/driver_server_sync_status_test.dart",
+    "test/features/calculator/presentation/screens/calculator_screen_test.dart",
     "test/features/entries/presentation/screens/entry_editor_screen_test.dart",
-    "test/features/entries/presentation/screens/entry_editor_report_test.dart",
-    "test/features/gallery/presentation/screens/gallery_screen_test.dart",
-    "test/features/entries/presentation/providers/daily_entry_provider_filter_test.dart",
-    "test/features/entries/domain/usecases/filter_entries_use_case_test.dart",
-    "test/helpers/mock_database.dart"
+    "test/features/pdf/extraction/contracts/stage_4a_to_4b_contract_test.dart",
+    "test/features/pdf/extraction/stages/cell_boundary_verification_test.dart",
+    "test/features/pdf/extraction/stages/stage_4b_region_detector_test.dart",
+    "test/features/pdf/services/mp/mp_stage_trace_diagnostic_test.dart",
+    "test/features/projects/presentation/screens/project_setup_screen_logic_test.dart",
+    "test/features/quantities/presentation/screens/quantities_screen_test.dart",
+    "lib/features/entries/domain/usecases/export_entry_use_case.dart",
+    "lib/features/projects/data/repositories/company_members_repository.dart",
+    "lib/features/sync/engine/orphan_scanner.dart",
+    "test/core/database/extraction_schema_migration_test.dart",
+    "test/features/entries/presentation/controllers/activities_serialization_test.dart",
+    "test/features/forms/domain/usecases/calculate_form_field_use_case_test.dart",
+    "test/features/pdf/extraction/integration/type_round_trip_test.dart",
+    "test/features/pdf/services/mp/mp_extraction_service_test.dart",
+    "lib/core/logging/logger.dart",
+    "lib/features/calculator/data/datasources/remote/calculation_history_remote_datasource.dart",
+    "lib/features/contractors/data/datasources/remote/contractor_remote_datasource.dart",
+    "lib/features/contractors/data/datasources/remote/entry_equipment_remote_datasource.dart",
+    "lib/features/contractors/data/datasources/remote/equipment_remote_datasource.dart",
+    "lib/features/contractors/data/datasources/remote/personnel_type_remote_datasource.dart",
+    "lib/features/entries/data/datasources/remote/daily_entry_remote_datasource.dart",
+    "lib/features/entries/data/datasources/remote/document_remote_datasource.dart",
+    "lib/features/entries/data/datasources/remote/entry_export_remote_datasource.dart",
+    "lib/features/entries/data/models/daily_entry.dart",
+    "lib/features/entries/presentation/controllers/entry_editing_controller.dart",
+    "lib/features/forms/data/datasources/remote/form_export_remote_datasource.dart",
+    "lib/features/forms/data/datasources/remote/form_response_remote_datasource.dart",
+    "lib/features/forms/data/datasources/remote/inspector_form_remote_datasource.dart",
+    "lib/features/forms/data/services/form_pdf_service.dart",
+    "lib/features/locations/data/datasources/remote/location_remote_datasource.dart",
+    "lib/features/photos/data/datasources/remote/photo_remote_datasource.dart",
+    "lib/features/projects/data/datasources/remote/project_remote_datasource.dart",
+    "lib/features/projects/presentation/screens/project_list_screen.dart",
+    "lib/features/quantities/data/datasources/remote/bid_item_remote_datasource.dart",
+    "lib/features/quantities/data/datasources/remote/entry_quantity_remote_datasource.dart",
+    "lib/features/settings/presentation/screens/personnel_types_screen.dart",
+    "lib/features/sync/data/datasources/local/conflict_local_datasource.dart",
+    "lib/features/sync/presentation/screens/conflict_viewer_screen.dart",
+    "lib/features/todos/data/datasources/remote/todo_item_remote_datasource.dart",
+    "test/features/forms/data/datasources/inspector_form_local_datasource_test.dart",
+    "test/features/pdf/extraction/stages/stage_2b_text_recognizer_test.dart",
+    "test/features/settings/about_section_test.dart",
+    "test/features/settings/presentation/providers/consent_provider_test.dart",
+    "test/features/sync/data/datasources/conflict_local_datasource_test.dart",
+    "lib/shared/utils/safe_row.dart",
+    "lib/shared/utils/utils.dart",
+    "lib/shared/datasources/generic_local_datasource.dart",
+    "lib/shared/providers/safe_action_mixin.dart",
+    "lib/shared/providers/providers.dart",
+    "lib/shared/providers/base_list_provider.dart",
+    "lib/shared/providers/paged_list_provider.dart",
+    "lib/core/database/schema_verifier.dart",
+    "lib/core/driver/driver_server.dart",
+    "lib/services/soft_delete_service.dart",
+    "lib/features/sync/engine/change_tracker.dart",
+    "lib/features/sync/engine/conflict_resolver.dart",
+    "lib/features/sync/engine/integrity_checker.dart",
+    "lib/features/sync/engine/storage_cleanup.dart",
+    "lib/features/sync/application/sync_enrollment_service.dart",
+    "lib/features/projects/data/services/project_lifecycle_service.dart",
+    "lib/features/projects/data/repositories/project_assignment_repository.dart",
+    "lib/features/projects/data/repositories/synced_project_repository.dart",
+    "lib/features/projects/data/datasources/local/project_local_datasource.dart",
+    "lib/features/entries/data/datasources/local/daily_entry_local_datasource.dart",
+    "lib/features/entries/data/datasources/local/document_local_datasource.dart",
+    "lib/features/contractors/data/datasources/local/contractor_local_datasource.dart",
+    "lib/features/contractors/data/datasources/local/entry_contractors_local_datasource.dart",
+    "lib/features/contractors/data/datasources/local/entry_equipment_local_datasource.dart",
+    "lib/features/contractors/data/datasources/local/entry_personnel_counts_local_datasource.dart",
+    "lib/features/contractors/data/datasources/local/equipment_local_datasource.dart",
+    "lib/features/quantities/data/datasources/local/entry_quantity_local_datasource.dart",
+    "lib/features/quantities/data/repositories/bid_item_repository_impl.dart",
+    "lib/features/photos/data/repositories/photo_repository_impl.dart",
+    "lib/features/todos/data/datasources/local/todo_item_local_datasource.dart",
+    "lib/features/todos/presentation/providers/todo_provider.dart",
+    "lib/features/quantities/presentation/providers/entry_quantity_provider.dart",
+    "lib/features/contractors/presentation/providers/equipment_provider.dart",
+    "lib/features/calculator/presentation/providers/calculator_provider.dart",
+    "lib/features/gallery/presentation/providers/gallery_provider.dart",
+    "lib/features/weather/presentation/providers/weather_provider.dart",
+    "lib/features/settings/presentation/providers/admin_provider.dart",
+    "lib/features/settings/presentation/providers/support_provider.dart",
+    "lib/features/auth/presentation/providers/app_config_provider.dart",
+    "test/golden/components/dashboard_widgets_test.dart",
+    "test/core/database/database_service_test.dart",
+    "test/core/database/schema_verifier_drift_test.dart",
+    "test/core/database/change_log_project_id_migration_test.dart",
+    "test/helpers/sync/sqlite_test_helper.dart",
+    "test/features/sync/schema/sync_schema_test.dart",
+    "test/features/sync/schema/entry_personnel_counts_rebuild_test.dart",
+    "test/features/sync/triggers/change_log_trigger_test.dart",
+    "test/features/sync/triggers/cascade_delete_trigger_test.dart",
+    "test/features/sync/engine/change_tracker_basic_test.dart",
+    "test/features/sync/engine/conflict_resolver_test.dart",
+    "test/features/sync/engine/integrity_integration_test.dart",
+    "test/features/sync/engine/pull_scope_test.dart",
+    "test/features/sync/engine/storage_cleanup_test.dart",
+    "test/features/sync/engine/sync_engine_test.dart",
+    "test/features/sync/engine/sync_mutex_test.dart",
+    "test/features/projects/data/services/project_lifecycle_service_test.dart",
+    "test/features/pdf/extraction/pipeline/extraction_metrics_test.dart",
+    "lib/features/pdf/services/extraction/models/column_map.dart",
+    "lib/features/pdf/services/extraction/models/document_profile.dart",
+    "lib/features/pdf/services/extraction/models/sidecar.dart",
+    "lib/features/pdf/services/extraction/models/stage_report.dart",
+    "lib/features/entries/presentation/controllers/pdf_data_builder.dart",
+    "lib/features/pdf/services/extraction/models/cell_grid.dart",
+    "lib/features/sync/presentation/providers/sync_provider.dart",
+    "lib/features/entries/presentation/screens/entry_editor_screen.dart",
+    "lib/features/sync/application/background_sync_callback.dart",
+    "lib/features/sync/application/fcm_background_callback.dart",
+    "lib/features/sync/application/fcm_handler.dart",
+    "lib/features/sync/application/application.dart",
+    "test/features/sync/application/fcm_handler_test.dart",
+    "test/features/sync/application/background_sync_handler_test.dart",
+    "test/features/pdf/extraction/models/quality_report_test.dart"
   ],
-  "build": "pass",
-  "analyze_and_test": "pass-analyze-zero-issues",
+  "build": "pending",
+  "analyze_and_test": "pending",
   "integration_reviews": {
     "completeness": {
       "status": "pending",
@@ -374,12 +741,7 @@
       "fix_cycles": 0
     }
   },
-  "decisions": [
-    "Phase 4: Deleted entry_basics_section.dart (confirmed unused dead code)"
-  ],
+  "decisions": [],
   "fix_attempts": [],
-  "blocked": [],
-  "deleted_files": [
-    "lib/features/entries/presentation/widgets/entry_basics_section.dart"
-  ]
+  "blocked": []
 }

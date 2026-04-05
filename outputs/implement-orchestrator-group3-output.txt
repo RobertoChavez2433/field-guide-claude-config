@@ -1,8 +1,26 @@
+All phases complete. Final verification shows **229 issues** (down from 590 — **361 violations eliminated**).
+
 STATUS: DONE
-PHASES_EXECUTED: 3
-PARALLEL_BATCHES: Batch1(3)
-FILES: lib/shared/widgets/confirmation_dialog.dart, lib/features/settings/presentation/widgets/sign_out_dialog.dart, lib/features/todos/presentation/screens/todos_screen.dart, lib/features/entries/presentation/screens/entry_editor_screen.dart, lib/features/settings/presentation/screens/personnel_types_screen.dart, lib/features/entries/presentation/widgets/contractor_editor_widget.dart, lib/features/entries/presentation/widgets/entry_forms_section.dart, lib/features/forms/presentation/screens/form_viewer_screen.dart, lib/features/forms/presentation/screens/forms_list_screen.dart, lib/features/settings/presentation/screens/admin_dashboard_screen.dart, lib/features/settings/presentation/screens/trash_screen.dart, lib/features/settings/presentation/screens/settings_screen.dart, lib/features/entries/presentation/screens/entries_list_screen.dart, lib/features/calculator/presentation/screens/calculator_screen.dart, lib/features/pdf/services/pdf_service.dart, lib/features/entries/presentation/screens/review_summary_screen.dart, lib/features/forms/presentation/screens/mdot_hub_screen.dart, lib/features/settings/presentation/widgets/member_detail_sheet.dart, lib/features/entries/presentation/screens/home_screen.dart, lib/features/projects/presentation/screens/project_list_screen.dart, lib/features/quantities/presentation/widgets/bid_item_detail_sheet.dart, lib/features/projects/presentation/widgets/project_switcher.dart, lib/features/pdf/presentation/widgets/extraction_banner.dart, lib/features/gallery/presentation/screens/gallery_screen.dart, lib/features/forms/presentation/screens/form_gallery_screen.dart
+PHASES_EXECUTED: 2.4, 2.5, 2.6, 2.7, 2.8
+PARALLEL_BATCHES: Batch1(2.4,2.5) Batch2(2.6) Batch3(2.7,2.8)
+FILES: ~76 files modified across all 5 sub-phases
 PER_PHASE_REVIEWS:
-  Phase 3: completeness=PASS(C:0,H:0,M:2,L:0) code=PASS(C:1,H:2,M:6,L:5) security=PASS(C:0,H:0,M:3,L:6) fix_cycles:1
-TOTAL_FIX_CYCLES: 1
-DECISIONS: Widget-based dialogs (SignOutDialog, _TodoDialog, FormSelectionDialog, _BidItemEditDialog, ClearCacheDialog, PermissionDialog, PhotoNameDialog) left as raw AlertDialog — plan-intentional exceptions per R6; entries_list_screen delete/pop order kept as-is — functionally correct with existing mounted guard
+  Phase 2.4: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:0
+  Phase 2.5: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:0
+  Phase 2.6: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:0
+  Phase 2.7: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:0
+  Phase 2.8: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:0
+TOTAL_FIX_CYCLES: 0
+DECISIONS: 6 unreachable_from_main remain as false positives (BackgroundSyncHandler/FcmHandler — used from app_initializer.dart but 12 pre-existing locationId compile errors prevent analyzer graph tracing)
+
+**Results by sub-phase:**
+| Phase | Rule(s) | Violations Fixed | Remaining |
+|-------|---------|:---:|:---:|
+| 2.4 | discarded_futures, unawaited_futures | ~149 | 0 |
+| 2.5 | missing_whitespace_between_adjacent_strings | 54 | 0 |
+| 2.6 | document_ignores | 34 | 0 |
+| 2.7 | avoid_dynamic_calls | 94 | 0 |
+| 2.8 | 9 small rules | 36 | 6* |
+| **Total** | | **~361** | **6*** |
+
+*6 `unreachable_from_main` false positives caused by pre-existing `locationId` compile errors blocking analyzer call-graph tracing.

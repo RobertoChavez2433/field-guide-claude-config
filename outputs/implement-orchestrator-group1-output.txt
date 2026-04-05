@@ -1,8 +1,8 @@
 STATUS: DONE
 PHASES_EXECUTED: 1
 PARALLEL_BATCHES: Batch1(1)
-FILES: lib/core/design_system/app_dialog.dart, test/core/design_system/app_dialog_test.dart
+FILES: analysis_options.yaml
 PER_PHASE_REVIEWS:
-  Phase 1: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:1,L:4) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:1
-TOTAL_FIX_CYCLES: 1
+  Phase 1: completeness=PASS(C:0,H:0,M:0,L:0) code=PASS(C:0,H:0,M:0,L:0) security=PASS(C:0,H:0,M:0,L:0) fix_cycles:0
+TOTAL_FIX_CYCLES: 0
 DECISIONS: none
