@@ -77,6 +77,9 @@ lib/
 | `lib/core/database/database_service.dart` | SQLite schema v50, 36 tables |
 | `lib/core/design_system/` | 24 app-level UI components |
 | `lib/features/sync/` | 5-layer sync system (see Sync Architecture) |
+| `lib/features/sync/application/sync_coordinator.dart` | Sync entry point (replaces SyncOrchestrator) |
+| `lib/features/sync/application/sync_query_service.dart` | Dashboard query surface |
+| `lib/features/sync/adapters/simple_adapters.dart` | 13 data-driven adapter configs |
 
 ## Data Flow
 ```
@@ -90,10 +93,11 @@ Screen -> Provider -> UseCase -> Repository -> Datasource -> SQLite (local) -> S
 ## Sync Architecture
 ```
 Presentation: SyncProvider, SyncDashboardScreen, ConflictViewerScreen
-Application:  SyncOrchestrator, SyncLifecycleManager, BackgroundSyncHandler, FcmHandler, RealtimeHintHandler
-Engine:       SyncEngine, ChangeTracker, ConflictResolver, IntegrityChecker, DirtyScopeTracker, SyncMutex
-Adapters:     22 TableAdapter subclasses (20 triggered + 2 push-only; declare FK ordering + scope type)
-Domain/Data:  SyncResult, SyncMode (full/quick/maintenance), DirtyScope model
+Application:  SyncCoordinator, SyncLifecycleManager, SyncRetryPolicy, ConnectivityProbe, SyncTriggerPolicy, PostSyncHooks, SyncQueryService, BackgroundSyncHandler, FcmHandler, RealtimeHintHandler
+Engine:       SyncEngine (slim ~214 lines), PushHandler, PullHandler, SupabaseSync, LocalSyncStore, FileSyncHandler, SyncErrorClassifier, EnrollmentHandler, FkRescueHandler, MaintenanceHandler
+Unchanged:    ChangeTracker, ConflictResolver, IntegrityChecker, DirtyScopeTracker, OrphanScanner, StorageCleanup, SyncMutex
+Adapters:     13 AdapterConfig (data-driven) + 9 complex adapter classes (22 total; declare FK ordering + scope type)
+Domain:       SyncResult, SyncStatus, SyncErrorKind, ClassifiedSyncError, SyncDiagnosticsSnapshot, SyncEvent, SyncMode, DirtyScope
 ```
 
 ## Gotchas
@@ -107,6 +111,9 @@ Domain/Data:  SyncResult, SyncMode (full/quick/maintenance), DirtyScope model
 - **AppDialog uses `actionsBuilder:`** — NOT `actions:`. Pop dialog BEFORE `auth.signOut()` (GoRouter redirect race).
 - **PRAGMAs via `rawQuery`** — Android API 36 rejects PRAGMA via `execute()`.
 - **Schema changes touch 5 files** — database_service, schema/*.dart, schema_verifier, + 2 test files. See `rules/database/schema-patterns.md`.
+- **SyncOrchestrator no longer exists** — use `SyncCoordinator` (replaced in Phase 7 refactor).
+- **SyncProvider no longer exposes `get orchestrator`** — use `SyncQueryService` for dashboard data.
+- **Error classification is in SyncErrorClassifier only** — no Postgres code matching elsewhere.
 
 ## Custom Lint Package
 `fg_lint_packages/field_guide_lints/` — 52 rules in 4 categories: architecture (23), data safety (11), sync integrity (10), test quality (8). CI-enforced via `quality-gate.yml`.
