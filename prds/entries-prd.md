@@ -30,5 +30,5 @@ Full read/write offline. Entries, junction records, and all associated data are 
 - Features: projects (parent scope), locations (entry location), contractors (on-site tracking), quantities (installed amounts), photos (site documentation), weather (conditions), pdf (report generation)
 - Packages: `sqflite`, `provider`, `uuid`, `go_router`, `intl`
 
-## Owner Agent
-backend-data-layer-agent (data layer), frontend-flutter-specialist-agent (presentation)
+## Primary Implementation Context
+Implement workers using `rules/backend/data-layer.md` for data-layer work and `rules/frontend/flutter-ui.md` for presentation work

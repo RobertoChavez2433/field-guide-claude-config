@@ -13,7 +13,7 @@ lib/features/forms/
 ├── forms.dart                              # Feature barrel export
 ├── di/
 │   ├── forms_providers.dart               # DI wiring — providers, repos, services
-│   └── forms_init.dart                    # Registry initialization (two-phase init)
+│   └── form_initializer.dart              # Registry initialization (two-phase init)
 ├── data/
 │   ├── data.dart
 │   ├── models/
@@ -247,7 +247,7 @@ Registers all forms-feature providers, repository implementations, and services 
 - `InspectorFormRepositoryImpl`, `FormResponseRepositoryImpl`, `FormExportRepositoryImpl`
 - `AutoFillService`, `FormPdfService`, `FormStateHasher`
 
-### `di/forms_init.dart`
+### `di/form_initializer.dart`
 
 Two-phase initialization — called at app startup before the widget tree is built. Wires all registries by invoking `Mdot0582bRegistrations.register(...)`, which populates `FormScreenRegistry`, `FormPdfFillerRegistry`, `FormValidatorRegistry`, `FormCalculatorRegistry`, and `FormInitialDataFactory` with the MDOT 0582b entries.
 
@@ -255,7 +255,7 @@ Two-phase initialization — called at app startup before the widget tree is bui
 
 ### Registry Pattern
 
-All form-type-specific logic (screens, PDF fillers, validators, calculators) is resolved through a registry keyed on the form type string. Adding a new form type requires only implementing the appropriate interfaces and calling its registration function in `forms_init.dart` — no changes to core orchestration code.
+All form-type-specific logic (screens, PDF fillers, validators, calculators) is resolved through a registry keyed on the form type string. Adding a new form type requires only implementing the appropriate interfaces and calling its registration function in `form_initializer.dart` / the registry setup path — no changes to core orchestration code.
 
 Currently MDOT 0582b (`Mdot0582bRegistrations`) is the primary registered form type.
 
@@ -265,7 +265,7 @@ Field auto-computation follows a delegate pattern: `CalculateFormFieldUseCase` �
 
 ### Two-Phase Initialization
 
-DI is split between `forms_providers.dart` (runtime provider/repository wiring via the widget tree) and `forms_init.dart` (pre-tree registry population). This ensures registries are populated before any form screen attempts to render, without coupling the registry setup to Flutter's provider lifecycle.
+DI is split between `forms_providers.dart` (runtime provider/repository wiring via the widget tree) and `form_initializer.dart` (pre-tree registry population). This ensures registries are populated before any form screen attempts to render, without coupling the registry setup to Flutter's provider lifecycle.
 
 ### State Hashing
 

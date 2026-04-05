@@ -28,5 +28,5 @@ Fully functional offline. All dashboard data is aggregated from local SQLite tab
 - Features: projects (selected project context), entries (entry counts), locations (location counts), quantities (budget tracking), contractors (contractor counts)
 - Packages: `provider` (reactive state from multiple providers), `go_router` (navigation to detail screens), `intl` (date/number formatting)
 
-## Owner Agent
-frontend-flutter-specialist-agent
+## Primary Implementation Context
+Implement workers using `rules/frontend/flutter-ui.md`

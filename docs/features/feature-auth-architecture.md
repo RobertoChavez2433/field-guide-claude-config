@@ -53,8 +53,7 @@ lib/features/auth/
 │   │   ├── migrate_preferences_use_case.dart
 │   │   ├── sign_in_use_case.dart
 │   │   ├── sign_out_use_case.dart
-│   │   ├── sign_up_use_case.dart
-│   │   └── switch_company_use_case.dart
+│   │   └── sign_up_use_case.dart
 │   └── utils/
 │       └── auth_error_parser.dart
 └── presentation/
@@ -126,7 +125,6 @@ lib/features/auth/
 | `SignOutUseCase` | Clears session, local state, and navigates to login |
 | `LoadProfileUseCase` | Loads user profile from local cache or remote, hydrating provider state |
 | `CheckInactivityUseCase` | Determines whether the session has expired due to inactivity |
-| `SwitchCompanyUseCase` | Switches the active company context for multi-company users |
 | `MigratePreferencesUseCase` | Migrates legacy user preferences into the new profile model |
 
 ### Utils
@@ -193,8 +191,8 @@ Both providers are instantiated in `_runApp` (before the widget tree) for async 
 
 ## Architectural Patterns
 
-### Multi-Company Support
-Users may belong to more than one company. `SwitchCompanyUseCase` switches the active `companyId` stored in `UserProfile`, which is then propagated to all downstream features (sync, entries, attribution) via `AuthProvider`.
+### Company Context Management
+The active company context is established during sign-in and profile loading. `AuthProvider` propagates the current `companyId` to downstream features (sync, entries, attribution), and sign-in logic handles cross-company local-data resets when company context changes.
 
 ### Supabase Auth Integration
 `AuthService` wraps `Supabase.instance.client.auth` and exposes a `Stream<AuthState>` that `AuthProvider` subscribes to at startup. Session persistence (token refresh, secure storage) is handled by the Supabase Flutter SDK automatically.

@@ -16,7 +16,7 @@ The Auth feature manages user authentication with Supabase, company membership, 
 - **User Sign-Up / Sign-In**: Register and authenticate users via email/password; send email verification links
 - **Password Reset**: OTP-based password reset flow (no deep link dependency)
 - **Session Management**: Maintain authentication state across app restarts
-- **Company Management**: Create companies, submit and approve join requests, switch active company
+- **Company Management**: Create companies, submit and approve join requests, and establish company context during sign-in/onboarding
 - **Profile Management**: Set up and update user profiles; load profile on session restore
 - **Role-Based Authorization**: Enforce `UserRole` across the app via `AuthProvider`
 - **App Config**: Fetch remote feature flags and minimum version requirements via `AppConfigProvider`
@@ -47,7 +47,6 @@ The Auth feature manages user authentication with Supabase, company membership, 
 | `lib/features/auth/domain/usecases/sign_up_use_case.dart` | Registration orchestration |
 | `lib/features/auth/domain/usecases/sign_out_use_case.dart` | Sign-out and session teardown |
 | `lib/features/auth/domain/usecases/load_profile_use_case.dart` | Load user profile and company on session restore |
-| `lib/features/auth/domain/usecases/switch_company_use_case.dart` | Switch active company context |
 | `lib/features/auth/domain/usecases/check_inactivity_use_case.dart` | Detect and trigger inactivity lock |
 | `lib/features/auth/domain/usecases/migrate_preferences_use_case.dart` | Migrate legacy shared preferences on upgrade |
 | `lib/features/auth/data/models/user_profile.dart` | UserProfile model |

@@ -32,5 +32,5 @@ Full read/write offline. Bid items and entry quantities are stored in SQLite and
 - **Search filter broken**: The search input on the quantities summary screen does not correctly filter bid items by description or item number.
 - **Numeric sort uses string comparison**: Sorting by item number applies lexicographic ordering (e.g., "10" sorts before "9"), not numeric ordering.
 
-## Owner Agent
-backend-data-layer-agent (models, repositories, datasources), frontend-flutter-specialist-agent (screens, widgets)
+## Primary Implementation Context
+Implement workers using `rules/backend/data-layer.md` for models/repositories/datasources and `rules/frontend/flutter-ui.md` for screens/widgets

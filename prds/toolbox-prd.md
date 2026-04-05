@@ -54,5 +54,5 @@ Each sub-feature is fully functional offline. Form templates, responses, todos, 
 - **Gallery**: photos (photo data), entries (entry filter), no own data dependencies
 - **Todos**: projects, entries (scoping/linkage), `uuid`
 
-## Owner Agent
-frontend-flutter-specialist-agent (toolbox hub screen), backend-data-layer-agent + frontend-flutter-specialist-agent (sub-features)
+## Primary Implementation Context
+Implement workers using `rules/frontend/flutter-ui.md` for the toolbox hub and the domain-specific rules for each linked sub-feature

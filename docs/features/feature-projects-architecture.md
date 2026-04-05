@@ -158,7 +158,7 @@ Additional utilities: `getUnsyncedChangeCount()`, `getAllUnsyncedCounts()`, `can
 - **`ProjectListScreen`** — 3-tab layout: My Projects, Company, Archived. Filter chips on Company tab.
 - **`ProjectSetupScreen`** — Multi-step wizard for create/edit. Steps: project details, bid items/pay items, locations, contractors, assignments.
 
-### Widgets (13)
+### Widgets (14)
 
 | Widget | Purpose |
 |--------|---------|
@@ -169,7 +169,6 @@ Additional utilities: `getUnsyncedChangeCount()`, `getAllUnsyncedCounts()`, `can
 | `ProjectSwitcher` | Compact selector for switching active project |
 | `ProjectEmptyState` | Empty state widget for project lists |
 | `EquipmentChip` | Chip for equipment entries in the setup wizard |
-| `AddContractorDialog` | Dialog for adding a contractor during setup |
 | `AddEquipmentDialog` | Dialog for adding equipment during setup |
 | `AddLocationDialog` | Dialog for adding a location during setup |
 | `BidItemDialog` | Dialog for adding bid/pay items manually |

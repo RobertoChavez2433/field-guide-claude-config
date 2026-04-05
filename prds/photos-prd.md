@@ -31,5 +31,5 @@ Full read/write offline. Photos are saved to local device storage immediately. M
 - Features: entries (parent entry), projects (project scope), locations (optional location reference), pdf (photos included in reports), sync (file + metadata upload)
 - Packages: `sqflite` (metadata storage), `provider` (state), `uuid` (ID generation), `image` (preprocessing if needed), `supabase_flutter` (storage upload)
 
-## Owner Agent
-backend-data-layer-agent (data layer), frontend-flutter-specialist-agent (presentation/widgets)
+## Primary Implementation Context
+Implement workers using `rules/backend/data-layer.md` for data-layer work and `rules/frontend/flutter-ui.md` for presentation/widgets work

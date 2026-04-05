@@ -654,7 +654,7 @@ if (oldVersion < <next_version>) {
 
 ### Phase 1: Foundation (Supabase + Data Models)
 **Scope**: Server-side schema + Dart models + local SQLite migration
-**Agent**: `backend-supabase-agent` + `backend-data-layer-agent`
+**Implementation Context**: `rules/backend/supabase-sql.md` + `rules/backend/data-layer.md`
 
 - [ ] Create Supabase tables (companies, user_profiles, company_join_requests)
 - [ ] Add columns to existing Supabase tables
@@ -677,7 +677,7 @@ if (oldVersion < <next_version>) {
 
 ### Phase 2: Auth & User Profile
 **Scope**: Onboarding flow, profile management, company creation/joining
-**Agent**: `auth-agent` + `frontend-flutter-specialist-agent`
+**Implementation Context**: `auth-agent` + `rules/frontend/flutter-ui.md`
 
 - [ ] Profile Setup screen (display name, cert, phone, position)
 - [ ] Company creation flow ("Create new company")
@@ -697,7 +697,7 @@ if (oldVersion < <next_version>) {
 
 ### Phase 3: Sync Scoping + On-Save Sync
 **Scope**: Company-scoped sync + immediate push on save
-**Agent**: `backend-data-layer-agent` + `backend-supabase-agent`
+**Implementation Context**: `rules/backend/data-layer.md` + `rules/backend/supabase-sql.md`
 
 - [ ] Update sync adapter: filter all queries by company_id
 - [ ] Include created_by_user_id on all writes
@@ -715,7 +715,7 @@ if (oldVersion < <next_version>) {
 
 ### Phase 4: Firebase + Background Sync
 **Scope**: FCM integration + background sync handlers
-**Agent**: `backend-data-layer-agent`
+**Implementation Context**: `rules/backend/data-layer.md`
 
 - [ ] Firebase project setup (console.firebase.google.com)
 - [ ] Add `firebase_core`, `firebase_messaging` to app
@@ -733,7 +733,7 @@ if (oldVersion < <next_version>) {
 
 ### Phase 5: Project Switcher
 **Scope**: Project selection UX overhaul
-**Agent**: `frontend-flutter-specialist-agent`
+**Implementation Context**: `rules/frontend/flutter-ui.md`
 
 - [ ] Project switcher dropdown in app bar
 - [ ] "Remember last project" persistence (local prefs, per-user)
@@ -751,7 +751,7 @@ if (oldVersion < <next_version>) {
 
 ### Phase 6: Admin Dashboard
 **Scope**: Admin-only management screen
-**Agent**: `frontend-flutter-specialist-agent` + `backend-data-layer-agent`
+**Implementation Context**: `rules/frontend/flutter-ui.md` + `rules/backend/data-layer.md`
 
 - [ ] Admin Dashboard screen (Settings → Admin Dashboard, admin-only)
 - [ ] Pending requests list with approve/reject actions
@@ -772,7 +772,7 @@ if (oldVersion < <next_version>) {
 
 ### Phase 7: Audit Trail UI
 **Scope**: Display who recorded what
-**Agent**: `frontend-flutter-specialist-agent` + `pdf-agent`
+**Implementation Context**: `rules/frontend/flutter-ui.md` + `pdf-agent`
 
 - [ ] Display "Recorded by: [Name]" on daily entry cards
 - [ ] Display "Recorded by: [Name]" on photo details
@@ -789,7 +789,7 @@ if (oldVersion < <next_version>) {
 
 ### Phase 8: Viewer Role Enforcement
 **Scope**: Read-only mode for Viewer role
-**Agent**: `frontend-flutter-specialist-agent`
+**Implementation Context**: `rules/frontend/flutter-ui.md`
 
 - [ ] Check `userProfile.role` in providers — block write operations for viewers
 - [ ] Hide FABs, create buttons, edit buttons when role == 'viewer'

@@ -25,7 +25,7 @@ The forms feature uses a registry pattern to decouple form-type logic from share
 - **FormQuickActionRegistry** — maps form type → list of quick action definitions
 - **FormInitialDataFactory** — creates initial (empty/defaulted) data map for a new form response of a given type
 
-New form types are registered at startup in `forms_init.dart`; no conditional branching required in shared use cases or screens.
+New form types are registered at startup in `form_initializer.dart`; no conditional branching required in shared use cases or screens.
 
 ## Data Model
 - **`inspector_forms`** (SQLite) — immutable built-in form definitions; seeded at app init
@@ -78,11 +78,11 @@ Full read/write offline. All form responses and definitions are stored in SQLite
 
 ## DI
 - **`forms_providers.dart`** — Provider definitions for all forms repositories, services, and use cases
-- **`forms_init.dart`** — startup registration of all form types into the five registries and `FormInitialDataFactory`
+- **`form_initializer.dart`** — startup registration of all form types into the five registries and `FormInitialDataFactory`
 
 ## Dependencies
 - Features: projects (parent scope), entries (auto-fill source), contractors (auto-fill source), locations (auto-fill source), pdf (PDF export/display), sync (change_log-driven cloud sync)
 - Packages: `sqflite`, `provider`, `uuid`, `go_router`, `intl`, `pdfx` or equivalent PDF filler package
 
-## Owner Agent
-backend-data-layer-agent (data layer), frontend-flutter-specialist-agent (presentation)
+## Primary Implementation Context
+Implement workers using `rules/backend/data-layer.md` for data-layer work and `rules/frontend/flutter-ui.md` for presentation work

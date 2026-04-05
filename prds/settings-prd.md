@@ -119,5 +119,5 @@ Settings tables (`user_profiles`, `user_consent_records`, `support_tickets`) par
 - Features: auth (sign out, email display, user_profiles), sync (manual trigger, change_log engine), projects (auto-load setting)
 - Packages: `shared_preferences`, `provider`, `supabase_flutter` (auth state, admin repo), `package_info_plus` (app version)
 
-## Owner Agent
-frontend-flutter-specialist-agent (all presentation), backend-data-layer-agent (repositories, datasources, SQLite schema)
+## Primary Implementation Context
+Implement workers using `rules/frontend/flutter-ui.md` for presentation and `rules/backend/data-layer.md` for repositories/datasources/SQLite schema

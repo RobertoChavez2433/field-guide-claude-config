@@ -79,7 +79,6 @@ The Projects feature manages construction projects from setup through completion
 
 | File Path | Class | Purpose |
 |-----------|-------|---------|
-| `lib/features/projects/presentation/widgets/add_contractor_dialog.dart` | `AddContractorDialog` | Dialog to add a contractor to a project |
 | `lib/features/projects/presentation/widgets/add_equipment_dialog.dart` | `AddEquipmentDialog` | Dialog to add equipment type to a project |
 | `lib/features/projects/presentation/widgets/add_location_dialog.dart` | `AddLocationDialog` | Dialog to add a location to a project |
 | `lib/features/projects/presentation/widgets/assignments_step.dart` | `AssignmentsStep` | Setup wizard step for inspector assignments |

@@ -18,7 +18,7 @@ Sync ensures that data created offline on a mobile device reaches the cloud and 
 - Per-table adapter pattern: one `TableAdapter` subclass per syncable table handles push and pull independently; failures are isolated per adapter, not all-or-nothing
 - Ordered sync registry: `SyncRegistry` registers all adapters in dependency order (parents before children) so FK constraints are never violated during pull
 - Sync modes: `Quick sync` for startup/foreground freshness, `Full sync` for user-requested broad refresh, and `Maintenance sync` for deferred integrity/profile work
-- Orchestration: `SyncOrchestrator` coordinates quick sync, full sync, push-triggered sync, and lifecycle-driven sync; `SyncEngine` executes the low-level push/pull loop
+- Orchestration: `SyncCoordinator` coordinates quick sync, full sync, push-triggered sync, and lifecycle-driven sync; `SyncEngine` executes the low-level push/pull loop
 - Conflict resolution: per-record conflict detection with a dedicated `ConflictViewerScreen` for inspector review
 - Post-sync integrity: `IntegrityChecker` verifies FK relationships after every sync run; `OrphanScanner` finds and handles orphaned records
 - Concurrency guard: `SyncMutex` ensures only one sync run executes at a time
@@ -53,7 +53,7 @@ Sync ensures that data created offline on a mobile device reaches the cloud and 
 |-----------|---------------|
 | `ChangeTracker` | Reads `change_log`; returns pending changes grouped by table |
 | `SyncEngine` | Iterates registered adapters; calls push then pull per adapter; collects results |
-| `SyncOrchestrator` | Top-level coordinator; triggers engine on manual request, FCM push, or lifecycle event |
+| `SyncCoordinator` | Top-level coordinator; triggers engine on manual request, FCM push, or lifecycle event |
 | `SyncRegistry` | Holds ordered list of all concrete adapters; enforces registration order for FK safety |
 | `SyncMutex` | Blocks concurrent engine invocations; queues at most one pending run |
 
@@ -81,7 +81,7 @@ Sync ensures that data created offline on a mobile device reaches the cloud and 
 Sync operates mostly in the background. When inspectors save data, the SQLite trigger writes to `change_log` automatically. If connectivity is available and no sync is already running, a quick sync should pick up pending changes without forcing a full broad refresh. Inspectors can trigger a manual full sync from the global top-app sync action or from `SyncDashboardScreen`, which shows last sync time, pending change count, per-adapter status, and deeper diagnostics. Conflicts detected during pull are surfaced on `ConflictViewerScreen` for inspector resolution.
 
 ## Offline Behavior
-The `change_log` table is the offline mechanism. When offline, all mutations accumulate in `change_log` via triggers. When connectivity returns, `SyncOrchestrator` should process pending changes first, then exchange only the remote changes needed for freshness. Failed adapter runs retain their error state and retry on the next cycle. The system never blocks user interaction waiting for sync.
+The `change_log` table is the offline mechanism. When offline, all mutations accumulate in `change_log` via triggers. When connectivity returns, `SyncCoordinator` should process pending changes first, then exchange only the remote changes needed for freshness. Failed adapter runs retain their error state and retry on the next cycle. The system never blocks user interaction waiting for sync.
 
 ## Screens
 | Screen | Purpose |
@@ -114,5 +114,5 @@ The `change_log` table is the offline mechanism. When offline, all mutations acc
 - `.claude/specs/2026-04-03-sync-strategy-codex-spec.md`
 - `.claude/specs/2026-04-04-private-sync-hint-channels-codex-spec.md`
 
-## Owner Agent
-backend-supabase-agent (remote schema, RLS, FCM), backend-data-layer-agent (change_log triggers, adapters, integrity checks)
+## Primary Implementation Context
+Implement workers using `rules/backend/supabase-sql.md` and `rules/sync/sync-patterns.md` for remote/RLS/FCM work, plus `rules/backend/data-layer.md` for adapters and change-log plumbing

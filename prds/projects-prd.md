@@ -27,5 +27,5 @@ Full read/write offline. Projects are created and edited locally in SQLite. Chan
 - Features: locations, contractors, quantities (bid items), entries, sync
 - Packages: `uuid`, `sqflite`, `provider`, `go_router`, `supabase_flutter`
 
-## Owner Agent
-backend-data-layer-agent (data/models, repositories), frontend-flutter-specialist-agent (presentation)
+## Primary Implementation Context
+Implement workers using `rules/backend/data-layer.md` for data/models/repositories work and `rules/frontend/flutter-ui.md` for presentation work

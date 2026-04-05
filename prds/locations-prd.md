@@ -28,5 +28,5 @@ Full read/write offline. All location data is stored in SQLite with no network d
 - Features: projects (parent scope), entries (location_id FK), photos (optional location_id reference)
 - Packages: `sqflite` (local storage), `provider` (state management), `uuid` (ID generation)
 
-## Owner Agent
-backend-data-layer-agent
+## Primary Implementation Context
+Implement workers using `rules/backend/data-layer.md`

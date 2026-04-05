@@ -27,5 +27,5 @@ Weather fetch requires network connectivity and GPS access. When offline, the we
 - Features: entries (weather data attaches to daily entries), settings (auto-fetch toggle)
 - Packages: `http` (API calls), `geolocator` (GPS location), `dart:convert` (JSON parsing)
 
-## Owner Agent
-backend-data-layer-agent (WeatherService, WeatherData model)
+## Primary Implementation Context
+Implement workers using `rules/architecture.md` and `rules/frontend/flutter-ui.md` when touching weather service/provider integration

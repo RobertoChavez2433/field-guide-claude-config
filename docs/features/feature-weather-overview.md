@@ -9,7 +9,7 @@ updated: 2026-03-30
 
 ## Purpose
 
-The Weather feature fetches current weather conditions (temperature, condition string) for a given GPS coordinate and date. It is a thin service-only feature with no screens, no local data layer, and no sync involvement. Weather data is fetched on demand via the Open-Meteo API and surfaced to the entries feature when an inspector creates or edits a daily entry.
+The Weather feature fetches current weather conditions (temperature, condition string) for a given GPS coordinate and date. It has no screens, no local data layer, and no sync involvement, but it does include a lightweight provider for dashboard and entry workflows. Weather data is fetched on demand via the Open-Meteo API and surfaced to the entries feature when an inspector creates or edits a daily entry.
 
 ## Key Responsibilities
 
@@ -32,6 +32,7 @@ The Weather feature fetches current weather conditions (temperature, condition s
 - `WeatherServiceInterface` — abstract; declares `fetchWeather(lat, lon, date)` and `fetchWeatherForCurrentLocation(date)`
 - `WeatherService implements WeatherServiceInterface` — concrete service backed by Open-Meteo REST API
 - `WeatherData` — simple value object with `condition`, `tempHigh`, `tempLow`
+- `WeatherProvider` — lightweight `ChangeNotifier` wrapper that fetches and caches weather state for consumers
 - `weatherProviders({required WeatherService weatherService})` — returns a `List<SingleChildWidget>` registering `WeatherService` as a `Provider<WeatherService>.value`
 
 ## Integration Points

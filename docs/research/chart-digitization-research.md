@@ -413,7 +413,7 @@ Modeled after the extraction pipeline scorecard system (`stage_trace_diagnostic_
 - Per-test item traces (like GT item traces in extraction scorecard)
 - Aggregate scorecard table (Stage, Metric, Expected, Actual, %, Status)
 - Multi-model comparison table
-- **JSON fixture dumps** to `tools/chart_validation/results/YYYY-MM-DD_NNN_{model}.json`
+- **JSON fixture dumps** to the chart-validation output directory used by the research workflow
 
 ---
 
@@ -465,7 +465,7 @@ Modeled after the extraction pipeline scorecard system (`stage_trace_diagnostic_
 - **Verified 14/14 ground truth points**: max MDD error 0.08 pcf, max OMC error 0.06% (rounding only)
 - **ALL previous model research (parabolic, Gaussian, saturation-line) is SUPERSEDED**
 - Both T-99 AND Cone charts fully decoded — no more blockers
-- Decoded algorithm saved to `tools/mdot-apk/decoded_algorithm.md`
+- Decoded algorithm saved to `.claude/docs/research/mdot-decoded-algorithm.md`
 
 ---
 
@@ -486,7 +486,7 @@ Phases 1-3 (data collection, harness, calibration) are **NO LONGER NEEDED** sinc
 ### Phase 1: Dart Implementation (NEXT)
 **Goal**: Port the exact reverse-engineered algorithm to Dart.
 
-**File**: `lib/features/quantities/services/one_point_calculator.dart` (new)
+**File**: `lib/features/forms/data/services/one_point_calculator.dart`
 ```dart
 class OnePointResult {
   final double maxDryDensity;  // MDD in pcf
@@ -511,7 +511,7 @@ Algorithm to port:
 - Rational polynomial for T-99 OMC, cubic polynomial for Cone OMC
 - Validation polynomials for bounds checking
 - Internal unit factor: 16.0184633796014 (pcf ↔ kg/m^3)
-- All constants in `tools/mdot-apk/decoded_algorithm.md`
+- All constants in `.claude/docs/research/mdot-decoded-algorithm.md`
 
 **Tests**: `test/features/quantities/one_point_calculator_test.dart`
 - 14 ground truth points from MDOT calculator (should match within 0.1 pcf / 0.1%)
@@ -519,7 +519,7 @@ Algorithm to port:
 - Cone chart worked example from MDOT manual
 
 ### Phase 2: Integration into 0582B UI
-Per 0582B UI Redesign plan (`.claude/plans/2026-02-21-0582b-ui-redesign.md`):
+Per 0582B UI Redesign plan (`.claude/plans/completed/2026-02-21-0582b-ui-redesign.md`):
 - User enters moisture % and wet density (or raw weights)
 - App computes MDD/OMC automatically using exact MDOT algorithm
 - User selects chart type (T-99 vs Cone) based on loss-by-washing

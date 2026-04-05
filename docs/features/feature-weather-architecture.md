@@ -9,7 +9,7 @@ updated: 2026-03-30
 
 ## Pattern
 
-Service-only feature. No data layer, no presentation layer, no use cases. Consists of a domain interface, a single service implementation, and DI wiring.
+Service-first feature. No data layer and no screens. Consists of a domain interface, a single service implementation, a lightweight presentation provider, and DI wiring.
 
 ```
 lib/features/weather/
@@ -18,6 +18,9 @@ lib/features/weather/
 ├── domain/
 │   ├── domain.dart                 # Barrel: exports WeatherServiceInterface
 │   └── weather_service_interface.dart  # Abstract contract
+├── presentation/
+│   └── providers/
+│       └── weather_provider.dart   # ChangeNotifier wrapper for fetch/cached state
 ├── services/
 │   ├── services.dart               # Barrel: exports WeatherService + WeatherData
 │   └── weather_service.dart        # Implementation + WeatherData model
@@ -30,9 +33,10 @@ lib/features/weather/
 |-------|------|----------|
 | Domain | `domain/weather_service_interface.dart` | `WeatherServiceInterface` (abstract) |
 | Service | `services/weather_service.dart` | `WeatherService`, `WeatherData` |
+| Presentation | `presentation/providers/weather_provider.dart` | `WeatherProvider` fetch/cached UI state |
 | DI | `di/weather_providers.dart` | `weatherProviders()` function |
 
-There is no `data/`, no `presentation/`, and no `domain/usecases/` or `domain/repositories/` subdirectory.
+There is no `data/`, no screen layer, and no `domain/usecases/` or `domain/repositories/` subdirectory.
 
 ## Key Classes
 
@@ -86,7 +90,7 @@ List<SingleChildWidget> weatherProviders({
 ];
 ```
 
-`WeatherService` is instantiated in `lib/core/di/app_initializer.dart` as part of `FeatureDeps` and passed into `app_providers.dart` via `weatherProviders(weatherService: deps.weatherService)`.
+`WeatherService` is instantiated in `lib/core/bootstrap/app_initializer.dart` as part of `FeatureDeps` and passed into `app_providers.dart` via `weatherProviders(weatherService: deps.weatherService)`.
 
 ## Relationships
 
@@ -94,9 +98,9 @@ List<SingleChildWidget> weatherProviders({
 
 `entry_editor_screen.dart` calls `context.read<WeatherService>()` and invokes `fetchWeatherForCurrentLocation(date)` in `_autoFetchWeather()` to pre-fill weather conditions when creating or editing a daily entry. The `WeatherData` result (condition string, high/low temps) is applied directly to entry state.
 
-### Test harness
+### Test coverage
 
-`lib/test_harness/stub_services.dart` and `harness_providers.dart` reference `WeatherService`/`WeatherServiceInterface` to inject stubs during integration testing.
+`test/services/weather_service_test.dart` covers weather-code conversion and temperature conversion logic. Runtime consumers use `WeatherProvider` when they need cached fetch state.
 
 ## No Local Storage / No Sync
 

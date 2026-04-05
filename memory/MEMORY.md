@@ -40,7 +40,7 @@
 ### Agent Usage Patterns
 - User prefers ALL work done via agents - research, implementation, testing
 - Use parallel agents when tasks are independent
-- pdf-agent for PDF analysis; frontend-flutter-specialist-agent for Dart code changes
+- pdf-agent for PDF analysis; implement workers with the appropriate domain rules for Dart code changes
 - code-review-agent for verification; qa-testing-agent for testing
 - Agents sometimes revert each other's changes - verify file state after parallel agent runs
 - **FIXED (2026-02-11)**: All agents now have `permissionMode: acceptEdits` to prevent file-write failures
@@ -49,7 +49,7 @@
 - Context handoff: subagents start fresh - always pass full context in Task prompt or write to `.claude/plans/`
 
 ### Testing Setup
-- `lib/driver_main.dart` exists for Flutter Driver-based testing
+- `lib/main_driver.dart` exists for Flutter Driver-based testing
 - `flutter_driver` is a dev dependency in pubspec.yaml
 - **CRITICAL**: NEVER run `Stop-Process -Name 'dart'` — can kill background Dart processes. Only kill `construction_inspector`.
 - dart-mcp MCP server REMOVED (Session 444) — use `pwsh -Command "flutter run ..."` directly instead
@@ -90,8 +90,8 @@
 - **Version bump required for upgrade detection** — if you build a new APK with the same version string, the app won't detect it as an upgrade.
 
 ### One-Point Chart Digitization — ALGORITHM DECODED (Session 423)
-- **Research doc**: `tools/chart-digitization-research.md`
-- **Decoded algorithm**: `tools/mdot-apk/decoded_algorithm.md` — exact tables + polynomials
+- **Research doc**: `.claude/docs/research/chart-digitization-research.md`
+- **Decoded algorithm**: `.claude/docs/research/mdot-decoded-algorithm.md` — exact tables + polynomials
 - **MDOT "Construction Density" APK**: `com.JacobArmour.ConstructionDensity` (Xamarin/C#), extracted via ADB
 - **Algorithm**: Piecewise linear lookup table interpolation, NOT physics equations
   - T-99: 27 family curves (straight lines in moisture vs wetDensity_kg/m3 space) + rational polynomial for OMC
@@ -102,7 +102,7 @@
 - Calculator DOES implement Cone chart (discovered during decompilation, contrary to earlier belief)
 - All previous model research (parabolic, Gaussian, saturation-line) is SUPERSEDED
 - **APK decompilation technique**: XABA blob → XALZ (LZ4-compressed) → .NET DLLs → IL bytecode disassembly
-- Python prototypes (OBSOLETE): `tools/one_point_prototype.py`, `tools/one_point_prototype_v2.py`, `tools/one_point_validation.py`
+- Python prototypes from the reverse-engineering phase are obsolete and no longer kept in the repo
 
 ### UI Prototyping Toolkit (Session 436)
 - **MCP servers**: `html-sync` (mcp-html-sync-server) + `playwright` (@playwright/mcp with --caps vision)

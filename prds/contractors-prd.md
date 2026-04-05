@@ -33,5 +33,5 @@ Full read/write offline. Contractors, equipment, and personnel types are stored 
 - Features: projects (parent scope), entries (junction linkage)
 - Packages: `sqflite` (local storage), `provider` (state), `uuid` (ID generation)
 
-## Owner Agent
-backend-data-layer-agent
+## Primary Implementation Context
+Implement workers using `rules/backend/data-layer.md`

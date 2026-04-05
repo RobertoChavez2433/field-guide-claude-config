@@ -19,14 +19,14 @@ The Forms feature manages inspection form templates, form response data entry, a
 - **PDF Filling**: Fill form-specific PDF templates with response data via `FormPdfService` and `fillMdot0582bPdfFields` (top-level function)
 - **Form Export**: Package filled PDFs into exportable `FormExport` records
 - **Extensible Registries**: `FormScreenRegistry`, `FormPdfFillerRegistry`, `FormValidatorRegistry`, `FormCalculatorRegistry` allow new form types to be added without modifying core logic
-- **Two-Phase Initialization**: Registry wiring separated from provider DI via `forms_init.dart`
+- **Two-Phase Initialization**: Registry wiring separated from provider DI via `form_initializer.dart`
 
 ## Key Files
 
 | File Path | Purpose |
 |-----------|---------|
 | `lib/features/forms/di/forms_providers.dart` | DI wiring — providers, repositories, services |
-| `lib/features/forms/di/forms_init.dart` | Registry initialization (two-phase init) |
+| `lib/features/forms/di/form_initializer.dart` | Registry initialization (two-phase init) |
 | `lib/features/forms/data/models/inspector_form.dart` | `InspectorForm` — form template definition |
 | `lib/features/forms/data/models/form_response.dart` | `FormResponse` — user's filled response |
 | `lib/features/forms/data/models/form_export.dart` | `FormExport` — exported PDF record |
