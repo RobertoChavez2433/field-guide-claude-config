@@ -1,25 +1,27 @@
 # Session State
 
-**Last Updated**: 2026-04-05 | **Session**: 736
+**Last Updated**: 2026-04-05 | **Session**: 737
 
 ## Current Phase
-- **Phase**: Sync Engine Refactor — Phases 0-5 complete. `/implement` skill redesigned.
-- **Status**: On `sync-engine-refactor` branch. Pushed to origin. Claude config pushed to `field-guide-claude-config`.
+- **Phase**: Sync Engine Refactor — Phases 0-9 complete. All documentation updated.
+- **Status**: On `sync-engine-refactor` branch. Not yet pushed. Claude config committed to `field-guide-claude-config` (not pushed).
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (736)
+### What Was Done This Session (737)
 
-1. **Redesigned `/implement` skill** — thin orchestrator with `claude --bare` + `--json-schema` structured output. Single checkpoint file, no file artifacts in `.claude/outputs/`.
-2. **Created 3 files**: `worker-rules.md`, `reviewer-rules.md`, `extract-result.py`
-3. **Rewrote 5 files**: `SKILL.md`, `headless-commands.md`, `findings-schema.json`, `checkpoint-template.json`, `severity-standard.md`
-4. **Deleted 65 files**: `prompt-templates.md`, `phase-state-template.json`, 63 stale output artifacts
-5. **Added AI shortcut detection** to reviewer-rules.md (13 patterns: `//ignore`, TODOs, empty stubs, skeleton tests, etc.)
-6. **Committed & pushed** 4 logical commits to `field-guide-claude-config`
+1. **Sync engine refactor Phase 9** — Integration + Documentation phase
+2. **Rewrote `sync-patterns.md`** — full new architecture: layer diagram, push/pull/request flows, status vs diagnostics split, error classification table, adapter pattern (13 simple + 9 complex), engine/application component tables, file tree, config values
+3. **Updated `CLAUDE.md`** — Sync Architecture section (SyncCoordinator, all new classes, adapter split), 3 new key files, 3 new gotchas
+4. **Created `sync-architecture.md`** — comprehensive implementation guide (engine layer, control plane, status vs diagnostics, adapter pattern, testing strategy, invariants)
+5. **Verified success metrics** — SyncEngine 214 lines (<250), largest class 481 lines (<500), 0 @visibleForTesting in SyncEngine, 13 adapter files, single error classifier, analyzer 0 issues
+6. **Committed 5 logical commits** across both repos (2 app, 3 config)
 
 ### What Needs to Happen Next
-1. **First real test of redesigned /implement** on a new plan — verify `--bare`, `--json-schema`, `tee` pipeline, and structured output parsing all work end-to-end
-2. **Prior carry-over**: Commit S726 changes + PR, push Supabase migration, merge PR #140
+1. **Push both repos** — `sync-engine-refactor` branch (app) and `master` (config) need pushing
+2. **Run CI** — verify all tests pass on the sync-engine-refactor branch
+3. **Prior carry-over**: Push Supabase migration, merge PR #140
+4. **First real test of redesigned /implement** on a new plan
 
 ### User Preferences (Critical)
 - **Fresh test projects only**: NEVER use existing projects during test runs — always create from scratch
@@ -44,6 +46,11 @@
 
 ## Recent Sessions
 
+### Session 737 (2026-04-05)
+**Work**: Sync engine refactor Phase 9 — rewrote sync-patterns.md, updated CLAUDE.md, created sync-architecture.md guide. Verified all success metrics pass. Committed 2 app + 3 config commits.
+**Decisions**: Sub-phase 9.1 (E2E driver flows) skipped — requires running app instances. Sub-phase 9.4 no-op — directory-reference.md documents .claude/ not lib/.
+**Next**: Push both repos, run CI, prior carry-over.
+
 ### Session 736 (2026-04-05)
 **Work**: Redesigned /implement skill — thin orchestrator with `--bare` + `--json-schema`. Created worker-rules.md, reviewer-rules.md, extract-result.py. Deleted 65 stale artifacts. Added AI shortcut detection to reviewers.
 **Decisions**: Approval gate = zero critical+high+medium (LOW logged only). Implementer runs lint itself. Monotonicity check + 3-round hard cap. Fixer skips LOW.
@@ -53,11 +60,6 @@
 **Work**: Rewrote /implement skill to headless architecture. 7 files created, 2 deleted. Main conversation is now the orchestrator — dispatches claude -p instances, no more black-box agent.
 **Decisions**: Implementers use sonnet, reviewers use opus. No Bash for implementers. All 3 reviewers re-run after fixes. Lint at batch level only.
 **Next**: First real test of new /implement on sync engine Phase 2. Prior carry-over still pending.
-
-### Session 734 (2026-04-05)
-**Work**: Sync engine refactor Phases 0-1 via /implement orchestrator. 22 characterization tests + 8 domain type/classifier files + 2 contract tests. 2 commits pushed to sync-engine-refactor.
-**Decisions**: Schema version 43→50 in test helper. EXIF byte test deferred with skip() (testable in P3). conflict_log columns corrected.
-**Next**: CONTINUE from Group 3 (Phase 2 — I/O Boundaries). Run /implement with existing checkpoint.
 
 ## Test Results
 
