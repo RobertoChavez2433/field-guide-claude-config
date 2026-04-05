@@ -166,9 +166,9 @@ These are KEPT after the session (they fill genuine coverage gaps).
 
 ### 3.3 Proceed to Phase 3.5
 
-Instrumentation is complete. Phase 3.5 (LAUNCH DRIVER) will build and launch the app with the driver entrypoint and `DEBUG_SERVER=true` flag.
+Instrumentation is complete. Phase 3.5 (LAUNCH DRIVER) will reuse or rebuild the driver app as needed, then launch it with the driver entrypoint and `DEBUG_SERVER=true` flag.
 
-**Do NOT manually run `flutter run` here** -- `start-driver.ps1` handles the build, launch, and readiness polling in one step.
+**Do NOT manually run `flutter run` here** -- `start-driver.ps1` handles build freshness checks, launch, and readiness polling in one step.
 
 ---
 
@@ -188,9 +188,12 @@ pwsh -File tools/start-driver.ps1 -Platform windows  # or android
 
 This script handles:
 - Starting the debug server (port 3947) if not already running
-- Building and launching the app with `--target=lib/main_driver.dart --dart-define=DEBUG_SERVER=true`
-- ADB reverse ports for Android (3947 + 4948)
+- Reusing the current driver build when inputs are unchanged, or rebuilding when they are stale
+- Launching the app with `--target=lib/main_driver.dart --dart-define=DEBUG_SERVER=true`
+- Android port setup: `adb reverse` for debug logs on 3947 and `adb forward` for the driver port
 - Polling readiness until both servers respond
+
+Use `-ForceRebuild` only when you suspect the cached driver artifact is wrong.
 
 ### 3.5.3 Login with test credentials
 

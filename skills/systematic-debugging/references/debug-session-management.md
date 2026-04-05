@@ -65,9 +65,11 @@ pwsh -File tools/start-driver.ps1 -Platform windows   # or android
 
 This script:
 1. Starts the debug server (port 3947) if not already running
-2. Launches the app with `--target=lib/main_driver.dart --dart-define=DEBUG_SERVER=true`
-3. Sets up ADB reverse ports for Android (both 3947 and 4948)
-4. Polls readiness until both servers respond
+2. Reuses the current Android driver build when inputs are unchanged, or rebuilds when they are stale
+3. Launches the app with `--target=lib/main_driver.dart --dart-define=DEBUG_SERVER=true`
+4. Sets up Android ports with `adb reverse tcp:3947 tcp:3947` and `adb forward tcp:4948 tcp:4948`
+5. Supports a second desktop driver instance with `-DriverPort 4949`
+6. Polls readiness until both servers respond
 
 **Verify driver is running:**
 ```bash
@@ -262,5 +264,7 @@ See `driver-integration.md` for the full driver API reference, login procedures,
 | Command | Purpose |
 |---------|---------|
 | `pwsh -File tools/start-driver.ps1 -Platform windows` | Start driver environment |
+| `pwsh -File tools/start-driver.ps1 -Platform windows -DriverPort 4949` | Start second desktop driver instance |
+| `pwsh -File tools/start-driver.ps1 -Platform android -ForceRebuild` | Force Android driver rebuild + reinstall |
 | `pwsh -File tools/stop-driver.ps1` | Stop app (keep debug server) |
 | `pwsh -File tools/stop-driver.ps1 -IncludeDebugServer` | Stop app + debug server |

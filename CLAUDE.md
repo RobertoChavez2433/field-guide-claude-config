@@ -81,14 +81,17 @@ Domain:       SyncResult, SyncStatus, SyncErrorKind, ClassifiedSyncError, SyncDi
 5. `pwsh -Command "flutter test"` — All tests
 6. `pwsh -Command "flutter pub get"` — Get dependencies
 7. `pwsh -Command "flutter analyze"` — Static analysis
+8. `pwsh -File tools/start-driver.ps1 -Platform android` — Driver launch; reuses current Android driver build when fresh
+9. `pwsh -File tools/start-driver.ps1 -Platform android -ForceRebuild` — Force Android driver rebuild + reinstall
+10. `pwsh -File tools/start-driver.ps1 -Platform windows -DriverPort 4949` — Second desktop driver instance for sync verification
 
 ### Supabase CLI
-8. `npx supabase db push` — Push pending migrations to remote
-9. `npx supabase db pull` — Pull remote schema changes
-10. `npx supabase db diff` — Diff local vs remote schema
+11. `npx supabase db push` — Push pending migrations to remote
+12. `npx supabase db pull` — Pull remote schema changes
+13. `npx supabase db diff` — Diff local vs remote schema
 
 ### Process Management
-11. `pwsh -Command "Stop-Process -Name 'construction_inspector' -Force -ErrorAction SilentlyContinue"` — Kill app ONLY
+14. `pwsh -Command "Stop-Process -Name 'construction_inspector' -Force -ErrorAction SilentlyContinue"` — Kill app ONLY
 
 ### Common Mistakes
 - NEVER run flutter/dart directly in Git Bash — ALWAYS use `pwsh -Command "..."`

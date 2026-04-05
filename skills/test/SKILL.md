@@ -209,23 +209,32 @@ navigation   → T92-T96
 
 ## Prerequisites (automated)
 1. Run: `pwsh -File tools/start-driver.ps1 -Platform windows` (or `-Platform android`)
-2. Script handles: stale process cleanup, debug server, app launch, and readiness gate
+2. Script handles: stale process cleanup, driver build freshness checks, Android install reuse, app launch, and readiness gate
 3. No manual setup required
+
+### Smart Driver Startup
+- Android driver startup now reuses the last good driver APK by default.
+- A rebuild happens only when tracked driver inputs changed (`lib/`, `assets/`, `android/`, `pubspec.*`, `.env`) or when `-ForceRebuild` is passed.
+- Android reinstall is skipped when the cached driver build already matches the connected device install.
+- Dual-instance sync runs can launch the inspector desktop app on port `4949`:
+  `pwsh -File tools/start-driver.ps1 -Platform windows -DriverPort 4949`
 
 ### Mid-Test Rebuilds (after code fixes)
 
-**CRITICAL: NEVER call `build.ps1` without `-Driver` during testing.** The default is `-BuildType release`, which triggers `flutter clean` + full release build (10+ minutes wasted).
+**CRITICAL: NEVER call `build.ps1` without `-Driver` during testing.** The default is `-BuildType release`, which produces a release artifact instead of a driver build.
 
 | Scenario | Command |
 |----------|---------|
-| Android rebuild + reinstall | `pwsh -File tools/build.ps1 -Platform android -Driver` then `adb install -r <apk>` |
-| Windows rebuild | Kill app → `pwsh -File tools/start-driver.ps1 -Platform windows` |
+| Android relaunch (reuse if fresh) | `pwsh -File tools/start-driver.ps1 -Platform android` |
+| Android force rebuild + reinstall | `pwsh -File tools/start-driver.ps1 -Platform android -ForceRebuild` |
+| Windows relaunch | `pwsh -File tools/start-driver.ps1 -Platform windows` |
+| Windows inspector on port 4949 | `pwsh -File tools/start-driver.ps1 -Platform windows -DriverPort 4949` |
 | Hot restart (no rebuild) | `curl -s -X POST http://127.0.0.1:4948/driver/hot-restart -d '{}'` |
 
 **Prefer hot restart** when changes are hot-reloadable (UI, widget keys). Only rebuild when changes touch native code, entrypoints, or dependencies.
 
 ### Pre-flight Cleanup (built into start-driver.ps1)
-- **Android**: Force-stops app on all devices, clears stale ADB forwards/reverses (frees port 4948)
+- **Android**: Force-stops app on all devices, clears stale ADB forwards/reverses for the selected driver port
 - **Windows**: Kills `construction_inspector` process
 - **IMPORTANT**: Use `adb forward` (host→device) for driver port, NOT `adb reverse` (which binds the port on-device and conflicts with the driver server)
 

@@ -286,16 +286,18 @@ curl -s "http://127.0.0.1:4948/driver/tree?filter=entry_card"
 
 - Driver and debug server both on localhost -- no port forwarding needed
 - Launch: `pwsh -File tools/start-driver.ps1 -Platform windows`
+- Second app instance for sync verification: `pwsh -File tools/start-driver.ps1 -Platform windows -DriverPort 4949`
 - Kill: `pwsh -File tools/stop-driver.ps1`
 
 ### Android
 
-- ADB reverse for BOTH ports:
+- `start-driver.ps1` reuses the cached driver APK when tracked inputs are unchanged. Pass `-ForceRebuild` to force a rebuild.
+- Android uses mixed port direction:
   ```bash
-  adb reverse tcp:4948 tcp:4948
   adb reverse tcp:3947 tcp:3947
+  adb forward tcp:4948 tcp:4948
   ```
-- `start-driver.ps1` handles ADB reverse automatically
+- `start-driver.ps1` handles this automatically
 - Launch: `pwsh -File tools/start-driver.ps1 -Platform android`
 - Kill: `pwsh -File tools/stop-driver.ps1`
 
