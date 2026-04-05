@@ -6,6 +6,11 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## April 2026
 
+### Session 733 (2026-04-04)
+**Work**: Implemented analyzer-zero plan. Fixed all analyzer + custom lint violations. CI fixes for security scan allowlist + integration test lint. PR #185 open with auto-merge.
+**Decisions**: background_sync_callback.dart allowlist is legitimate (WorkManager isolate, same as background_sync_handler). debugPrint replaces print in all test/integration_test files.
+**Next**: Monitor PR #185 CI. Prior carry-over: S726 changes, Supabase migration, PR #140.
+
 ### Session 732 (2026-04-04)
 **Work**: Analyzed 2268 lint violations, ran dart fix (1214 eliminated), wrote spec+tailor+plan for remaining 1054. 3-reviewer adversarial review cycle with all findings fixed. New abstractions: SafeRow, SafeAction mixin, RepositoryResult.safeCall, _resolveParam<T>().
 **Decisions**: No // ignore for lint suppression. Type-promotion helper for copyWith instead. Sync engine catches must use catch(Object e) not on Exception. SafeAction/safeCall are DRY phases (violations fixed mechanically first, then refactored).

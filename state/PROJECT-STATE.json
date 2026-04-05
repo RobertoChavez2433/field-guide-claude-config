@@ -3,8 +3,8 @@
     "app_name": "Construction Inspector App",
     "app_version": "0.1.0",
     "description": "Cross-platform offline-first mobile/desktop app for construction inspectors",
-    "last_updated": "2026-04-05T04:45:00Z",
-    "session_notes": "S735: Rewrote /implement skill to headless architecture. 7 files created (SKILL.md + 6 reference), 2 deleted (old skill.md + orchestrator agent). Completeness review PASS. Continue sync refactor Phase 2 with new skill next session."
+    "last_updated": "2026-04-05T12:00:00Z",
+    "session_notes": "S736: Redesigned /implement skill — thin orchestrator with --bare + --json-schema structured output. Created worker-rules.md, reviewer-rules.md, extract-result.py. Deleted 65 stale artifacts. Added AI shortcut detection to reviewers. 4 commits pushed to claude-config."
   },
   "current_phase": {
     "phase_name": "Sync engine refactor — Phases 0-1 done, continue from Phase 2 (I/O Boundaries)",

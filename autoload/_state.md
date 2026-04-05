@@ -1,23 +1,24 @@
 # Session State
 
-**Last Updated**: 2026-04-05 | **Session**: 735
+**Last Updated**: 2026-04-05 | **Session**: 736
 
 ## Current Phase
-- **Phase**: Sync Engine Refactor — Phases 0-1 complete, continuing from Phase 2.
-- **Status**: On `sync-engine-refactor` branch. Pushed to origin. Checkpoint at `.claude/state/implement-checkpoint.json`.
+- **Phase**: Sync Engine Refactor — Phases 0-5 complete. `/implement` skill redesigned.
+- **Status**: On `sync-engine-refactor` branch. Pushed to origin. Claude config pushed to `field-guide-claude-config`.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (735)
+### What Was Done This Session (736)
 
-1. **Rewrote `/implement` skill to headless architecture** — replaced black-box orchestrator agent with main-conversation-as-orchestrator pattern using `claude -p` headless instances.
-2. **Created 7 files**: `SKILL.md` (main skill), plus 6 reference files (checkpoint-template, phase-state-template, findings-schema, headless-commands, prompt-templates, severity-standard).
-3. **Deleted 2 obsolete files**: old `skill.md`, `implement-orchestrator.md` agent.
-4. **Updated CLAUDE.md** agent count 14->13.
-5. **Completeness review**: All items PASS, zero findings.
+1. **Redesigned `/implement` skill** — thin orchestrator with `claude --bare` + `--json-schema` structured output. Single checkpoint file, no file artifacts in `.claude/outputs/`.
+2. **Created 3 files**: `worker-rules.md`, `reviewer-rules.md`, `extract-result.py`
+3. **Rewrote 5 files**: `SKILL.md`, `headless-commands.md`, `findings-schema.json`, `checkpoint-template.json`, `severity-standard.md`
+4. **Deleted 65 files**: `prompt-templates.md`, `phase-state-template.json`, 63 stale output artifacts
+5. **Added AI shortcut detection** to reviewer-rules.md (13 patterns: `//ignore`, TODOs, empty stubs, skeleton tests, etc.)
+6. **Committed & pushed** 4 logical commits to `field-guide-claude-config`
 
 ### What Needs to Happen Next
-1. **CONTINUE sync engine refactor** from Group 3 (Phase 2 — Extract I/O Boundaries). Run `/implement .claude/plans/2026-04-04-sync-engine-refactor.md` — checkpoint will auto-resume. This will be the first real test of the new headless implement skill.
+1. **First real test of redesigned /implement** on a new plan — verify `--bare`, `--json-schema`, `tee` pipeline, and structured output parsing all work end-to-end
 2. **Prior carry-over**: Commit S726 changes + PR, push Supabase migration, merge PR #140
 
 ### User Preferences (Critical)
@@ -43,6 +44,11 @@
 
 ## Recent Sessions
 
+### Session 736 (2026-04-05)
+**Work**: Redesigned /implement skill — thin orchestrator with `--bare` + `--json-schema`. Created worker-rules.md, reviewer-rules.md, extract-result.py. Deleted 65 stale artifacts. Added AI shortcut detection to reviewers.
+**Decisions**: Approval gate = zero critical+high+medium (LOW logged only). Implementer runs lint itself. Monotonicity check + 3-round hard cap. Fixer skips LOW.
+**Next**: First real test of redesigned /implement. Prior carry-over still pending.
+
 ### Session 735 (2026-04-05)
 **Work**: Rewrote /implement skill to headless architecture. 7 files created, 2 deleted. Main conversation is now the orchestrator — dispatches claude -p instances, no more black-box agent.
 **Decisions**: Implementers use sonnet, reviewers use opus. No Bash for implementers. All 3 reviewers re-run after fixes. Lint at batch level only.
@@ -52,11 +58,6 @@
 **Work**: Sync engine refactor Phases 0-1 via /implement orchestrator. 22 characterization tests + 8 domain type/classifier files + 2 contract tests. 2 commits pushed to sync-engine-refactor.
 **Decisions**: Schema version 43→50 in test helper. EXIF byte test deferred with skip() (testable in P3). conflict_log columns corrected.
 **Next**: CONTINUE from Group 3 (Phase 2 — I/O Boundaries). Run /implement with existing checkpoint.
-
-### Session 733 (2026-04-04)
-**Work**: Implemented analyzer-zero plan. Fixed all analyzer + custom lint violations. CI fixes for security scan allowlist + integration test lint. PR #185 open with auto-merge.
-**Decisions**: background_sync_callback.dart allowlist is legitimate (WorkManager isolate, same as background_sync_handler). debugPrint replaces print in all test/integration_test files.
-**Next**: Monitor PR #185 CI. Prior carry-over: S726 changes, Supabase migration, PR #140.
 
 ## Test Results
 
