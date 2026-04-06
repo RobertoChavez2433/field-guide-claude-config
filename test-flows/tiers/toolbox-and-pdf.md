@@ -26,3 +26,17 @@
 | T41 | Export Entry as PDF | N/A (local) | tap(entry_card) → tap(export_pdf_icon) → wait(pdf_actions_dialog) → tap(pdf_preview) → wait(pdf_ready) → screenshot | pdf | Depends: T15 |
 | T42 | Export Entry Folder (with Photos) | N/A (local) | tap(entry_card) → tap(export_pdf_icon) → wait(pdf_actions_dialog) → tap(pdf_save) → wait(folder_saved) → screenshot | pdf | Depends: T22; entry must have photos |
 | T43 | Form PDF Export | N/A (local) | tap(form_card) → tap(form_export_pdf) → wait(pdf_ready) → screenshot | pdf | Depends: T37 |
+
+## Supplemental Pay App & Export Coverage
+
+Detailed pay-application and exported-history validation now lives in:
+
+- `test-flows/tiers/pay-app-and-exports.md`
+
+Use that doc for:
+
+- exported-artifact history visibility
+- same-range replace with pay-app number preservation
+- overlap-block behavior
+- pay-app delete propagation
+- contractor comparison import plus discrepancy PDF export

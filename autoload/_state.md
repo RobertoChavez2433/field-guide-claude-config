@@ -1,46 +1,53 @@
 # Session State
 
-**Last Updated**: 2026-04-06 | **Session**: 740
+**Last Updated**: 2026-04-06 | **Session**: 741
 
 ## Current Phase
-- **Phase**: Pay Application feature planning on `sync-engine-refactor`
-- **Status**: Plan written, Review Cycle 1 done + fixer applied. Cycle 2 review pending.
+- **Phase**: PDF OCR runtime stabilization on `sync-engine-refactor`
+- **Status**: Android Springfield is green at 131/131 around 140s on the protected OCR baseline; the newer faster 400/450 crop target is ~128s but regressed to 130/131 and needs another tuning pass before more optimization.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (740)
+### What Was Done This Session (741)
 
-1. **Tailor** completed: `.claude/tailor/2026-04-05-pay-application/`
-   - 42 files analyzed, 8 patterns, 67 methods mapped, 48 ground truth verified
-   - Key: schema version is 51 (not 50 as CLAUDE.md says) — new tables need v52
+1. **PDF diagnostics path stabilized**:
+   - Android artifact uploads to the debug server are working again
+   - live stage `display_name` values are visible
+   - Springfield integration test initializes Tesseract/logger correctly on Android
 
-2. **Plan** written: `.claude/plans/2026-04-05-pay-application.md`
-   - 11 phases, 65 sub-phases, 99 steps, ~8200 lines
-   - 3 parallel writers assembled + merged
-   - Deduped Phase 1.6/1.8 overlap with Phase 5
+2. **Android Springfield reverified green on the decomposed pipeline**:
+   - `131/131`
+   - exact checksum `$7,882,926.73`
+   - `autoAccept`
+   - runtime around `140s`
 
-3. **Review Cycle 1** — all 3 REJECT:
-   - Code: 7 critical, 7 high (AppScaffold API, provider-repo mismatches, dead use case, test APIs)
-   - Security: 3 high, 5 medium (missing WITH CHECK, canWrite guards, file cleanup)
-   - Completeness: 5 critical, 6 high (no PDF builder, analytics provider unregistered, xlsx stub)
+3. **Single-lane OCR runtime optimization continued**:
+   - lazy crop PNG generation
+   - cheaper OCR PNG compression
+   - sampled residue metrics
+   - OCR engine pooling by effective OCR lane instead of mutating one instance
 
-4. **Plan Fixer Cycle 1** — 23/24 findings fixed:
-   - Wired ExportPayAppUseCase into provider (eliminated dead code + duplicate flow)
-   - Added DiscrepancyPdfBuilder service
-   - Fixed AppScaffold API usage, all test code, added canWrite guards
-   - Registered ProjectAnalyticsProvider, implemented XlsxContractorParser
-   - Added WITH CHECK on RLS, fixed delete cascade, added barrel files
+4. **Latest faster OCR candidate is not green yet**:
+   - new 400/450 crop target split ran in about `128s`
+   - regressed to `130/131`
+   - checksum fell to `$7,880,946.73`
+   - missing item-number fidelity produced a bogus row
+
+5. **Codex handoff plan added**:
+   - `.codex/plans/2026-04-06-pdf-ocr-runtime-stabilization-plan.md`
+   - this is the next-session reference point for resuming the OCR tuning loop
 
 ### What Needs to Happen Next
 
-1. **Run Review Cycle 2** — re-review fixed plan with all 3 reviewers
-2. If passed → plan is ready for `/implement`
-3. If findings remain → fix cycle 2 (max 3 total)
-4. **Deferred items** noted in plan but not blocking:
-   - Integration tests (12 scenarios) — add as Phase 12
-   - Test flow doc updates (6 files)
-   - Export convergence (spec says "over time")
-   - Daily discrepancy section (v2)
+1. Recover the Android Springfield quality gates on the faster OCR branch:
+   - restore `131/131`
+   - exact checksum
+   - keep uploaded artifacts/live diagnostics green
+2. Use the 450-DPI green Android run as the protected baseline and tune the default crop target back upward from the regressed 400 path.
+3. Re-run the Android Springfield integration loop after each OCR tuning change until runtime is below the 140s baseline without losing correctness.
+4. Keep pay-application work parked where it is:
+   - plan exists
+   - cycle 2 review is still pending
 
 ### User Preferences (Critical)
 - **Fresh test projects only**: NEVER use existing projects during test runs
@@ -64,6 +71,11 @@
 
 ## Recent Sessions
 
+### Session 741 (2026-04-06, Codex)
+**Work**: Stabilized Android PDF diagnostics/artifact upload, reverified Springfield green at 131/131 on the decomposed pipeline, then pushed single-lane OCR runtime down to ~128s on a faster candidate that regressed to 130/131.
+**Decisions**: Treat the ~140s Android 131/131 run as the protected OCR baseline. Do not start worker-isolate OCR yet; recover correctness first on the faster branch. Track the resume target in `.codex/plans/2026-04-06-pdf-ocr-runtime-stabilization-plan.md`.
+**Next**: Tune the default OCR crop target back up from the regressed 400 path and rerun Springfield on Android until 131/131 is restored below the 140s baseline.
+
 ### Session 740 (2026-04-06)
 **Work**: Full tailor + writing-plans pipeline for pay-application spec. 3 parallel writers, 3 parallel reviewers, 1 fixer cycle.
 **Decisions**: Schema v52 (not v51). ExportPayAppUseCase wired into provider (not inline reimpl). DiscrepancyPdfBuilder added. Phase 1.6/1.8 deferred to Phase 5 to avoid duplication.
@@ -79,9 +91,6 @@
 
 ### Session 737 (2026-04-05)
 **Work**: Sync engine refactor Phase 9 — rewrote docs, verified success metrics.
-
-### Session 736 (2026-04-05)
-**Work**: Redesigned /implement skill — thin orchestrator with worker/reviewer rules.
 
 ## Test Results
 

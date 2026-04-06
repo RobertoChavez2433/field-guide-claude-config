@@ -127,6 +127,7 @@ Before executing, read the files mapped to your command. Load reference files on
 | `auth`, `project-setup` | `test-flows/tiers/setup-and-auth.md` |
 | `entries`, `lifecycle` | `test-flows/tiers/entry-crud.md` |
 | `toolbox`, `pdf` | `test-flows/tiers/toolbox-and-pdf.md` |
+| `pay-app`, `exports` | `test-flows/tiers/pay-app-and-exports.md` + `test-flows/tiers/toolbox-and-pdf.md` |
 | `settings`, `admin` | `test-flows/tiers/settings-and-admin.md` |
 | `edits`, `deletes` | `test-flows/tiers/mutations.md` |
 | `permissions`, `navigation` | `test-flows/tiers/verification.md` |
@@ -179,6 +180,8 @@ When an entity already exists (e.g., entry with contractors from a prior run), v
 /test lifecycle                    # T24-T30 (Entry Lifecycle)
 /test toolbox                      # T31-T40 (Toolbox)
 /test pdf                          # T41-T43 (PDF & Export)
+/test pay-app                      # P01-P06 (Pay App & Exported-History)
+/test exports                      # P01-P06 (Pay App & Exported-History)
 /test settings                     # T44-T52 (Settings & Profile)
 /test admin                        # T53-T58 (Admin Operations)
 /test edits                        # T59-T67 (Edit Mutations)
@@ -206,6 +209,8 @@ entries      → T15-T23
 lifecycle    → T24-T30
 toolbox      → T31-T40
 pdf          → T41-T43
+pay-app      → P01-P06
+exports      → P01-P06
 settings     → T44-T52
 admin        → T53-T58
 edits        → T59-T67
@@ -214,6 +219,18 @@ sync         → S01-S21 (dual-device verification + SQLite/change_log/Supabase/
 permissions  → T85-T91
 navigation   → T92-T96
 ```
+
+## Pay App / Export Coverage
+
+Supplemental flows `P01-P06` in `test-flows/tiers/pay-app-and-exports.md`
+cover:
+
+- exported-artifact history visibility
+- same-range replace with pay-app number preservation
+- overlap-block behavior
+- pay-app delete propagation
+- contractor comparison import plus discrepancy PDF export
+- saved pay-app artifact sync/delete verification
 
 ## Prerequisites (automated)
 1. Run: `pwsh -File tools/start-driver.ps1 -Platform windows` (or `-Platform android`)

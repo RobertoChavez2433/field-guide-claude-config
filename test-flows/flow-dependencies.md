@@ -29,6 +29,10 @@ T01 (Login Admin)
  │    ├── T26 (Day 2 Entry) → T27 (Review) → T28 (Submit) → T29 (Undo) → T30 (Delete)
  │    ├── T31 (Todo) → T32 (Edit) → T33 (Complete) → T34 (Delete)
  │    ├── T35 (Form) → T36 (Fill) → T37 (Submit) → T43 (Export) → T74 (Delete)
+ │    ├── P01 (Exported History Visibility) → P02 (Same-Range Replace)
+ │    │    ├── P03 (Overlap Block)
+ │    │    ├── P04 (Pay App Delete Propagation)
+ │    │    └── P05 (Contractor Comparison + Discrepancy PDF)
  │    ├── T58 (Archive) → T65 (Unarchive)
  │    └── T59 (Edit Project)
  ├── T38 (Calculator HMA) → T39 (Calculator Concrete)
@@ -60,6 +64,7 @@ S01 (Project Setup) — dual-device session (admin:4948, inspector:4949)
  ├── S19 (Private Channel Teardown + Rebind)
  ├── S20 (Support Ticket Sync)
  ├── S21 (Consent Audit Sync)
+ ├── P06 (Saved Pay App Artifact Sync/Delete Verification)
  └── S09 (Delete Cascade) → S10 (Unassignment + Cleanup) [COMPACTION]
 ```
 
@@ -73,6 +78,7 @@ S01 (Project Setup) — dual-device session (admin:4948, inspector:4949)
 | Tier 3 | T24-T30 | 7 | Entry Lifecycle |
 | Tier 4 | T31-T40 | 10 | Toolbox |
 | Tier 5 | T41-T43 | 3 | PDF & Export |
+| Supplemental | P01-P06 | 6 | Pay App & Exported-History Verification |
 | Tier 6 | T44-T52 | 8 | Settings & Profile (T50 removed — replaced by sync verification coverage) |
 | Tier 7 | T53-T58 | 6 | Admin Operations |
 | Tier 8 | T59-T67 | 9 | Edit & Update Mutations |

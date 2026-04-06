@@ -1554,3 +1554,6 @@ Phases 0-4: Observability, clustering, header detection, structural keywords, de
 **Work**: Re-wired tracked files for wiring-routing plan. 10 files modified, 3 deleted, 32 new files untouched. app_initializer.dart 644→268 lines. main.dart 224→88 lines.
 **Decisions**: Targeted re-wiring plan. Direct edits. Opus subagents only.
 **Next**: COMMIT → lint cleanup (S698 redo).
+
+### Session 736 (2026-04-05)
+**Work**: Redesigned /implement skill — thin orchestrator with worker/reviewer rules.
