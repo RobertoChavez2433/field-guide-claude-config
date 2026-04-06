@@ -1,43 +1,45 @@
 # Session State
 
-**Last Updated**: 2026-04-06 | **Session**: 742
+**Last Updated**: 2026-04-06 | **Session**: 743
 
 ## Current Phase
-- **Phase**: Design system overhaul plan review on `sync-engine-refactor`
-- **Status**: Plan fully reviewed (12 agents) and fixed (4 agents). 71 fixes applied. Ready for implementation.
+- **Phase**: OCR runtime optimization checkpoint on `sync-engine-refactor`
+- **Status**: Persistent `2`-worker OCR pool is now green on S25 and beats same-build serial. Sub-`60s` remains open.
 
 ## HOT CONTEXT - Resume Here
 
-### What Was Done This Session (742)
+### What Was Done This Session (743)
 
-1. **Design system overhaul plan — 12-agent adversarial review**:
-   - 4 groups of 3 agents (code-review, security, completeness), each covering 2 phases
-   - All agents read spec first to verify plan doesn't drift from spec intent
-   - All 4 security reviews: APPROVE (pure presentation-layer, no auth/RLS/sync concerns)
-   - Code review + completeness: NEEDS_FIXES across all 4 groups
+1. **OCR runtime / worker execution refactor**:
+   - Re-grounded the OCR strategy in official Tesseract and Dart/Flutter isolate guidance
+   - Confirmed the correct endpoint shape is bounded OCR-only workers with isolated Tesseract instances, `OMP_THREAD_LIMIT=1`, and serial OCR inside each worker
+   - Saved the checkpoint documents in `.codex/plans/`, including a consolidated handoff doc
 
-2. **Deduplicated 75 raw findings down to ~71 unique fixes across 4 groups**:
-   - G1 (P0+P1): 15 findings — 2 blocking (shadows type mismatch, getter-to-method breaks 70+ sites), 3 critical (lint scoping, EdgeInsets dual-impl, density underspecified), 4 high, 6 medium/minor
-   - G2 (P2+P3): 22 findings — 2 critical (AppAnimatedEntrance crash, file moves break 24 imports), 4 high (barrel regressions, AppDatePicker leak, ordering contradiction), 16 medium/minor
-   - G3 (P4a+P4b): 23 findings — 3 critical (sub-phase numbering collision, AppAdaptiveLayout unused, 5 missing responsive layouts), 4 high (sliver gaps, MdotHub widgets, discovery gate, notifyListeners), 16 medium/minor
-   - G4 (P5+P6): 15 findings — 4 critical (CLAUDE.md wrong names, lint severity errors, missing bottleneck step), 11 medium/minor
+2. **Root-caused the earlier worker hang correctly**:
+   - Found that `packages/flusseract` used process-global stdout/stderr capture around native OCR calls
+   - Confirmed that this was unsafe for concurrent OCR workers inside one process
+   - Disabled that stream-capture path on Android and Windows
+   - Logged the defect in `.claude/defects/_defects-pdf.md`
 
-3. **4 fixer agents applied all fixes**:
-   - G1: 15/15 fixed
-   - G2: 22/22 fixed
-   - G3: 22/23 fixed (1 was duplicate)
-   - G4: 12/15 fixed (3 already addressed in plan)
+3. **Replaced short-lived OCR batches with a persistent worker pool**:
+   - `TextRecognizerV2` now runs through the page-recognition strategy seam
+   - Worker requests/results use isolate-safe DTOs and `TransferableTypedData`
+   - Implemented long-lived worker isolates with startup handshake, request IDs, response correlation, explicit shutdown, and one private Tesseract engine per worker
+   - Dynamic page scheduling now sends the next page to the next available worker instead of fixed coarse chunk groups
 
-4. **Review files saved** to `.claude/plans/review_sweeps/design-system-overhaul-2026-04-06/`:
-   - group1-code-review.md, group1-security-review.md, group1-completeness-review.md (partial)
-   - group4-completeness-review.md, group4-security-review.md (partial)
-   - Other review files produced as agent output but not all saved to disk
+4. **Measured same-build S25 results with debug-server artifacts**:
+   - Persistent `2`-worker pool: `131/131`, exact checksum, no bogus rows, about `90s` total, `70831 ms` text recognition
+   - Same-build serial control: `131/131`, exact checksum, no bogus rows, about `98s` total, `77655 ms` text recognition
+   - Persistent `3`-worker pool: `131/131`, exact checksum, no bogus rows, about `110s` total, `83555 ms` text recognition
+   - Conclusion: `2` workers is the correct cap on the S25 and the persistent pool is the first worker path that beats same-build serial
 
 ### What Needs to Happen Next
 
-1. **Design system overhaul**: Plan is review-complete. Next step is `/implement` to begin execution.
-2. **OCR tuning** (parked): Recover Android Springfield quality gates on faster OCR branch.
-3. **Pay application** (parked): Review Cycle 2 still pending.
+1. **OCR resume point**: Decide whether the next OCR phase is:
+   - stronger raw-grid / visual regression enforcement, or
+   - pure runtime reduction below the new `~90s` pooled result
+2. **OCR optimization**: If resumed, keep the persistent `2`-worker pool as the active runtime candidate and work below that boundary rather than redesigning workers again.
+3. **Design system overhaul**: Existing plan remains review-complete and ready for `/implement` when OCR work is parked.
 
 ### User Preferences (Critical)
 - **Fresh test projects only**: NEVER use existing projects during test runs
@@ -61,6 +63,11 @@
 
 ## Recent Sessions
 
+### Session 743 (2026-04-06, Codex)
+**Work**: Completed OCR runtime worker refactor. Fixed concurrent flusseract stream capture bug, replaced short-lived page-worker batches with a persistent isolate pool, and benchmarked pooled vs serial Springfield runs on the S25.
+**Decisions**: The correct OCR execution model is now validated: persistent OCR-only workers, isolated Tesseract instances, serial OCR inside each worker, `OMP_THREAD_LIMIT=1`, and a cap of `2` workers on the S25. Sub-`60s` remains open.
+**Next**: Resume from `.codex/plans/2026-04-06-ocr-runtime-worker-pool-handoff.md` and choose between stricter raw-grid gating or the next runtime-cut below the worker boundary.
+
 ### Session 742 (2026-04-06)
 **Work**: Full 12-agent adversarial review of design system overhaul plan (4 groups x 3 reviewers), deduplicated findings, dispatched 4 fixer agents. 71 fixes applied.
 **Decisions**: Review structure: 4 groups of 3 agents (code-review, security, completeness), each covering 2 phases. Fixers run 1 per group. All security reviews APPROVE. Plan ready for implementation.
@@ -77,9 +84,6 @@
 
 ### Session 739 (2026-04-06, Codex)
 **Work**: Reverified live sync on Android/Windows, fixed consent insert-only push and driver-build Help & Support gating.
-
-### Session 738 (2026-04-06, Codex)
-**Work**: Finished PDF extraction/OCR stage decomposition, closed trace/count/timing gaps.
 
 ## Test Results
 

@@ -6,6 +6,9 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## April 2026
 
+### Session 738 (2026-04-06, Codex)
+**Work**: Finished PDF extraction/OCR stage decomposition, closed trace/count/timing gaps.
+
 ### Session 733 (2026-04-04)
 **Work**: Implemented analyzer-zero plan. Fixed all analyzer + custom lint violations. CI fixes for security scan allowlist + integration test lint. PR #185 open with auto-merge.
 **Decisions**: background_sync_callback.dart allowlist is legitimate (WorkManager isolate, same as background_sync_handler). debugPrint replaces print in all test/integration_test files.

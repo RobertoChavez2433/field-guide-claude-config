@@ -11,7 +11,7 @@
 
 **Tech Stack:** Flutter 3.38.9, Dart 3.10.7, ThemeExtension tokens, provider/ChangeNotifier, GoRouter, custom_lint_builder, Widgetbook
 
-**Blast Radius:** 160 direct (DesignConstants), 114 direct (design_system barrel), 89 direct (FieldGuideColors), 29 direct (AppTheme) — 17 files for HC removal, 11 priority screens, 7 additional screens, 8 additional widgets, 12 golden test files
+**Blast Radius:** 160 direct (DesignConstants), 114 direct (design_system barrel), 89 direct (FieldGuideColors), 29 direct (AppTheme) — 17 files for HC removal, 11 priority screens, 10 additional oversized screens, 8 additional widgets, 12 golden test files
 
 ---
 
@@ -279,42 +279,39 @@ class NoRawDropdown extends DartLintRule {
 
 ---
 
-### Sub-phase 0.5: Extend existing `no_direct_snackbar` rule
+### Sub-phase 0.5: Create `no_raw_snackbar` lint rule
 
 **Files:**
-- Modify: `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_direct_snackbar.dart`
+- Create: `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_snackbar.dart`
 
 **Agent**: `code-fixer-agent`
 
-#### Step 0.5.1: Update `no_direct_snackbar.dart` to also catch `SnackBar` constructor
+#### Step 0.5.1: Create `no_raw_snackbar.dart`
 
-The existing `no_direct_snackbar` already catches `showSnackBar` method invocations. Rather than creating a duplicate `no_raw_snackbar` rule, extend the existing rule to also catch direct `SnackBar` constructor usage (which would indicate someone building a SnackBar widget without using `SnackBarHelper`).
+Create a separate design-system migration rule for snackbar usage. Keep the existing `no_direct_snackbar` rule unchanged; the spec requires `no_raw_snackbar` as a separate new lint rule in the P0 rollout.
 
 ```dart
-// File: fg_lint_packages/field_guide_lints/lib/architecture/rules/no_direct_snackbar.dart
+// File: fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_snackbar.dart
 import 'package:analyzer/error/error.dart' show ErrorSeverity;
 import 'package:analyzer/error/listener.dart';
 import 'package:custom_lint_builder/custom_lint_builder.dart';
 
-/// A22: Flags direct ScaffoldMessenger.showSnackBar usage AND raw SnackBar
-/// construction in presentation files.
+/// A29: Flags raw snackbar usage in presentation files.
 ///
-/// Use SnackBarHelper.show*() instead. Direct snackbar calls are only
-/// allowed inside the centralized helper itself.
+/// FROM SPEC: Design System Overhaul Phase 0 - "no raw snackbar"
+/// Use AppSnackbar/SnackBarHelper instead of direct ScaffoldMessenger
+/// showSnackBar calls or raw SnackBar construction in UI code.
 /// Severity: WARNING
-///
-/// FROM SPEC: Design System Overhaul Phase 0 - extends existing rule to also
-/// catch raw SnackBar constructor usage, avoiding a duplicate no_raw_snackbar rule.
-class NoDirectSnackbar extends DartLintRule {
-  NoDirectSnackbar() : super(code: _code);
+class NoRawSnackbar extends DartLintRule {
+  NoRawSnackbar() : super(code: _code);
 
   static const _code = LintCode(
-    name: 'no_direct_snackbar',
+    name: 'no_raw_snackbar',
     problemMessage:
-        'Use SnackBarHelper.show*() instead of direct ScaffoldMessenger/'
-        'SnackBar calls. The helper provides consistent theming.',
+        'Avoid direct ScaffoldMessenger/SnackBar usage. Use AppSnackbar or '
+        'SnackBarHelper for consistent theming and behavior.',
     correctionMessage:
-        'Replace with SnackBarHelper.showSuccess/showError/showInfo/showWarning',
+        'Replace with AppSnackbar/SnackBarHelper from the design system.',
     errorSeverity: ErrorSeverity.WARNING,
   );
 
@@ -325,24 +322,21 @@ class NoDirectSnackbar extends DartLintRule {
     CustomLintContext context,
   ) {
     final filePath = resolver.path.replaceAll('\\', '/');
-    // NOTE: This rule deliberately uses broader /lib/ scope (not just UI layer paths)
-    // because showSnackBar calls in non-UI code are also a violation. This is
-    // intentionally broader than the new P0 rules which scope to presentation only.
-    if (!filePath.contains('/lib/')) return;
+    // FROM SPEC: Scope includes /presentation/, /shared/widgets/, /core/router/
+    final isUiLayer = filePath.contains('/presentation/') ||
+        filePath.contains('/shared/widgets/') ||
+        filePath.contains('/core/router/');
+    if (!isUiLayer) return;
     if (filePath.contains('/test/') || filePath.contains('/integration_test/')) return;
     if (filePath.contains('/core/design_system/')) return;
-    // NOTE: Allow inside the helper itself
     if (filePath.contains('snackbar_helper')) return;
 
-    // WHY: Catches ScaffoldMessenger.of(context).showSnackBar(...)
     context.registry.addMethodInvocation((node) {
       if (node.methodName.name == 'showSnackBar') {
         reporter.atNode(node.methodName, _code);
       }
     });
 
-    // WHY: Also catches direct SnackBar(...) construction outside the helper.
-    // This prevents building raw SnackBar widgets that bypass theming.
     context.registry.addInstanceCreationExpression((node) {
       final typeName = node.constructorName.type.name2.lexeme;
       if (typeName == 'SnackBar') {
@@ -739,7 +733,7 @@ class PreferDesignSystemBanner extends DartLintRule {
 
 #### Step 0.11.1: Update `architecture_rules.dart` with new imports and rule registrations
 
-Add imports for all 9 new rule files (the 10th rule is the extended `no_direct_snackbar` which already exists) and add their instances to the `architectureRules` list.
+Add imports for all 10 new rule files and add their instances to the `architectureRules` list.
 
 ```dart
 // File: fg_lint_packages/field_guide_lints/lib/architecture/architecture_rules.dart
@@ -749,6 +743,7 @@ import 'rules/no_raw_button.dart';
 import 'rules/no_raw_divider.dart';
 import 'rules/no_raw_tooltip.dart';
 import 'rules/no_raw_dropdown.dart';
+import 'rules/no_raw_snackbar.dart';
 import 'rules/no_hardcoded_spacing.dart';
 import 'rules/no_hardcoded_radius.dart';
 import 'rules/no_hardcoded_duration.dart';
@@ -760,6 +755,7 @@ import 'rules/prefer_design_system_banner.dart';
 //   NoRawDivider(),
 //   NoRawTooltip(),
 //   NoRawDropdown(),
+//   NoRawSnackbar(),
 //   NoHardcodedSpacing(),
 //   NoHardcodedRadius(),
 //   NoHardcodedDuration(),
@@ -794,11 +790,12 @@ import 'rules/no_raw_scaffold.dart';
 import 'rules/no_direct_snackbar.dart';
 import 'rules/no_inline_text_style.dart';
 import 'rules/no_raw_text_field.dart';
-// FROM SPEC: Design System Overhaul Phase 0 — 9 new lint rules
+// FROM SPEC: Design System Overhaul Phase 0 — 10 new lint rules
 import 'rules/no_raw_button.dart';
 import 'rules/no_raw_divider.dart';
 import 'rules/no_raw_tooltip.dart';
 import 'rules/no_raw_dropdown.dart';
+import 'rules/no_raw_snackbar.dart';
 import 'rules/no_hardcoded_spacing.dart';
 import 'rules/no_hardcoded_radius.dart';
 import 'rules/no_hardcoded_duration.dart';
@@ -835,6 +832,7 @@ final List<LintRule> architectureRules = [
   NoRawDivider(),
   NoRawTooltip(),
   NoRawDropdown(),
+  NoRawSnackbar(),
   NoHardcodedSpacing(),
   NoHardcodedRadius(),
   NoHardcodedDuration(),
@@ -862,7 +860,7 @@ pwsh -Command "cd fg_lint_packages/field_guide_lints && flutter analyze"
 #### Step 0.12.2: Run analyzer on main project to capture violation inventory
 
 ```
-pwsh -Command "flutter analyze 2>&1 | Select-String 'no_raw_button|no_raw_divider|no_raw_tooltip|no_raw_dropdown|no_hardcoded_spacing|no_hardcoded_radius|no_hardcoded_duration|no_raw_navigator|prefer_design_system_banner'"
+pwsh -Command "flutter analyze 2>&1 | Select-String 'no_raw_button|no_raw_divider|no_raw_tooltip|no_raw_dropdown|no_raw_snackbar|no_hardcoded_spacing|no_hardcoded_radius|no_hardcoded_duration|no_raw_navigator|prefer_design_system_banner'"
 ```
 
 **Expected**: A list of new warnings from the custom lint rules. This is the baseline violation inventory. The count does NOT need to be zero -- these are intentional warnings that will be resolved in later phases as components are migrated to the design system.
@@ -878,16 +876,16 @@ pwsh -Command "flutter analyze 2>&1 | Select-String 'no_raw_button|no_raw_divide
 - Create: `fg_lint_packages/field_guide_lints/test/architecture/no_raw_divider_test.dart`
 - Create: `fg_lint_packages/field_guide_lints/test/architecture/no_raw_tooltip_test.dart`
 - Create: `fg_lint_packages/field_guide_lints/test/architecture/no_raw_dropdown_test.dart`
+- Create: `fg_lint_packages/field_guide_lints/test/architecture/no_raw_snackbar_test.dart`
 - Create: `fg_lint_packages/field_guide_lints/test/architecture/no_hardcoded_spacing_test.dart`
 - Create: `fg_lint_packages/field_guide_lints/test/architecture/no_hardcoded_radius_test.dart`
 - Create: `fg_lint_packages/field_guide_lints/test/architecture/no_hardcoded_duration_test.dart`
 - Create: `fg_lint_packages/field_guide_lints/test/architecture/no_raw_navigator_test.dart`
 - Create: `fg_lint_packages/field_guide_lints/test/architecture/prefer_design_system_banner_test.dart`
-- Modify: `fg_lint_packages/field_guide_lints/test/architecture/no_direct_snackbar_test.dart`
 
 **Agent**: `code-fixer-agent`
 
-#### Step 0.13.1: Create test files for all 9 new rules and update existing test
+#### Step 0.13.1: Create test files for all 10 new rules
 
 Every existing lint rule has a test file in `fg_lint_packages/field_guide_lints/test/architecture/`. Follow the same patterns (e.g., `no_raw_alert_dialog_test.dart`, `no_hardcoded_colors_test.dart`).
 
@@ -895,7 +893,7 @@ Each test file should:
 1. Test that the rule flags violations in `/presentation/` paths
 2. Test that the rule does NOT flag in `/test/`, `/core/design_system/`, or non-UI paths
 3. Test that the rule does NOT flag when design system wrappers are used
-4. For `no_direct_snackbar_test.dart`: add test cases for the new `SnackBar()` constructor detection
+4. For `no_raw_snackbar_test.dart`: test both `ScaffoldMessenger.of(context).showSnackBar(...)` and raw `SnackBar(...)` construction
 
 #### Step 0.13.2: Run lint package tests
 
@@ -1336,8 +1334,9 @@ class ThemeProvider extends ChangeNotifier {
                 .firstOrNull ??
             AppThemeMode.dark;
       }
-    } on Exception catch (e) {
-      Logger.ui('[ThemeProvider] loadTheme error: $e');
+    } on Exception {
+      // NOTE: Do not log raw exceptions through Logger.ui.
+      // Logger.ui is reserved for design-system state changes only.
       _themeMode = AppThemeMode.dark;
     }
 
@@ -1355,8 +1354,10 @@ class ThemeProvider extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_themeKey, mode.name);
-    } on Exception catch (e) {
-      Logger.ui('[ThemeProvider] theme persistence error: $e');
+    } on Exception {
+      // NOTE: Do not log raw exceptions through Logger.ui.
+      // If persistence failures need logging, use the existing non-UI error path
+      // without including raw exception payloads.
     }
   }
 
@@ -2751,10 +2752,10 @@ Widget build(BuildContext context) {
 
       // FROM SPEC: Density variant mapping table
       final FieldGuideSpacing spacing;
-      if (width >= 840) {
-        spacing = FieldGuideSpacing.comfortable; // desktop / large tablet
+      if (width >= 1200) {
+        spacing = FieldGuideSpacing.comfortable; // desktop / large tablet landscape
       } else if (width >= 600) {
-        spacing = FieldGuideSpacing.standard; // phone landscape / small tablet
+        spacing = FieldGuideSpacing.standard; // phone landscape / tablet
       } else {
         spacing = FieldGuideSpacing.compact; // phone portrait
       }
@@ -2778,14 +2779,16 @@ Additional context for breakpoint mapping:
 
 1. Map the breakpoint width to a `FieldGuideSpacing` variant:
    - Width 0-599: `FieldGuideSpacing.compact` (phone portrait)
-   - Width 600-839: `FieldGuideSpacing.standard` (phone landscape / small tablet)
-   - Width 840+: `FieldGuideSpacing.comfortable` (desktop / large tablet)
+   - Width 600-1199: `FieldGuideSpacing.standard` (phone landscape / tablet / small desktop window)
+   - Width 1200+: `FieldGuideSpacing.comfortable` (desktop / large tablet landscape)
 
-   NOTE: These breakpoint thresholds align with the spec's density variant mapping table and will be formalized as `AppBreakpoint` in Phase 2. For now, use simple width checks. When Phase 2 introduces `AppBreakpoint`, this code should be updated to use `AppBreakpoint.of(context)`.
+   NOTE: These thresholds align with the spec's density mapping: compact for phone portrait, standard for medium + expanded breakpoints, comfortable only for the `large` desktop breakpoint. When Phase 2 introduces `AppBreakpoint`, this code should be updated to use `AppBreakpoint.of(context)`.
 
 3. Pass the selected `FieldGuideSpacing` instance to `AppTheme.darkTheme(spacing: ...)` or `AppTheme.lightTheme(spacing: ...)`.
 
 4. Ensure the `ThemeProvider` calls to `darkTheme`/`lightTheme` are updated from getter syntax (`AppTheme.darkTheme`) to method call syntax (`AppTheme.darkTheme()` or `AppTheme.darkTheme(spacing: selectedSpacing)`).
+
+5. Preserve the spec's screen-level override policy for intentionally dense workflows. Pay apps, quantities, and similar data-dense editors may locally override spacing to `FieldGuideSpacing.compact`; this is an implementation escape hatch inside the UI layer, not a user-facing settings toggle.
 
 WHY: This ensures the live app automatically adapts spacing density based on screen size without requiring a user-facing settings toggle. Widgetbook will add explicit density knobs in Phase 2 for design review.
 
@@ -10525,17 +10528,16 @@ Expected: Zero analyzer errors.
 
 #### Step 4.6.5: Add Logger calls
 
-**Action**: In each extracted widget, add Logger import and log at interaction points:
+**Action**: Do not add `Logger.ui` calls for user-entered dialog values. `Logger.ui` is reserved for design-system state (breakpoint/density/motion/theme diagnostics), not raw user input.
 
 ```dart
-// In PersonnelTypeManagerDialog, on add:
-Logger.ui('[PersonnelTypeManagerDialog] Added type: $name');
+// In PersonnelTypeManagerDialog / EquipmentManagerDialog:
+// NOTE: No Logger.ui calls here -- user-supplied names must not be written
+// into UI diagnostics logs.
 
-// In EquipmentManagerDialog, on add:
-Logger.ui('[EquipmentManagerDialog] Added equipment: $name');
-
-// In PersonnelCounterCard, on count change:
-// NOTE: No logging needed -- parent handles business logic logging
+// In PersonnelCounterCard:
+// NOTE: No Logger.ui call needed -- parent/business-logic logging remains the
+// appropriate place for domain events if they are logged at all.
 ```
 
 **Verification**:
@@ -11557,7 +11559,7 @@ Expected: 0 errors, 0 warnings.
 
 **Agent**: `code-fixer-agent`
 
-**Protocol step coverage for additional screens**: These screens follow a lighter decomposition pass. For each screen below, the protocol steps applied are: (1) component discovery (via P4b gate), (2) promote shared patterns (if found), (3) extract private widgets (if >300 lines), (4) tokenize. Skipped steps per screen are noted inline. Screens with `Consumer` patterns or scrollable lists additionally get Selector-ify and/or sliver migration. Screens that are already <300 lines skip extraction.
+**Protocol step coverage for additional screens**: These screens follow a lighter decomposition pass. For each screen below, the protocol steps applied are: (1) component discovery (via P4b gate), (2) promote shared patterns (if found), (3) extract private widgets (if >300 lines), (4) tokenize. Skipped steps per screen are noted inline. Screens with `Consumer` patterns or scrollable lists additionally get Selector-ify and/or sliver migration. Screens that are already <300 lines skip extraction. This list is the remaining oversized-screen audit required by the spec's "priority batch first, then remaining UI files brought under threshold" success criterion.
 
 #### Step 4.13.1: Tokenize gallery_screen.dart (614 lines, 24 DesignConstants refs)
 
@@ -11682,13 +11684,35 @@ Decompose `_buildCertificationsSection` (lines 125-155) if screen exceeds 300 li
 
 Extract `_SectionCard` (lines 408-442) — evaluate if it should use `AppSectionCard` from design system instead. If yes, replace all `_SectionCard` usages with `AppSectionCard`. Tokenize 17 refs.
 
-#### Step 4.13.8: Verify all additional screens
+#### Step 4.13.8: Tokenize + decompose trash_screen.dart (367 lines)
+
+**File**: `lib/features/settings/presentation/screens/trash_screen.dart`
+
+Audit for raw spacing/radius literals, extract any oversized private row/tile builders into `presentation/widgets/`, and bring the main screen under 300 lines. Apply the same tokenization and responsive-layout conventions used by the rest of settings.
+
+#### Step 4.13.9: Tokenize + decompose mp_import_preview_screen.dart (343 lines)
+
+**File**: `lib/features/pdf/presentation/screens/mp_import_preview_screen.dart`
+
+Extract embedded preview/detail widgets into `lib/features/pdf/presentation/widgets/` where needed, replace remaining raw spacing/duration/radius usage with design-system tokens, and reduce the main screen under 300 lines.
+
+#### Step 4.13.10: Tokenize + decompose personnel_types_screen.dart (317 lines)
+
+**File**: `lib/features/settings/presentation/screens/personnel_types_screen.dart`
+
+Tokenize remaining literals, extract oversized inline builders if needed, and reduce the screen under 300 lines. Reuse `AppResponsiveBuilder`/`AppAdaptiveLayout` if the screen benefits from the same settings canonical layout pattern used elsewhere.
+
+#### Step 4.13.11: Verify all additional screens
 
 ```
 pwsh -Command "flutter analyze lib/features/gallery/ lib/features/pdf/ lib/features/entries/ lib/features/quantities/ lib/features/settings/ lib/features/auth/"
 ```
 
 Expected: 0 errors, 0 warnings across all touched features.
+
+#### Step 4.13.12: Repo-wide oversized-screen verification
+
+Run a repo-wide audit over presentation screens after this batch. If any UI screen still exceeds 300 lines, add it to Phase 4 before calling the overhaul decomposition complete.
 
 ---
 
@@ -12313,8 +12337,7 @@ Expected: 0 errors.
 <!-- Phase 2 already created widgetbook skeleton. Phase 6 adds use cases only.
      Update main.dart WidgetbookFolder children to register use case components below.
      NOTE: Spec scope is "all design system components + key feature widgets".
-     This sub-phase covers design system components. Key feature widget use cases
-     (e.g., EntryCard, ProjectCard, ContractorRow) are deferred post-overhaul. -->
+     This sub-phase must include both; feature-widget coverage is not deferred beyond the overhaul. -->
 
 #### Step 6.2.1: Add use cases for Atoms layer
 
@@ -12367,6 +12390,22 @@ WidgetbookComponent(
 
 Create use case files for each remaining layer. Each component gets at least one use case with relevant knobs.
 
+#### Step 6.2.2b: Add use cases for key feature widgets
+
+Create Widgetbook use cases for the key reusable feature widgets surfaced during P4 decomposition work. These are part of the overhaul acceptance criteria, not a post-overhaul follow-up.
+
+Required initial key-feature inventory for Widgetbook coverage:
+- Entries: `EntryListCard` (or the final extracted equivalent used by entries list/home)
+- Projects: the final extracted project list card/tile widget from P4
+- Contractors: the final extracted contractor row/chooser/editor widget promoted out of entry/editor flows
+- Dashboard: the final extracted drafts/review tile widget from `project_dashboard_screen.dart`
+- Forms: the final extracted forms-list tile/preview widget from forms P4 work
+- Quantities: the final extracted quantity list row/card widget from quantities P4 work
+
+If P4 component-discovery sweeps identify additional key reusable feature widgets, extend this inventory rather than treating the list above as exhaustive.
+
+Completion gate: do not call the Widgetbook sub-phase complete until every design-system component has a use case and every key-feature widget identified through the P4 discovery/promote flow has a registered use case in `widgetbook/`.
+
 #### Step 6.2.3: Verify Widgetbook builds
 
 ```
@@ -12387,11 +12426,11 @@ Update `.github/workflows/quality-gate.yml` to add a Widgetbook web build step (
 
 <!-- FROM SPEC (Section 8 - Testing): Every new component gets tests covering all variants, themes, breakpoints -->
 
-#### Step 6.2b.1: Create widget test files for core new components
+#### Step 6.2b.1: Create widget test files for every new design-system component
 
-Create widget test files for the following key new components. Each test file should cover all variants, both themes (dark + light), and relevant breakpoints. NOTE: Test execution happens in CI only -- create the test files but do NOT run them locally.
+Create widget test files for every new component introduced in P1-P3. Each test file should cover all variants, both themes (dark + light), and relevant breakpoints. NOTE: Test execution happens in CI only -- create the test files but do NOT run them locally.
 
-Files to create:
+Foundational files to create first:
 1. `test/core/design_system/atoms/app_button_test.dart` -- test primary/secondary/ghost/danger variants, enabled/disabled states, dark/light themes
 2. `test/core/design_system/atoms/app_badge_test.dart` -- test all badge types, color variants, dark/light themes
 3. `test/core/design_system/layout/app_breakpoint_test.dart` -- test breakpoint detection at compact/medium/expanded/large widths using `MediaQuery` overrides
@@ -12399,6 +12438,8 @@ Files to create:
 5. `test/core/design_system/layout/app_adaptive_layout_test.dart` -- test phone vs tablet vs desktop canonical layout patterns
 6. `test/core/design_system/tokens/field_guide_spacing_test.dart` -- test standard/compact/comfortable density variants return correct values
 7. `test/core/design_system/tokens/field_guide_motion_test.dart` -- test standard vs reduced motion variants, verify reduced durations are zero
+
+Then continue through the remaining new atoms, molecules, organisms, feedback, layout, and animation components until the full new-component inventory is covered. Do not treat the file list above as the completion boundary.
 
 Each test file should follow the pattern:
 
@@ -12436,6 +12477,8 @@ void main() {
   });
 }
 ```
+
+Completion gate: do not call this sub-phase complete until every new component added by the overhaul has a widget test file and each file covers its supported variants/themes/breakpoints.
 
 #### Step 6.2b.2: Verify widget test files compile
 
@@ -12716,7 +12759,7 @@ This regenerates all `.png` baselines to reflect the tokenized, decomposed UI.
 
 #### Step 6.5.3: Add golden baselines for new design system components
 
-Create new golden test files for key new components:
+Create new golden test files for all new design-system components. Use the example below as the pattern, then continue through the remaining new components so the final golden inventory covers the full overhaul surface, not just a subset. Baselines should cover dark/light and phone/tablet presentations where applicable.
 
 ```dart
 // test/golden/design_system/app_button_test.dart
@@ -12754,6 +12797,8 @@ void main() {
 }
 ```
 
+Completion gate: do not call the golden-test sub-phase complete until all new components introduced by the overhaul have the required baseline coverage or an explicitly documented rationale for why a golden is not applicable.
+
 #### Step 6.5.4: Verify golden tests pass
 
 NOTE: Golden test execution is handled by CI. Do NOT run tests locally. Run only static analysis:
@@ -12775,20 +12820,20 @@ Expected: All golden test files pass static analysis. CI will verify baselines m
 Before flipping to ERROR, confirm zero violations exist:
 
 ```
-pwsh -Command "flutter analyze 2>&1 | Select-String 'no_raw_button|no_raw_divider|no_raw_tooltip|no_raw_dropdown|no_hardcoded_spacing|no_hardcoded_radius|no_hardcoded_duration|no_direct_snackbar|prefer_design_system_banner'"
+pwsh -Command "flutter analyze 2>&1 | Select-String 'no_raw_button|no_raw_divider|no_raw_tooltip|no_raw_dropdown|no_raw_snackbar|no_hardcoded_spacing|no_hardcoded_radius|no_hardcoded_duration|prefer_design_system_banner'"
 ```
 
 Expected: 0 matches. If any violations remain, fix them first.
 
 <!-- NOTE: no_raw_navigator stays at INFO severity per spec (Section 5 lint table) -- do NOT include in verification or flip.
-     no_direct_snackbar was extended in P0 to cover raw snackbar usage (merged no_raw_snackbar into it) -- include in both verification and flip. -->
+     no_direct_snackbar is an existing unchanged rule.
+     no_raw_snackbar is the new spec-mandated rule that flips from WARNING -> ERROR. -->
 
-#### Step 6.6.2: Update all 9 lint rules to ERROR severity
+#### Step 6.6.2: Update all 9 warning-level new lint rules to ERROR severity
 
-For each of the 9 lint rules in `fg_lint_packages/field_guide_lints/lib/architecture/rules/`:
-<!-- NOTE: no_raw_snackbar is NOT a separate file -- P0 extended existing no_direct_snackbar instead.
-     no_raw_navigator stays at INFO per spec -- not included in flip list.
-     no_direct_snackbar IS included because it was extended to cover raw snackbar usage (spec: "warning -> error"). -->
+For each of the 9 warning-level lint rules in `fg_lint_packages/field_guide_lints/lib/architecture/rules/`:
+<!-- NOTE: no_raw_navigator stays at INFO per spec -- not included in flip list.
+     no_raw_snackbar is a separate file and IS included in the flip list. -->
 
 ```dart
 // Change in each rule file:
@@ -12814,10 +12859,10 @@ Files to update (9 rules):
 2. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_divider.dart`
 3. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_tooltip.dart`
 4. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_dropdown.dart`
-5. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_hardcoded_spacing.dart`
-6. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_hardcoded_radius.dart`
-7. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_hardcoded_duration.dart`
-8. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_direct_snackbar.dart` <!-- extended in P0 to cover raw snackbar; flip WARNING -> ERROR per spec -->
+5. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_snackbar.dart`
+6. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_hardcoded_spacing.dart`
+7. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_hardcoded_radius.dart`
+8. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_hardcoded_duration.dart`
 9. `fg_lint_packages/field_guide_lints/lib/architecture/rules/prefer_design_system_banner.dart`
 <!-- NOTE: no_raw_navigator stays at INFO per spec (Section 5 lint table) -- not included in flip list -->
 
@@ -12893,15 +12938,16 @@ If any "uri doesn't exist" or "undefined class" errors appear, fix the imports. 
 | Issue | Fix Location | Status |
 |-------|-------------|--------|
 | #165 | project_setup_screen.dart (P4a) | Verify fixed |
-| #200 | project_dashboard_screen.dart DraftsPill (P4.9) | Verify fixed |
-| #202 | quantities_screen.dart search clear (P4.12.4) | Verify fixed |
-| #203 | quantities_screen.dart + button workflow (P4.12.4) | Verify fixed |
-| #207 | project_dashboard_screen.dart empty-state button (P4.9) | Verify fixed |
-| #208 | project_dashboard_screen.dart gradient removal (P4.9) | Verify fixed |
-| #209 | forms_list_screen.dart internal ID (P4.14.1) | Verify fixed |
-| #233 | project_dashboard_screen.dart button consistency (P4.9) | Verify fixed |
-| #238 | pay apps TextStyle violations (P4.14.2) | Verify fixed |
-| Additional issues from P4a | Verify in P4a plan | Verify fixed |
+| #199 | project_dashboard_screen.dart delete action (P4.10) | Verify fixed |
+| #200 | project_dashboard_screen.dart DraftsPill (P4.10) | Verify fixed |
+| #201 | scaffold_with_nav_bar.dart responsive keyboard handling (P2 / P4 shared verification) | Verify fixed |
+| #202 | quantities_screen.dart search clear (P4.13.4) | Verify fixed |
+| #203 | quantities_screen.dart + button workflow (P4.13.4) | Verify fixed |
+| #207 | project_dashboard_screen.dart empty-state button (P4.10) | Verify fixed |
+| #208 | project_dashboard_screen.dart gradient removal (P4.10) | Verify fixed |
+| #209 | forms_list_screen.dart internal ID (P4.15.1) | Verify fixed |
+| #233 | project_dashboard_screen.dart button consistency (P4.10) | Verify fixed |
+| #238 | pay apps TextStyle violations (P4.15.2) | Verify fixed |
 
 #### Step 6.7.6: Final analyze confirmation
 
