@@ -1,6 +1,6 @@
 # Sync Verification Framework
 
-> Shared setup, patterns, and protocols for executing `/test sync` (S01-S19).
+> Shared setup, patterns, and protocols for executing `/test sync` (S01-S21).
 > This file is loaded once at the start of any sync run. Individual flow steps
 > are in the companion `flows-*.md` files.
 
@@ -172,9 +172,52 @@ curl -s -X POST http://127.0.0.1:4948/driver/tap -d '{"key":"save_button"}'
 
 ---
 
+## Proof Standard
+
+Every sync flow must prove the mutation across the full sync chain.
+
+### Required Proof Layers
+
+1. **UI action proof**
+   - Perform the create, edit, delete, or export through the real app UI when
+     a real UI path exists.
+   - If a controlled test hook is required at an OS boundary (camera, gallery,
+     file picker), enter that path from the real UI first and only use the test
+     hook at the boundary.
+
+2. **SQLite proof**
+   - Verify the exact local row exists on the sender after creation or update.
+   - Verify the exact local row exists on the receiver after pull.
+   - Use `GET /driver/local-record` with captured IDs.
+
+3. **Queue proof**
+   - Verify `GET /driver/change-log` contains the expected local mutation
+     before sync when relevant.
+   - Verify the queue drains after sync unless the flow is intentionally
+     exercising a failure state.
+
+4. **Cloud proof**
+   - Verify the exact Supabase row by ID where possible.
+   - For file-backed tables, also verify the storage object in the expected
+     bucket/prefix.
+
+5. **Receiver UI proof**
+   - Navigate the receiving device to the actual screen where the data should
+     appear and capture a screenshot.
+
+6. **Log proof**
+   - Scan error logs and sync logs for the operation window.
+   - Investigate any error-level log, stuck retry, or unexpected FK skip before
+     marking the flow as `PASS`.
+
+### PASS Criteria
+
+A sync flow is only `PASS` when all applicable proof layers succeed.
+Visual-only or Supabase-only verification is insufficient.
+
 ## Cross-Device Sync Protocol
 
-Use this 4-step UI-driven pattern after every data mutation:
+Use this 6-step UI-driven pattern after every data mutation:
 
 ### Step 1: Admin Sync via UI
 ```bash
@@ -183,12 +226,22 @@ sleep 1
 curl -s -X POST http://127.0.0.1:4948/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_sync_button"}'
 sleep 3
 ```
-Navigate admin to Settings, tap sync button, wait for completion.
+Navigate admin to Settings, tap sync button, then poll `GET /driver/sync-status`
+until `isSyncing=false`.
 
-### Step 2: Supabase Verify
-Query Supabase REST API to confirm data arrived in the cloud.
+### Step 2: Sender SQLite + Queue Verify
+Use captured IDs to verify:
+- the expected sender row exists in SQLite
+- `change_log` contains the expected mutation before sync when relevant
+- `change_log` drains after the sync finishes
 
-### Step 3: Inspector Sync via UI (2 rounds)
+### Step 3: Supabase Verify
+Query Supabase REST API to confirm the exact data arrived in the cloud.
+For file-backed tables, verify both:
+- metadata row in PostgREST
+- storage object in the correct bucket
+
+### Step 4: Inspector Sync via UI (2 rounds)
 ```bash
 curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"settings_nav_button"}'
 sleep 1
@@ -199,8 +252,15 @@ sleep 3
 ```
 Two rounds ensure any FK-dependent records that failed on first pull (missing parent) succeed on second.
 
-### Step 4: Inspector UI Verify
-Navigate the inspector app to the screen where the synced data should appear, then take a screenshot to confirm visually.
+### Step 5: Receiver SQLite + Queue Verify
+Use captured IDs to verify:
+- the expected receiver row exists in SQLite
+- `change_log` is empty or only contains expected unrelated rows
+- `sync-status.pendingCount` returns to zero when the flow expects a clean device
+
+### Step 6: Inspector UI Verify
+Navigate the inspector app to the screen where the synced data should appear,
+then take a screenshot to confirm visually.
 ```bash
 # Example: verify project exists on inspector's projects screen
 curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"projects_nav_button"}'
@@ -208,7 +268,9 @@ sleep 1
 curl -s http://127.0.0.1:4949/driver/screenshot --output "$RESULTS_DIR/inspector-verify.png"
 ```
 
-> **BANNED:** Do NOT use `POST /driver/sync` or `GET /driver/local-record` during sync verification. All sync MUST go through the UI. All verification MUST be visual (navigate + screenshot).
+> **BANNED:** Do NOT use `POST /driver/sync`. All sync MUST go through the UI.
+> `GET /driver/local-record` and `GET /driver/change-log` are now REQUIRED for
+> SQLite and queue verification, but they do not replace visual verification.
 
 ## Log Scanning
 
@@ -224,6 +286,36 @@ curl -s "http://127.0.0.1:3947/logs?since=${START_TIME}&category=sync"
 ```
 
 Any error-level log entries = investigate before proceeding.
+
+## SQLite Verification Patterns
+
+Use exact IDs captured into `ctx` whenever possible.
+
+### Verify a local row exists
+```bash
+curl -s "http://127.0.0.1:4948/driver/local-record?table=<table>&id=<uuid>"
+curl -s "http://127.0.0.1:4949/driver/local-record?table=<table>&id=<uuid>"
+```
+
+### Verify pending local queue state
+```bash
+curl -s "http://127.0.0.1:4948/driver/change-log?table=<table>"
+curl -s "http://127.0.0.1:4949/driver/change-log?table=<table>"
+```
+
+### Verify sync status reached idle with no pending work
+```bash
+curl -s "http://127.0.0.1:4948/driver/sync-status"
+curl -s "http://127.0.0.1:4949/driver/sync-status"
+```
+
+### Verification Rule
+- before sync: expect sender `change_log` to contain the new local mutation
+  when the action creates or updates synced data locally
+- after sync: expect sender and receiver queues to be empty unless the flow is
+  intentionally exercising a failure state
+- if a queue entry remains, the flow is not `PASS` until the root cause is
+  explained and recorded
 
 ## FK Teardown Order
 
@@ -283,6 +375,8 @@ Write `.claude/test_results/<run>/checkpoint.json` after every flow:
     "documentIds": ["uuid"],
     "todoIds": ["uuid"],
     "calculationIds": ["uuid"],
+    "supportTicketIds": ["uuid"],
+    "consentRecordIds": ["uuid"],
     "assignmentId": "uuid"
   },
   "bugs": [],
@@ -364,7 +458,7 @@ curl -s -X POST "${SUPABASE_URL}/storage/v1/object/list/<bucket>" \
 
 ## Report Protocol
 
-Write `.claude/test_results/<run>/report.md` with these 8 sections:
+Write `.claude/test_results/<run>/report.md` with these 9 sections:
 
 ### 1. Header
 ```markdown
@@ -382,34 +476,41 @@ Run Tag: <RUN_TAG>
 | S02  | PASS   | 30s      |       |
 ```
 
-### 3. Supabase Verification Summary
+### 3. SQLite Verification Summary
+```markdown
+## SQLite Verification
+| Flow | Sender Row | Sender Queue | Receiver Row | Receiver Queue | Notes |
+|------|------------|--------------|--------------|----------------|-------|
+```
+
+### 4. Supabase Verification Summary
 ```markdown
 ## Supabase Verification
 | Table | Records Created | Records Verified | Cascade Deleted | Notes |
 |-------|----------------|-----------------|-----------------|-------|
 ```
 
-### 4. Cross-Device Sync Results
+### 5. Cross-Device Sync Results
 ```markdown
 ## Cross-Device Sync
 | Flow | Admin→Cloud | Cloud→Inspector | Latency | Notes |
 |------|-------------|-----------------|---------|-------|
 ```
 
-### 5. Log Anomalies
+### 6. Log Anomalies
 ```markdown
 ## Log Anomalies
 | Flow | Level | Category | Message | Timestamp |
 |------|-------|----------|---------|-----------|
 ```
 
-### 6. Bugs Found
+### 7. Bugs Found
 ```markdown
 ## Bugs Found
 - **[BUG]** <description> — flow: S0X
 ```
 
-### 7. Post-Run Sweep Results
+### 8. Post-Run Sweep Results
 ```markdown
 ## Post-Run Sweep
 | Table | VRF Records Found | Status |
@@ -417,7 +518,7 @@ Run Tag: <RUN_TAG>
 | projects | 0 | CLEAN |
 ```
 
-### 8. Observations
+### 9. Observations
 ```markdown
 ## Observations
 - Sync averaged Xs per operation

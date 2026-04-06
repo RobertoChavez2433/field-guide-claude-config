@@ -40,7 +40,7 @@
   },
   "metrics": {
     "test_coverage_percentage": 87,
-    "last_updated": "2026-03-13T21:15:00Z",
+    "last_updated": "2026-04-06T13:00:00Z",
     "item_match_rate": 0.6259541984732825,
     "quality_score": 0.8569751482090775,
     "median_ocr_confidence": 0.94,
@@ -56,21 +56,19 @@
     "null_unit_price_count": 0,
     "null_bid_amount_count": 0,
     "pipe_artifact_count": 0,
-    "notes": "Session 565: Fresh Springfield rerun succeeded. Upstream live failure is now confirmed in Stage 2 OCR policy: multiline description crops blank under row-inherited psm7, while item-number fallback selection can degrade valid reads. Residual crop-edge rails remain after grid removal as a secondary amplifier. Wave-1 upstream-only spec and implementation plan are approved."
+    "notes": "Session 738: The stage-decomposition refactor is complete on sync-engine-refactor. Former god stages are now thin orchestrators or split into standalone stage classes, the pipeline trace/report contract is canonicalized, and direct tests cover grid cleanup sub-stages, OCR fallback, count-flow, cache isolation, and crop-policy characterization."
   },
   "current_phase": {
-    "phase_name": "PDF Pipeline Refactor Plan (2026-02-20)",
-    "status": "Wave-1 upstream OCR + grid hardening planned and approved. Fresh Springfield evidence available. Implementation should begin with cell-level harness and diagnostic repairs.",
-    "plan_file": "plans/2026-03-13-pdf-grid-ocr-hardening-codex-plan.md",
+    "phase_name": "PDF extraction stage standardization",
+    "status": "Completed locally on sync-engine-refactor; only fresh live regressions should reopen this refactor track.",
+    "plan_file": ".codex/plans/2026-04-05-pdf-extraction-stage-standardization-plan.md",
     "brainstorming_file": "plans/completed/2026-02-17-header-consolidation-stage.md",
     "escalation_path": "1) Build balanced OCR-cell corpus and harness 2) Repair residue/candidate diagnostics 3) Make description first pass multiline-aware and item-number selection candidate-based 4) Tune conservative grid fringe expansion 5) Re-run Springfield only after cell-level acceptance",
     "diagnostic_fixtures": 28,
     "diagnostic_images": "Fresh page-5/page-6 OCR crop dumps regenerated in test/features/pdf/extraction/debug_ocr_crops",
     "remaining_problems": [
-      "Need validation of new scorecard thresholds and B-series coverage on non-Springfield PDFs",
-      "Need trustworthy crop-residue metrics; current averages saturated at 1.0 and cannot guide tuning",
-      "Need a dedicated cell-level OCR evaluation harness so Stage 2 can be judged independently of row/merge/parser effects",
-      "Need multiline-aware description OCR and scored item-number candidate selection before touching downstream row logic"
+      "Archived report compatibility remains in fallback readers only",
+      "Fresh live regressions should be evaluated against the new stage-trace contract before changing the pipeline again"
     ]
   }
 }

@@ -1,6 +1,9 @@
 # Sync Flows S01-S03: Project + Entry + Photos
 
 > Compaction pause after S03 — checkpoint written, user prompted to continue.
+> Every flow in this file must satisfy the framework proof standard:
+> UI action, SQLite row, `change_log`, Supabase, receiver SQLite, receiver UI,
+> and log review.
 
 ---
 
@@ -286,7 +289,9 @@
 
 **Admin (4948):**
 
-1. Inject photo directly (no camera needed):
+1. Enter the real photo-add path from the entry UI, then use the controlled
+   fallback hook at the OS boundary if camera/gallery automation is not
+   reliable:
    ```bash
    curl -s -X POST http://127.0.0.1:4948/driver/inject-photo-direct \
      -d '{"base64Data":"<small-test-jpeg-base64>","filename":"VRF-test-photo-'"${RUN_TAG}"'.jpg","entryId":"<ctx.entryId>","projectId":"<ctx.projectId>"}'
@@ -294,9 +299,16 @@
    # This is different from remove-from-device which uses snake_case (project_id)
    ```
 
-2. Cross-device sync protocol (4-step).
+2. Apply the framework cross-device sync protocol (6-step).
 
-**Supabase Verify:** Query `photos?entry_id=eq.<entryId>`.
+**Required verification:**
+- sender SQLite: `photos/<photoId>` exists locally
+- sender queue: `change_log?table=photos` contains the new row before sync and
+  drains after sync
+- Supabase: query `photos?entry_id=eq.<entryId>` and verify exact `id`
+- storage: verify object exists in `entry-photos`
+- receiver SQLite: `photos/<photoId>` exists locally after pull
+- receiver UI: photo visible in entry/report or gallery screen
 
 **Capture:** `ctx.photoIds`
 

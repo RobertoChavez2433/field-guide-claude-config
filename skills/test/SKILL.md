@@ -30,15 +30,23 @@ flows directly via curl — no sub-agents, no orchestrator layer.
 
 ### HARD RULES — SYNC FLOWS
 
-These rules are **non-negotiable** for S01-S19. Violating them wastes cycles and requires user correction.
+These rules are **non-negotiable** for S01-S21. Violating them wastes cycles and requires user correction.
 
-1. **NEVER use `POST /driver/sync`** — sync ONLY via UI: tap `settings_nav_button` → tap `settings_sync_button`, wait 3s, tap again if needed.
-2. **NEVER use `GET /driver/local-record` for verification** — navigate the inspector app to the screen where the data appears and take a screenshot. Visual verification only.
-3. **After text entry on Android**, call `POST /driver/dismiss-keyboard` before tapping any buttons. The keyboard covers the bottom of the screen and taps return 200 but never reach the widget.
-4. **After every navigation tap**, verify arrival with `/driver/find?key=<sentinel>` where sentinel is a key known to exist on the target screen.
-5. **Read `lib/shared/testing_keys/*.dart` before each flow** — do not waste cycles querying `/driver/tree` for keys that are already documented.
-6. **Check debug server logs after every sync**: `curl -s "http://127.0.0.1:3947/logs/errors?since=<START>"` AND `curl -s "http://127.0.0.1:3947/logs?since=<START>&category=sync&format=text"`.
-7. **Toolbox sub-screens need TWO backs to reach dashboard** — Todos/Calculator/Gallery are inside Toolbox, which is itself a sub-screen of Dashboard. Press back once to reach Toolbox hub, again to reach Dashboard.
+1. **NEVER use `POST /driver/sync`** — sync ONLY via UI: tap `settings_nav_button` → tap `settings_sync_button`, wait for `sync-status` completion, tap again if the flow requires a second pull pass.
+2. **Every sync mutation must be proven in 5 places when applicable**:
+   - sender UI action
+   - sender SQLite row / queue state
+   - Supabase row or storage object
+   - receiver SQLite row / queue state
+   - receiver UI state
+3. **Use `GET /driver/local-record` and `GET /driver/change-log` as required diagnostics**, not as a replacement for UI verification. UI remains mandatory, but SQLite and queue verification are also mandatory.
+4. **After text entry on Android**, call `POST /driver/dismiss-keyboard` before tapping any buttons. The keyboard covers the bottom of the screen and taps return 200 but never reach the widget.
+5. **After every navigation tap**, verify arrival with `/driver/find?key=<sentinel>` where sentinel is a key known to exist on the target screen.
+6. **Read `lib/shared/testing_keys/*.dart` before each flow** — do not waste cycles querying `/driver/tree` for keys that are already documented.
+7. **Check debug server logs after every sync**:
+   - `curl -s "http://127.0.0.1:3947/logs/errors?since=<START>"`
+   - `curl -s "http://127.0.0.1:3947/logs?since=<START>&category=sync&format=text"`
+8. **Toolbox sub-screens need TWO backs to reach dashboard** — Todos/Calculator/Gallery are inside Toolbox, which is itself a sub-screen of Dashboard. Press back once to reach Toolbox hub, again to reach Dashboard.
 
 ## Credentials
 `.claude/test-credentials.secret` — gitignored JSON with admin + inspector accounts.
@@ -122,7 +130,7 @@ Before executing, read the files mapped to your command. Load reference files on
 | `settings`, `admin` | `test-flows/tiers/settings-and-admin.md` |
 | `edits`, `deletes` | `test-flows/tiers/mutations.md` |
 | `permissions`, `navigation` | `test-flows/tiers/verification.md` |
-| `sync` or `S01-S19` | `test-flows/sync/framework.md` + relevant flow group file (see below) |
+| `sync` or `S01-S21` | `test-flows/sync/framework.md` + relevant flow group file (see below) |
 | Single flow (e.g., `T15`) | Tier file containing that flow |
 | `full` or `--resume` | `test-flows/flow-dependencies.md` + tier files as you reach each tier |
 | Manual flows | `test-flows/tiers/manual-flows.md` |
@@ -133,7 +141,7 @@ Before executing, read the files mapped to your command. Load reference files on
 | S01-S03 | `test-flows/sync/flows-S01-S03.md` | Compaction pause after S03 |
 | S04-S06 | `test-flows/sync/flows-S04-S06.md` | Compaction pause after S06 |
 | S07-S10 | `test-flows/sync/flows-S07-S10.md` | Compaction pause after S09 |
-| S11-S19 | `test-flows/sync/flows-S11-S19.md` | Advanced sync flows |
+| S11-S21 | `test-flows/sync/flows-S11-S19.md` | Advanced sync flows, exports, support, consent |
 
 ## Pre-Run Data Verification
 
@@ -175,7 +183,7 @@ When an entity already exists (e.g., entry with contractors from a prior run), v
 /test admin                        # T53-T58 (Admin Operations)
 /test edits                        # T59-T67 (Edit Mutations)
 /test deletes                      # T68-T77 (Delete Operations)
-/test sync                         # S01-S19 (Claude-driven dual-device + sync-mode + private-channel verification)
+/test sync                         # S01-S21 (Claude-driven dual-device + full SQLite/change_log/Supabase verification)
 /test S01                          # Single sync flow
 /test S01-S03                      # Range of sync flows
 /test sync --resume                # Resume from checkpoint
@@ -202,7 +210,7 @@ settings     → T44-T52
 admin        → T53-T58
 edits        → T59-T67
 deletes      → T68-T77
-sync         → S01-S19 (Claude-driven dual-device verification + sync-mode + private-channel coverage)
+sync         → S01-S21 (dual-device verification + SQLite/change_log/Supabase/storage proofs + sync-mode coverage)
 permissions  → T85-T91
 navigation   → T92-T96
 ```
@@ -501,7 +509,7 @@ Add `-IncludeDebugServer` to also kill the debug server.
 - All test projects use "E2E " prefix
 - **CRITICAL**: Always use timestamped project names (e.g., "E2E Test 1711046095") to avoid collisions with prior runs
 - When a prior E2E project already exists, REUSE it instead of creating a new one (tap into it, verify sub-entities)
-- Cleanup: `pwsh -File tools/verify-sync.ps1 -Cleanup -ProjectName "E2E*" -DryRun` (still valid for data cleanup; sync correctness verification is now Claude-driven — see `/test sync` (S01-S19) or run `node tools/debug-server/run-tests.js --cleanup-only` for data cleanup only)
+- Cleanup: `pwsh -File tools/verify-sync.ps1 -Cleanup -ProjectName "E2E*" -DryRun` (still valid for data cleanup; sync correctness verification is now Claude-driven — see `/test sync` (S01-S21) or run `node tools/debug-server/run-tests.js --cleanup-only` for data cleanup only)
 
 ## Windows Bash Constraints
 - **NO `jq`** — use `python3 -c "import json..."` for JSON parsing (but prefer `?format=text` endpoints which need no parsing)

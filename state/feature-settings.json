@@ -2,7 +2,7 @@
   "id": "settings",
   "name": "App Settings & Configuration",
   "status": "in_progress",
-  "description": "Device-local settings for theme, language, and notifications. No cloud sync. S667: trash screen security fix (role-based filtering).",
+  "description": "Device-local settings for theme, language, and notifications. No cloud sync. S738: consent/bootstrap persistence verified and committed locally.",
 
   "docs": {
     "overview": "docs/features/feature-settings-overview.md",
@@ -25,6 +25,6 @@
 
   "metrics": {
     "test_coverage_percentage": 60,
-    "last_updated": "2026-02-13T00:00:00Z"
+    "last_updated": "2026-04-06T13:00:00Z"
   }
 }

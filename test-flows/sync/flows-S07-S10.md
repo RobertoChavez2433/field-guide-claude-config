@@ -1,6 +1,9 @@
 # Sync Flows S07-S10: Update + PDF + Delete + Cleanup
 
 > Compaction pause after S09 — checkpoint written, user prompted to continue.
+> Every flow in this file must satisfy the framework proof standard:
+> UI action, SQLite row, `change_log`, Supabase, receiver SQLite, receiver UI,
+> and log review.
 
 ---
 
@@ -108,7 +111,7 @@ After all updates:
 
 ## S08: PDF Export
 
-**Tables:** N/A (output artifact)
+**Tables:** entry_exports, form_exports
 **Depends:** S07
 
 **Prerequisite:** Verify pdftk is installed: `pdftk --version`. If not available, verify the PDF by checking the file exists and its size is > 1000 bytes instead of using pdftk field inspection.
@@ -136,6 +139,26 @@ After all updates:
    ```
 
 5. Export 0582B form PDF → verify similarly.
+
+6. Apply the framework cross-device sync protocol (6-step) for the resulting
+   export rows.
+
+**Required verification:**
+- sender SQLite:
+  - `entry_exports/<entryExportId>` exists after entry export
+  - `form_exports/<formExportId>` exists after form export
+- sender queue:
+  - `change_log?table=entry_exports` drains after sync
+  - `change_log?table=form_exports` drains after sync
+- Supabase:
+  - exact `entry_exports` and `form_exports` rows exist
+  - storage objects exist in `entry-exports` and `form-exports`
+- receiver SQLite:
+  - pulled export rows exist after sync
+- receiver UI:
+  - export/document surfaces show the synced artifacts if the UI exposes them
+
+**Capture:** `ctx.entryExportIds`, `ctx.formExportIds`
 
 **If ADB times out:** Record FAIL for S08, continue to S09. PDF export is non-blocking.
 
@@ -196,6 +219,11 @@ After all updates:
    curl -s http://127.0.0.1:4949/driver/screenshot --output "$RESULTS_DIR/S09-inspector-project-deleted.png"
    ```
 
+6. Receiver SQLite + queue verify:
+   - deleted project row is absent or soft-deleted as expected
+   - child rows for the deleted project are absent locally
+   - `change_log` returns to expected empty state after sync
+
 **--- COMPACTION PAUSE ---**
 
 ---
@@ -208,12 +236,12 @@ After all updates:
 **Inspector (4949):**
 1. Verify project2 exists locally via UI (navigate to projects list and screenshot):
    ```bash
-   # NEVER use GET /driver/local-record — verify via UI instead
    curl -s -X POST http://127.0.0.1:4949/driver/tap -H "Content-Type: application/json" -d '{"key":"projects_nav_button"}'
    sleep 1
    curl -s http://127.0.0.1:4949/driver/screenshot --output "$RESULTS_DIR/S10-inspector-project2-exists.png"
    # Visually confirm project2 (VRF-Unassign Test) is in the list
    ```
+   Also verify `projects/<project2Id>` exists locally in SQLite before unassignment.
 
 **Admin (4948):**
 2. Edit project2 → assignments tab → toggle off inspector → save → sync:

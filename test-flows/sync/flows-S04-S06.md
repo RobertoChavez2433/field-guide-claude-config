@@ -1,6 +1,9 @@
 # Sync Flows S04-S06: Forms + Todos + Calculator
 
 > Compaction pause after S06 — checkpoint written, user prompted to continue.
+> Every flow in this file must satisfy the framework proof standard:
+> UI action, SQLite row, `change_log`, Supabase, receiver SQLite, receiver UI,
+> and log review.
 
 ---
 
@@ -26,11 +29,17 @@
 
    Look for the form selection dialog that appears after tapping `report_add_form_button`. Tap the 0582B form entry in the list (key pattern likely `form_selection_item_<formId>` or a labeled list tile — identify the 0582B entry by its visible label). Then fill in any required header fields in the form editor and tap the save or confirm button to persist the form response.
 
-3. Cross-device sync protocol (4-step).
+3. Apply the framework cross-device sync protocol (6-step).
 
-**Supabase Verify:** Query `form_responses` by project_id.
+**Required verification:**
+- sender SQLite: verify both `inspector_forms/<formId>` and
+  `form_responses/<responseId>`
+- sender queue: verify both tables drain after sync
+- Supabase: verify both `inspector_forms` and `form_responses` rows by ID
+- receiver SQLite: verify both rows exist after pull
+- receiver UI: form visible in entry/report/forms UI
 
-**Capture:** `ctx.formResponseIds`
+**Capture:** `ctx.formResponseIds` and any created `inspector_forms` IDs in notes
 
 ---
 
@@ -61,7 +70,7 @@
    sleep 1
    ```
 
-3. Cross-device sync protocol (4-step).
+3. Apply the framework cross-device sync protocol (6-step).
 
 **Supabase Verify:** Query `todo_items` by project_id.
 
@@ -101,7 +110,7 @@
    sleep 1
    ```
 
-3. Cross-device sync protocol (4-step).
+3. Apply the framework cross-device sync protocol (6-step).
 
 **Supabase Verify:** Query `calculation_history` by project_id.
 

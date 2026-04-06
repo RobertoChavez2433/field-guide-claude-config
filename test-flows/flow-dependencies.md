@@ -58,6 +58,8 @@ S01 (Project Setup) — dual-device session (admin:4948, inspector:4949)
  ├── S17 (Maintenance Sync Housekeeping) [MANUAL]
  ├── S18 (Private Channel Registration)
  ├── S19 (Private Channel Teardown + Rebind)
+ ├── S20 (Support Ticket Sync)
+ ├── S21 (Consent Audit Sync)
  └── S09 (Delete Cascade) → S10 (Unassignment + Cleanup) [COMPACTION]
 ```
 
@@ -75,8 +77,8 @@ S01 (Project Setup) — dual-device session (admin:4948, inspector:4949)
 | Tier 7 | T53-T58 | 6 | Admin Operations |
 | Tier 8 | T59-T67 | 9 | Edit & Update Mutations |
 | Tier 9 | T68-T77 | 10 | Delete Operations |
-| Sync | S01-S19 | 19 | Sync Verification (Claude-driven, dual-device + sync-mode coverage + private-channel verification) |
+| Sync | S01-S21 | 21 | Sync Verification (Claude-driven, dual-device + SQLite/change_log/Supabase/storage proofs + sync-mode coverage) |
 | Tier 11 | T85-T91 | 7 | Role & Permission Verification |
 | Tier 12 | T92-T96 | 5 | Navigation & Dashboard |
 | Manual | M01-M13 | 12 | Manual-Only Flows (M06 removed — offline-reconnect covered by sync verification coverage) |
-| **Total** | | **119 IDs** | **88 T-flows (5 also in manual: T21, T37, T56, T57, T67) + 12 manual + 19 sync = 114 distinct test objectives** |
+| **Total** | | **121 IDs** | **88 T-flows (5 also in manual: T21, T37, T56, T57, T67) + 12 manual + 21 sync = 116 distinct test objectives** |

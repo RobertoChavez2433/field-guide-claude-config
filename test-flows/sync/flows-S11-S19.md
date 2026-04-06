@@ -1,6 +1,9 @@
-# Sync Flows S11-S19: Advanced — Documents, Realtime, FCM, Dirty-Scope, Channels
+# Sync Flows S11-S21: Advanced — Documents, Realtime, FCM, Dirty-Scope, Channels, Support, Consent
 
 > No compaction pause in this group — these are the final flows.
+> Every flow in this file must satisfy the framework proof standard:
+> UI action, SQLite row, `change_log`, Supabase, receiver SQLite, receiver UI,
+> and log review.
 
 ---
 
@@ -60,7 +63,15 @@
 
 6. Inspector UI verify: navigate to entry → verify document attachment visible → screenshot.
 
-7. Capture `ctx.documentIds` for use in S09 cascade verification.
+7. Required verification:
+   - sender SQLite: `documents/<documentId>` exists
+   - sender queue: `change_log?table=documents` drains after sync
+   - Supabase: exact row exists with non-null `remote_path`
+   - storage: object exists in `entry-documents`
+   - receiver SQLite: `documents/<documentId>` exists after pull
+   - receiver UI: document attachment visible on the entry surface
+
+8. Capture `ctx.documentIds` for use in S09 cascade verification.
 
 **If document UI not yet wired:** Record as OBSERVATION (not FAIL), continue to S09.
 
@@ -234,3 +245,69 @@
    - multiple active rows remain for the same install
    - the active row still belongs to the prior session context
    - hint delivery breaks after rebind
+
+---
+
+## S20: Support Ticket Sync
+
+**Tables:** support_tickets
+**Depends:** authenticated session only
+
+**Purpose:** Verify user-scoped support tickets push to Supabase, persist
+locally, clear from `change_log`, and can receive remote status updates.
+
+**Protocol:**
+1. Admin (4948): navigate to Help & Support and submit a ticket through the real
+   support form UI.
+2. Sender SQLite verify:
+   - `support_tickets/<ticketId>` exists locally
+   - `change_log?table=support_tickets` contains the new insert before sync
+3. Admin sync via Settings UI.
+4. Supabase verify:
+   - exact `support_tickets/<ticketId>` row exists
+   - status is the initial expected status
+5. Sender queue verify:
+   - `change_log?table=support_tickets` drains after sync
+6. Optional remote update:
+   - update ticket status remotely through Supabase/admin workflow
+7. Receiver sync and verify:
+   - if the second device uses the same user context, verify the row pulls down
+     and local SQLite reflects the updated status
+   - if the second device is a different user, verify it does **not** pull the
+     ticket and document the user-scoping behavior explicitly
+
+**Capture:** `ctx.supportTicketIds`
+
+---
+
+## S21: Consent Audit Sync
+
+**Tables:** user_consent_records
+**Depends:** authenticated session only
+
+**Purpose:** Verify consent audit records are insert-only, sync to Supabase,
+clear from `change_log`, and are never treated as pull/update rows.
+
+**Protocol:**
+1. On a device with a valid authenticated session, trigger a real consent
+   action through the app UI:
+   - preferred: revoke then re-accept if the UI path is available
+   - fallback: drive the consent screen path in a controlled test session
+2. Sender SQLite verify:
+   - new `user_consent_records` rows exist locally
+   - `change_log?table=user_consent_records` contains inserts before sync
+3. Sync via Settings UI.
+4. Supabase verify:
+   - exact consent rows exist for the current user
+   - rows reflect insert-only semantics
+5. Sender queue verify:
+   - `change_log?table=user_consent_records` drains after sync
+6. Receiver verify:
+   - do **not** require pull, because consent records are `skipPull`
+   - instead verify logs show no erroneous pull/update behavior for this table
+7. Record FAIL if:
+   - updates or deletes are attempted for consent rows
+   - sync leaves a stuck queue entry
+   - Supabase rows are missing after a successful local accept/revoke action
+
+**Capture:** `ctx.consentRecordIds`
