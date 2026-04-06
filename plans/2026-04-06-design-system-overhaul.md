@@ -70,8 +70,12 @@ class NoRawButton extends DartLintRule {
   ) {
     // NOTE: Windows path normalization is mandatory — backslashes break contains()
     final filePath = resolver.path.replaceAll('\\', '/');
-    // WHY: Only enforce in presentation layer where widgets are built
-    if (!filePath.contains('/presentation/')) return;
+    // WHY: Only enforce in UI layer where widgets are built
+    // FROM SPEC: Scope includes /presentation/, /shared/widgets/, /core/router/
+    final isUiLayer = filePath.contains('/presentation/') ||
+        filePath.contains('/shared/widgets/') ||
+        filePath.contains('/core/router/');
+    if (!isUiLayer) return;
     // WHY: Tests legitimately construct raw widgets for testing
     if (filePath.contains('/test/') || filePath.contains('/integration_test/')) return;
     // WHY: Design system itself wraps these raw widgets
@@ -129,7 +133,11 @@ class NoRawDivider extends DartLintRule {
     CustomLintContext context,
   ) {
     final filePath = resolver.path.replaceAll('\\', '/');
-    if (!filePath.contains('/presentation/')) return;
+    // FROM SPEC: Scope includes /presentation/, /shared/widgets/, /core/router/
+    final isUiLayer = filePath.contains('/presentation/') ||
+        filePath.contains('/shared/widgets/') ||
+        filePath.contains('/core/router/');
+    if (!isUiLayer) return;
     if (filePath.contains('/test/') || filePath.contains('/integration_test/')) return;
     if (filePath.contains('/core/design_system/')) return;
 
@@ -186,7 +194,11 @@ class NoRawTooltip extends DartLintRule {
     CustomLintContext context,
   ) {
     final filePath = resolver.path.replaceAll('\\', '/');
-    if (!filePath.contains('/presentation/')) return;
+    // FROM SPEC: Scope includes /presentation/, /shared/widgets/, /core/router/
+    final isUiLayer = filePath.contains('/presentation/') ||
+        filePath.contains('/shared/widgets/') ||
+        filePath.contains('/core/router/');
+    if (!isUiLayer) return;
     if (filePath.contains('/test/') || filePath.contains('/integration_test/')) return;
     if (filePath.contains('/core/design_system/')) return;
 
@@ -247,7 +259,11 @@ class NoRawDropdown extends DartLintRule {
     CustomLintContext context,
   ) {
     final filePath = resolver.path.replaceAll('\\', '/');
-    if (!filePath.contains('/presentation/')) return;
+    // FROM SPEC: Scope includes /presentation/, /shared/widgets/, /core/router/
+    final isUiLayer = filePath.contains('/presentation/') ||
+        filePath.contains('/shared/widgets/') ||
+        filePath.contains('/core/router/');
+    if (!isUiLayer) return;
     if (filePath.contains('/test/') || filePath.contains('/integration_test/')) return;
     if (filePath.contains('/core/design_system/')) return;
 
@@ -309,6 +325,9 @@ class NoDirectSnackbar extends DartLintRule {
     CustomLintContext context,
   ) {
     final filePath = resolver.path.replaceAll('\\', '/');
+    // NOTE: This rule deliberately uses broader /lib/ scope (not just UI layer paths)
+    // because showSnackBar calls in non-UI code are also a violation. This is
+    // intentionally broader than the new P0 rules which scope to presentation only.
     if (!filePath.contains('/lib/')) return;
     if (filePath.contains('/test/') || filePath.contains('/integration_test/')) return;
     if (filePath.contains('/core/design_system/')) return;
@@ -345,7 +364,7 @@ class NoDirectSnackbar extends DartLintRule {
 
 #### Step 0.6.1: Create `no_hardcoded_spacing.dart`
 
-This rule catches `EdgeInsets.all(N)`, `EdgeInsets.symmetric(...)`, `SizedBox(width: N, height: N)` with numeric literals. It uses `addInstanceCreationExpression` for `SizedBox` and `addMethodInvocation` for `EdgeInsets.*` factory calls.
+This rule catches `EdgeInsets.all(N)`, `EdgeInsets.symmetric(...)`, `SizedBox(width: N, height: N)` with numeric literals. It uses a single `addInstanceCreationExpression` callback for both `EdgeInsets` and `SizedBox` (EdgeInsets named constructors are `InstanceCreationExpression` in the analyzer AST, not method invocations).
 
 ```dart
 // File: fg_lint_packages/field_guide_lints/lib/architecture/rules/no_hardcoded_spacing.dart
@@ -380,47 +399,28 @@ class NoHardcodedSpacing extends DartLintRule {
     CustomLintContext context,
   ) {
     final filePath = resolver.path.replaceAll('\\', '/');
-    // WHY: Only enforce in presentation layer
-    if (!filePath.contains('/presentation/')) return;
+    // FROM SPEC: Scope includes /presentation/, /shared/widgets/, /core/router/
+    final isUiLayer = filePath.contains('/presentation/') ||
+        filePath.contains('/shared/widgets/') ||
+        filePath.contains('/core/router/');
+    if (!isUiLayer) return;
     if (filePath.contains('/test/') || filePath.contains('/integration_test/')) return;
     if (filePath.contains('/core/design_system/')) return;
 
-    // WHY: Catches SizedBox(width: 8) and SizedBox(height: 16) spacer patterns.
-    // Only flags when width/height args are numeric literals (not variables/constants).
+    // WHY: Catches both SizedBox(width: 8, height: 16) spacer patterns
+    // AND EdgeInsets.all(8), EdgeInsets.symmetric(...), EdgeInsets.only(...),
+    // EdgeInsets.fromLTRB(...) with numeric literal arguments.
+    // NOTE: EdgeInsets.all(N) is a named constructor, which the analyzer
+    // represents as InstanceCreationExpression, NOT MethodInvocation.
+    // A single addInstanceCreationExpression callback handles both types.
     context.registry.addInstanceCreationExpression((node) {
       final typeName = node.constructorName.type.name2.lexeme;
-      if (typeName == 'SizedBox') {
-        for (final arg in node.argumentList.arguments) {
-          if (arg is! NamedExpression) continue;
-          final name = arg.name.label.name;
-          if ((name == 'width' || name == 'height') &&
-              (arg.expression is IntegerLiteral || arg.expression is DoubleLiteral)) {
-            reporter.atNode(node.constructorName, _code);
-            return; // NOTE: Report once per SizedBox, not per argument
-          }
-        }
-      }
-    });
-
-    // WHY: Catches EdgeInsets.all(8), EdgeInsets.symmetric(horizontal: 16),
-    // EdgeInsets.only(left: 8) with numeric literal arguments.
-    context.registry.addMethodInvocation((node) {
-      final target = node.realTarget;
-      if (target == null) return;
-      // NOTE: EdgeInsets factory methods are static, so the target is a SimpleIdentifier
-      final targetName = target is SimpleIdentifier ? target.name : '';
-      if (targetName != 'EdgeInsets') return;
-
-      final methodName = node.methodName.name;
-      if (methodName == 'all' ||
-          methodName == 'symmetric' ||
-          methodName == 'only' ||
-          methodName == 'fromLTRB') {
+      if (typeName == 'EdgeInsets' || typeName == 'SizedBox') {
         for (final arg in node.argumentList.arguments) {
           final expr = arg is NamedExpression ? arg.expression : arg;
           if (expr is IntegerLiteral || expr is DoubleLiteral) {
-            reporter.atNode(node.methodName, _code);
-            return; // NOTE: Report once per EdgeInsets call
+            reporter.atNode(node.constructorName, _code);
+            return; // NOTE: Report once per call, not per argument
           }
         }
       }
@@ -429,25 +429,7 @@ class NoHardcodedSpacing extends DartLintRule {
 }
 ```
 
-**IMPORTANT**: The `addMethodInvocation` approach for `EdgeInsets.*` may need refinement. `EdgeInsets.all(N)` is actually a constructor call (`const EdgeInsets.all(8.0)`), not a method invocation. It will be caught by `addInstanceCreationExpression` instead. The implementing agent should verify by checking which AST node type `EdgeInsets.all(8.0)` produces and adjust accordingly. If it is a constructor call, use:
-
-```dart
-context.registry.addInstanceCreationExpression((node) {
-  final typeName = node.constructorName.type.name2.lexeme;
-  if (typeName == 'EdgeInsets' || typeName == 'SizedBox') {
-    // Check for numeric literal arguments
-    for (final arg in node.argumentList.arguments) {
-      final expr = arg is NamedExpression ? arg.expression : arg;
-      if (expr is IntegerLiteral || expr is DoubleLiteral) {
-        reporter.atNode(node.constructorName, _code);
-        return;
-      }
-    }
-  }
-});
-```
-
-The implementing agent MUST add the necessary analyzer imports (`NamedExpression`, `IntegerLiteral`, `DoubleLiteral`, `SimpleIdentifier`) from `package:analyzer/dart/ast/ast.dart`.
+The implementing agent MUST add `import 'package:analyzer/dart/ast/ast.dart' show NamedExpression, IntegerLiteral, DoubleLiteral;` at the top of the file.
 
 ---
 
@@ -493,7 +475,11 @@ class NoHardcodedRadius extends DartLintRule {
     CustomLintContext context,
   ) {
     final filePath = resolver.path.replaceAll('\\', '/');
-    if (!filePath.contains('/presentation/')) return;
+    // FROM SPEC: Scope includes /presentation/, /shared/widgets/, /core/router/
+    final isUiLayer = filePath.contains('/presentation/') ||
+        filePath.contains('/shared/widgets/') ||
+        filePath.contains('/core/router/');
+    if (!isUiLayer) return;
     if (filePath.contains('/test/') || filePath.contains('/integration_test/')) return;
     if (filePath.contains('/core/design_system/')) return;
 
@@ -562,7 +548,11 @@ class NoHardcodedDuration extends DartLintRule {
   ) {
     final filePath = resolver.path.replaceAll('\\', '/');
     // WHY: Only presentation layer — data/domain layers may use Duration legitimately
-    if (!filePath.contains('/presentation/')) return;
+    // FROM SPEC: Scope includes /presentation/, /shared/widgets/, /core/router/
+    final isUiLayer = filePath.contains('/presentation/') ||
+        filePath.contains('/shared/widgets/') ||
+        filePath.contains('/core/router/');
+    if (!isUiLayer) return;
     if (filePath.contains('/test/') || filePath.contains('/integration_test/')) return;
     if (filePath.contains('/core/design_system/')) return;
 
@@ -644,11 +634,14 @@ class NoRawNavigator extends DartLintRule {
     CustomLintContext context,
   ) {
     final filePath = resolver.path.replaceAll('\\', '/');
-    if (!filePath.contains('/presentation/')) return;
+    // FROM SPEC: Scope includes /presentation/, /shared/widgets/, /core/router/
+    // NOTE: For no_raw_navigator, /core/router/ is EXCLUDED (not included) because
+    // router files legitimately use Navigator for transition builders.
+    final isUiLayer = filePath.contains('/presentation/') ||
+        filePath.contains('/shared/widgets/');
+    if (!isUiLayer) return;
     if (filePath.contains('/test/') || filePath.contains('/integration_test/')) return;
     if (filePath.contains('/core/design_system/')) return;
-    // WHY: Router files legitimately use Navigator for transition builders
-    if (filePath.contains('/core/router/')) return;
 
     context.registry.addMethodInvocation((node) {
       final target = node.realTarget;
@@ -664,7 +657,7 @@ class NoRawNavigator extends DartLintRule {
 }
 ```
 
-**IMPORTANT**: The implementing agent must add `import 'package:analyzer/dart/ast/ast.dart' show SimpleIdentifier;` at the top.
+**IMPORTANT**: The implementing agent must add `import 'package:analyzer/dart/ast/ast.dart' show SimpleIdentifier;` at the top. KNOWN LIMITATION: This rule only catches `Navigator.push()` static calls, not `Navigator.of(context).push()` -- acceptable at INFO severity.
 
 ---
 
@@ -710,7 +703,11 @@ class PreferDesignSystemBanner extends DartLintRule {
     CustomLintContext context,
   ) {
     final filePath = resolver.path.replaceAll('\\', '/');
-    if (!filePath.contains('/presentation/')) return;
+    // FROM SPEC: Scope includes /presentation/, /shared/widgets/, /core/router/
+    final isUiLayer = filePath.contains('/presentation/') ||
+        filePath.contains('/shared/widgets/') ||
+        filePath.contains('/core/router/');
+    if (!isUiLayer) return;
     if (filePath.contains('/test/') || filePath.contains('/integration_test/')) return;
     if (filePath.contains('/core/design_system/')) return;
 
@@ -871,6 +868,42 @@ pwsh -Command "flutter analyze 2>&1 | Select-String 'no_raw_button|no_raw_divide
 **Expected**: A list of new warnings from the custom lint rules. This is the baseline violation inventory. The count does NOT need to be zero -- these are intentional warnings that will be resolved in later phases as components are migrated to the design system.
 
 **NOTE**: If `flutter analyze` does not surface custom_lint rules, the implementing agent should use `pwsh -Command "dart run custom_lint"` from the project root instead.
+
+---
+
+### Sub-phase 0.13: Create tests for all new lint rules
+
+**Files:**
+- Create: `fg_lint_packages/field_guide_lints/test/architecture/no_raw_button_test.dart`
+- Create: `fg_lint_packages/field_guide_lints/test/architecture/no_raw_divider_test.dart`
+- Create: `fg_lint_packages/field_guide_lints/test/architecture/no_raw_tooltip_test.dart`
+- Create: `fg_lint_packages/field_guide_lints/test/architecture/no_raw_dropdown_test.dart`
+- Create: `fg_lint_packages/field_guide_lints/test/architecture/no_hardcoded_spacing_test.dart`
+- Create: `fg_lint_packages/field_guide_lints/test/architecture/no_hardcoded_radius_test.dart`
+- Create: `fg_lint_packages/field_guide_lints/test/architecture/no_hardcoded_duration_test.dart`
+- Create: `fg_lint_packages/field_guide_lints/test/architecture/no_raw_navigator_test.dart`
+- Create: `fg_lint_packages/field_guide_lints/test/architecture/prefer_design_system_banner_test.dart`
+- Modify: `fg_lint_packages/field_guide_lints/test/architecture/no_direct_snackbar_test.dart`
+
+**Agent**: `code-fixer-agent`
+
+#### Step 0.13.1: Create test files for all 9 new rules and update existing test
+
+Every existing lint rule has a test file in `fg_lint_packages/field_guide_lints/test/architecture/`. Follow the same patterns (e.g., `no_raw_alert_dialog_test.dart`, `no_hardcoded_colors_test.dart`).
+
+Each test file should:
+1. Test that the rule flags violations in `/presentation/` paths
+2. Test that the rule does NOT flag in `/test/`, `/core/design_system/`, or non-UI paths
+3. Test that the rule does NOT flag when design system wrappers are used
+4. For `no_direct_snackbar_test.dart`: add test cases for the new `SnackBar()` constructor detection
+
+#### Step 0.13.2: Run lint package tests
+
+```
+pwsh -Command "cd fg_lint_packages/field_guide_lints && flutter test"
+```
+
+**Expected**: All tests pass.
 
 ---
 
@@ -1062,6 +1095,8 @@ Replace `lib/core/theme/field_guide_colors.dart` with:
 ```dart
 // File: lib/core/theme/field_guide_colors.dart
 // WHY: Re-export shim — actual file moved to design_system/tokens/field_guide_colors.dart
+// NOTE: All 4 re-export shims (colors.dart, design_constants.dart,
+// field_guide_colors.dart, theme.dart) will be cleaned up in Phase 6.
 export '../design_system/tokens/field_guide_colors.dart';
 ```
 
@@ -1161,6 +1196,21 @@ Delete this block:
     dragHandleColor: Color(0xFFFFFFFF),
   );
 ```
+
+---
+
+### Sub-phase 1.4b: Expand FieldGuideColors with remaining theme-varying semantic colors
+
+**Files:** Modify `lib/core/design_system/tokens/field_guide_colors.dart`
+**Agent**: `code-fixer-agent`
+
+#### Step 1.4b.1: Audit AppColors for theme-varying semantic colors not yet in FieldGuideColors
+
+FROM SPEC: "FieldGuideColors: Already exists with 16 fields -- expand to absorb remaining AppColors semantic colors that vary per theme."
+
+The implementing agent must read `app_colors.dart`, identify constants with DIFFERENT values in dark vs light themes (e.g., `surfaceElevated`, `surfaceBright`, `surfaceHighlight`, `textPrimary`, `textSecondary`, `textTertiary`, background colors), check which are NOT already in `FieldGuideColors`, add them as new fields with values in both `dark` and `light` static instances, and keep theme-invariant constants (like `statusSuccess`, `primaryCyan`) in `AppColors`.
+
+#### Step 1.4b.2: Verify with `pwsh -Command "flutter analyze"` -- zero errors expected.
 
 ---
 
@@ -1342,7 +1392,9 @@ class ThemeSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(
       builder: (context, themeProvider, _) {
-        // NOTE: RadioGroup is imported via `shared.dart` barrel (from shared/widgets/)
+        // NOTE: RadioGroup is imported via `shared.dart` barrel (from shared/widgets/).
+        // The implementing agent must verify RadioGroup exists and compiles.
+        // If it does not exist, use Column + RadioListTile directly.
         return RadioGroup<AppThemeMode>(
           key: TestingKeys.settingsThemeDropdown,
           groupValue: themeProvider.themeMode,
@@ -1783,12 +1835,16 @@ class FieldGuideMotion extends ThemeExtension<FieldGuideMotion> {
   final Curve curveEmphasized;
 
   /// Curves.easeIn — acceleration curve for exiting elements
+  /// NOTE: Not in spec's FieldGuideMotion table but present in existing
+  /// DesignConstants. Intentional spec extension needed for P2 animation work.
   final Curve curveAccelerate;
 
   /// Curves.elasticOut — bounce effect for attention-grabbing
+  /// NOTE: Intentional spec extension from existing DesignConstants, needed for P2.
   final Curve curveBounce;
 
   /// Curves.easeOutBack — spring overshoot for playful transitions
+  /// NOTE: Intentional spec extension from existing DesignConstants, needed for P2.
   final Curve curveSpring;
 
   // ===========================================================================
@@ -1960,6 +2016,21 @@ class FieldGuideShadows extends ThemeExtension<FieldGuideShadows> {
   }
 
   // ===========================================================================
+  // MATERIAL ELEVATION GETTERS
+  // ===========================================================================
+
+  // WHY: Material component themes (AppBarTheme, CardTheme, FAB, Dialog, etc.)
+  // accept `double elevation` parameters, not List<BoxShadow>. These getters
+  // provide numeric elevation values that correspond to each shadow level.
+  // Use shadows.low (List<BoxShadow>) for BoxDecoration.boxShadow and
+  // shadows.elevationLow (double) for Material elevation parameters.
+  double get elevationNone => 0;
+  double get elevationLow => 2;
+  double get elevationMedium => 4;
+  double get elevationHigh => 8;
+  double get elevationModal => 16;
+
+  // ===========================================================================
   // ThemeExtension OVERRIDES
   // ===========================================================================
 
@@ -2113,7 +2184,16 @@ class AppTheme {
     brightness: Brightness.light,
     primary: AppColors.primaryBlue,
     onPrimary: Colors.white,
-    // ... (extract all values from existing lightTheme getter's colorScheme)
+    // REQUIRED: The implementing agent MUST extract ALL remaining ColorScheme
+    // fields from the existing lightTheme getter (~lines 816-860 in current
+    // app_theme.dart). Reference _darkColorScheme above for the full field list.
+    // Fields needed: primaryContainer, onPrimaryContainer, secondary, onSecondary,
+    // secondaryContainer, onSecondaryContainer, tertiary, onTertiary,
+    // tertiaryContainer, onTertiaryContainer, error, onError, errorContainer,
+    // onErrorContainer, surface, onSurface, surfaceContainerHighest,
+    // onSurfaceVariant, outline, outlineVariant, shadow, scrim,
+    // inverseSurface, onInverseSurface, inversePrimary.
+    // DO NOT leave this as a placeholder — all fields must be specified.
   );
 
   // ==========================================================================
@@ -2151,7 +2231,7 @@ class AppTheme {
         backgroundColor: surface,
         foregroundColor: onSurface,
         elevation: 0,
-        scrolledUnderElevation: shadows.medium,
+        scrolledUnderElevation: shadows.elevationMedium,
         centerTitle: false,
         titleTextStyle: TextStyle(
           fontFamily: 'Roboto',
@@ -2169,7 +2249,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: colors.surfaceElevated,
         shadowColor: Colors.black.withValues(alpha: 0.3),
-        elevation: shadows.low,
+        elevation: shadows.elevationLow,
         margin: EdgeInsets.symmetric(vertical: spacing.xs, horizontal: 0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radii.md),
@@ -2239,7 +2319,7 @@ class AppTheme {
           foregroundColor: onPrimary,
           disabledBackgroundColor: colors.surfaceBright,
           disabledForegroundColor: colors.textTertiary,
-          elevation: shadows.low,
+          elevation: shadows.elevationLow,
           shadowColor: primary.withValues(alpha: 0.3),
           padding: EdgeInsets.symmetric(
             horizontal: spacing.lg, vertical: spacing.md,
@@ -2333,10 +2413,10 @@ class AppTheme {
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: colorScheme.secondary,
         foregroundColor: onPrimary,
-        elevation: shadows.medium,
-        focusElevation: shadows.high,
-        hoverElevation: shadows.high,
-        highlightElevation: shadows.high,
+        elevation: shadows.elevationMedium,
+        focusElevation: shadows.elevationHigh,
+        hoverElevation: shadows.elevationHigh,
+        highlightElevation: shadows.elevationHigh,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radii.lg),
         ),
@@ -2355,7 +2435,7 @@ class AppTheme {
         backgroundColor: surface,
         indicatorColor: primary.withValues(alpha: 0.2),
         surfaceTintColor: Colors.transparent,
-        elevation: shadows.medium,
+        elevation: shadows.elevationMedium,
         height: 80,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         iconTheme: WidgetStateProperty.resolveWith((states) {
@@ -2383,7 +2463,7 @@ class AppTheme {
       // Dialog
       dialogTheme: DialogThemeData(
         backgroundColor: colors.surfaceElevated,
-        elevation: shadows.modal,
+        elevation: shadows.elevationModal,
         shadowColor: Colors.black.withValues(alpha: 0.5),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radii.lg),
@@ -2407,7 +2487,7 @@ class AppTheme {
       // Bottom Sheet
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: colors.surfaceElevated,
-        elevation: shadows.modal,
+        elevation: shadows.elevationModal,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
@@ -2434,7 +2514,7 @@ class AppTheme {
             width: 1,
           ),
         ),
-        elevation: shadows.medium,
+        elevation: shadows.elevationMedium,
       ),
 
       // Divider
@@ -2606,13 +2686,39 @@ class AppTheme {
 3. Ensure the `TabBarTheme`, `PopupMenuThemeData`, `TooltipTheme`, and any other component themes present in the existing code are included in `build()`. If they exist in the current source, they must be parameterized and included.
 4. Keep all deprecated re-exports at the top of the class unchanged.
 
-#### Step 1.8.2: Verify theme collapse compiles
+#### Step 1.8.2: Update all call sites from getter to method syntax
+
+WHY: `darkTheme` and `lightTheme` changed from getters to methods with an optional `spacing` parameter. All call sites that use `AppTheme.darkTheme` or `AppTheme.lightTheme` must append `()`.
+
+The implementing agent MUST:
+
+1. Grep for `AppTheme.darkTheme` and `AppTheme.lightTheme` across all of `lib/` and `test/` (excluding `.claude/`).
+2. For each reference NOT already followed by `(`, change `AppTheme.darkTheme` to `AppTheme.darkTheme()` and `AppTheme.lightTheme` to `AppTheme.lightTheme()`.
+3. Key files expected to need updates (non-exhaustive):
+   - `lib/features/settings/presentation/providers/theme_provider.dart` (already shown in step 1.5.2)
+   - `test/golden/test_helpers.dart`
+   - Any test file that references `AppTheme.darkTheme` or `AppTheme.lightTheme` directly
+   - Any widget that calls these getters for theme-dependent logic
+
+NOTE: The search pattern is `AppTheme.darkTheme` NOT followed by `(` and `AppTheme.lightTheme` NOT followed by `(`.
+
+#### Step 1.8.3: Verify theme collapse compiles
 
 ```
 pwsh -Command "flutter analyze"
 ```
 
-**Expected**: Zero errors. The `darkTheme` and `lightTheme` getters produce the same `ThemeData` structure as before, just via a shared builder.
+**Expected**: Zero errors. The `darkTheme()` and `lightTheme()` methods produce the same `ThemeData` structure as before, just via a shared builder. Both accept an optional `spacing` parameter (defaults to `FieldGuideSpacing.standard`) to enable density switching.
+
+#### Step 1.8.5: Verify app_theme.dart line count
+
+FROM SPEC: `app_theme.dart` must be reduced to <400 lines.
+
+```
+pwsh -Command "(Get-Content lib/core/theme/app_theme.dart).Count"
+```
+
+**Expected**: Less than 400 lines. If over 400, extract component themes into a helper or reduce deprecated re-exports.
 
 ---
 
@@ -2627,11 +2733,50 @@ pwsh -Command "flutter analyze"
 
 FROM SPEC: "Density is selected automatically in the live app from breakpoint/screen context; no user-facing density toggle in Settings."
 
-The implementing agent should:
+Modify `lib/core/bootstrap/app.dart` (the file containing `MaterialApp.router`). Use a `Builder` widget above `MaterialApp.router` to access `MediaQueryData` for breakpoint detection:
 
-1. In the widget that builds `MaterialApp` (or `MaterialApp.router`), wrap the theme construction in a `LayoutBuilder` or use `MediaQuery.of(context).size.width` to determine the current breakpoint width.
+```dart
+// In lib/core/bootstrap/app.dart — wrap MaterialApp.router in a Builder
+// that determines density from screen width.
+//
+// WHY: MediaQuery is not available above MaterialApp, so we use
+// MediaQueryData.fromView(View.of(context)) in a Builder placed above it.
 
-2. Map the breakpoint width to a `FieldGuideSpacing` variant:
+@override
+Widget build(BuildContext context) {
+  return Builder(
+    builder: (context) {
+      final view = View.of(context);
+      final width = MediaQueryData.fromView(view).size.width;
+
+      // FROM SPEC: Density variant mapping table
+      final FieldGuideSpacing spacing;
+      if (width >= 840) {
+        spacing = FieldGuideSpacing.comfortable; // desktop / large tablet
+      } else if (width >= 600) {
+        spacing = FieldGuideSpacing.standard; // phone landscape / small tablet
+      } else {
+        spacing = FieldGuideSpacing.compact; // phone portrait
+      }
+
+      return Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          return MaterialApp.router(
+            theme: themeProvider.currentTheme(spacing: spacing),
+            // ... existing router config ...
+          );
+        },
+      );
+    },
+  );
+}
+```
+
+The implementing agent MUST also update `ThemeProvider.currentTheme` (or equivalent) to accept and forward the `spacing` parameter to `AppTheme.darkTheme(spacing: spacing)` / `AppTheme.lightTheme(spacing: spacing)`.
+
+Additional context for breakpoint mapping:
+
+1. Map the breakpoint width to a `FieldGuideSpacing` variant:
    - Width 0-599: `FieldGuideSpacing.compact` (phone portrait)
    - Width 600-839: `FieldGuideSpacing.standard` (phone landscape / small tablet)
    - Width 840+: `FieldGuideSpacing.comfortable` (desktop / large tablet)
@@ -2796,6 +2941,11 @@ pwsh -Command "flutter analyze"
 
 ---
 
+### Sub-phase 1.13: Phase 1 cleanup checklist (FROM SPEC)
+
+Verify all 7 items: (1) Zero analyzer errors, (2) Zero new lint violations, (3) All moved files have updated imports, (4) Barrel files reflect current exports, (5) No orphaned files, (6) Documentation updated, (7) GitHub issues closed.
+
+---
 
 ## Phase 2: Responsive Infrastructure + Animation + Navigation Adaptation + Widgetbook Skeleton
 
@@ -2855,9 +3005,15 @@ enum AppBreakpoint {
   /// Whether this breakpoint represents a phone form factor.
   bool get isCompact => this == AppBreakpoint.compact;
 
-  /// Whether this breakpoint represents tablet or larger.
-  bool get isTabletOrLarger =>
+  /// Whether this breakpoint is medium or larger (includes phone landscape 600dp+).
+  /// WHY: Renamed from isTabletOrLarger -- medium includes phone landscape, not just tablets.
+  bool get isMediumOrLarger =>
       this == AppBreakpoint.medium ||
+      this == AppBreakpoint.expanded ||
+      this == AppBreakpoint.large;
+
+  /// Whether this breakpoint is truly tablet+ (expanded or larger, 840dp+).
+  bool get isExpandedOrLarger =>
       this == AppBreakpoint.expanded ||
       this == AppBreakpoint.large;
 
@@ -3618,8 +3774,12 @@ class AppAnimatedEntrance extends StatefulWidget {
 class _AppAnimatedEntranceState extends State<AppAnimatedEntrance>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _fadeAnimation;
-  late final Animation<Offset> _slideAnimation;
+  // WHY: Not `late final` — didChangeDependencies fires multiple times (e.g.,
+  // theme change, MediaQuery change). Using `late final` would throw
+  // LateInitializationError on the second call.
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  bool _hasAnimated = false;
 
   @override
   void initState() {
@@ -3651,13 +3811,18 @@ class _AppAnimatedEntranceState extends State<AppAnimatedEntrance>
       curve: motion.curveStandard,
     ));
 
-    // Start animation after optional delay
-    if (widget.delay == Duration.zero) {
-      _controller.forward();
-    } else {
-      Future.delayed(widget.delay, () {
-        if (mounted) _controller.forward();
-      });
+    // WHY: Guard ensures animation only plays once. Without this,
+    // didChangeDependencies re-triggering would restart the entrance animation.
+    if (!_hasAnimated) {
+      _hasAnimated = true;
+      // Start animation after optional delay
+      if (widget.delay == Duration.zero) {
+        _controller.forward();
+      } else {
+        Future.delayed(widget.delay, () {
+          if (mounted) _controller.forward();
+        });
+      }
     }
   }
 
@@ -3813,9 +3978,10 @@ class _AppTapFeedbackState extends State<AppTapFeedback>
   @override
   void initState() {
     super.initState();
-    // NOTE: Using fast (150ms) rather than a hardcoded 100ms because fast is
-    // the smallest token available. The spec says "100ms via motion tokens" —
-    // the closest token is fast (150ms), which still feels snappy.
+    // NOTE: 100ms is below the smallest token (fast=150ms). Spec says "100ms
+    // via motion tokens" but no token that small exists. Using 100ms directly
+    // for the snappy tap feel; implementing agent should consider FieldGuideMotion.fast
+    // if exact token alignment is preferred over the 100ms spec value.
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 100),
@@ -4016,8 +4182,9 @@ Replace lines 82-98 (`_shellPage` and `_fadeTransition` methods) with:
             child: child,
           );
         },
-        // WHY: 200ms from spec for tab switch transitions.
-        // DesignConstants.animationFast was 150ms, but spec says 200ms for tabs.
+        // NOTE: CustomTransitionPage needs duration at construction (no context).
+        // Cannot use FieldGuideMotion.of(context). Const matches standard token.
+        // Reduced motion works via platform AccessibilityFeatures.
         transitionDuration: const Duration(milliseconds: 200),
         reverseTransitionDuration: const Duration(milliseconds: 200),
       );
@@ -4029,6 +4196,91 @@ Before deleting `_fadeTransition`, verify no other references exist in the file:
 - Search for `_fadeTransition` in `app_router.dart` — it should only appear in the old `_shellPage` definition.
 
 **Verification**: `pwsh -Command "flutter analyze --no-pub lib/core/router/app_router.dart"`
+Expected: No issues found.
+
+#### Step 2.8.3: Create `SharedAxisTransitionPage` helper
+
+**File**: `lib/core/design_system/animation/shared_axis_transition_page.dart` (NEW)
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:animations/animations.dart';
+
+/// FROM SPEC: SharedAxisTransition (horizontal) for peer screens.
+class SharedAxisTransitionPage extends CustomTransitionPage<void> {
+  SharedAxisTransitionPage({
+    required super.key,
+    required super.child,
+    SharedAxisTransitionType type = SharedAxisTransitionType.horizontal,
+  }) : super(
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SharedAxisTransition(
+              animation: animation,
+              secondaryAnimation: secondaryAnimation,
+              transitionType: type,
+              child: child,
+            );
+          },
+          // NOTE: Const duration = FieldGuideMotion.pageTransition default. No context at construction.
+          transitionDuration: const Duration(milliseconds: 350),
+          reverseTransitionDuration: const Duration(milliseconds: 350),
+        );
+}
+```
+
+**Verification**: `pwsh -Command "flutter analyze --no-pub lib/core/design_system/animation/shared_axis_transition_page.dart"`
+Expected: No issues found.
+
+#### Step 2.8.4: Create `AppContainerTransform` wrapper
+
+**File**: `lib/core/design_system/animation/app_container_transform.dart` (NEW)
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:animations/animations.dart';
+
+/// FROM SPEC: ContainerTransform for card -> detail screen.
+class AppContainerTransform extends StatelessWidget {
+  const AppContainerTransform({
+    super.key,
+    required this.closedBuilder,
+    required this.openBuilder,
+    this.closedElevation = 0,
+    // WHY: Use DesignConstants.radiusMedium instead of magic number 12.
+    this.closedShape = const RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(DesignConstants.radiusMedium)),
+    ),
+    this.closedColor,
+    // NOTE: Const default matches FieldGuideMotion.pageTransition token value.
+    // Cannot read tokens at construction time (no context). Callers can override.
+    this.transitionDuration = const Duration(milliseconds: 350),
+  });
+
+  final CloseContainerBuilder closedBuilder;
+  final OpenContainerBuilder<void> openBuilder;
+  final double closedElevation;
+  final ShapeBorder closedShape;
+  final Color? closedColor;
+  final Duration transitionDuration;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return OpenContainer<void>(
+      closedBuilder: closedBuilder,
+      openBuilder: openBuilder,
+      closedElevation: closedElevation,
+      closedShape: closedShape,
+      closedColor: closedColor ?? cs.surface,
+      openColor: cs.surface,
+      transitionDuration: transitionDuration,
+      transitionType: ContainerTransitionType.fadeThrough,
+    );
+  }
+}
+```
+
+**Verification**: `pwsh -Command "flutter analyze --no-pub lib/core/design_system/animation/app_container_transform.dart"`
 Expected: No issues found.
 
 ---
@@ -4066,6 +4318,8 @@ export 'app_animated_entrance.dart';
 export 'app_staggered_list.dart';
 export 'app_tap_feedback.dart';
 export 'app_value_transition.dart';
+export 'shared_axis_transition_page.dart';
+export 'app_container_transform.dart';
 ```
 
 #### Step 2.9.3: Update main design system barrel
@@ -4147,8 +4401,8 @@ Expected: No issues found.
 **File**: `widgetbook/pubspec.yaml` (NEW)
 
 ```yaml
-name: widgetbook_field_guide
-description: Widgetbook for Field Guide design system components.
+name: field_guide_widgetbook
+description: Widgetbook for Field Guide design system
 publish_to: 'none'
 
 environment:
@@ -4168,6 +4422,8 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  widgetbook_generator: ^3.10.0
+  build_runner: ^2.4.0
 ```
 
 **Verification**: `pwsh -Command "cd C:/Users/rseba/Projects/Field_Guide_App/widgetbook && flutter pub get"`
@@ -4213,8 +4469,8 @@ class FieldGuideWidgetbook extends StatelessWidget {
         // FROM SPEC: Phone (Samsung S21), Tablet (iPad 10.9"), Desktop (1440x900).
         DeviceFrameAddon(
           devices: [
-            Devices.android.samsungGalaxyS20,
-            Devices.ios.iPad,
+            Devices.android.samsungGalaxyS21,
+            Devices.ios.iPadAir4,
             Devices.desktop.desktop1440x900,
           ],
         ),
@@ -4222,6 +4478,10 @@ class FieldGuideWidgetbook extends StatelessWidget {
         TextScaleAddon(
           scales: [1.0, 1.25, 1.5, 2.0],
         ),
+        // FROM SPEC: Density knob (compact/standard/comfortable) for design review.
+        // WHY: Custom addon that overrides FieldGuideSpacing ThemeExtension to test
+        // how components adapt across density variants without running the full app.
+        _DensityAddon(),
       ],
       directories: [
         // WHY: Organized by design system layer (tokens, layout, animation, atoms, etc.)
@@ -4362,6 +4622,21 @@ class FieldGuideWidgetbook extends StatelessWidget {
               ],
             ),
             WidgetbookComponent(
+              name: 'AppStaggeredList',
+              useCases: [
+                WidgetbookUseCase(
+                  name: 'Staggered entrance',
+                  builder: (context) {
+                    return AppStaggeredList(
+                      children: List.generate(5, (i) => Card(
+                        child: ListTile(title: Text('Item $i')),
+                      )),
+                    );
+                  },
+                ),
+              ],
+            ),
+            WidgetbookComponent(
               name: 'AppTapFeedback',
               useCases: [
                 WidgetbookUseCase(
@@ -4387,13 +4662,8 @@ class FieldGuideWidgetbook extends StatelessWidget {
               useCases: [
                 WidgetbookUseCase(
                   name: 'Counter animation',
-                  builder: (context) {
-                    return StatefulBuilder(
-                      builder: (context, setState) {
-                        return _ValueTransitionDemo();
-                      },
-                    );
-                  },
+                  // NOTE: No StatefulBuilder needed -- _ValueTransitionDemo is already StatefulWidget.
+                  builder: (context) => _ValueTransitionDemo(),
                 ),
               ],
             ),
@@ -4470,6 +4740,31 @@ class _ValueTransitionDemoState extends State<_ValueTransitionDemo> {
         ],
       ),
     );
+  }
+}
+```
+
+Add `_DensityAddon` class after the `_ValueTransitionDemoState` class (before the closing triple-backtick):
+
+```dart
+/// FROM SPEC: Custom Widgetbook addon for density switching (compact/standard/comfortable).
+class _DensityAddon extends WidgetbookAddon<String> {
+  _DensityAddon() : super(name: 'Density');
+  @override
+  List<Field> get fields => [
+    ListField<String>(name: 'density', values: ['compact', 'standard', 'comfortable'],
+      initialValue: 'standard', labelBuilder: (v) => v),
+  ];
+  @override
+  String valueFromQueryGroup(Map<String, String> group) => group['density'] ?? 'standard';
+  @override
+  Widget buildUseCase(BuildContext context, Widget child, String setting) {
+    final spacing = switch (setting) {
+      'compact' => FieldGuideSpacing.compact,
+      'comfortable' => FieldGuideSpacing.comfortable,
+      _ => FieldGuideSpacing.standard,
+    };
+    return Theme(data: Theme.of(context).copyWith(extensions: <ThemeExtension>[spacing]), child: child);
   }
 }
 ```
@@ -4602,14 +4897,16 @@ Add:
 export 'motion_aware.dart';
 ```
 
-Final barrel contents:
+Final barrel contents (all 7 animation exports):
 ```dart
 /// Barrel export for the Field Guide animation system.
 export 'app_animated_entrance.dart';
+export 'app_container_transform.dart';
 export 'app_staggered_list.dart';
 export 'app_tap_feedback.dart';
 export 'app_value_transition.dart';
 export 'motion_aware.dart';
+export 'shared_axis_transition_page.dart';
 ```
 
 **Verification**: `pwsh -Command "flutter analyze --no-pub lib/core/design_system/animation/"`
@@ -4631,11 +4928,20 @@ Expected: No issues found.
 **Verification**: `pwsh -Command "cd C:/Users/rseba/Projects/Field_Guide_App/widgetbook && flutter analyze --no-pub"`
 Expected: No issues found.
 
+#### Step 2.12.3: Minimal Widgetbook CI validation
+
+**WHY**: FROM SPEC -- "CI: Build Widgetbook on every PR". Full CI integration deferred to P6, but minimal validation ensures the Widgetbook compiles.
+
+**Verification**: `pwsh -Command "cd C:/Users/rseba/Projects/Field_Guide_App/widgetbook && flutter pub get && flutter analyze"`
+Expected: No issues found. This step confirms the Widgetbook can be built in CI.
+
 ---
+
+**NOTE -- WIDGET TESTS DEFERRED**: Spec requires tests for every new component. Widget tests for all P2 and P3 components are deferred to Phase 6. Implementing agent should add basic smoke tests (renders without error, responds to key props) for at minimum AppButton, AppBreakpoint, and AppResponsiveBuilder.
 
 ### Phase 2 File Summary
 
-**New files created (14)**:
+**New files created (16)**:
 1. `lib/core/design_system/layout/app_breakpoint.dart`
 2. `lib/core/design_system/layout/app_responsive_builder.dart`
 3. `lib/core/design_system/layout/app_adaptive_layout.dart`
@@ -4648,8 +4954,10 @@ Expected: No issues found.
 10. `lib/core/design_system/animation/app_value_transition.dart`
 11. `lib/core/design_system/animation/motion_aware.dart`
 12. `lib/core/design_system/animation/animation.dart`
-13. `widgetbook/pubspec.yaml`
-14. `widgetbook/lib/main.dart`
+13. `lib/core/design_system/animation/shared_axis_transition_page.dart`
+14. `lib/core/design_system/animation/app_container_transform.dart`
+15. `widgetbook/pubspec.yaml`
+16. `widgetbook/lib/main.dart`
 
 **Files modified (3)**:
 1. `lib/core/router/scaffold_with_nav_bar.dart` — responsive navigation (NavigationBar -> NavigationRail at medium+), #201 fix
@@ -4664,6 +4972,10 @@ Expected: No issues found.
 
 
 ## Phase 3: Design System Expansion — New Components + Shared Widget Migrations
+
+**EXECUTION ORDER**: Sub-phases do NOT execute in document order. Move sub-phases precede new-component sub-phases. Order: **3.2, 3.1, 3.4, 3.3, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, 3.11**.
+
+**CRITICAL -- IMPORT FIXUP AFTER EVERY MOVE BATCH**: Sub-phases 3.2, 3.4, 3.5, 3.8, and 3.9 relocate files into atomic subdirectories, which breaks ~24 direct consumer imports (14 in `lib/`, 10 in `test/`). After EACH move sub-phase, the implementing agent MUST grep `lib/` and `test/` for direct imports at old paths, replace them with the barrel `import 'package:construction_inspector/core/design_system/design_system.dart';`, deduplicate, and verify with `flutter analyze`.
 
 **Prerequisites**: Phase 2 (token system + sub-directory scaffolding with barrel files) must be complete. The following sub-directory barrel files and token ThemeExtensions must already exist:
 - `lib/core/design_system/atoms/atoms.dart`
@@ -4681,6 +4993,8 @@ Expected: No issues found.
 - `FieldGuideShadows.of(context)` with fields: `low`, `medium`, `high`, `modal`
 
 **IMPORTANT**: All new components in this phase continue using `DesignConstants` for spacing/radii (the mass migration to token accessors happens in Phase 4+ decomposition). New components use `DesignConstants` consistently to match existing component style and avoid premature refactoring.
+
+**IMPORT PATH NOTE**: New P3 components must import DesignConstants from the canonical token path `../tokens/design_constants.dart` (NOT `../../theme/design_constants.dart`). The code blocks below may show the old `../../theme/` path -- the implementing agent MUST use `../tokens/` instead. The `theme/` shim exists for backward compatibility but new code should not depend on it.
 
 ---
 
@@ -4931,6 +5245,7 @@ class _DangerAppButton extends AppButton {
 }
 
 /// Icon-only button subclass. Overrides build() to render IconButton directly.
+/// NOTE: isLoading/isExpanded inherited from AppButton are no-ops for icon variant.
 class _IconAppButton extends AppButton {
   _IconAppButton({
     super.key,
@@ -5569,7 +5884,7 @@ Create `lib/core/design_system/molecules/app_date_picker.dart`:
 ```dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../theme/design_constants.dart';
+// NOTE: DesignConstants import removed -- not used in this widget.
 
 /// Themed date picker field that wraps showDatePicker with consistent styling.
 ///
@@ -5584,7 +5899,7 @@ import '../../theme/design_constants.dart';
 ///
 /// FROM SPEC: Wraps date picker with theme tokens. All dialog styling inherited
 /// from datePickerTheme in ThemeData.
-class AppDatePicker extends StatelessWidget {
+class AppDatePicker extends StatefulWidget { // WHY: StatefulWidget to own/dispose TextEditingController (memory leak fix)
   const AppDatePicker({
     super.key,
     required this.label,
@@ -7731,19 +8046,25 @@ Create `lib/core/design_system/feedback/app_banner.dart`:
 
 ```dart
 import 'package:flutter/material.dart';
-import '../../theme/field_guide_colors.dart';
 
-/// Severity level for [AppBanner] that maps to colors from [FieldGuideColors].
+/// Severity level for [AppBanner] that maps to colors from the theme.
 enum AppBannerSeverity {
   info, warning, error, success;
 
-  /// Resolves this severity to a color from [FieldGuideColors].
-  Color resolve(FieldGuideColors fg) => switch (this) {
-    AppBannerSeverity.info => fg.statusInfo,
-    AppBannerSeverity.warning => fg.statusWarning,
-    AppBannerSeverity.error => fg.statusError,
-    AppBannerSeverity.success => fg.statusSuccess,
-  };
+  /// Resolves this severity to a color from the theme.
+  /// WHY: Uses `Theme.of(context).colorScheme` instead of FieldGuideColors
+  /// because FieldGuideColors does not have a `statusError` field.
+  /// This keeps the component compilable without depending on a Phase 1
+  /// FieldGuideColors expansion that may or may not exist yet.
+  Color resolve(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return switch (this) {
+      AppBannerSeverity.info => cs.primary,
+      AppBannerSeverity.warning => cs.tertiary,
+      AppBannerSeverity.error => cs.error,
+      AppBannerSeverity.success => cs.primary,
+    };
+  }
 }
 
 /// Generic composable banner for status messages, warnings, and notifications.
@@ -7779,7 +8100,8 @@ class AppBanner extends StatelessWidget {
     super.key,
     required this.icon,
     required this.message,
-    required this.color,
+    this.color,
+    this.severity,
     this.actions = const [],
     this.dismissible = false,
     this.onDismiss,
@@ -7793,7 +8115,13 @@ class AppBanner extends StatelessWidget {
   final String message;
 
   /// Accent color for icon and background tinting.
-  final Color color;
+  /// If null, resolved from [severity] via [FieldGuideColors].
+  final Color? color;
+
+  /// Semantic severity that auto-resolves to a color from [FieldGuideColors].
+  /// WHY: Callers can use `severity: AppBannerSeverity.warning` instead of
+  /// manually looking up `fg.statusWarning`.
+  final AppBannerSeverity? severity;
 
   /// Action buttons (e.g., Retry, Dismiss).
   final List<Widget> actions;
@@ -7812,6 +8140,7 @@ class AppBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final effectiveColor = severity?.resolve(context) ?? color ?? cs.primary;
 
     // WHY: Build effective actions list. If dismissible and no actions provided,
     // add a default "Dismiss" button for consistent UX.
@@ -7828,8 +8157,8 @@ class AppBanner extends StatelessWidget {
     // We only provide semantic parameters.
     return MaterialBanner(
       key: testingKey,
-      backgroundColor: color.withValues(alpha: 0.08),
-      leading: Icon(icon, color: color),
+      backgroundColor: effectiveColor.withValues(alpha: 0.08),
+      leading: Icon(icon, color: effectiveColor),
       content: Text(
         message,
         style: tt.bodySmall?.copyWith(color: cs.onSurface),
@@ -8133,14 +8462,14 @@ export 'feedback/feedback.dart';
 
 **NOTE**: `layout/` and `animation/` sub-barrels are added in Phase 2 (layout) and Phase 5 (animation). If Phase 2 already added them, include:
 ```dart
-// Layout layer (Phase 2, if present)
-// export 'layout/layout.dart';
+// Layout layer (Phase 2 -- MUST include, already created)
+export 'layout/layout.dart';
 
-// Animation layer (Phase 5, not yet created)
-// export 'animation/animation.dart';
+// Animation layer (Phase 2 -- MUST include, already created)
+export 'animation/animation.dart';
 ```
 
-The implementing agent must check which sub-barrels actually exist and include only those that are ready.
+Phase 2 already created both `layout/layout.dart` and `animation/animation.dart`. These exports are NOT optional -- they MUST be present unconditionally.
 
 ---
 
@@ -8182,6 +8511,13 @@ Expected: No issues found. If there are "unused import" warnings, a file was mis
 
 ---
 
+#### Step 3.11.5: Update directory-reference.md
+
+**WHY**: FROM SPEC -- documentation updated per phase.
+**File**: `.claude/docs/directory-reference.md` (MODIFY) -- update `design_system/` section for new atomic subdirectory structure (atoms/, molecules/, organisms/, surfaces/, feedback/).
+
+---
+
 ### Phase 3 Summary
 
 **Files created** (20 new):
@@ -8206,14 +8542,14 @@ Expected: No issues found. If there are "unused import" warnings, a file was mis
 - `lib/core/design_system/feedback/app_contextual_feedback.dart`
 - `lib/core/design_system/feedback/app_banner.dart`
 
-**Files moved** (18 from flat to sub-dirs):
+**Files moved** (24 from flat to sub-dirs):
 - 6 atoms: `app_text.dart`, `app_icon.dart`, `app_chip.dart`, `app_toggle.dart`, `app_progress_bar.dart`, `app_mini_spinner.dart`
 - 4 molecules: `app_text_field.dart`, `app_counter_field.dart`, `app_list_tile.dart`, `app_section_header.dart`
 - 4 organisms: `app_glass_card.dart`, `app_section_card.dart`, `app_photo_grid.dart`, `app_info_banner.dart`
 - 6 surfaces: `app_scaffold.dart`, `app_bottom_bar.dart`, `app_bottom_sheet.dart`, `app_dialog.dart`, `app_sticky_header.dart`, `app_drag_handle.dart`
 - 4 feedback: `app_empty_state.dart`, `app_error_state.dart`, `app_loading_state.dart`, `app_budget_warning_chip.dart`
 
-**Files deleted** (4):
+**Files deleted** (5):
 - `lib/shared/widgets/search_bar_field.dart` (migrated to AppSearchBar)
 - `lib/shared/widgets/contextual_feedback_overlay.dart` (migrated to AppContextualFeedback)
 - `lib/shared/widgets/empty_state_widget.dart` (merged into AppEmptyState)
@@ -8259,6 +8595,10 @@ Expected: No issues found. If there are "unused import" warnings, a file was mis
 **File**: `lib/features/entries/presentation/screens/entry_editor_screen.dart`
 
 This is the highest line-count file in the codebase (1,857 lines). It already has 5 extracted section widgets (`EntryActivitiesSection`, `EntryContractorsSection`, `EntryFormsSection`, `EntryPhotosSection`, `EntryQuantitiesSection`). The remaining extractable pieces are: the app bar, the entry header, the safety section card, and the main build orchestration. The screen uses 27 `DesignConstants` references.
+
+#### Step 4.1.0: Formalized component discovery gate
+
+**Action**: Before decomposition, grep for private `_*Card`, `_*Tile`, `_*Row`, `_*Badge`, `_*Banner` widget classes in the batch feature dirs and cross-reference against the design system barrel. If a pattern appears in 2+ features, promote it first. Repeats at start of each batch (4a, 4b, 4.12).
 
 #### Step 4.1.1: Component discovery sweep
 
@@ -8350,8 +8690,7 @@ Expected: No errors related to `EditableSafetyCard` or missing imports.
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:construction_inspector/core/design_system/design_system.dart';
-import 'package:construction_inspector/core/theme/field_guide_colors.dart';
-import 'package:construction_inspector/core/theme/design_constants.dart';
+// NOTE: field_guide_colors + design_constants re-exported via design_system barrel above
 import 'package:construction_inspector/shared/shared.dart';
 import 'package:construction_inspector/features/entries/data/models/daily_entry.dart';
 
@@ -8624,12 +8963,10 @@ body: AppResponsiveBuilder(
       ),
     ],
   ),
-  medium: (context) => Row(
-    children: [
-      // NOTE: Left pane -- entry header pinned
-      SizedBox(
-        width: 360,
-        child: SingleChildScrollView(
+  // WHY: AppAdaptiveLayout (from P2) handles two-pane split, divider, and flex ratios.
+  // No magic widths needed -- AppAdaptiveLayout manages proportional sizing internally.
+  medium: (context) => AppAdaptiveLayout(
+    body: SingleChildScrollView(
           padding: EdgeInsets.all(FieldGuideSpacing.of(context).md),
           child: EntryHeaderCard(
             entry: _entry!,
@@ -8646,11 +8983,9 @@ body: AppResponsiveBuilder(
           ),
         ),
       ),
-      const VerticalDivider(width: 1),
-      // NOTE: Right pane -- scrollable sections (without header, since it's in left pane)
-      Expanded(
-        child: CustomScrollView(
-          key: TestingKeys.entryEditorScroll,
+    ),
+    detail: CustomScrollView(
+      key: TestingKeys.entryEditorScroll,
           controller: _scrollController,
           physics: const ClampingScrollPhysics(),
           slivers: [
@@ -8664,8 +8999,8 @@ body: AppResponsiveBuilder(
             ),
           ],
         ),
-      ),
-    ],
+      ],
+    ),
   ),
 ),
 ```
@@ -8735,8 +9070,7 @@ This screen has 5 tabs (Details, Locations, Contractors, Pay Items, Assignments)
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:construction_inspector/core/design_system/design_system.dart';
-import 'package:construction_inspector/core/theme/field_guide_colors.dart';
-import 'package:construction_inspector/core/theme/design_constants.dart';
+// NOTE: field_guide_colors + design_constants re-exported via design_system barrel above
 import 'package:construction_inspector/shared/shared.dart';
 import 'package:construction_inspector/features/locations/presentation/providers/location_provider.dart';
 import 'package:construction_inspector/features/locations/data/models/location.dart';
@@ -8798,8 +9132,7 @@ Expected: Zero analyzer errors.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:construction_inspector/core/design_system/design_system.dart';
-import 'package:construction_inspector/core/theme/field_guide_colors.dart';
-import 'package:construction_inspector/core/theme/design_constants.dart';
+// NOTE: field_guide_colors + design_constants re-exported via design_system barrel above
 import 'package:construction_inspector/shared/shared.dart';
 import 'package:construction_inspector/features/contractors/presentation/providers/contractor_provider.dart';
 import 'package:construction_inspector/features/contractors/presentation/providers/equipment_provider.dart';
@@ -8873,8 +9206,7 @@ Expected: Zero analyzer errors.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:construction_inspector/core/design_system/design_system.dart';
-import 'package:construction_inspector/core/theme/field_guide_colors.dart';
-import 'package:construction_inspector/core/theme/design_constants.dart';
+// NOTE: field_guide_colors + design_constants re-exported via design_system barrel above
 import 'package:construction_inspector/shared/shared.dart';
 import 'package:construction_inspector/features/quantities/presentation/providers/bid_item_provider.dart';
 import 'package:construction_inspector/features/quantities/data/models/bid_item.dart';
@@ -9043,9 +9375,11 @@ body: AppResponsiveBuilder(
   ),
   medium: (context) => Row(
     children: [
-      // WHY: NavigationRail-style section nav for tablet layout
+      // WHY: NavigationRail-style section nav for tablet layout.
+      // NOTE: Unique layout -- AppResponsiveBuilder is correct here (not AppAdaptiveLayout)
+      // because NavigationRail is not a standard body/detail pattern.
       SizedBox(
-        width: 220,
+        width: DesignConstants.navigationRailWidth, // WHY: named constant, not magic number
         child: NavigationRail(
           selectedIndex: _tabController.index,
           onDestinationSelected: (index) {
@@ -9076,7 +9410,7 @@ body: AppResponsiveBuilder(
           ],
         ),
       ),
-      const VerticalDivider(width: 1),
+      const AppDivider.vertical(), // WHY: no_raw_divider lint — use design system divider
       Expanded(
         child: AnimatedSwitcher(
           duration: FieldGuideMotion.of(context).fast,
@@ -9133,7 +9467,7 @@ This screen has the second-highest `DesignConstants` reference count (47). It co
 // widget for calendar day cells with entry indicators.
 import 'package:flutter/material.dart';
 import 'package:construction_inspector/core/design_system/design_system.dart';
-import 'package:construction_inspector/core/theme/field_guide_colors.dart';
+// NOTE: field_guide_colors re-exported via design_system barrel above
 
 // NOTE: Made public by removing underscore prefix.
 class AnimatedDayCell extends StatefulWidget {
@@ -9171,7 +9505,6 @@ class _AnimatedDayCellState extends State<AnimatedDayCell>
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:construction_inspector/core/design_system/design_system.dart';
-import 'package:construction_inspector/core/theme/field_guide_colors.dart';
 import 'package:construction_inspector/features/entries/data/models/daily_entry.dart';
 
 // NOTE: Made public, renamed from _ModernEntryCard to HomeEntryCard.
@@ -9219,8 +9552,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:construction_inspector/core/design_system/design_system.dart';
-import 'package:construction_inspector/core/theme/field_guide_colors.dart';
-import 'package:construction_inspector/core/theme/design_constants.dart';
+// NOTE: field_guide_colors + design_constants re-exported via design_system barrel above
 import 'package:construction_inspector/features/entries/data/models/daily_entry.dart';
 import 'package:construction_inspector/features/entries/presentation/providers/daily_entry_provider.dart';
 import 'package:construction_inspector/features/entries/presentation/providers/calendar_format_provider.dart';
@@ -9293,8 +9625,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:construction_inspector/core/design_system/design_system.dart';
-import 'package:construction_inspector/core/theme/field_guide_colors.dart';
-import 'package:construction_inspector/core/theme/design_constants.dart';
+// NOTE: field_guide_colors + design_constants re-exported via design_system barrel above
 import 'package:construction_inspector/shared/shared.dart';
 import 'package:construction_inspector/features/entries/data/models/daily_entry.dart';
 import 'package:construction_inspector/features/entries/presentation/widgets/home_entry_card.dart';
@@ -9411,37 +9742,28 @@ Expected: Zero analyzer errors.
 // Calendar/list + preview pane (tablet)
 body: AppResponsiveBuilder(
   compact: (context) => _buildCompactLayout(projectState),
-  medium: (context) => Row(
-    children: [
-      // Left pane: Calendar + entry list
-      SizedBox(
-        width: 400,
-        child: Column(
-          children: [
-            _buildProjectHeader(selectedProject),
-            Flexible(
-              fit: FlexFit.loose,
-              child: HomeCalendarSection(/* ... */),
-            ),
-            const Divider(height: 1),
-            Expanded(child: HomeDayContent(/* ... */)),
-          ],
+  // WHY: AppAdaptiveLayout (from P2) handles two-pane split, divider, and flex ratios.
+  medium: (context) => AppAdaptiveLayout(
+    body: Column(
+      children: [
+        _buildProjectHeader(selectedProject),
+        Flexible(
+          fit: FlexFit.loose,
+          child: HomeCalendarSection(/* ... */),
         ),
-      ),
-      const VerticalDivider(width: 1),
-      // Right pane: Entry detail/preview (if entry selected)
-      Expanded(
-        child: _selectedEntryId != null
-            ? _buildEntryPreview(_selectedEntryId!)
-            : Center(
-                child: AppEmptyState(
-                  icon: Icons.article_outlined,
-                  title: 'Select an entry',
-                  subtitle: 'Choose an entry from the list to preview',
-                ),
-              ),
-      ),
-    ],
+        const AppDivider(), // WHY: no_raw_divider lint
+        Expanded(child: HomeDayContent(/* ... */)),
+      ],
+    ),
+    detail: _selectedEntryId != null
+        ? _buildEntryPreview(_selectedEntryId!)
+        : Center(
+            child: AppEmptyState(
+              icon: Icons.article_outlined,
+              title: 'Select an entry',
+              subtitle: 'Choose an entry from the list to preview',
+            ),
+          ),
   ),
 ),
 ```
@@ -9614,7 +9936,7 @@ Expected: Zero analyzer errors.
 
 #### Step 4.4.2: Tokenize DesignConstants references
 
-**Action**: The mdot_hub_screen has only 6 `DesignConstants` references. Apply standard tokenization mapping.
+**Action**: The mdot_hub_screen has only 6 `DesignConstants` references. Apply standard tokenization mapping. Also update existing hub content widgets (`hub_header_content.dart`, `hub_proctor_content.dart`, `hub_quick_test_content.dart`) to use P3 form editor organisms: `AppFormSection` for collapsible sections, `AppFormSectionNav` for navigation, `AppFormFieldGroup` for grouping related fields.
 
 **Verification**:
 ```
@@ -9622,7 +9944,23 @@ pwsh -Command "flutter analyze lib/features/forms/"
 ```
 Expected: Zero analyzer errors.
 
-#### Step 4.4.3: Responsive layout with AppResponsiveBuilder
+#### Step 4.4.3: Create spec-mandated NEW widgets for MdotHub
+
+**Action**: Create the 3 NEW widgets specified in the MdotHubScreen decomposition target (FROM SPEC Section 3):
+
+1. **`lib/features/forms/presentation/widgets/hub_section_navigator.dart`**: Section navigator with completion status. Renders sidebar (tablet) or pills (phone). Uses `AppFormSectionNav` organism from P3.
+
+2. **`lib/features/forms/presentation/widgets/hub_status_summary.dart`**: Form-level completion status summary widget. Uses `AppFormStatusBar` organism from P3.
+
+3. **`lib/features/forms/presentation/widgets/hub_field_groups/`**: Directory for domain-specific field clusters extracted from `hub_proctor_content.dart` (e.g., proctor_fields.dart, weight_fields.dart). Uses `AppFormFieldGroup` organism from P3.
+
+**Verification**:
+```
+pwsh -Command "flutter analyze lib/features/forms/"
+```
+Expected: Zero analyzer errors.
+
+#### Step 4.4.4: Responsive layout with AppResponsiveBuilder
 
 **Action**: In `mdot_hub_screen.dart`, the hub uses accordion sections with `_expanded` state tracking which section is open. On tablet, convert to a two-pane layout:
 
@@ -9631,19 +9969,12 @@ Expected: Zero analyzer errors.
 // Two-pane section nav left + content right (tablet)
 body: AppResponsiveBuilder(
   compact: (context) => _buildCompactLayout(),
-  medium: (context) => Row(
-    children: [
-      // WHY: Section navigator in left pane for tablet layout.
-      // Uses StatusPillBar items rendered vertically.
-      SizedBox(
-        width: 200,
-        child: _buildSectionNav(),
-      ),
-      const VerticalDivider(width: 1),
-      Expanded(
-        child: _buildExpandedSectionContent(),
-      ),
-    ],
+  // WHY: AppAdaptiveLayout (from P2) handles two-pane split, divider, and flex ratios.
+  medium: (context) => AppAdaptiveLayout(
+    // WHY: Section navigator in left pane for tablet layout.
+    // Uses StatusPillBar items rendered vertically.
+    body: _buildSectionNav(),
+    detail: _buildExpandedSectionContent(),
   ),
 ),
 ```
@@ -9691,7 +10022,6 @@ This screen has no `DesignConstants` imports but has 26 hardcoded spacing litera
 // download CTA, and action buttons.
 import 'package:flutter/material.dart';
 import 'package:construction_inspector/core/design_system/design_system.dart';
-import 'package:construction_inspector/core/theme/field_guide_colors.dart';
 import 'package:construction_inspector/shared/shared.dart';
 import 'package:construction_inspector/features/projects/data/models/merged_project_entry.dart';
 import 'package:construction_inspector/features/projects/presentation/providers/project_sync_health_provider.dart';
@@ -9800,9 +10130,11 @@ class ProjectTabContent extends StatelessWidget {
   Widget build(BuildContext context) {
     // NOTE: Shared tab structure from the three _build*Tab methods.
     // Each tab uses the same list-building pattern with ProjectCard.
-    final healthProvider = context.watch<ProjectSyncHealthProvider>();
-    final authProvider = context.watch<AuthProvider>();
-    final now = DateTime.now();
+    // WHY: Use context.select instead of context.watch for surgical rebuilds
+    final healthStatuses = context.select<ProjectSyncHealthProvider, Map<String, dynamic>>((p) => p.statuses);
+    final canManageProjects = context.select<AuthProvider, bool>((p) => p.canManageProjects);
+    final canEditFieldData = context.select<AuthProvider, bool>((p) => p.canEditFieldData);
+    // NOTE: DateTime.now() should be passed from parent widget to avoid unnecessary rebuilds
 
     if (entries.isEmpty) {
       return emptyState ?? const Center(child: Text('No projects'));
@@ -9849,9 +10181,9 @@ Expected: Zero analyzer errors.
 | Hardcoded | Token |
 |-----------|-------|
 | `EdgeInsets.all(16)` | `EdgeInsets.all(FieldGuideSpacing.of(context).md)` |
-| `EdgeInsets.only(bottom: 12)` | `EdgeInsets.only(bottom: FieldGuideSpacing.of(context).sm + 4)` |
-| `SizedBox(width: 10)` | `SizedBox(width: FieldGuideSpacing.of(context).sm + 2)` |
-| `SizedBox(width: 6)` | `SizedBox(width: FieldGuideSpacing.of(context).xs + 2)` |
+| `EdgeInsets.only(bottom: 12)` | `EdgeInsets.only(bottom: FieldGuideSpacing.of(context).sm) /* NOTE: round 12->sm(8), no token arithmetic */` |
+| `SizedBox(width: 10)` | `SizedBox(width: FieldGuideSpacing.of(context).sm) /* NOTE: round 10->sm(8), no token arithmetic */` |
+| `SizedBox(width: 6)` | `SizedBox(width: FieldGuideSpacing.of(context).xs) /* NOTE: round 6->xs(4), no token arithmetic */` |
 | `SizedBox(height: 12)` | `SizedBox(height: DesignConstants.space3)` |
 | `SizedBox(height: 8)` | `SizedBox(height: FieldGuideSpacing.of(context).sm)` |
 | `SizedBox(width: 16)` | `SizedBox(width: FieldGuideSpacing.of(context).md)` |
@@ -9972,33 +10304,24 @@ body: AppResponsiveBuilder(
       Expanded(child: _buildTabBody(provider, authProvider)),
     ],
   ),
-  medium: (context) => Row(
-    children: [
-      // Left: project list (narrower)
-      SizedBox(
-        width: 400,
-        child: Column(
-          children: [
-            Consumer<ProjectImportRunner>(/* ... */),
-            const DeletionNotificationBanner(),
-            Expanded(child: _buildTabBody(provider, authProvider)),
-          ],
-        ),
-      ),
-      const VerticalDivider(width: 1),
-      // Right: project detail/dashboard preview
-      Expanded(
-        child: _selectedProjectId != null
-            ? _buildProjectDetail(_selectedProjectId!)
-            : Center(
-                child: AppEmptyState(
-                  icon: Icons.folder_outlined,
-                  title: 'Select a project',
-                  subtitle: 'Choose a project to see details',
-                ),
-              ),
-      ),
-    ],
+  // WHY: AppAdaptiveLayout (from P2) handles two-pane split, divider, and flex ratios.
+  medium: (context) => AppAdaptiveLayout(
+    body: Column(
+      children: [
+        Consumer<ProjectImportRunner>(/* ... */),
+        const DeletionNotificationBanner(),
+        Expanded(child: _buildTabBody(provider, authProvider)),
+      ],
+    ),
+    detail: _selectedProjectId != null
+        ? _buildProjectDetail(_selectedProjectId!)
+        : Center(
+            child: AppEmptyState(
+              icon: Icons.folder_outlined,
+              title: 'Select a project',
+              subtitle: 'Choose a project to see details',
+            ),
+          ),
   ),
 ),
 ```
@@ -10073,8 +10396,7 @@ This file has 37 `DesignConstants` references and contains the main `ContractorE
 // StatefulWidget dialog for managing personnel types (add/delete).
 import 'package:flutter/material.dart';
 import 'package:construction_inspector/core/design_system/design_system.dart';
-import 'package:construction_inspector/core/theme/field_guide_colors.dart';
-import 'package:construction_inspector/core/theme/design_constants.dart';
+// NOTE: field_guide_colors + design_constants re-exported via design_system barrel above
 import 'package:construction_inspector/features/contractors/data/models/models.dart';
 
 class PersonnelTypeManagerDialog extends StatefulWidget {
@@ -10107,8 +10429,7 @@ class _PersonnelTypeManagerDialogState
 // StatefulWidget dialog for managing equipment (add/delete).
 import 'package:flutter/material.dart';
 import 'package:construction_inspector/core/design_system/design_system.dart';
-import 'package:construction_inspector/core/theme/field_guide_colors.dart';
-import 'package:construction_inspector/core/theme/design_constants.dart';
+// NOTE: field_guide_colors + design_constants re-exported via design_system barrel above
 import 'package:construction_inspector/features/contractors/data/models/models.dart';
 
 class EquipmentManagerDialog extends StatefulWidget {
@@ -10153,8 +10474,7 @@ Expected: Zero analyzer errors.
 // IMPORTANT: Keep the stepper controls -- see feedback_keep_contractor_controls.md
 import 'package:flutter/material.dart';
 import 'package:construction_inspector/core/design_system/design_system.dart';
-import 'package:construction_inspector/core/theme/field_guide_colors.dart';
-import 'package:construction_inspector/core/theme/design_constants.dart';
+// NOTE: field_guide_colors + design_constants re-exported via design_system barrel above
 
 class PersonnelCounterCard extends StatelessWidget {
   final String typeName;
@@ -10278,6 +10598,13 @@ tab content into standalone widgets with proper Expanded + ListView/ScrollView b
 
 **Prerequisite**: Phase 4a complete (screens 1-6 decomposed, tokenized, sliver-migrated). All new design system components from P2-P3 are available. Token extensions (`FieldGuideSpacing`, `FieldGuideRadii`, `FieldGuideMotion`, `FieldGuideShadows`) are registered on `ThemeData.extensions` and accessible via `.of(context)`.
 
+**Component discovery gate** (FROM SPEC: "This gate runs at the start of every implementation batch"):
+Before starting any P4b sub-phase, grep for private `_*Card`, `_*Tile`, `_*Row`, `_*Badge`, `_*Banner` in P4b feature dirs (`todos/`, `calculator/`, `dashboard/`, `quantities/`, `forms/`). Cross-reference against design system barrel. If a pattern appears in 2+ features, promote it first.
+
+**notifyListeners guard convention** (FROM SPEC Section 4): When performing the Selector-ify step in each sub-phase, also audit the corresponding provider for `notifyListeners()` calls. Add `if (value == _value) return;` guards before all `notifyListeners()` calls where the setter receives a value that may be unchanged.
+
+**HTTP driver convention** (protocol step 10): For each sub-phase, if any TestingKey is renamed during extraction, update the corresponding HTTP driver endpoint mapping. If no keys are renamed, note "No TestingKey changes" explicitly.
+
 **Conventions for all sub-phases below**:
 - Every `DesignConstants.space*` reference becomes `FieldGuideSpacing.of(context).*` (e.g., `space2` -> `.sm`, `space4` -> `.md`, `space6` -> `.lg`, `space8` -> `.xl`)
 - Every `DesignConstants.radius*` reference becomes `FieldGuideRadii.of(context).*`
@@ -10292,7 +10619,7 @@ tab content into standalone widgets with proper Expanded + ListView/ScrollView b
 
 ---
 
-### Sub-phase 4.7: todos_screen.dart (891 lines -> ~300 + 3 extracted widgets)
+### Sub-phase 4.8: todos_screen.dart (891 lines -> ~300 + 3 extracted widgets)
 
 **File**: `lib/features/todos/presentation/screens/todos_screen.dart`
 **DesignConstants refs**: 25
@@ -10301,7 +10628,7 @@ tab content into standalone widgets with proper Expanded + ListView/ScrollView b
 
 **Agent**: `code-fixer-agent`
 
-#### Step 4.7.1: Extract TodoCard widget
+#### Step 4.8.1: Extract TodoCard widget
 
 Create `lib/features/todos/presentation/widgets/todo_card.dart` by extracting `_TodoCard` (lines 508-613) from `todos_screen.dart`. Make class public, tokenize all spacing/radius references.
 
@@ -10406,7 +10733,7 @@ class TodoCard extends StatelessWidget {
 }
 ```
 
-#### Step 4.7.2: Extract TodoDueDateChip widget
+#### Step 4.8.2: Extract TodoDueDateChip widget
 
 Create `lib/features/todos/presentation/widgets/todo_due_date_chip.dart` by extracting `_DueDateChip` (lines 615-677). Make public, tokenize.
 
@@ -10473,7 +10800,7 @@ class TodoDueDateChip extends StatelessWidget {
 }
 ```
 
-#### Step 4.7.3: Extract TodoDialogBody widget
+#### Step 4.8.3: Extract TodoDialogBody widget
 
 Create `lib/features/todos/presentation/widgets/todo_dialog_body.dart` by extracting `_TodoDialogBody` (lines 678-891). Make public, tokenize.
 
@@ -10604,7 +10931,7 @@ class TodoDialogBodyState extends State<TodoDialogBody> {
 }
 ```
 
-#### Step 4.7.4: Update todos_screen.dart main file
+#### Step 4.8.4: Update todos_screen.dart main file
 
 Rewrite `lib/features/todos/presentation/screens/todos_screen.dart` to import extracted widgets, remove inlined classes, tokenize remaining references. Target: ~300 lines.
 
@@ -10636,7 +10963,7 @@ Key changes in the main screen:
 7. Replace raw `TextButton` in `_buildNoMatchingState` with `AppButton.text`
 8. Replace raw `ElevatedButton` in FAB area (if any) with `AppButton.primary`
 
-#### Step 4.7.5: Create widgets barrel for todos feature
+#### Step 4.8.5: Create widgets barrel for todos feature
 
 Create `lib/features/todos/presentation/widgets/widgets.dart`:
 
@@ -10648,7 +10975,7 @@ export 'todo_dialog_body.dart';
 export 'todo_due_date_chip.dart';
 ```
 
-#### Step 4.7.6: Add motion to todos_screen.dart
+#### Step 4.8.6: Add motion to todos_screen.dart
 
 **Action**: Wire animation components created in P2 to todos_screen:
 
@@ -10673,7 +11000,11 @@ AppStaggeredList(
 
 **Verification**: Visual -- todo cards should stagger in; cards should scale on tap.
 
-#### Step 4.7.7: Verify todos_screen decomposition
+#### Step 4.8.7: Responsive layout for todos_screen.dart
+
+**Action**: Wrap `todos_screen.dart` body with responsive layout for tablet (FROM SPEC: Todos -- single column -> two-column on tablet). Use `AppResponsiveBuilder` with `compact:` for phone single-column and `medium:` with `AppAdaptiveLayout(body: _buildTodoList(), detail: selectedTodoDetail)` for tablet two-column layout.
+
+#### Step 4.8.8: Verify todos_screen decomposition
 
 ```
 pwsh -Command "flutter analyze lib/features/todos/"
@@ -10683,7 +11014,7 @@ Expected: 0 errors, 0 warnings in `lib/features/todos/`.
 
 ---
 
-### Sub-phase 4.8: calculator_screen.dart (712 lines -> ~300 + 3 extracted widgets)
+### Sub-phase 4.9: calculator_screen.dart (712 lines -> ~300 + 3 extracted widgets)
 
 **File**: `lib/features/calculator/presentation/screens/calculator_screen.dart`
 **DesignConstants refs**: 26
@@ -10692,7 +11023,7 @@ Expected: 0 errors, 0 warnings in `lib/features/todos/`.
 
 **Agent**: `code-fixer-agent`
 
-#### Step 4.8.1: Extract HmaCalculatorTab widget
+#### Step 4.9.1: Extract HmaCalculatorTab widget
 
 Create `lib/features/calculator/presentation/widgets/hma_calculator_tab.dart` by extracting `_HmaCalculator` (lines 93-292). Make public, tokenize all 26 DesignConstants refs.
 
@@ -10743,15 +11074,15 @@ class _HmaCalculatorTabState extends State<HmaCalculatorTab> {
 }
 ```
 
-#### Step 4.8.2: Extract ConcreteCalculatorTab widget
+#### Step 4.9.2: Extract ConcreteCalculatorTab widget
 
-Create `lib/features/calculator/presentation/widgets/concrete_calculator_tab.dart` by extracting `_ConcreteCalculator` (lines 293-491). Same tokenization pattern as Step 4.8.1.
+Create `lib/features/calculator/presentation/widgets/concrete_calculator_tab.dart` by extracting `_ConcreteCalculator` (lines 293-491). Same tokenization pattern as Step 4.9.1.
 
-#### Step 4.8.3: Extract CalculatorResultCard and CalculatorHistorySection
+#### Step 4.9.3: Extract CalculatorResultCard and CalculatorHistorySection
 
 Create `lib/features/calculator/presentation/widgets/calculator_result_card.dart` (from lines 492-580) and `lib/features/calculator/presentation/widgets/calculator_history_section.dart` (from lines 581-712, includes `_HistoryTile`). Tokenize all spacing/radius.
 
-#### Step 4.8.4: Update calculator_screen.dart main file
+#### Step 4.9.4: Update calculator_screen.dart main file
 
 Rewrite `lib/features/calculator/presentation/screens/calculator_screen.dart` to import extracted widgets, keep only `CalculatorScreen` + `_CalculatorScreenState` with TabController management and top-level build. Target: ~100 lines.
 
@@ -10763,7 +11094,7 @@ Rewrite `lib/features/calculator/presentation/screens/calculator_screen.dart` to
 // All DesignConstants.space* replaced with FieldGuideSpacing.of(context).*
 ```
 
-#### Step 4.8.5: Create widgets barrel for calculator feature
+#### Step 4.9.5: Create widgets barrel for calculator feature
 
 Create `lib/features/calculator/presentation/widgets/widgets.dart`:
 
@@ -10775,7 +11106,18 @@ export 'concrete_calculator_tab.dart';
 export 'hma_calculator_tab.dart';
 ```
 
-#### Step 4.8.6: Verify calculator_screen decomposition
+#### Step 4.9.6: Add motion to calculator_screen.dart
+
+**Action**: Wire animation components to calculator_screen (FROM SPEC motion targets):
+1. **AppTapFeedback**: Wrap `CalculatorResultCard` and history tiles with `AppTapFeedback`.
+2. **AppStaggeredList**: Wrap history list items with `AppStaggeredList`.
+3. **AppAnimatedEntrance**: Wrap tab content with `AppAnimatedEntrance` for fade+slide on tab switch.
+
+#### Step 4.9.7: Responsive layout for calculator_screen.dart
+
+**Action**: FROM SPEC: Calculator -- single column -> wider input + results side-by-side. Use `AppResponsiveBuilder` with `compact:` for single-column and `medium:` with `AppAdaptiveLayout(body: inputFields, detail: resultCard)`.
+
+#### Step 4.9.8: Verify calculator_screen decomposition
 
 ```
 pwsh -Command "flutter analyze lib/features/calculator/"
@@ -10785,18 +11127,18 @@ Expected: 0 errors, 0 warnings.
 
 ---
 
-### Sub-phase 4.9: project_dashboard_screen.dart (696 lines -> ~300 + 3 widgets)
+### Sub-phase 4.10: project_dashboard_screen.dart (696 lines -> ~300 + 3 widgets)
 
 **File**: `lib/features/dashboard/presentation/screens/project_dashboard_screen.dart`
 **DesignConstants refs**: 51 (highest per-file count)
-**Fixes**: #200 (Review Drafts tile-card style), #207 (empty-state button contrast), #208 (gradient out of place), #233 (button consistency)
+**Fixes**: #199 (Review Drafts no delete action), #200 (Review Drafts tile-card style), #207 (empty-state button contrast), #208 (gradient out of place), #233 (button consistency)
 **Current structure**: `_ProjectDashboardScreenState` (lines 30-696) with `_buildNoProjectSelected` (line 236), `_buildDraftsPill` (line 271), `_buildTodaysEntryCard` (line 294), `_buildQuickStats` (line 320), `_buildBudgetOverview` (line 383), `_buildTrackedItems` (line 431), `_buildApproachingLimit` (line 550)
 **Already extracted**: `dashboard_stat_card.dart`, `weather_summary_card.dart`, `budget_overview_card.dart`, `todays_entry_card.dart`
 **Extraction plan**: Move `_buildDraftsPill` -> `drafts_pill.dart`, `_buildTrackedItems` + `_buildApproachingLimit` -> `budget_items_section.dart`, inline `_buildQuickStats` stays (short)
 
 **Agent**: `code-fixer-agent`
 
-#### Step 4.9.1: Extract DraftsPill widget
+#### Step 4.10.1: Extract DraftsPill widget
 
 Create `lib/features/dashboard/presentation/widgets/drafts_pill.dart` by extracting `_buildDraftsPill` (lines 271-293). Tokenize, fix #200 (Review Drafts tile-card style).
 
@@ -10829,7 +11171,8 @@ class DraftsPill extends StatelessWidget {
 
         // FROM SPEC: #200 — Use AppSectionCard style instead of raw Container
         return AppSectionCard(
-          onTap: () => context.push('/entries?filter=draft&projectId=$projectId'),
+          // WHY: Use named route, not raw path string
+          onTap: () => context.pushNamed('drafts', pathParameters: {'projectId': projectId}),
           child: Padding(
             padding: EdgeInsets.symmetric(
               horizontal: spacing.md,
@@ -10855,7 +11198,7 @@ class DraftsPill extends StatelessWidget {
 }
 ```
 
-#### Step 4.9.2: Extract BudgetItemsSection widget
+#### Step 4.10.2: Extract BudgetItemsSection widget
 
 Create `lib/features/dashboard/presentation/widgets/budget_items_section.dart` by extracting `_buildTrackedItems` (lines 431-549) and `_buildApproachingLimit` (lines 550-696). These are closely related budget item displays.
 
@@ -10882,7 +11225,7 @@ class TrackedItemsSection extends StatelessWidget {
     // Replace all DesignConstants.radius* with radii.*
     // Replace raw Container decorations with AppSectionCard
     // Replace raw TextButton with AppButton.text
-    return const SizedBox.shrink(); // placeholder — full code in implementation
+    // ... (copy implementation lines from original, tokenize all spacing/radius/buttons)
   }
 }
 
@@ -10894,12 +11237,12 @@ class ApproachingLimitSection extends StatelessWidget {
     final spacing = FieldGuideSpacing.of(context);
     final fg = FieldGuideColors.of(context);
     // NOTE: Full implementation from lines 550-696, tokenized
-    return const SizedBox.shrink(); // placeholder — full code in implementation
+    // ... (copy implementation lines from original, tokenize all spacing/radius/buttons)
   }
 }
 ```
 
-#### Step 4.9.3: Update project_dashboard_screen.dart with fixes
+#### Step 4.10.3: Update project_dashboard_screen.dart with fixes
 
 Rewrite `lib/features/dashboard/presentation/screens/project_dashboard_screen.dart`:
 
@@ -10933,7 +11276,7 @@ AppButton.primary(
 // Replace: OutlinedButton -> AppButton.secondary
 ```
 
-#### Step 4.9.4: Remove AppTheme import from project_dashboard_screen.dart
+#### Step 4.10.4: Remove AppTheme import from project_dashboard_screen.dart
 
 ```dart
 // WHY: #208 — the gradient was sourced from AppTheme directly
@@ -10942,7 +11285,7 @@ AppButton.primary(
 // The gradient is now removed entirely, or if still needed, use FieldGuideColors.of(context).gradientStart/gradientEnd
 ```
 
-#### Step 4.9.5: Add motion to project_dashboard_screen.dart
+#### Step 4.10.5: Add motion to project_dashboard_screen.dart
 
 **Action**: Wire animation components created in P2 to project_dashboard_screen:
 
@@ -10971,7 +11314,7 @@ AppTapFeedback(
 ),
 ```
 
-#### Step 4.9.6: Fix #199 -- Add delete action to review draft tiles
+#### Step 4.10.6: Fix #199 -- Add delete action to review draft tiles
 
 **Action**: In the `DraftsPill` widget or in `project_dashboard_screen.dart` where draft entries are listed, add a delete action for review drafts. If `DraftsPill` only shows a count with a navigation link, the delete action should be available on the destination screen (entries list filtered by draft). However, if individual draft tiles are rendered on the dashboard, add swipe-to-delete or a long-press menu.
 
@@ -10998,7 +11341,7 @@ Dismissible(
     color: FieldGuideColors.of(context).statusError,
     alignment: Alignment.centerRight,
     padding: EdgeInsets.only(right: FieldGuideSpacing.of(context).md),
-    child: const Icon(Icons.delete, color: Colors.white),
+    child: Icon(Icons.delete, color: Theme.of(context).colorScheme.onError), // WHY: no hardcoded Colors.white
   ),
   child: DraftTile(draft: draft),
 ),
@@ -11008,7 +11351,18 @@ Dismissible(
 // to EntryListCard when entry.status == 'draft'.
 ```
 
-#### Step 4.9.7: Verify project_dashboard decomposition
+#### Step 4.10.7: Sliver verification for project_dashboard_screen.dart
+
+**Action**: Verify current scroll implementation. The dashboard already uses `CustomScrollView` with slivers (noted in Step 4.10.3). Confirm this is preserved after decomposition. If any extracted widget introduced a nested `ListView`, refactor to return sliver-compatible widgets.
+
+#### Step 4.10.8: Responsive layout for project_dashboard_screen.dart
+
+**Action**: FROM SPEC: Dashboard -- single column -> two-column grid -> three-column with side panel. Use `AppResponsiveBuilder` with:
+- `compact:` single column scrollable cards (current layout)
+- `medium:` `AppResponsiveGrid(columns: 2)` wrapping dashboard cards
+- `large:` `AppAdaptiveLayout(body: AppResponsiveGrid(columns: 2, children: cards), sidePanel: quickStatsPanel)`
+
+#### Step 4.10.9: Verify project_dashboard decomposition
 
 ```
 pwsh -Command "flutter analyze lib/features/dashboard/"
@@ -11018,7 +11372,7 @@ Expected: 0 errors, 0 warnings. Issues #199, #200, #207, #208, #233 addressed.
 
 ---
 
-### Sub-phase 4.10: quantity_calculator_screen.dart (656 lines -> ~300 + 2 widgets)
+### Sub-phase 4.11: quantity_calculator_screen.dart (656 lines -> ~300 + 2 widgets)
 
 **File**: `lib/features/quantities/presentation/screens/quantity_calculator_screen.dart`
 **DesignConstants refs**: 13
@@ -11027,7 +11381,7 @@ Expected: 0 errors, 0 warnings. Issues #199, #200, #207, #208, #233 addressed.
 
 **Agent**: `code-fixer-agent`
 
-#### Step 4.10.1: Extract QuantityCalculatorTab widget
+#### Step 4.11.1: Extract QuantityCalculatorTab widget
 
 Create `lib/features/quantities/presentation/widgets/quantity_calculator_tab.dart` by extracting `_CalculatorTab` (lines 384-533), `_FieldConfig` (lines 170-188), `_CalculatorTabConfig` (lines 189-383). Tokenize all DesignConstants refs.
 
@@ -11063,15 +11417,25 @@ class FieldConfig {
 // Replace raw ElevatedButton with AppButton.primary
 ```
 
-#### Step 4.10.2: Extract QuantityCalculatorCards
+#### Step 4.11.2: Extract QuantityCalculatorCards
 
 Create `lib/features/quantities/presentation/widgets/quantity_calculator_cards.dart` from `_FormulaCard` (lines 534-576) and `_ResultCard` (lines 577-656).
 
-#### Step 4.10.3: Update quantity_calculator_screen.dart
+#### Step 4.11.3: Update quantity_calculator_screen.dart
 
 Slim main file to ~150 lines. Keep `QuantityCalculatorResult` and `QuantityCalculatorScreen` with tab controller. Import extracted widgets. Tokenize remaining refs.
 
-#### Step 4.10.4: Verify quantity_calculator decomposition
+#### Step 4.11.4: Add motion to quantity_calculator_screen.dart
+
+**Action**: Wire animation components (FROM SPEC motion targets):
+1. **AppTapFeedback**: Wrap `FormulaCard` and `ResultCard` with `AppTapFeedback`.
+2. **AppAnimatedEntrance**: Wrap tab content with `AppAnimatedEntrance` for fade+slide on tab switch.
+
+#### Step 4.11.5: Responsive layout for quantity_calculator_screen.dart
+
+**Action**: FROM SPEC: Quantities -- single column list -> list + calculator side-by-side. Use `AppResponsiveBuilder` with `compact:` for single-column and `medium:` with `AppAdaptiveLayout(body: quantityList, detail: calculatorPanel)`.
+
+#### Step 4.11.6: Verify quantity_calculator decomposition
 
 ```
 pwsh -Command "flutter analyze lib/features/quantities/"
@@ -11081,7 +11445,7 @@ Expected: 0 errors, 0 warnings.
 
 ---
 
-### Sub-phase 4.11: form_viewer_screen.dart (636 lines -> ~300 + 2 widgets)
+### Sub-phase 4.12: form_viewer_screen.dart (636 lines -> ~300 + 2 widgets)
 
 **File**: `lib/features/forms/presentation/screens/form_viewer_screen.dart`
 **DesignConstants refs**: 35
@@ -11090,7 +11454,7 @@ Expected: 0 errors, 0 warnings.
 
 **Agent**: `code-fixer-agent`
 
-#### Step 4.11.1: Extract FormViewerActionBar widget
+#### Step 4.12.1: Extract FormViewerActionBar widget
 
 Create `lib/features/forms/presentation/widgets/form_viewer_action_bar.dart` by extracting `_buildQuickActionBar` (lines 332-372). Tokenize.
 
@@ -11129,12 +11493,12 @@ class FormViewerActionBar extends StatelessWidget {
     // Replace raw IconButton with AppButton.icon
     // Replace raw TextButton with AppButton.text
     // Replace DesignConstants.space* with spacing.*
-    return const SizedBox.shrink(); // placeholder
+    // ... (copy implementation from original lines, tokenize all spacing/radius/buttons)
   }
 }
 ```
 
-#### Step 4.11.2: Extract FormViewerSections widget
+#### Step 4.12.2: Extract FormViewerSections widget
 
 Create `lib/features/forms/presentation/widgets/form_viewer_sections.dart` by extracting `_buildTestsSection`, `_buildProctorsSection`, `_buildStandardsSection`, `_buildRemarksSection` (lines 398-636). These all follow the same pattern and use `AppFormSection` organisms from P3.
 
@@ -11168,11 +11532,18 @@ class FormViewerTestsSection extends StatelessWidget {
 // Each uses AppFormSection from design system organisms
 ```
 
-#### Step 4.11.3: Update form_viewer_screen.dart
+#### Step 4.12.3: Update form_viewer_screen.dart
 
 Slim to ~300 lines. Keep state management (loading, saving, dirty tracking), lifecycle, and `_load()`/`_save()` methods. Import extracted widgets.
 
-#### Step 4.11.4: Verify form_viewer decomposition
+#### Step 4.12.4: Add motion to form_viewer_screen.dart
+
+**Action**: Wire animation components (FROM SPEC motion targets):
+1. **AppTapFeedback**: Wrap interactive cards in action bar with `AppTapFeedback`.
+2. **AppStaggeredList**: Wrap section list items with `AppStaggeredList`.
+3. **AppAnimatedEntrance**: Wrap action bar and main content with `AppAnimatedEntrance`.
+
+#### Step 4.12.5: Verify form_viewer decomposition
 
 ```
 pwsh -Command "flutter analyze lib/features/forms/"
@@ -11182,11 +11553,13 @@ Expected: 0 errors, 0 warnings.
 
 ---
 
-### Sub-phase 4.12: Additional Screens Tokenization + Decomposition
+### Sub-phase 4.13: Additional Screens Tokenization + Decomposition
 
 **Agent**: `code-fixer-agent`
 
-#### Step 4.12.1: Tokenize gallery_screen.dart (614 lines, 24 DesignConstants refs)
+**Protocol step coverage for additional screens**: These screens follow a lighter decomposition pass. For each screen below, the protocol steps applied are: (1) component discovery (via P4b gate), (2) promote shared patterns (if found), (3) extract private widgets (if >300 lines), (4) tokenize. Skipped steps per screen are noted inline. Screens with `Consumer` patterns or scrollable lists additionally get Selector-ify and/or sliver migration. Screens that are already <300 lines skip extraction.
+
+#### Step 4.13.1: Tokenize gallery_screen.dart (614 lines, 24 DesignConstants refs)
 
 **File**: `lib/features/gallery/presentation/screens/gallery_screen.dart`
 
@@ -11202,9 +11575,12 @@ Tokenize main screen (lines 21-304): all 24 `DesignConstants` -> token equivalen
 // Replace all DesignConstants.space* -> FieldGuideSpacing.of(context).*
 // Replace all DesignConstants.radius* -> FieldGuideRadii.of(context).*
 // Replace raw TextButton in filter chips with AppButton.text
+// SKIPPED: (5) sliver -- gallery uses GridView, not list; (7) motion -- grid items don't benefit from stagger
+// SKIPPED: (8) responsive -- gallery grid already adapts via GridView crossAxisCount
+// SKIPPED: (10) HTTP driver -- no TestingKey changes
 ```
 
-#### Step 4.12.2: Tokenize pdf_import_preview_screen.dart (631 lines, 14 DesignConstants refs)
+#### Step 4.13.2: Tokenize pdf_import_preview_screen.dart (631 lines, 14 DesignConstants refs)
 
 **File**: `lib/features/pdf/presentation/screens/pdf_import_preview_screen.dart`
 
@@ -11212,7 +11588,7 @@ Extract `_BidItemPreviewCard` (lines 350-506) -> `lib/features/pdf/presentation/
 Extract `_BidItemEditDialogBody` (lines 507-631) -> `lib/features/pdf/presentation/widgets/bid_item_edit_dialog_body.dart`.
 Tokenize main screen. Target: ~250 lines.
 
-#### Step 4.12.3: Tokenize + decompose entries_list_screen.dart (554 lines, 24 DesignConstants refs)
+#### Step 4.13.3: Tokenize + decompose entries_list_screen.dart (554 lines, 24 DesignConstants refs)
 
 **File**: `lib/features/entries/presentation/screens/entries_list_screen.dart`
 
@@ -11220,12 +11596,26 @@ Extract `_buildDateGroup` + `_buildEntryCard` (lines 303-554) -> `lib/features/e
 Sliver migration: current `ListView` -> `CustomScrollView` with `SliverList`.
 Tokenize all 24 refs.
 
+**Responsive layout** (FROM SPEC: Entries List -- single column list -> list-detail on tablet):
+
 ```dart
-// FROM SPEC: entries_list canonical layout: list (phone) -> list-detail (tablet)
-// Wrap with AppResponsiveBuilder:
-// - compact: full-width list
-// - medium+: list on left (40%), detail on right (60%)
+body: AppResponsiveBuilder(
+  compact: (context) => _buildEntryList(),
+  // WHY: AppAdaptiveLayout handles list-detail pane split
+  medium: (context) => AppAdaptiveLayout(
+    body: _buildEntryList(),
+    detail: _selectedEntry != null
+        ? EntryPreviewPane(entry: _selectedEntry!)
+        : const AppEmptyState(
+            icon: Icons.article_outlined,
+            title: 'Select an entry',
+            subtitle: 'Choose an entry from the list to preview',
+          ),
+  ),
+),
 ```
+
+**Selector-ify**: Convert any `Consumer<DailyEntryProvider>` to `Selector<DailyEntryProvider, List<DailyEntry>>` where only the entries list is needed.
 
 **Motion**: Wire animation components to entries_list_screen:
 
@@ -11244,11 +11634,15 @@ AppStaggeredList(
 ),
 ```
 
-#### Step 4.12.4: Tokenize quantities_screen.dart (520 lines, 8 DesignConstants refs) + Fix #202, #203
+#### Step 4.13.4: Tokenize quantities_screen.dart (520 lines, 8 DesignConstants refs) + Fix #202, #203
 
 **File**: `lib/features/quantities/presentation/screens/quantities_screen.dart`
 
 Tokenize 8 `DesignConstants` refs.
+
+**Sliver migration**: If current scroll uses `ListView`, migrate to `CustomScrollView` + `SliverList.builder` (FROM SPEC sliver targets).
+
+**Responsive layout**: FROM SPEC: Quantities -- single column list -> list + calculator side-by-side. Add `AppResponsiveBuilder` with `compact:` single-column list and `medium:` with `AppAdaptiveLayout(body: quantityList, detail: calculatorPanel)`.
 
 ```dart
 // FROM SPEC: Fix #202 — Quantity picker search not cleared on selection
@@ -11259,7 +11653,7 @@ Tokenize 8 `DesignConstants` refs.
 // Simplify the add-quantity flow to reduce taps
 ```
 
-#### Step 4.12.5: Tokenize admin_dashboard_screen.dart (435 lines, 9 DesignConstants refs)
+#### Step 4.13.5: Tokenize admin_dashboard_screen.dart (435 lines, 9 DesignConstants refs)
 
 **File**: `lib/features/settings/presentation/screens/admin_dashboard_screen.dart`
 
@@ -11267,7 +11661,7 @@ Extract `_ApproveButton` (lines 412-435) -> inline or keep (small).
 Tokenize 9 refs. Replace raw `ElevatedButton` in `_ApproveButton` with `AppButton.primary`.
 Extract `_buildSectionHeader`, `_buildRequestTile`, `_buildMemberTile`, `_buildRoleBadge`, `_buildSyncIndicator` into a separate `admin_dashboard_widgets.dart` if total remains >300 lines.
 
-#### Step 4.12.6: Tokenize settings_screen.dart (420 lines, 1 DesignConstants ref)
+#### Step 4.13.6: Tokenize settings_screen.dart (420 lines, 1 DesignConstants ref)
 
 **File**: `lib/features/settings/presentation/screens/settings_screen.dart`
 
@@ -11282,13 +11676,13 @@ Tokenize the 1 ref. Add canonical layout:
 
 Decompose `_buildCertificationsSection` (lines 125-155) if screen exceeds 300 lines after layout wrapper.
 
-#### Step 4.12.7: Tokenize company_setup_screen.dart (442 lines, 17 DesignConstants refs)
+#### Step 4.13.7: Tokenize company_setup_screen.dart (442 lines, 17 DesignConstants refs)
 
 **File**: `lib/features/auth/presentation/screens/company_setup_screen.dart`
 
 Extract `_SectionCard` (lines 408-442) — evaluate if it should use `AppSectionCard` from design system instead. If yes, replace all `_SectionCard` usages with `AppSectionCard`. Tokenize 17 refs.
 
-#### Step 4.12.8: Verify all additional screens
+#### Step 4.13.8: Verify all additional screens
 
 ```
 pwsh -Command "flutter analyze lib/features/gallery/ lib/features/pdf/ lib/features/entries/ lib/features/quantities/ lib/features/settings/ lib/features/auth/"
@@ -11298,11 +11692,11 @@ Expected: 0 errors, 0 warnings across all touched features.
 
 ---
 
-### Sub-phase 4.13: Additional Widgets Tokenization
+### Sub-phase 4.14: Additional Widgets Tokenization
 
 **Agent**: `code-fixer-agent`
 
-#### Step 4.13.1: Tokenize entry_contractors_section.dart (585 lines, 17 DesignConstants refs)
+#### Step 4.14.1: Tokenize entry_contractors_section.dart (585 lines, 17 DesignConstants refs)
 
 **File**: `lib/features/entries/presentation/widgets/entry_contractors_section.dart`
 
@@ -11310,13 +11704,13 @@ Extract `_InlineContractorChooser` (lines 454-585) -> `lib/features/entries/pres
 Tokenize 17 refs in main section. Replace `Consumer` with `Selector` where only contractor list/count needed.
 Replace raw `ElevatedButton`/`TextButton`/`IconButton` with `AppButton.*` variants.
 
-#### Step 4.13.2: Tokenize entry_quantities_section.dart (508 lines, 0 DesignConstants refs but uses raw spacing)
+#### Step 4.14.2: Tokenize entry_quantities_section.dart (508 lines, 0 DesignConstants refs but uses raw spacing)
 
 **File**: `lib/features/entries/presentation/widgets/entry_quantities_section.dart`
 
 Even though 0 explicit `DesignConstants` refs, scan for raw `EdgeInsets.*(N)`, `SizedBox(width: N)`, `BorderRadius.circular(N)` with numeric literals. Replace with token equivalents. Extract sub-widgets if >300 lines after tokenization.
 
-#### Step 4.13.3: Decompose hub_proctor_content.dart (486 lines, 16 DesignConstants refs -> ~250)
+#### Step 4.14.3: Decompose hub_proctor_content.dart (486 lines, 16 DesignConstants refs -> ~250)
 
 **File**: `lib/features/forms/presentation/widgets/hub_proctor_content.dart`
 
@@ -11325,37 +11719,37 @@ This is a single `HubProctorContent` class (line 7). Decompose by extracting the
 - Extract proctor result display -> `proctor_result_display.dart`
 Tokenize 16 refs. Target: ~250 lines in main file.
 
-#### Step 4.13.4: Tokenize entry_forms_section.dart (356 lines, 9 DesignConstants refs)
+#### Step 4.14.4: Tokenize entry_forms_section.dart (356 lines, 9 DesignConstants refs)
 
 **File**: `lib/features/entries/presentation/widgets/entry_forms_section.dart`
 
 Tokenize 9 refs. File is near target (356 vs 300) — extract any private widget class if present to bring under 300.
 
-#### Step 4.13.5: Tokenize photo_detail_dialog.dart (328 lines)
+#### Step 4.14.5: Tokenize photo_detail_dialog.dart (328 lines)
 
 **File**: `lib/features/entries/presentation/widgets/photo_detail_dialog.dart`
 
 Tokenize all spacing/radius literals. Replace raw button types with `AppButton.*`.
 
-#### Step 4.13.6: Tokenize member_detail_sheet.dart (334 lines, 8 DesignConstants refs)
+#### Step 4.14.6: Tokenize member_detail_sheet.dart (334 lines, 8 DesignConstants refs)
 
 **File**: `lib/features/settings/presentation/widgets/member_detail_sheet.dart`
 
 Tokenize 8 refs. Extract sub-widget if >300 lines after.
 
-#### Step 4.13.7: Tokenize entry_photos_section.dart (310 lines)
+#### Step 4.14.7: Tokenize entry_photos_section.dart (310 lines)
 
 **File**: `lib/features/entries/presentation/widgets/entry_photos_section.dart`
 
 Tokenize all spacing/radius literals. Minor — near target already.
 
-#### Step 4.13.8: Tokenize photo_name_dialog.dart (297 lines)
+#### Step 4.14.8: Tokenize photo_name_dialog.dart (297 lines)
 
 **File**: `lib/features/photos/presentation/widgets/photo_name_dialog.dart`
 
 Already under 300 lines. Tokenize any remaining raw literals.
 
-#### Step 4.13.9: Verify all additional widgets
+#### Step 4.14.9: Verify all additional widgets
 
 ```
 pwsh -Command "flutter analyze lib/features/entries/ lib/features/forms/ lib/features/settings/ lib/features/photos/"
@@ -11365,15 +11759,21 @@ Expected: 0 errors, 0 warnings.
 
 ---
 
-### Sub-phase 4.14: Remaining GitHub Issues
+### Sub-phase 4.15: Remaining GitHub Issues
 
 **Agent**: `code-fixer-agent`
 
-#### Step 4.14.1: Fix #209 — Forms list internal ID visible
+#### Step 4.15.1: Fix #209 — Forms list internal ID visible
 
 **File**: `lib/features/forms/presentation/screens/forms_list_screen.dart` (302 lines, 5 DesignConstants refs)
 
-Tokenize the 5 DesignConstants refs. Fix #209 by removing internal ID display from form list tiles:
+Tokenize the 5 DesignConstants refs. Fix #209 by removing internal ID display from form list tiles.
+
+**Sliver migration**: If current scroll uses `ListView`, migrate to `CustomScrollView` + `SliverList.builder` (FROM SPEC sliver targets).
+
+**Responsive layout**: FROM SPEC: Forms List -- single column -> two-column. Add `AppResponsiveBuilder` with `compact:` single-column and `medium:` with `AppAdaptiveLayout(body: formsList, detail: selectedFormPreview)`.
+
+Fix #209 details:
 
 ```dart
 // FROM SPEC: Fix #209 — forms_list_screen shows internal form response ID in subtitle
@@ -11383,7 +11783,7 @@ Tokenize the 5 DesignConstants refs. Fix #209 by removing internal ID display fr
 // WHY: Internal IDs are not user-facing information
 ```
 
-#### Step 4.14.2: Fix #238 — no_inline_text_style 6 violations in pay apps
+#### Step 4.15.2: Fix #238 — no_inline_text_style 6 violations in pay apps
 
 Scan pay application files for `TextStyle(` in presentation layer:
 
@@ -11401,7 +11801,7 @@ For each violation found in pay app files, replace inline `TextStyle(` with `App
 // WHY: Lint rule enforces consistent text styling through design system
 ```
 
-#### Step 4.14.3: Verify remaining issues fixed
+#### Step 4.15.3: Verify remaining issues fixed
 
 ```
 pwsh -Command "flutter analyze lib/features/forms/ lib/features/"
@@ -11411,11 +11811,17 @@ Expected: 0 errors, 0 warnings. Issues #209, #238 addressed.
 
 ---
 
-### Sub-phase 4.15: Shared Widget Replacements
+### Sub-phase 4.16: Shared Widget Replacements
 
 **Agent**: `code-fixer-agent`
 
-#### Step 4.15.1: Replace StaleConfigWarning with AppBanner composition
+**NOTE**: When modifying `scaffold_with_nav_bar.dart` in this sub-phase, ensure all imports use `core/design_system/tokens/` paths (e.g., `core/design_system/tokens/field_guide_colors.dart`) not legacy `core/theme/` paths. Verify and correct any remaining `core/theme/` imports.
+
+**NOTE**: Verify that #201 (Android keyboard blocks buttons) is fully resolved after P2. If `resizeToAvoidBottomInset: true` alone is insufficient (e.g., `AppBottomBar` or bottom buttons are still obscured), add keyboard-aware padding using `MediaQuery.of(context).viewInsets.bottom` to push content above the keyboard.
+
+**Verification for #201**: Concrete test -- launch on Android emulator, navigate to entry editor, focus a text field to raise keyboard, confirm save button remains visible above keyboard. Add a widget test that verifies `MediaQuery.of(context).viewInsets.bottom` is respected by `AppScaffold`'s bottom bar positioning.
+
+#### Step 4.16.1: Replace StaleConfigWarning with AppBanner composition
 
 **File to update**: `lib/core/router/scaffold_with_nav_bar.dart` (line 72)
 
@@ -11438,7 +11844,7 @@ banners.add(
 );
 ```
 
-#### Step 4.15.2: Replace VersionBanner with AppBanner composition
+#### Step 4.16.2: Replace VersionBanner with AppBanner composition
 
 **File to update**: `lib/core/router/scaffold_with_nav_bar.dart` (line 64)
 
@@ -11460,7 +11866,7 @@ banners.add(
 );
 ```
 
-#### Step 4.15.3: Replace inline MaterialBanner instances in scaffold_with_nav_bar.dart
+#### Step 4.16.3: Replace inline MaterialBanner instances in scaffold_with_nav_bar.dart
 
 Replace the stale sync data banner (lines 81-93) and offline indicator (lines 98-114) with `AppBanner`:
 
@@ -11490,19 +11896,19 @@ banners.add(
 );
 ```
 
-#### Step 4.15.4: Remove StaleConfigWarning import and delete file
+#### Step 4.16.4: Remove StaleConfigWarning import and delete file
 
 1. Remove `import` of `StaleConfigWarning` from `scaffold_with_nav_bar.dart` (via `shared.dart` barrel)
 2. Delete `lib/shared/widgets/stale_config_warning.dart`
 3. Remove `export 'stale_config_warning.dart';` from `lib/shared/widgets/widgets.dart`
 
-#### Step 4.15.5: Remove VersionBanner import and delete file
+#### Step 4.16.5: Remove VersionBanner import and delete file
 
 1. Remove `import` of `VersionBanner` from `scaffold_with_nav_bar.dart` (via `shared.dart` barrel)
 2. Delete `lib/shared/widgets/version_banner.dart`
 3. Remove `export 'version_banner.dart';` from `lib/shared/widgets/widgets.dart`
 
-#### Step 4.15.6: Update shared widgets barrel
+#### Step 4.16.6: Update shared widgets barrel
 
 Update `lib/shared/widgets/widgets.dart` to reflect deletions:
 
@@ -11517,7 +11923,23 @@ export 'permission_dialog.dart';
 // NOTE: Only permission_dialog remains — evaluate if this barrel is still needed
 ```
 
-#### Step 4.15.7: Verify shared widget replacements
+#### Step 4.16.7: Verify deleted files do not exist
+
+**Action**: Confirm the deleted files are actually gone:
+```
+# WHY: Verify deletion completed -- files should not exist
+pwsh -Command "Test-Path lib/shared/widgets/stale_config_warning.dart"
+pwsh -Command "Test-Path lib/shared/widgets/version_banner.dart"
+```
+Expected: Both return `False`.
+
+Also grep to confirm no remaining imports reference the deleted files:
+```
+pwsh -Command "Select-String -Path lib/**/*.dart -Pattern 'stale_config_warning|version_banner' -Recurse"
+```
+Expected: No matches (or only this plan file).
+
+#### Step 4.16.8: Verify shared widget replacements
 
 ```
 pwsh -Command "flutter analyze lib/core/router/ lib/shared/"
@@ -11539,7 +11961,7 @@ Expected: 0 errors, 0 warnings. No references to deleted files remain.
 
 #### Step 5.1.1: Document pre-optimization baseline
 
-Create `lib/core/design_system/_performance_baseline.md` (temporary tracking file, deleted in P6):
+Create `.claude/plans/performance-baseline-p5.md` (temporary tracking file, deleted in Step 5.3.4):
 
 ```markdown
 # Performance Baseline
@@ -11562,7 +11984,14 @@ Create `lib/core/design_system/_performance_baseline.md` (temporary tracking fil
 
 #### Step 5.1.2: Profile entry_editor_screen
 
-Run the app in profile mode. Navigate to entry editor with test data. Record frame times in the baseline doc. Identify any >16ms frames and their widget source.
+Run the app in profile mode and follow this profiling protocol:
+
+1. Open Flutter DevTools Performance tab (URL printed in console on launch)
+2. Navigate to entry editor screen with test data loaded
+3. Click "Record" in Performance tab, then scroll through entries list for 10 seconds
+4. Stop recording and identify any frames exceeding the 16ms budget
+5. For each slow frame, expand the frame detail to find the responsible widget subtree
+6. Record avg frame build time, avg frame render time, worst frame time, and rebuild count in the baseline doc
 
 ```
 pwsh -Command "flutter run -d windows --profile" -timeout 600000
@@ -11575,6 +12004,34 @@ Profile `project_setup_screen`, `home_screen`, `project_list_screen`, `mdot_hub_
 #### Step 5.1.4: Identify rebuild storms
 
 Use Widget Rebuild Tracker in DevTools to find widgets rebuilding more than expected. Document the top 5 rebuild offenders per screen.
+
+---
+
+### Sub-phase 5.1b: Surgical Bottleneck Fixes
+
+**Agent**: `code-fixer-agent`
+
+<!-- FROM SPEC (Section 6, Profiling Protocol step 4): "Fix top 5 bottlenecks surgically" -->
+
+#### Step 5.1b.1: Fix top 5 rebuild offenders from 5.1.4
+
+Take the top 5 rebuild offenders identified in Step 5.1.4 and apply targeted fixes:
+
+1. **Selector conversion** -- Replace `Consumer<T>` with `Selector<T, U>` where the widget only uses a subset of the provider's state. Select the minimal primitive/value needed.
+2. **const constructors** -- Add `const` to static sub-widgets that do not depend on runtime state. This prevents them from being rebuilt when the parent rebuilds.
+3. **setState scope reduction** -- Where `setState` rebuilds an entire screen/widget, extract the mutable portion into a smaller `StatefulWidget` so only that sub-tree rebuilds.
+4. **Extract static sub-trees** -- Move unchanging widget sub-trees into separate `const` widget classes or final fields.
+5. **Avoid expensive computations in build** -- Cache computed values (e.g., filtered lists, formatted strings) in state rather than recomputing each build.
+
+For each fix, add a `// WHY: Reduces rebuilds -- was top-N offender in P5 profiling` comment.
+
+#### Step 5.1b.2: Verify bottleneck fixes compile
+
+```
+pwsh -Command "flutter analyze"
+```
+
+Expected: 0 errors. Bottleneck fixes are minimal and surgical -- no structural changes.
 
 ---
 
@@ -11712,7 +12169,7 @@ Run profile mode again. Navigate to same screens. Record post-optimization frame
 
 #### Step 5.3.2: Update baseline document with results
 
-Update `lib/core/design_system/_performance_baseline.md` with "After" columns. Document improvements.
+Update `.claude/plans/performance-baseline-p5.md` with "After" columns. Document improvements. Store final frame time baselines in `test/performance/baseline_frame_times.json` for CI regression detection before the temporary file is deleted in Step 5.3.4.
 
 #### Step 5.3.3: Address any remaining >16ms frames
 
@@ -11722,9 +12179,17 @@ If any screens still show >16ms frames after RepaintBoundary pass:
 3. Consider `const` constructors on static sub-widgets
 4. Consider `AutomaticKeepAliveClientMixin` for tab views
 
+#### Step 5.3.3b: Create performance regression CI step
+
+<!-- FROM SPEC (Section 8): "Performance tests -- Baseline frame times, fail on regression" -->
+
+Add a step to `.github/workflows/quality-gate.yml` that reads `test/performance/baseline_frame_times.json` and fails the build if any screen's worst frame time exceeds a configurable threshold (default: 20ms). This is a static check against committed baselines, not a live profiling run. If the baseline file is missing, the step should pass with a warning (baselines not yet captured).
+
+Create `tools/check_performance_baselines.dart` -- a simple Dart script that reads the JSON, checks each screen's `worstFrame` against the threshold, and exits non-zero if any exceed it.
+
 #### Step 5.3.4: Delete temporary baseline file
 
-Delete `lib/core/design_system/_performance_baseline.md` — it was only for tracking during this phase.
+Delete `.claude/plans/performance-baseline-p5.md` — it was only for tracking during this phase.
 
 ---
 
@@ -11798,6 +12263,28 @@ Add hover elevation change and subtle color shift when `onTap` is non-null.
 
 Chips should show hover highlight on desktop.
 
+#### Step 6.1.4b: Add hover states to AppGlassCard
+
+**File**: `lib/core/design_system/surfaces/app_glass_card.dart` (or actual path)
+
+When `onTap` is non-null, add hover state that subtly increases opacity or adds a border glow. Use `MouseRegion` + `AnimatedContainer` with `FieldGuideMotion.of(context).fast`.
+
+#### Step 6.1.4c: Add hover states to AppToggle
+
+**File**: `lib/core/design_system/atoms/app_toggle.dart` (or actual path)
+
+Add hover highlight and focus ring for desktop keyboard navigation. Use `FocusableActionDetector` if not already using Material's built-in focus handling.
+
+<!-- FROM SPEC: Desktop hover states + focus indicators on ALL interactive components -->
+
+#### Step 6.1.4d: Add hover + focus to remaining interactive molecules
+
+Add hover highlight and focus ring to remaining interactive molecules: AppTextField, AppCounterField, AppSearchBar, AppDropdown, AppDatePicker, AppTabBar. Use `WidgetStateProperty` pattern from Step 6.1.1.
+
+#### Step 6.1.4e: Verify all interactive components have hover + focus
+
+Audit: [atoms] AppButton, AppChip, AppToggle; [molecules] AppTextField, AppCounterField, AppSearchBar, AppDropdown, AppDatePicker, AppTabBar, AppListTile; [organisms] AppSectionCard, AppGlassCard (when tappable). Fix gaps.
+
 #### Step 6.1.5: Add focus indicators globally via ThemeData
 
 In `AppTheme.build()`, ensure focus-related properties are set:
@@ -11819,129 +12306,17 @@ Expected: 0 errors.
 
 ---
 
-### Sub-phase 6.2: Widgetbook Completion
+### Sub-phase 6.2: Widgetbook -- Design System Use Cases
 
 **Agent**: `code-fixer-agent`
 
+<!-- Phase 2 already created widgetbook skeleton. Phase 6 adds use cases only.
+     Update main.dart WidgetbookFolder children to register use case components below.
+     NOTE: Spec scope is "all design system components + key feature widgets".
+     This sub-phase covers design system components. Key feature widget use cases
+     (e.g., EntryCard, ProjectCard, ContractorRow) are deferred post-overhaul. -->
+
 #### Step 6.2.1: Add use cases for Atoms layer
-
-Create `widgetbook/` directory at project root with Widgetbook app:
-
-```dart
-// widgetbook/lib/main.dart
-import 'package:flutter/material.dart';
-import 'package:widgetbook/widgetbook.dart';
-import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
-
-// NOTE: Import the app's design system
-import 'package:construction_inspector/core/design_system/design_system.dart';
-
-// WHY: Widgetbook catalogs all design system components with knobs
-void main() {
-  runApp(const WidgetbookApp());
-}
-
-class WidgetbookApp extends StatelessWidget {
-  const WidgetbookApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Widgetbook.material(
-      directories: [
-        // NOTE: Organized by atomic design layer
-        WidgetbookFolder(
-          name: 'Tokens',
-          children: [
-            // Color swatches, spacing scale, radius scale, motion demos
-          ],
-        ),
-        WidgetbookFolder(
-          name: 'Atoms',
-          children: [
-            // AppButton, AppText, AppChip, AppDivider, AppBadge, AppAvatar, AppTooltip
-          ],
-        ),
-        WidgetbookFolder(
-          name: 'Molecules',
-          children: [
-            // AppTextField, AppSearchBar, AppListTile, AppDropdown, AppDatePicker, AppTabBar
-          ],
-        ),
-        WidgetbookFolder(
-          name: 'Organisms',
-          children: [
-            // AppFormSection, AppFormStatusBar, AppFormSectionNav, AppFormFieldGroup,
-            // AppFormSummaryTile, AppFormThumbnail
-          ],
-        ),
-        WidgetbookFolder(
-          name: 'Surfaces',
-          children: [
-            // AppSectionCard, AppGlassCard, AppActionCard, AppStatCard
-          ],
-        ),
-        WidgetbookFolder(
-          name: 'Feedback',
-          children: [
-            // AppDialog, AppBottomSheet, AppSnackbar, AppBanner, AppEmptyState,
-            // AppErrorState, AppLoadingState, AppContextualFeedback, AppInfoBanner
-          ],
-        ),
-        WidgetbookFolder(
-          name: 'Layout',
-          children: [
-            // AppScaffold, AppBottomBar, AppStickyHeader, AppResponsiveBuilder,
-            // AppAdaptiveLayout, AppResponsivePadding, AppResponsiveGrid
-          ],
-        ),
-      ],
-      addons: [
-        // Theme addon: dark + light
-        MaterialThemeAddon(
-          themes: [
-            WidgetbookTheme(name: 'Dark', data: AppTheme.darkTheme),
-            WidgetbookTheme(name: 'Light', data: AppTheme.lightTheme),
-          ],
-        ),
-        // Device addon: phone, tablet, desktop sizes
-        DeviceFrameAddon(
-          devices: [
-            Devices.ios.iPhone13,
-            Devices.ios.iPadPro11Inches,
-            Devices.windows.wideMonitor,
-          ],
-        ),
-      ],
-    );
-  }
-}
-```
-
-#### Step 6.2.2: Create Widgetbook pubspec.yaml
-
-```yaml
-# widgetbook/pubspec.yaml
-name: field_guide_widgetbook
-description: Widgetbook for Field Guide design system
-publish_to: 'none'
-
-environment:
-  sdk: ^3.10.7
-
-dependencies:
-  flutter:
-    sdk: flutter
-  widgetbook: ^3.10.0
-  widgetbook_annotation: ^3.2.0
-  construction_inspector:
-    path: ..
-
-dev_dependencies:
-  widgetbook_generator: ^3.10.0
-  build_runner: ^2.4.0
-```
-
-#### Step 6.2.3: Add use cases for Atoms layer
 
 Create individual use case files in `widgetbook/lib/atoms/`:
 
@@ -11988,17 +12363,93 @@ WidgetbookComponent(
 ),
 ```
 
-#### Step 6.2.4: Add use cases for Molecules, Organisms, Surfaces, Feedback, Layout
+#### Step 6.2.2: Add use cases for Molecules, Organisms, Surfaces, Feedback, Layout
 
 Create use case files for each remaining layer. Each component gets at least one use case with relevant knobs.
 
-#### Step 6.2.5: Verify Widgetbook builds
+#### Step 6.2.3: Verify Widgetbook builds
 
 ```
 pwsh -Command "cd widgetbook; flutter pub get; flutter analyze"
 ```
 
 Expected: Widgetbook compiles and runs without errors.
+
+#### Step 6.2.4: Add Widgetbook build to CI pipeline
+
+Update `.github/workflows/quality-gate.yml` to add a Widgetbook web build step (`cd widgetbook && flutter pub get && flutter build web`) as a PR check. This ensures Widgetbook stays buildable and catches import/compilation breakage early.
+
+---
+
+### Sub-phase 6.2b: Widget Tests for New Design System Components
+
+**Agent**: `qa-testing-agent`
+
+<!-- FROM SPEC (Section 8 - Testing): Every new component gets tests covering all variants, themes, breakpoints -->
+
+#### Step 6.2b.1: Create widget test files for core new components
+
+Create widget test files for the following key new components. Each test file should cover all variants, both themes (dark + light), and relevant breakpoints. NOTE: Test execution happens in CI only -- create the test files but do NOT run them locally.
+
+Files to create:
+1. `test/core/design_system/atoms/app_button_test.dart` -- test primary/secondary/ghost/danger variants, enabled/disabled states, dark/light themes
+2. `test/core/design_system/atoms/app_badge_test.dart` -- test all badge types, color variants, dark/light themes
+3. `test/core/design_system/layout/app_breakpoint_test.dart` -- test breakpoint detection at compact/medium/expanded/large widths using `MediaQuery` overrides
+4. `test/core/design_system/layout/app_responsive_builder_test.dart` -- test that correct builder callback fires at each breakpoint
+5. `test/core/design_system/layout/app_adaptive_layout_test.dart` -- test phone vs tablet vs desktop canonical layout patterns
+6. `test/core/design_system/tokens/field_guide_spacing_test.dart` -- test standard/compact/comfortable density variants return correct values
+7. `test/core/design_system/tokens/field_guide_motion_test.dart` -- test standard vs reduced motion variants, verify reduced durations are zero
+
+Each test file should follow the pattern:
+
+```dart
+// test/core/design_system/atoms/app_button_test.dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:construction_inspector/core/design_system/design_system.dart';
+
+void main() {
+  group('AppButton', () {
+    for (final brightness in Brightness.values) {
+      final theme = brightness == Brightness.dark
+          ? AppTheme.darkTheme
+          : AppTheme.lightTheme;
+
+      testWidgets('primary variant renders in ${brightness.name} theme',
+          (tester) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: theme,
+            home: Scaffold(
+              body: AppButton.primary(
+                label: 'Test',
+                onPressed: () {},
+              ),
+            ),
+          ),
+        );
+        expect(find.text('Test'), findsOneWidget);
+      });
+
+      // NOTE: Add tests for secondary, ghost, danger, disabled states
+    }
+  });
+}
+```
+
+#### Step 6.2b.2: Verify widget test files compile
+
+```
+pwsh -Command "flutter analyze test/core/design_system/"
+```
+
+Expected: 0 errors across all new test files. CI will execute the tests.
+
+#### Step 6.2b.3: Add responsive layout tests for key screens
+
+<!-- FROM SPEC (Section 8): "Responsive tests -- Test canonical layouts at each breakpoint" -->
+
+Create `test/core/design_system/layout/responsive_screen_layout_test.dart` testing canonical layout at each breakpoint for key screens (home, entry editor, project list). Use `MediaQuery` overrides to simulate compact/medium/expanded/large widths. Verify layout shell, density variant, content arrangement.
 
 ---
 
@@ -12024,13 +12475,13 @@ Update the project structure section, component count, and design system descrip
 # ```
 # lib/core/design_system/
 # +-- tokens/     # FieldGuideColors, FieldGuideSpacing, FieldGuideRadii, FieldGuideMotion, FieldGuideShadows, AppColors, DesignConstants
-# +-- atoms/      # AppButton, AppText, AppChip, AppDivider, AppBadge, AppAvatar, AppTooltip
-# +-- molecules/  # AppTextField, AppSearchBar, AppListTile, AppDropdown, AppDatePicker, AppTabBar
-# +-- organisms/  # AppFormSection, AppFormStatusBar, AppFormSectionNav, AppFormFieldGroup, AppFormSummaryTile, AppFormThumbnail
-# +-- surfaces/   # AppSectionCard, AppGlassCard, AppActionCard, AppStatCard
-# +-- feedback/   # AppDialog, AppBottomSheet, AppSnackbar, AppBanner, AppEmptyState, AppErrorState, AppLoadingState, AppContextualFeedback, AppInfoBanner
-# +-- layout/     # AppScaffold, AppBottomBar, AppStickyHeader, AppResponsiveBuilder, AppAdaptiveLayout, AppResponsivePadding, AppResponsiveGrid, AppBreakpoint
-# +-- animation/  # AppStaggeredList, AppFadeIn, AppSlideIn, AppScaleIn
+# +-- atoms/      # AppText, AppIcon, AppChip, AppToggle, AppProgressBar, AppMiniSpinner, AppButton, AppBadge, AppDivider, AppAvatar, AppTooltip
+# +-- molecules/  # AppTextField, AppSearchBar, AppDropdown, AppDatePicker, AppTabBar, AppListTile, AppCounterField, AppSectionHeader
+# +-- organisms/  # AppGlassCard, AppSectionCard, AppPhotoGrid, AppInfoBanner, AppStatCard, AppActionCard, AppFormSection, AppFormSectionNav, AppFormStatusBar, AppFormFieldGroup, AppFormSummaryTile, AppFormThumbnail
+# +-- surfaces/   # AppScaffold, AppBottomBar, AppBottomSheet, AppDialog, AppStickyHeader, AppDragHandle
+# +-- feedback/   # AppSnackbar, AppContextualFeedback, AppBanner, AppEmptyState, AppErrorState, AppLoadingState, AppBudgetWarningChip
+# +-- layout/     # AppBreakpoint, AppResponsiveBuilder, AppAdaptiveLayout, AppResponsivePadding, AppResponsiveGrid
+# +-- animation/  # AppAnimatedEntrance, AppStaggeredList, AppTapFeedback, AppValueTransition
 # ```
 # Token access: `FieldGuideSpacing.of(context).md`, `FieldGuideRadii.of(context).lg`, etc.
 # 2 themes: dark + light (high contrast removed)
@@ -12152,13 +12603,28 @@ Update any test flows that reference decomposed screen structures. For example, 
 
 // NOTE: These read from the responsive layout state to verify
 // correct breakpoint/density in automated tests
+
+// NOTE: These endpoints MUST be registered within `DriverServer._handleRequest`
+// which is gated by `kReleaseMode || kProfileMode`. They are never reachable in production.
 ```
 
-#### Step 6.4.4: Add Logger.ui category for component lifecycle
+#### Step 6.4.3b: Add animation-settling utility to driver
+
+<!-- FROM SPEC: Animation-aware waits for staggered entrances -->
+
+Add a utility method to the driver that waits for staggered entrance animations to complete before asserting widget state. This prevents flaky driver tests caused by `AppStaggeredList` or `AppAnimatedEntrance` mid-animation.
+
+```dart
+// In lib/core/driver/ -- add helper or endpoint:
+// POST /wait/animations-settled -- pumps frames until no pending animations remain
+// WHY: AppStaggeredList uses per-item delays; driver must wait for all items to appear
+```
+
+#### Step 6.4.4: Create Logger.ui category and add UI lifecycle logging
 
 ```dart
 // WHY: New logging category for UI component lifecycle events
-// In lib/core/logging/ — add or extend Logger:
+// In lib/core/logging/logger.dart — create Logger.ui if it doesn't exist (follow Logger.sync pattern):
 
 // Log responsive breakpoint changes:
 Logger.ui('Breakpoint changed: compact -> medium');
@@ -12168,7 +12634,18 @@ Logger.ui('Density switched: standard -> compact');
 
 // Log animation overrides:
 Logger.ui('Motion reduced: accessibility setting detected');
+
+// NOTE: UI lifecycle logs must contain only design system state (breakpoint, density, motion).
+// Do NOT log route paths or user/project context in Logger.ui calls.
 ```
+
+#### Step 6.4.4b: Update debug server with `/ui-diagnostics` endpoint
+
+<!-- FROM SPEC (Section 8): "Debug server UI diagnostics -- Breakpoint, density, theme, animation state" -->
+
+**File**: `tools/debug-server/server.js`
+
+Add a `/ui-diagnostics` endpoint that returns current breakpoint, density, theme mode, and animation state. The app should POST this data to the debug server whenever `Logger.ui` fires a breakpoint/density/motion change, allowing the debug server UI to display live design system state.
 
 #### Step 6.4.5: Verify driver + logging updates
 
@@ -12177,6 +12654,31 @@ pwsh -Command "flutter analyze lib/core/driver/ lib/core/logging/ lib/shared/tes
 ```
 
 Expected: 0 errors.
+
+---
+
+### Sub-phase 6.4c: Integration Test Updates
+
+**Agent**: `qa-testing-agent`
+
+<!-- FROM SPEC (Section 8): "Integration tests -- Update for decomposed widget structure" -->
+
+#### Step 6.4c.1: Audit integration tests for broken finders
+
+Audit all files in `integration_test/` for widget finders that reference:
+1. Widgets renamed or decomposed in Phase 4 (e.g., old screen-level keys that now live in extracted sub-widgets)
+2. Keys that moved from `shared/testing_keys/common_keys.dart` to `design_system_keys.dart`
+3. Widget types that changed (e.g., `ElevatedButton` -> `AppButton`)
+
+Update finders and key references to match the new decomposed structure.
+
+#### Step 6.4c.2: Verify integration test files compile
+
+```
+pwsh -Command "flutter analyze integration_test/"
+```
+
+Expected: 0 errors. Integration test execution is handled by CI/driver runs.
 
 ---
 
@@ -12273,15 +12775,20 @@ Expected: All golden test files pass static analysis. CI will verify baselines m
 Before flipping to ERROR, confirm zero violations exist:
 
 ```
-pwsh -Command "flutter analyze 2>&1 | Select-String 'no_raw_button|no_raw_divider|no_raw_tooltip|no_raw_dropdown|no_hardcoded_spacing|no_hardcoded_radius|no_hardcoded_duration|no_raw_navigator|prefer_design_system_banner'"
+pwsh -Command "flutter analyze 2>&1 | Select-String 'no_raw_button|no_raw_divider|no_raw_tooltip|no_raw_dropdown|no_hardcoded_spacing|no_hardcoded_radius|no_hardcoded_duration|no_direct_snackbar|prefer_design_system_banner'"
 ```
 
 Expected: 0 matches. If any violations remain, fix them first.
 
-#### Step 6.6.2: Update all 9 new lint rules to ERROR severity
+<!-- NOTE: no_raw_navigator stays at INFO severity per spec (Section 5 lint table) -- do NOT include in verification or flip.
+     no_direct_snackbar was extended in P0 to cover raw snackbar usage (merged no_raw_snackbar into it) -- include in both verification and flip. -->
 
-For each of the 9 new lint rules in `fg_lint_packages/field_guide_lints/lib/architecture/rules/`:
-<!-- NOTE: no_raw_snackbar is NOT a separate file -- P0 extended existing no_direct_snackbar instead. Only 9 new files need severity flipping. -->
+#### Step 6.6.2: Update all 9 lint rules to ERROR severity
+
+For each of the 9 lint rules in `fg_lint_packages/field_guide_lints/lib/architecture/rules/`:
+<!-- NOTE: no_raw_snackbar is NOT a separate file -- P0 extended existing no_direct_snackbar instead.
+     no_raw_navigator stays at INFO per spec -- not included in flip list.
+     no_direct_snackbar IS included because it was extended to cover raw snackbar usage (spec: "warning -> error"). -->
 
 ```dart
 // Change in each rule file:
@@ -12310,9 +12817,9 @@ Files to update (9 rules):
 5. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_hardcoded_spacing.dart`
 6. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_hardcoded_radius.dart`
 7. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_hardcoded_duration.dart`
-8. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_raw_navigator.dart`
+8. `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_direct_snackbar.dart` <!-- extended in P0 to cover raw snackbar; flip WARNING -> ERROR per spec -->
 9. `fg_lint_packages/field_guide_lints/lib/architecture/rules/prefer_design_system_banner.dart`
-<!-- NOTE: no_raw_snackbar is NOT a separate file -- P0 extended existing no_direct_snackbar instead -->
+<!-- NOTE: no_raw_navigator stays at INFO per spec (Section 5 lint table) -- not included in flip list -->
 
 #### Step 6.6.3: Verify zero violations at ERROR severity
 
