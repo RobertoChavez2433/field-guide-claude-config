@@ -1,0 +1,5 @@
+S13 since: 2026-04-06T00:08:23.6949444Z
+Marker: RT5 foreground server mutation marker
+No hint/fallback trigger found
+Observed quick sync pull with pulled=1
+Error logs present in S13 window

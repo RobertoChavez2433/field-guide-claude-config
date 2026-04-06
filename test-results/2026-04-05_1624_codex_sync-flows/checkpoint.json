@@ -1,1 +1,106 @@
-{"run_id":"2026-04-05_1624_codex_sync-flows","suite":"sync","platform":"dual (android:4948 + windows:4949)","results_dir":".claude/test-results/2026-04-05_1624_codex_sync-flows","completed":{},"bugs":[],"observations":[]}
+{
+  "run_id": "2026-04-05_1624_codex_sync-flows",
+  "suite": "sync",
+  "platform": "dual (android:4948 + windows:4949)",
+  "results_dir": ".claude/test-results/2026-04-05_1624_codex_sync-flows",
+  "completed": {
+    "sync": {
+      "S01": "PASS",
+      "S02": "PASS",
+      "S03": "FAIL",
+      "S04": "PASS_WITH_ERRORS",
+      "S05": "PASS_WITH_ERRORS",
+      "S06": "PASS_WITH_ERRORS",
+      "S07": "PASS_WITH_ERRORS",
+      "S09": "PASS_WITH_ERRORS",
+      "S10": "PASS",
+      "S11": "PASS_WITH_ERRORS",
+      "S12": "FAIL",
+      "S13": "FAIL",
+      "S15": "PASS",
+      "S18": "FAIL",
+      "S19": "FAIL"
+    }
+  },
+  "next_flow": "S14",
+  "bugs": [
+    "#198",
+    "#199",
+    "#200",
+    "#201",
+    "#202",
+    "#203",
+    "#204",
+    "#205",
+    "#206",
+    "#207",
+    "#208",
+    "#209",
+    "#210",
+    "#211",
+    "#212",
+    "#224"
+  ],
+  "ctx": {
+    "runTag": "4c6ho",
+    "projectId": "642909d6-7c0b-4d3a-bda1-084f915f705e",
+    "project2Id": "57241ac2-95c2-435a-aeb9-cb68050da127",
+    "entryId": "4b4b6cc9-0747-47c1-8118-216caf5f6b62",
+    "locationIds": [
+      "fec6926c-757c-41fb-bcc6-0973e5dfd44e",
+      "e8c8c56d-e155-499a-97dd-eab8823039a3"
+    ],
+    "contractorIds": [
+      "a9cbe51e-a6ff-421a-aee8-d282d4640630",
+      "c9dd2ecc-b322-472f-9fe2-e6712e9dacfc"
+    ],
+    "equipmentIds": [
+      "f427f208-8464-4bd9-8bd9-fc6b8a56ed0b",
+      "f7c437bd-0502-48d0-ba84-d25e35b7634b"
+    ],
+    "bidItemIds": [
+      "6ed9b5c3-b79e-4ba7-ab6d-6c155c64b18f"
+    ],
+    "assignmentId": "b78541ed-b75e-440d-975e-6e1de9ec627a",
+    "photoIds": [
+      "3c919290-97ac-4da3-aa02-37adb38f0eb8"
+    ],
+    "documentIds": [
+      "85a4812d-cc96-486d-8554-3616044c4419"
+    ],
+    "formResponseIds": [
+      "4ea459a2-6d2b-4e00-99c5-733465fbf853"
+    ],
+    "todoIds": [
+      "76e7366e-6244-4723-bcfb-39f74a84fe4e"
+    ],
+    "calculationIds": [
+      "01dc88b7-3187-45ef-94ee-e64f61fe41f7"
+    ]
+  },
+  "observations": [
+    "Admin full sync pushed new todo_items and calculation_history rows successfully with 0 errors.",
+    "Admin form save created form_responses/4ea459a2-6d2b-4e00-99c5-733465fbf853 with form_type mdot_0582b for entry 4b4b6cc9-0747-47c1-8118-216caf5f6b62, and inspector sync pulled it into the Forms screen.",
+    "S07 spot-check update coverage completed for todo_items: todo 76e7366e-6244-4723-bcfb-39f74a84fe4e updated to 'VRF-Check rebar spacing 4c6ho [done]' in Supabase and on the inspector device.",
+    "Entry PDF preview opened successfully on Android, but the rendered report showed mismapped values/field placement. Filed as #210.",
+    "Project 642909d6-7c0b-4d3a-bda1-084f915f705e was remotely deleted from admin; Supabase verifyCascadeDelete passed and both devices dropped the project after refresh/sync.",
+    "Inspector sync removed the deleted project locally but never showed deletion_notification_banner. Filed as #211.",
+    "S10 unassignment coverage passed: project 57241ac2-95c2-435a-aeb9-cb68050da127 became visible on the inspector when assigned, disappeared after its project_assignments row was soft-deleted, and was then remotely deleted for cleanup.",
+    "Inspector full sync repeatedly logged integrity failures for form_exports, entry_exports, and documents and cleared cursors across many tables. Filed as #204.",
+    "Realtime hint channel registration repeatedly failed because register_sync_hint_channel and deactivate_sync_hint_channel RPCs were missing. Filed as #205.",
+    "After photo sync, the inspector report route /report/4b4b6cc9-0747-47c1-8118-216caf5f6b62 got stuck on Loading and logged a Null-to-String cast error. Filed as #206.",
+    "Both admin and inspector sometimes required backing out of a nested dashboard stack before bottom-nav taps to Settings would actually change routes.",
+    "On the inspector settings screen, settings_sync_button disappears while sync is running and returns after completion; only the first tap should be treated as authoritative for log capture.",
+    "The inspector Forms screen rendered the synced mdot_0582b row visually, but the expected saved_0582b_<responseId> and form_response_open_button_<responseId> testing keys were not exposed in the live tree during this run.",
+    "S09 uses a newer delete-sheet plus project_remote_delete_dialog_confirm flow, not the older keyed two-step text-confirm flow described in the sync spec.",
+    "Final VRF sweep showed both test projects present only as soft-deleted rows with non-null deleted_at timestamps.",
+    "S11 document sync passed on the data path: document 85a4812d-cc96-486d-8554-3616044c4419 existed in Supabase with remote_path and the uploaded file existed in entry-documents storage for entry 3014bdef-6630-42ce-bb1a-22cbb6856468.",
+    "Inspector report route /report/3014bdef-6630-42ce-bb1a-22cbb6856468 does not expose document attachment UI keys; the live tree only showed report_attachments_section with report_add_photo_button, so S11 UI verification was recorded as an observation per spec rather than a failure.",
+    "S13 foreground realtime verification failed: after admin pushed daily_entries/3014bdef-6630-42ce-bb1a-22cbb6856468 with activities text '[auto1]', the inspector remained stale on the report route until a manual sync was run. Filed as #212.",
+    "S12 resume quick-sync verification failed on Android: a peer device pushed activities text '[auto3]', Android was backgrounded briefly and resumed, logs showed 'App resumed, triggering quick sync' followed by 'Quick sync: no dirty scopes or tracker unavailable', and the Android report stayed stale on '[auto2]'. Filed as #224.",
+    "S15 passed on both roles: Dashboard and Calendar exposed the global sync_progress_spinner full-sync affordance, and Settings exposed settings_sync_dashboard_tile plus sync_now_full_button. Product intent is that the app-bar icon runs a full sync from anywhere.",
+    "S18 private-channel verification failed at the backend layer: sync logs still showed register_sync_hint_channel schema-cache failures, and direct REST access to sync_hint_subscriptions returned PGRST205 because the table was not present in the schema cache. This remains covered by #205.",
+    "S19 rebind verification failed on the inspector device: after sign-out/sign-in, logs showed RealtimeHintHandler rebinding plus another register_sync_hint_channel schema-cache failure, and a fresh admin sync changing activities to '[auto2]' left the inspector stale on '[auto1]' until manual sync. Covered by #205 and #212.",
+    "S14 and S17 still require deeper background/OS control than the current cross-device harness provides. S16 is presently blocked by the broken hint/private-channel path captured in #205, #212, and #224."
+  ]
+}

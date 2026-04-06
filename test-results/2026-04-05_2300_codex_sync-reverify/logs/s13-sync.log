@@ -1,0 +1,11 @@
+00:08:49 INFO  sync   SyncLifecycleManager: App resumed, triggering quick sync
+00:08:49 INFO  sync   Reachability check passed (HTTP 200)
+00:08:49 INFO  sync   SyncCoordinator: starting quick sync
+00:08:49 INFO  sync   Reachability check passed (HTTP 200)
+00:08:49 INFO  sync   quick push complete: 0 pushed, 0 errors
+00:08:49 INFO  sync   Quick sync fallback: running scoped incremental pull (no_dirty_scopes)
+00:08:50 INFO  sync   Pull skip (no contractors): equipment
+00:08:51 INFO  sync   Pull skip (adapter.skipPull): user_consent_records
+00:08:51 INFO  sync   quick pull complete: 1 pulled, 0 errors
+00:08:51 INFO  sync   Sync cycle (quick): pushed=0 pulled=1 errors=0 conflicts=1 skippedFk=0 skippedPush=0 duration=1392ms
+

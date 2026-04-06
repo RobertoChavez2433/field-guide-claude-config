@@ -1,0 +1,16 @@
+00:10:06 INFO  sync   SyncLifecycleManager: App paused, scheduling debounced sync
+00:10:12 INFO  sync   SyncLifecycleManager: App resumed, triggering quick sync
+00:10:12 INFO  sync   RealtimeHintHandler: subscribed to private channel (sub=64aaaa23-e1a3-461f-afab-3b96a8641871)
+00:10:12 INFO  sync   Reachability check passed (HTTP 200)
+00:10:12 INFO  sync   SyncCoordinator: starting quick sync
+00:10:12 INFO  sync   Reachability check passed (HTTP 200)
+00:10:12 INFO  sync   LWW push skip: daily_entries/40a823e4-d1b8-4992-9980-2d7c718add76 -- server=2026-04-06 00:10:07.511182Z >= local=2026-04-05 20:10:05.220193
+00:10:13 INFO  sync   LWW push skip: daily_entries/40a823e4-d1b8-4992-9980-2d7c718add76 -- server=2026-04-06 00:10:07.511182Z >= local=2026-04-05 20:10:05.220193
+00:10:13 INFO  sync   LWW push skip: daily_entries/40a823e4-d1b8-4992-9980-2d7c718add76 -- server=2026-04-06 00:10:07.511182Z >= local=2026-04-05 20:10:05.220193
+00:10:13 INFO  sync   quick push complete: 3 pushed, 0 errors
+00:10:13 INFO  sync   Quick sync fallback: running scoped incremental pull (no_dirty_scopes)
+00:10:13 INFO  sync   Pull skip (no contractors): equipment
+00:10:14 INFO  sync   Pull skip (adapter.skipPull): user_consent_records
+00:10:14 INFO  sync   quick pull complete: 1 pulled, 0 errors
+00:10:14 INFO  sync   Sync cycle (quick): pushed=3 pulled=1 errors=0 conflicts=1 skippedFk=0 skippedPush=3 duration=2099ms
+

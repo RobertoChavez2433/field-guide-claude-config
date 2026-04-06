@@ -1,0 +1,5 @@
+00:12:13 INFO  sync   RealtimeHintHandler: channel closed
+00:12:13 INFO  sync   RealtimeHintHandler: starting fallback polling (channel_closed) every 20s
+00:12:13 INFO  sync   RealtimeHintHandler: deactivate RPC failed (best-effort): PostgrestException(message: permission denied for function deactivate_sync_hint_channel, code: 42501, details: Unauthorized, hint: null)
+00:12:13 INFO  sync   RealtimeHintHandler: disposed
+

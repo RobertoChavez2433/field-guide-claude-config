@@ -1,0 +1,5 @@
+{
+  "route": "/login",
+  "hasBottomNav": false,
+  "canPop": false
+}
