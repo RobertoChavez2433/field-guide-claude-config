@@ -3,7 +3,7 @@
   "name": "Sync Engine",
   "status": "in_progress",
   "description": "Bidirectional offline-first sync between SQLite and Supabase with last-write-wins conflict resolution and soft-delete awareness",
-  "current_phase": "S739: Live sync reverification now covers support tickets and consent audit records end to end. Insert-only adapters skip the generic LWW updated_at pre-check, and driver-mode Help & Support no longer exposes the broken Sentry feedback path.",
+  "current_phase": "S746: Live S21 + Windows delete verification has now proven and fixed three sync defects: entry delete UI must route through cascade soft delete, pull scope must retain deleted parent IDs so child tombstones can still arrive, and project delete local cascade must include project_assignments to match the remote RPC subtree delete. The next sync phase is split delete orchestration: lock the shared delete graph, separate local cascade from remote delete coordination, add first-class scope-revocation cleanup, keep storage cleanup isolated, and finish live proof for project-delete storage cleanup, deleted-item UI absence, and remaining file-backed/user-scoped lanes.",
   "docs": {
     "overview": "docs/features/feature-sync-overview.md",
     "architecture": "docs/features/feature-sync-architecture.md",
@@ -39,6 +39,6 @@
   },
   "metrics": {
     "test_coverage_percentage": 92,
-    "last_updated": "2026-04-06T17:15:00Z"
+    "last_updated": "2026-04-07T00:25:00Z"
   }
 }
