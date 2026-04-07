@@ -29,6 +29,43 @@ Feature-first Clean Architecture with provider-only state management, offline-fi
 - Check `mounted` after every async gap before using `context`
 - No `debugPrint` in production code — use `Logger`
 
+### Design System Lint Rules (Phase 0 of overhaul, lint-enforced)
+
+| Rule | Banned Pattern | Replacement |
+|------|----------------|-------------|
+| `no_raw_button` | `ElevatedButton`, `TextButton`, `OutlinedButton`, `FilledButton`, `IconButton` | `AppButton.primary` / `AppButton.secondary` / `AppButton.tertiary` / `AppButton.icon` |
+| `no_raw_divider` | `Divider(`, `VerticalDivider(` | `AppDivider` |
+| `no_raw_tooltip` | `Tooltip(` | `AppTooltip` |
+| `no_raw_dropdown` | `DropdownButton`, `DropdownButtonFormField` | `AppDropdown` |
+| `no_raw_snackbar` | `SnackBar(` constructor in presentation/ | `SnackBarHelper.show*()` / `AppSnackbar` |
+| `no_hardcoded_spacing` | `EdgeInsets.all(16)`, raw `SizedBox(height: 8)`, numeric `padding:` literals | `FieldGuideSpacing.of(context).md` etc. |
+| `no_hardcoded_radius` | `BorderRadius.circular(12)`, `Radius.circular(8)` | `FieldGuideRadii.of(context).md` etc. |
+| `no_hardcoded_duration` | `Duration(milliseconds: 300)` in animation/transition contexts | `FieldGuideMotion.of(context).normal` etc. |
+| `no_raw_navigator` (INFO) | `Navigator.of(context).push/pop` for routed flows | `context.go(...)` / `context.push(...)` via GoRouter |
+| `prefer_design_system_banner` | Inline `Container`/`MaterialBanner` for inline notifications | `AppBanner` |
+
+### Token Migration Map (`DesignConstants` → ThemeExtension)
+
+| Legacy | New |
+|--------|-----|
+| `DesignConstants.space1..space12` | `FieldGuideSpacing.of(context).xs/sm/md/lg/xl/xxl` |
+| `DesignConstants.radius*` | `FieldGuideRadii.of(context).xs/sm/md/lg/xl/pill` |
+| `DesignConstants.animation*` / curve constants | `FieldGuideMotion.of(context).fast/normal/slow/pageTransition` + curve fields |
+| `DesignConstants.elevation*` / shadow lists | `FieldGuideShadows.of(context).low/medium/high` |
+
+`DesignConstants` is retained only as a static fallback for intermediate values not promoted to ThemeExtensions; new code should always go through `.of(context)`.
+
+## Sync Observability
+
+Long-edit screens (wizards, multi-step forms, draft editors) MUST extract a `ChangeNotifier` controller per screen and register it with `WizardActivityTracker` (`lib/features/sync/application/wizard_activity_tracker.dart`).
+
+- Register from controller `init` / screen `initState` with a stable key, label, and `hasUnsavedChanges` callback.
+- Unregister from `dispose`.
+- Call `markChanged(key)` whenever in-flight state mutates so listeners (e.g. `SyncProvider`) update.
+- `SyncCoordinator` consults `hasUnsavedWizard` before push/pull cycles to defer sync that would clobber drafts.
+
+This is the canonical mechanism for making screen state observable to sync; do not invent ad-hoc global flags.
+
 ## Navigation
 
 Uses **go_router** with shell routes (persistent bottom nav) and full-screen routes (wizards, detail views). Path params for required IDs, query params for optional data.

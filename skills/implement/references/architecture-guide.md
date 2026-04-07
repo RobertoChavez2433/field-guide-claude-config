@@ -157,8 +157,8 @@ All composed into `AppDependencies`, which is passed to `buildAppProviders()`. F
 |--------------|-----|-----|
 | `setState()` in `dispose()` | Widget already deactivated | Use `WidgetsBindingObserver` lifecycle |
 | `Provider.of(context)` after async | Context may be invalid | Check `mounted` first |
-| Hardcoded colors | Inconsistent theming, breaks dark/light/HC | Use `Theme.of(context).colorScheme.*` or `FieldGuideColors.of(context).*` |
-| `AppTheme.*` color constants | Deprecated — does not adapt to dark/light/HC themes | Use `Theme.of(context).colorScheme.*` or `FieldGuideColors.of(context).*` |
+| Hardcoded colors | Inconsistent theming, breaks dark/light variants | Use `Theme.of(context).colorScheme.*` or `FieldGuideColors.of(context).*` |
+| `AppTheme.*` color constants | Deprecated — does not adapt to dark/light themes | Use `Theme.of(context).colorScheme.*` or `FieldGuideColors.of(context).*` |
 | Skip barrel exports | Breaks imports | Update `models.dart`, `providers.dart` |
 | `firstWhere` without `orElse` | Throws on empty | Use `.where(...).firstOrNull` |
 | Save in `dispose()` | Context deactivated | Use `WidgetsBindingObserver.didChangeAppLifecycleState` |
@@ -295,3 +295,125 @@ Which lint rules activate based on file path. Use this when creating or modifyin
 | `*/data/models/*` | S5, D8 | toMap must include project_id for project-scoped features, no sentinel strings |
 | `test/*` or `integration_test/*` | T2, T3, T4, T5 | Test rules activate; D3, D11, S1, S3, S4 are EXCLUDED (test-only relaxations) |
 | Global (all `lib/**/*.dart`) | A1, A2, A7, A9, A10, A11, A12, A14, A17, D1, D2, D3, D4, D6, D7, D10, S2, S4, S8, T1, T6, T7, T8 | Always enforced regardless of path |
+
+## Design System Token System (Phase 1 of overhaul)
+
+`lib/core/design_system/tokens/` defines five `ThemeExtension` token sets. All are accessed via `.of(context)` and adapt across light/dark themes (high-contrast theme was removed during the overhaul — only light + dark exist).
+
+| ThemeExtension | File | Fields | Variants |
+|----------------|------|--------|----------|
+| `FieldGuideColors` | `field_guide_colors.dart` | `statusSuccess`, `statusWarning`, `statusInfo`, `surfaceElevated`, `surfaceGlass`, `textTertiary`, ... | light, dark |
+| `FieldGuideSpacing` | `field_guide_spacing.dart` | `xs (4)`, `sm (8)`, `md (16)`, `lg (24)`, `xl (32)`, `xxl (48)` | `standard`, `compact` (density-based, not theme-based) |
+| `FieldGuideRadii` | `field_guide_radii.dart` | `xs`, `sm`, `md`, `lg`, `xl`, `pill` | shared |
+| `FieldGuideMotion` | `field_guide_motion.dart` | `fast (150)`, `normal (300)`, `slow (500)`, `pageTransition (350)`, curves (`curveStandard`, `curveDecelerate`, `curveEmphasized`, `curveAccelerate`, `curveBounce`, `curveSpring`) | `standard`, `reduced` (accessibility) |
+| `FieldGuideShadows` | `field_guide_shadows.dart` | `low`, `medium`, `high` | light, dark |
+
+### Usage Examples
+
+```dart
+// Spacing
+final spacing = FieldGuideSpacing.of(context);
+Padding(padding: EdgeInsets.all(spacing.md), child: ...)
+SizedBox(height: spacing.lg)
+
+// Radii
+final radii = FieldGuideRadii.of(context);
+Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(radii.md)))
+
+// Motion (always check reduce-motion variant via FieldGuideMotion, not raw Duration)
+final motion = FieldGuideMotion.of(context);
+AnimatedContainer(duration: motion.normal, curve: motion.curveStandard, ...)
+
+// Colors
+final fg = FieldGuideColors.of(context);
+Icon(Icons.check, color: fg.statusSuccess)
+```
+
+Raw `EdgeInsets`, `BorderRadius.circular(...)`, hardcoded `Duration`, and `Colors.*` literals are lint-banned in `lib/**/presentation/**` (rules `no_hardcoded_spacing`, `no_hardcoded_radius`, `no_hardcoded_duration`, `no_hardcoded_colors`).
+
+## Responsive Layout (Phase 2 of overhaul)
+
+`lib/core/design_system/layout/` provides Material 3 responsive primitives. Use these instead of raw `MediaQuery.of(context).size.width` checks.
+
+| Widget / API | File | Purpose |
+|--------------|------|---------|
+| `AppBreakpoint` enum | `app_breakpoint.dart` | `compact (0-599)`, `medium (600-839)`, `expanded (840-1199)`, `large (1200+)` — `AppBreakpoint.of(context)` returns current bucket |
+| `AppResponsiveBuilder` | `app_responsive_builder.dart` | Builder that yields `(context, breakpoint)` so subtrees can branch on form factor |
+| `AppAdaptiveLayout` | `app_adaptive_layout.dart` | Picks a child by breakpoint (e.g., bottom-nav on compact, navigation rail on expanded+) |
+| `AppResponsiveGrid` | `app_responsive_grid.dart` | Auto-column grid with breakpoint-aware column counts |
+| `AppResponsivePadding` | `app_responsive_padding.dart` | Page-level padding that scales with breakpoint |
+
+### Pattern: branching by form factor
+
+```dart
+AppResponsiveBuilder(
+  builder: (context, bp) {
+    if (bp.isCompact) return _PhoneLayout();
+    if (bp.isMediumOrLarger) return _TabletLayout();
+    return _DesktopLayout();
+  },
+)
+```
+
+Always read breakpoint from `AppBreakpoint.of(context)` (uses `MediaQuery.sizeOf` to avoid keyboard-inset rebuilds), never raw width comparisons.
+
+## Component Inventory (Phase 3 of overhaul)
+
+`lib/core/design_system/` is organized atomically. ~57 components total. See `.claude/state/audit-2026-04-07-phases-1-4.md` for the audit trail.
+
+| Layer | Count | Examples |
+|-------|-------|----------|
+| `tokens/` | 6 token sets + legacy `design_constants.dart` | `FieldGuideSpacing/Radii/Motion/Shadows/Colors` |
+| `atoms/` | 11 | `AppButton`, `AppBadge`, `AppChip`, `AppDivider`, `AppIcon`, `AppText`, `AppToggle`, `AppTooltip`, `AppAvatar`, `AppMiniSpinner`, `AppProgressBar` |
+| `molecules/` | 8 | `AppCounterField`, `AppDatePicker`, `AppDropdown`, `AppListTile`, `AppSearchBar`, `AppSectionHeader`, `AppTabBar`, `AppTextField` |
+| `organisms/` | 12 | `AppActionCard`, `AppFormFieldGroup`, `AppFormSection`, `AppFormSectionNav`, `AppFormStatusBar`, `AppFormSummaryTile`, `AppFormThumbnail`, `AppGlassCard`, `AppInfoBanner`, `AppPhotoGrid`, `AppSectionCard`, `AppStatCard` |
+| `surfaces/` | 6 | `AppScaffold`, `AppDialog`, `AppBottomSheet`, `AppBottomBar`, `AppDragHandle`, `AppStickyHeader` |
+| `feedback/` | 7 | `AppBanner`, `AppBudgetWarningChip`, `AppContextualFeedback`, `AppEmptyState`, `AppErrorState`, `AppLoadingState`, `AppSnackbar` |
+| `layout/` | 5 | `AppAdaptiveLayout`, `AppBreakpoint`, `AppResponsiveBuilder`, `AppResponsiveGrid`, `AppResponsivePadding` |
+| `animation/` | 4 + 4 helpers | `AppAnimatedEntrance`, `AppContainerTransform`, `AppStaggeredList`, `AppTapFeedback` (+ `AppValueTransition`, `MotionAware`, `SharedAxisTransitionPage`) |
+
+When choosing a widget, descend in atomic order: prefer an existing organism > molecule > atom > raw widget. Raw Material widgets in presentation/ are lint-banned for all categories listed above.
+
+## Sync Observability Pattern (Phase 4 of overhaul)
+
+Long-edit screens (wizards, draft editors, multi-step forms) extract a `ChangeNotifier` controller per screen and register it with `WizardActivityTracker` (`lib/features/sync/application/wizard_activity_tracker.dart`). This lets `SyncCoordinator` query in-flight UI state before sync cycles and defer sync that would clobber unsaved drafts.
+
+### Why
+
+- Sync engine pulls remote state and overwrites local rows. If a wizard draft is open and dirty, a pull mid-edit can overwrite it.
+- Without an observable signal, sync code would have to reach into widgets — a layering violation.
+- `WizardActivityTracker` is a thin `ChangeNotifier` registry: controllers register/unregister, sync reads.
+
+### Pattern
+
+```dart
+class ProjectSetupController extends ChangeNotifier {
+  ProjectSetupController(this._tracker) {
+    _tracker.register(
+      key: _wizardKey,
+      label: 'New project setup',
+      hasUnsavedChanges: () => _hasUnsavedDraft,
+    );
+  }
+
+  static const _wizardKey = 'project-setup';
+  final WizardActivityTracker _tracker;
+  bool _hasUnsavedDraft = false;
+
+  void onFieldChanged() {
+    _hasUnsavedDraft = true;
+    _tracker.markChanged(_wizardKey);
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _tracker.unregister(_wizardKey);
+    super.dispose();
+  }
+}
+```
+
+Examples in repo: `lib/features/projects/presentation/controllers/project_setup_controller.dart`, `lib/features/pdf/presentation/controllers/pdf_import_controller.dart`, `lib/features/quantities/presentation/controllers/quantity_calculator_controller.dart`, `lib/features/pay_applications/presentation/controllers/pay_app_detail_controller.dart`.
+
+`SyncCoordinator` consumes the tracker via `hasUnsavedWizard` before deciding to push/pull. Do not invent ad-hoc globals or reach into widget state from sync code.

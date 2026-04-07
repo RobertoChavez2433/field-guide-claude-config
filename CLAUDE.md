@@ -18,7 +18,7 @@ Cross-platform mobile/desktop app for construction inspectors. Offline-first wit
 ## Project Structure
 ```
 lib/
-├── core/       # Cross-cutting: bootstrap, config, database (v50, 36 tables), design_system (24 components), di, driver, logging, router, theme
+├── core/       # Cross-cutting: bootstrap, config, database (v50, 36 tables), design_system (~57 components: tokens 6, atoms 11, molecules 8, organisms 12, surfaces 6, feedback 7, layout 5, animation 4 + 4 helpers), di, driver, logging, router, theme
 ├── shared/     # Base classes, utilities, testing_keys, validators, widgets
 ├── features/   # 17 feature modules (auth, calculator, contractors, dashboard, entries, forms, gallery, locations, pdf, photos, projects, quantities, settings, sync, todos, toolbox, weather)
 └── services/   # Cross-cutting: document, image, permission, photo, soft_delete, startup_cleanup
@@ -57,9 +57,11 @@ Domain:       SyncResult, SyncStatus, SyncErrorKind, ClassifiedSyncError, SyncDi
 - **SyncOrchestrator no longer exists** — use `SyncCoordinator` (replaced in Phase 7 refactor).
 - **SyncProvider no longer exposes `get orchestrator`** — use `SyncQueryService` for dashboard data.
 - **Error classification is in SyncErrorClassifier only** — no Postgres code matching elsewhere.
+- **Design tokens are ThemeExtensions** — `FieldGuideSpacing`, `FieldGuideRadii`, `FieldGuideMotion`, `FieldGuideShadows`, `FieldGuideColors` accessed via `.of(context)`. Two themes only: light + dark (high-contrast theme removed in design system overhaul). Raw `EdgeInsets`, `BorderRadius`, hardcoded `Duration`, and `Colors.*` literals are lint-banned in `lib/**/presentation/**`.
+- **Sync-observable controllers** — wizard/long-edit screens extract a `ChangeNotifier` controller and register with `WizardActivityTracker` (`lib/features/sync/application/wizard_activity_tracker.dart`) so `SyncCoordinator` can read in-flight UI state and defer sync that would clobber unsaved drafts.
 
 ## Custom Lint Package
-`fg_lint_packages/field_guide_lints/` — 52 rules in 4 categories: architecture (23), data safety (11), sync integrity (10), test quality (8). CI-enforced via `quality-gate.yml`.
+`fg_lint_packages/field_guide_lints/` — architecture (33 rules including the 10 design-system rules: `no_raw_button`, `no_raw_divider`, `no_raw_tooltip`, `no_raw_dropdown`, `no_raw_snackbar`, `no_hardcoded_spacing`, `no_hardcoded_radius`, `no_hardcoded_duration`, `no_raw_navigator`, `prefer_design_system_banner`), plus data safety (11), sync integrity (10), test quality (8). CI-enforced via `quality-gate.yml`.
 
 ## Database
 - **Engine**: sqflite (mobile) + sqflite_common_ffi (desktop)

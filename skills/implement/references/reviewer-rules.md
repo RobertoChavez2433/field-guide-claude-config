@@ -49,6 +49,31 @@ Grep for ALL of these patterns across every file in the phase. Any match is CRIT
 - Missing Null Safety (force unwraps, missing null checks)
 - Async Anti-patterns (missing await, fire-and-forget, no mounted check)
 
+## Design System Red Flags (HIGH severity — always flag)
+
+In any file under `lib/**/presentation/**` or `lib/shared/widgets/**`:
+
+- **Raw Material widgets** instead of design system equivalents:
+  - `ElevatedButton`/`TextButton`/`OutlinedButton`/`FilledButton`/`IconButton` (use `AppButton.*`)
+  - `Divider`/`VerticalDivider` (use `AppDivider`)
+  - `Tooltip` (use `AppTooltip`)
+  - `DropdownButton`/`DropdownButtonFormField` (use `AppDropdown`)
+  - `SnackBar(` constructor (use `SnackBarHelper.show*()` / `AppSnackbar`)
+  - `Scaffold(` in screen files (use `AppScaffold`)
+  - `AlertDialog`/`showDialog`/`showModalBottomSheet` (use `AppDialog.show()`/`AppBottomSheet.show()`)
+  - Inline `TextStyle(...)` (use `AppText.*` or textTheme)
+  - Inline `Container`/`MaterialBanner` for notifications (use `AppBanner`)
+- **Hardcoded design tokens**:
+  - Numeric `EdgeInsets`/`SizedBox` literals (must use `FieldGuideSpacing.of(context).*`)
+  - `BorderRadius.circular(N)`/`Radius.circular(N)` literals (must use `FieldGuideRadii.of(context).*`)
+  - `Duration(milliseconds: N)` in animation contexts (must use `FieldGuideMotion.of(context).*`)
+  - `Colors.*` or `Color(0xFF...)` literals (must use `Theme.of(context).colorScheme.*` or `FieldGuideColors.of(context).*`)
+- **Missing responsive handling**: raw `MediaQuery.of(context).size.width` comparisons. Should use `AppBreakpoint.of(context)` / `AppResponsiveBuilder` / `AppAdaptiveLayout`.
+- **File or method exceeds 300 lines** (hard cap). Files >300 lines and methods/build()/extracted widget classes >300 lines are HIGH and must be decomposed.
+- **Missing sync observability** on wizard / multi-step / long-edit screens: any such screen that does NOT extract a `ChangeNotifier` controller and register with `WizardActivityTracker` (`lib/features/sync/application/wizard_activity_tracker.dart`) is a HIGH finding. Sync code cannot detect in-flight drafts without this registration.
+- **`// ignore:` or `// ignore_for_file:` comments** suppressing any of the above lint rules — always CRITICAL, never acceptable. Fix the root cause.
+- **High-contrast theme references** (`HighContrast`, `hc`, third theme variant) — the HC theme was removed in the design system overhaul; only light + dark exist. Flag any reintroduction.
+
 ## Domain Context Loading
 Before reviewing, read the applicable rule files based on the files under review:
 

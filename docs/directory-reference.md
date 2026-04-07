@@ -29,6 +29,20 @@
 | projects/ | Per-project memory directories (auto-managed by Claude) |
 | settings.local.json | Local Claude settings override (gitignored) |
 
+## Design System Structure
+`lib/core/design_system/` is organized atomically (~57 components after Phase 1-4 overhaul; see `.claude/state/audit-2026-04-07-phases-1-4.md` for the full audit). Two themes: light + dark (high-contrast removed).
+
+| Subdirectory | Files | Purpose |
+|--------------|-------|---------|
+| `tokens/` | `design_constants.dart` (legacy fallbacks), `app_colors.dart`, `field_guide_colors.dart`, `field_guide_spacing.dart`, `field_guide_radii.dart`, `field_guide_motion.dart`, `field_guide_shadows.dart` | ThemeExtension tokens accessed via `FieldGuideSpacing.of(context)`, `FieldGuideRadii.of(context)`, `FieldGuideMotion.of(context)`, `FieldGuideShadows.of(context)`, `FieldGuideColors.of(context)` — single source of truth for spacing, radii, motion, shadows, colors |
+| `atoms/` (11) | `app_avatar`, `app_badge`, `app_button`, `app_chip`, `app_divider`, `app_icon`, `app_mini_spinner`, `app_progress_bar`, `app_text`, `app_toggle`, `app_tooltip` | Primitive widgets |
+| `molecules/` (8) | `app_counter_field`, `app_date_picker`, `app_dropdown`, `app_list_tile`, `app_search_bar`, `app_section_header`, `app_tab_bar`, `app_text_field` | Composed widgets |
+| `organisms/` (12) | `app_action_card`, `app_form_field_group`, `app_form_section`, `app_form_section_nav`, `app_form_status_bar`, `app_form_summary_tile`, `app_form_thumbnail`, `app_glass_card`, `app_info_banner`, `app_photo_grid`, `app_section_card`, `app_stat_card` | Complex composed widgets |
+| `surfaces/` (6) | `app_bottom_bar`, `app_bottom_sheet`, `app_dialog`, `app_drag_handle`, `app_scaffold`, `app_sticky_header` | Container surfaces |
+| `feedback/` (7) | `app_banner`, `app_budget_warning_chip`, `app_contextual_feedback`, `app_empty_state`, `app_error_state`, `app_loading_state`, `app_snackbar` | User feedback widgets |
+| `layout/` (5) | `app_adaptive_layout`, `app_breakpoint`, `app_responsive_builder`, `app_responsive_grid`, `app_responsive_padding` | Responsive primitives — Material 3 breakpoints (compact/medium/expanded/large) |
+| `animation/` (4 + 4 helpers) | `app_animated_entrance`, `app_container_transform`, `app_staggered_list`, `app_tap_feedback`, `app_value_transition`, `motion_aware`, `shared_axis_transition_page` | Motion components honoring `FieldGuideMotion` and reduce-motion preference |
+
 ## Project-Level Tools
 | Directory | Purpose |
 |-----------|---------|
