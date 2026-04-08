@@ -5,11 +5,16 @@
 - `2026-04-08-beta-central-tracker.md`:
   Canonical append-only beta tracker. This is now the primary source of truth
   for phases, sprint slices, blocker status, verification status, and links to
-  supporting beta artifacts.
+  supporting beta artifacts. It also now carries the restart handoff for the
+  Supabase/Docker environment state plus the next god-object decomposition
+  slices.
 - `2026-04-08-beta-research-inventory.md`:
   Durable Notion + CodeMunch audit artifact backing the central beta tracker,
   including current blocker reconciliation, routing audit results, and
   god-sized file inventory.
+- `2026-04-08-codemunch-beta-audit-reference.md`:
+  Standing CodeMunch-backed beta reference capturing the Notion export path,
+  validated green slices, and the current god-sized decomposition queue.
 - `2026-04-08-codemunch-beta-audit-reference.md`:
   Durable working reference for the current beta audit pass, including the
   Notion export path, the CodeMunch repo snapshot, and the live god-sized
