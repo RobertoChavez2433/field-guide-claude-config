@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "notes": "User-requested broad Windows development command-family permissions for local Codex sessions.",
+  "command_families": [
+    {
+      "name": "shell",
+      "prefixes": [
+        "pwsh",
+        "powershell",
+        "bash",
+        "cmd",
+        "C:\\Users\\rseba\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe",
+        "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        "C:\\Windows\\System32\\cmd.exe"
+      ]
+    },
+    {
+      "name": "list",
+      "prefixes": [
+        "Get-ChildItem",
+        "ls",
+        "dir",
+        "tree"
+      ]
+    },
+    {
+      "name": "read",
+      "prefixes": [
+        "Get-Content",
+        "type",
+        "cat",
+        "gc"
+      ]
+    },
+    {
+      "name": "search",
+      "prefixes": [
+        "Select-String",
+        "findstr",
+        "rg",
+        "grep",
+        "where",
+        "where.exe"
+      ]
+    },
+    {
+      "name": "filesystem_write",
+      "prefixes": [
+        "Set-Content",
+        "Add-Content",
+        "Clear-Content",
+        "Out-File",
+        "New-Item",
+        "ni",
+        "mkdir",
+        "md",
+        "Copy-Item",
+        "Move-Item",
+        "Rename-Item",
+        "Remove-Item",
+        "robocopy",
+        "xcopy",
+        "copy",
+        "move",
+        "del",
+        "erase",
+        "rd",
+        "rmdir"
+      ]
+    },
+    {
+      "name": "process",
+      "prefixes": [
+        "Get-Process",
+        "Stop-Process",
+        "Start-Process",
+        "tasklist",
+        "taskkill",
+        "wmic"
+      ]
+    },
+    {
+      "name": "git",
+      "prefixes": [
+        "git",
+        "gh"
+      ]
+    },
+    {
+      "name": "flutter_dart",
+      "prefixes": [
+        "flutter",
+        "dart",
+        "melos"
+      ]
+    },
+    {
+      "name": "android",
+      "prefixes": [
+        "adb",
+        "fastboot",
+        "emulator",
+        "gradle",
+        "gradlew",
+        "java",
+        "javac",
+        "keytool"
+      ]
+    },
+    {
+      "name": "node_js",
+      "prefixes": [
+        "node",
+        "npm",
+        "npx",
+        "pnpm",
+        "yarn"
+      ]
+    },
+    {
+      "name": "python",
+      "prefixes": [
+        "python",
+        "python3",
+        "py",
+        "pip",
+        "pip3",
+        "uv"
+      ]
+    },
+    {
+      "name": "archives",
+      "prefixes": [
+        "tar",
+        "Expand-Archive",
+        "Compress-Archive",
+        "7z"
+      ]
+    },
+    {
+      "name": "diagnostics",
+      "prefixes": [
+        "Get-Location",
+        "pwd",
+        "Resolve-Path",
+        "Test-Path",
+        "whoami",
+        "hostname",
+        "echo"
+      ]
+    }
+  ]
+}

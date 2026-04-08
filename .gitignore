@@ -9,3 +9,4 @@ debug-sessions/
 projects/
 worktrees/
 *.secret
+codex/tmp/
