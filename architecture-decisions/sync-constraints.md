@@ -3,7 +3,7 @@
 ## Hard Rules (Violations = Reject Proposal)
 
 - MUST use trigger-based `change_log` for change detection (no hash-based checksums, no per-row sync_status columns)
-- MUST process adapters independently (per-adapter success/failure — no all-or-nothing sync)
+- MUST process adapters independently where the registered sync contract allows it (no hidden all-or-nothing sync wrapper)
 - MUST use `TableAdapter` as the base class for all sync adapters (not `SyncAdapter`)
 - MUST push parent tables before children (FK dependency ordering enforced by `SyncRegistry`)
 - MUST acquire `SyncMutex` before any push/pull cycle (prevents concurrent sync runs)
@@ -15,6 +15,12 @@
 - MUST treat Supabase Broadcast / Realtime and FCM as invalidation-hint channels, not as sources of truth replacing normal sync writes
 - MUST NOT use predictable tenant-wide Broadcast channels for foreground invalidation
 - MUST use server-issued opaque private hint channels for foreground Broadcast delivery when Broadcast is enabled
+- MUST make push-side foreground invalidation explicit through `SyncHintRemoteEmitter`; successful push paths may not rely only on indirect database-trigger fanout
+- MUST keep `emit_sync_hint` ownership inside `lib/features/sync/engine/sync_hint_remote_emitter.dart`
+- MUST keep `register_sync_hint_channel`, `deactivate_sync_hint_channel`, and `sync_hint` broadcast subscription ownership inside `lib/features/sync/application/realtime_hint_handler.dart`
+- MUST use `sync_hint_subscriptions` as the source of truth for active hint-channel lookup
+- MUST NOT issue raw `/realtime/v1/api/broadcast` requests from client Dart code
+- MUST keep one thin executor/owner per sync mutation path; UI, providers, and feature repos may trigger sync work only through the sanctioned application or engine endpoints, not through ad hoc Supabase/SQLite/storage access
 
 ## Soft Guidelines (Violations = Discuss)
 
@@ -28,6 +34,7 @@
 - Prefer targeted remote invalidation over broad cursor sweeps when enough scope information is available
 - Use Supabase-originated private-channel hints for foreground responsiveness and FCM data messages for background / closed-app wake-up
 - Keep profile/member pull and other housekeeping work off the critical foreground freshness path whenever practical
+- Prefer a thin orchestrator or executor per sync concern so ownership stays obvious and lintable
 
 ## Core Components
 
@@ -47,6 +54,7 @@
 | `SyncOrchestrator` | `application/sync_orchestrator.dart` | Multi-backend router (Supabase now, AASHTOWare future) |
 | `SyncLifecycleManager` | `application/sync_lifecycle_manager.dart` | Triggers sync on app foreground / reconnect |
 | `BackgroundSyncHandler` | `application/background_sync_handler.dart` | Schedules and runs background sync tasks |
+| `SyncHintRemoteEmitter` | `engine/sync_hint_remote_emitter.dart` | Push-side owner of `emit_sync_hint(...)` |
 | `TableAdapter` | `adapters/table_adapter.dart` | Abstract base class for all 22 concrete adapters |
 
 ## Sync Mode Intent
@@ -119,6 +127,10 @@ Adapters are registered in `SyncRegistry` in FK dependency order (parents before
 - Active recipient resolution must come from server-side subscription state (`sync_hint_subscriptions` / `get_active_sync_hint_channels()`), not client-derived channel naming
 - Broadcast hints remain metadata-only invalidation signals
 - Record contents still require normal auth + RLS-protected sync pull
+- The client runtime split is explicit:
+  - `RealtimeHintHandler` owns subscribe / refresh / consume
+  - `SyncHintRemoteEmitter` owns push-side emit
+  - `DriverDiagnosticsHandler` may use `debug_emit_sync_hint_self` for verification only
 
 ## Performance Targets
 

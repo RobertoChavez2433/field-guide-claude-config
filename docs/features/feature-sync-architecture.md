@@ -25,13 +25,14 @@ Application
   SyncCoordinator
   SyncLifecycleManager
   SyncRetryPolicy / ConnectivityProbe / SyncTriggerPolicy / PostSyncHooks
-  SyncQueryService
+  SyncQueryService / SyncEngineFactory
   BackgroundSyncHandler / FcmHandler / RealtimeHintHandler
 
 Engine
   SyncEngine
-  PushHandler / PullHandler / MaintenanceHandler
+  PushHandler / PushExecutionRouter / PullHandler / MaintenanceHandler
   LocalSyncStore / SupabaseSync / FileSyncHandler
+  SyncHintRemoteEmitter
   EnrollmentHandler / FkRescueHandler / SyncErrorClassifier
   SyncMutex / SyncStatusStore / SyncRunLifecycle / IntegrityChecker
 ```
@@ -84,6 +85,34 @@ Top-level foreground/background sync entry point. It:
 - schedules background retry after retry exhaustion
 - runs post-sync hooks after successful work
 - exposes transport-state updates through `SyncStatusStore`
+
+### RealtimeHintHandler
+
+`lib/features/sync/application/realtime_hint_handler.dart`
+
+Owns the client-side foreground invalidation contract. It:
+- registers opaque private channels through `register_sync_hint_channel`
+- tears them down through `deactivate_sync_hint_channel`
+- owns the only client-side `onBroadcast(event: 'sync_hint', ...)` wiring
+- marks dirty scope and triggers throttled quick sync through `SyncCoordinator`
+- falls back to polling when channel registration or subscription is unhealthy
+
+It must not:
+- derive channel names client-side
+- issue raw `/realtime/v1/api/broadcast` HTTP requests
+- duplicate push-side hint emission logic
+
+### SyncHintRemoteEmitter
+
+`lib/features/sync/engine/sync_hint_remote_emitter.dart`
+
+Owns push-side foreground hint emission. After successful remote writes,
+`PushHandler` routes through `PushExecutionRouter`, which now emits
+`emit_sync_hint(...)` via this dedicated engine component.
+
+This is the deterministic foreground-hint contract. Remote trigger fanout still
+exists as server-side support, but foreground proof now relies on the owned
+push-side emitter instead of broad trigger side effects.
 
 ### SyncQueryService
 
@@ -143,6 +172,22 @@ endpoint for:
 This endpoint is the preferred way for sync coordinators and orchestrators to
 inspect UI state.
 
+## Foreground Hint Contract
+
+Foreground invalidation now has explicit ownership boundaries:
+- `PushHandler` must be constructed with `syncHintEmitter:`
+- `SyncHintRemoteEmitter` is the only normal client owner of `emit_sync_hint`
+- `RealtimeHintHandler` is the only normal client owner of
+  `register_sync_hint_channel`, `deactivate_sync_hint_channel`, and
+  `onBroadcast(event: 'sync_hint', ...)`
+- active topic lookup comes from `sync_hint_subscriptions`, not client-derived
+  channel naming and not extra `user_profiles` joins
+- raw client HTTP calls to `/realtime/v1/api/broadcast` are forbidden
+
+The live contract was proven by foreground delivery of
+`entry_quantities/680adba1-50ac-47ee-894b-251ecd059f4f` to S21 without any
+manual sync call.
+
 ## Status vs Diagnostics
 
 The refactor intentionally split sync state into three shapes:
@@ -166,7 +211,11 @@ The current verification model for sync is:
 ## Key Files
 
 - `lib/features/sync/application/sync_coordinator.dart`
+- `lib/features/sync/application/realtime_hint_handler.dart`
+- `lib/features/sync/application/sync_engine_factory.dart`
 - `lib/features/sync/application/sync_query_service.dart`
+- `lib/features/sync/engine/sync_hint_remote_emitter.dart`
+- `lib/features/sync/engine/push_execution_router.dart`
 - `lib/features/sync/engine/sync_engine.dart`
 - `lib/features/sync/presentation/providers/sync_provider.dart`
 - `lib/features/sync/presentation/screens/sync_dashboard_screen.dart`

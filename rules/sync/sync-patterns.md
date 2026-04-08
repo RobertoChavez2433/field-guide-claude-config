@@ -5,7 +5,11 @@ paths:
 
 # Sync Architecture — Constraints & Invariants
 
-5-layer sync system: Presentation > Application > Engine > Adapters > Domain. Entry point is `SyncCoordinator`. Engine is slim (~214 lines) with I/O delegated to `SupabaseSync` (Supabase) and `LocalSyncStore` (SQLite).
+5-layer sync system: Presentation > Application > Engine > Adapters > Domain.
+Entry point is `SyncCoordinator`. The engine owns routing and lifecycle, while
+Supabase row I/O stays in `SupabaseSync`, SQLite row I/O stays in
+`LocalSyncStore`, and push-side foreground invalidation now stays in
+`SyncHintRemoteEmitter`.
 
 ## Hard Constraints
 
@@ -18,6 +22,17 @@ paths:
 - **is_builtin=1 rows are server-seeded** — triggers skip them, push skips them, cascade-delete skips them.
 - **No sync_status column** — only change_log is used for tracking pending changes.
 - **SyncOrchestrator no longer exists** — use `SyncCoordinator`.
+- **Push-side sync_hint emission is explicit** — production `PushHandler` must be
+  wired with `syncHintEmitter:` and emit `emit_sync_hint(...)` through
+  `SyncHintRemoteEmitter`.
+- **Client sync_hint subscriptions are single-owner** — only
+  `RealtimeHintHandler` may call `register_sync_hint_channel`,
+  `deactivate_sync_hint_channel`, or `.onBroadcast(event: 'sync_hint', ...)`.
+- **Active opaque hint topics come from `sync_hint_subscriptions`** — never
+  derive channel names on the client and never depend on `user_profiles` joins
+  for active recipient lookup.
+- **No raw client broadcast HTTP** — client Dart code must not call
+  `/realtime/v1/api/broadcast`.
 
 ## Error Classification (Security-Critical)
 
@@ -42,11 +57,16 @@ RLS denials (42501) are permanent and MUST NOT be retried — they indicate a se
 - **S4**: No sync_status column (deprecated pattern, only change_log)
 - **S5**: `toMap()` MUST include project_id for synced child models
 - **S8**: `_lastSyncTime` only updated in success path
+- **S12**: production `PushHandler` construction MUST pass `syncHintEmitter:`
+- **S13**: sync-hint RPC ownership is restricted to approved owners
+- **S14**: sync-hint broadcast subscription stays inside `RealtimeHintHandler`
+- **S15**: client Dart must not use raw `/realtime/v1/api/broadcast`
 
 ## Key Flows (Summary)
 
-- **Push**: Local write -> SQLite trigger -> change_log -> ChangeTracker -> PushHandler (FK-ordered) -> SupabaseSync
+- **Push**: Local write -> SQLite trigger -> change_log -> ChangeTracker -> PushHandler (FK-ordered) -> SupabaseSync -> SyncHintRemoteEmitter
 - **Pull**: SyncEngine -> PullHandler (FK-ordered) -> suppress triggers -> SupabaseSync paginated SELECT -> ConflictResolver -> LocalSyncStore -> restore triggers
+- **Foreground hint**: RealtimeHintHandler -> mark dirty scope -> throttled quick sync through SyncCoordinator
 - **Request**: Trigger source -> SyncTriggerPolicy -> SyncCoordinator -> ConnectivityProbe -> SyncEngine.run(mode) -> PostSyncHooks
 
 ## Gotchas
@@ -56,5 +76,9 @@ RLS denials (42501) are permanent and MUST NOT be retried — they indicate a se
 - `inspector_forms` triggers have additional `AND NEW.is_builtin != 1` guard
 - Never use raw SQL or direct change_log inserts for test data — use app UI (triggers won't fire otherwise)
 - SyncProvider no longer exposes `get orchestrator` — use `SyncQueryService` for dashboard data
+- Foreground invalidation is not “whatever Supabase broadcast happens to do.”
+  The owned client contract is `SyncHintRemoteEmitter` + `RealtimeHintHandler`.
+- Server trigger fanout still exists, but it is not the only proof path anymore.
+- Private channel recipient lookup should use `sync_hint_subscriptions` directly.
 
 > For detailed diagrams, class inventories, and procedures, see `.claude/skills/implement/references/sync-patterns-guide.md`
