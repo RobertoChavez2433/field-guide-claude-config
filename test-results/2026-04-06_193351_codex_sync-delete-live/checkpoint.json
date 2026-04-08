@@ -57,9 +57,28 @@
     "maintenance_orphan_purge_pay_app_file_backed": "verified_live",
     "post_maintenance_repeat_sync_idempotent": "verified_live",
     "signature_tables_remote_migration": "verified_live",
-    "support_ticket_live_flow": "verified_live"
+    "support_ticket_live_flow": "verified_live",
+    "driver_generic_mutation_protected_table_lint": "verified_local",
+    "consent_live_flow_s21": "verified_live",
+    "consent_live_flow_windows": "verified_live",
+    "retry_restart_push_s21_file_backed": "verified_live_twice",
+    "retry_restart_pull_windows_file_backed": "verified_live_twice",
+    "retry_restart_delete_propagation_dual": "verified_live_twice",
+    "retry_restart_storage_cleanup_s21": "verified_live_twice",
+    "retry_restart_false_idle_sync_gate_fix": "verified_live",
+    "quick_resume_mode_dual_shared_scope": "verified_live",
+    "realtime_hint_private_channel_subscription_contract": "verified_local",
+    "realtime_hint_private_channel_auth_policy": "verified_live",
+    "realtime_hint_private_channel_delivery": "verified_live",
+    "global_full_sync_windows": "verified_live",
+    "global_full_sync_s21": "verified_live",
+    "dirty_scope_isolation_dual": "verified_live",
+    "private_channel_registration_dual": "verified_live",
+    "private_channel_teardown_rebind_windows": "verified_live",
+    "final_mixed_flow_soak_dual": "verified_live",
+    "final_proof_matrix": "verified_live"
   },
-  "next_flow": "consent-live-proof",
+  "next_flow": "complete",
   "ctx": {
     "project_id": "d2bb6a5d-010f-4e9b-adcb-9188ea442391",
     "fresh_fixture_project_id": "b28afcd0-501f-463c-a255-8f61469a2ba5",
@@ -76,6 +95,43 @@
     "integrity_orphan_fixture_export_artifact_id": "d333298f-dddd-479f-a774-54eac7bf6114",
     "integrity_orphan_fixture_pay_application_id": "a554c947-0641-4088-a62c-3fea463f180e",
     "support_ticket_fixture_id": "833518ea-f187-4c54-ba6b-bce95f1a3e0e",
+    "consent_fixture_s21_privacy_id": "0d5bbdc5-74a7-4136-95c7-8216113ad751",
+    "consent_fixture_s21_tos_id": "d0782666-66cb-4956-bd74-aa5d571a5827",
+    "consent_fixture_windows_privacy_id": "10476a23-1ef0-4d58-aca1-dfb7235d7a3b",
+    "consent_fixture_windows_tos_id": "5b163116-9e40-4a00-8bd0-9b4c08f0d288",
+    "retry_push_fixture_project_id": "e7dde2a2-8662-4d5a-ad32-3e167ad5576d",
+    "retry_push_fixture_entry_id": "37214186-5025-422b-900c-ca8a5a6611da",
+    "retry_push_fixture_photo_ids": [
+      "8b1515a0-022c-4c52-9bcf-5a9a3d1125c3",
+      "8bb96788-654c-4cea-b233-400db565cd88",
+      "e2f0e7c0-a988-41ae-a631-efd99a6071c9",
+      "fbaf64f5-0155-45ab-9660-3121ef898b1f",
+      "7f00d03d-80cb-4d8b-8538-7f3a42a613f4",
+      "2b01c181-70da-4707-acca-2f66a6993f7f"
+    ],
+    "retry_pull_fixture_project_id": "e7dde2a2-8662-4d5a-ad32-3e167ad5576d",
+    "retry_pull_fixture_entry_id": "37214186-5025-422b-900c-ca8a5a6611da",
+    "retry_pull_fixture_batch_filename_marker": "retry_pullb",
+    "retry_pull_fixture_remote_count": 120,
+    "retry_pull_fixture_partial_windows_count": 55,
+    "retry_delete_fixture_entry_id": "96af93cc-fb77-4bed-9006-3ecae4efc426",
+    "retry_storage_fixture_entry_id": "6899b31c-e884-4cf6-9c95-983080d44af7",
+    "retry_push_rerun_filename_marker": "retry_push2",
+    "retry_pull_rerun_filename_marker": "retry_pullc",
+    "retry_pull_rerun_partial_windows_count": 94,
+    "retry_delete_rerun_entry_id": "db3b76ff-f749-415b-b21b-c49853aebbcb",
+    "retry_storage_rerun_entry_id": "0c2eba96-1c92-4e88-a0b6-ca9501fc04e8",
+    "quick_resume_fixture_entry_quantity_id": "f369778b-4d4d-4fd5-a1c4-613540ee5724",
+    "realtime_hint_failed_probe_ids": [
+      "617881ce-4098-4141-a0d3-c6a0307eab1a",
+      "74fc22b2-d09b-4214-8c26-3624ee0677fe",
+      "88984b0f-212d-4bdc-8f9e-2250106746d6"
+    ],
+    "realtime_hint_fixed_probe_id": "680adba1-50ac-47ee-894b-251ecd059f4f",
+    "dirty_scope_probe_id": "e3d86498-88dc-49e7-9406-9472de84a2fa",
+    "private_channel_rebind_probe_id": "ed816553-474a-40a9-880a-e11d85884110",
+    "soak_quantity_id": "749fe7e9-cf6a-4ef0-8f8d-7b6df4e057e7",
+    "soak_active_photo_id": "1ff02e3e-ea39-4b24-b36e-b5374e9f1737",
     "entry_id": "1a31fc0c-33ef-4f99-8c07-60ebc9825c4e",
     "photo_id": "7c25e358-351b-42b7-9de2-a04c9659b0be",
     "document_id": "88c32836-4c19-4297-b36e-255ecd0e0b8d"
@@ -170,6 +226,31 @@
       "type": "driver",
       "status": "open",
       "title": "Driving the Help & Support success-screen Done action can trigger SupportProvider.reset while the framework is locked, destabilizing the Android driver process even though the underlying support ticket sync state is healthy"
+    },
+    {
+      "type": "ui",
+      "status": "open",
+      "title": "Consent copy says users can revoke consent in Settings, but the shipped Settings surface does not currently expose a revoke-consent control (tracked in GitHub issue #259)"
+    },
+    {
+      "type": "sync",
+      "status": "fixed",
+      "title": "After crash/relaunch, sync run-state reporting can go false-idle: /driver/sync-status reports isSyncing = false while /driver/sync still rejects new work as another sync is already in progress"
+    },
+    {
+      "type": "sync",
+      "status": "fixed",
+      "title": "Switching realtime hint subscriptions to private channels initially broke client authorization because the hosted project lacked a realtime.messages SELECT policy for the opaque sync_hint topics"
+    },
+    {
+      "type": "sync",
+      "status": "fixed",
+      "title": "Foreground private sync_hint delivery was nondeterministic because the branch relied on opaque remote trigger side effects; push now emits the owned emit_sync_hint RPC directly and active channel lookup no longer depends on user_profiles joins"
+    },
+    {
+      "type": "driver",
+      "status": "open",
+      "title": "driver /inject-photo-direct returned a harness-side 500 for one tiny-PNG soak attempt even though the shipped file-backed sync lane is already proven through normal flows"
     }
   ],
   "observations": [
@@ -201,6 +282,24 @@
     "After the maintenance-assisted orphan purge, repeated full sync on both Windows and S21 again settled immediately at pushed=0, pulled=0, so the cleanup does not leave recurring drift.",
     "The current sync registry had outpaced the remote schema: support-ticket proof surfaced missing Supabase tables signature_files and signature_audit_log, and applying supabase/migrations/20260408000000_signature_tables.sql closed that branch-level blocker live.",
     "The dedicated support-ticket live flow is now proven on its correct user-scoped contract: S21 Help & Support UI inserted ticket 833518ea-f187-4c54-ba6b-bce95f1a3e0e, Supabase now stores the row, and S21 repeat sync returned to pushed=0, pulled=0 with no pending support_tickets residue.",
-    "The remaining work is now proof-matrix breadth in the integrity-maintenance, user-scoped, retry/restart, and soak lanes rather than core lifecycle drift on delete/restore/revocation/remove-from-device or the core file-backed paths."
+    "Protected sync tables are no longer generically mutable through DriverServer create/update endpoints, and custom lint now guards that harness boundary against regression.",
+    "Consent is now live-proven through the real router/version gate on both device identities: stale stored policy versions forced `/consent`, the shipped accept action appended new local rows, Supabase stored the same new accepted records, and repeat sync returned to pushed=0, pulled=0.",
+    "Kill-during-push is now live-proven on a real file-backed lane: after force-stopping S21 mid-sync with six pending photo inserts, the next healthy relaunch replayed the durable change_log work, materialized exactly one remote row per photo, Windows pulled the same six IDs, and repeated sync returned to pushed=0, pulled=0 on both devices.",
+    "The retry/restart push wave also exposed a remaining architecture gap: delayed background retry scheduling is still timer-memory only, while durable recovery currently depends on persisted work queues such as change_log and storage_cleanup_queue rather than a separate failed_sync_queue.",
+    "Kill-during-pull is now live-proven on a multi-page file-backed batch: Windows was killed after partially materializing 55 of 120 new retry_pullb photos, the photos pull cursor stayed on the old pre-batch value, and the next ordinary sync after relaunch pulled the missing 65 without duplication or remote loss.",
+    "Delete propagation and storage cleanup are now both live-proven twice: once on fixtures 96af93cc-fb77-4bed-9006-3ecae4efc426 / 6899b31c-e884-4cf6-9c95-983080d44af7 and again on fresh fixtures db3b76ff-f749-415b-b21b-c49853aebbcb / 0c2eba96-1c92-4e88-a0b6-ca9501fc04e8.",
+    "Across the second retry/restart sprint, the data plane stayed durable again: retry_push2 recovered six photo inserts, retry_pullc recovered a 94/120 partial Windows pull, and both fresh delete/cleanup subtrees converged without duplication or data loss.",
+    "The stale crash-left run-state defect is now closed live: seeding a Windows sync_lock + pulling=1 state, relaunching the real app, and checking the shared gate showed startup recovery cleared the lock, sync-status reported idle truthfully, and an immediate sync was admitted successfully.",
+    "Quick-resume catch-up is now live-proven on shared entry_quantities row f369778b-4d4d-4fd5-a1c4-613540ee5724: the row was absent while S21 stayed backgrounded, then materialized locally after foreground resume without any manual S21 sync call.",
+    "During the quick-resume proof, persisted last_sync_time did not advance even though the resumed device materialized the new shared row, so the next realtime-hint / mode diagnostics pass should verify whether this is an intentional hint-driven catch-up path or a timestamp-writeback gap.",
+    "Realtime-hint auth is now fixed live: once the hosted project gained a realtime.messages SELECT policy keyed to sync_hint_subscriptions.channel_name = realtime.topic(), both Windows and S21 returned transportHealth=active/subscribed for their private sync_hint:* channels instead of Unauthorized.",
+    "Realtime-hint delivery is now live-proven again, but through a more deterministic contract: the sender push path emits emit_sync_hint(...) explicitly after successful remote writes, and the active-channel lookup now uses sync_hint_subscriptions directly instead of re-joining user_profiles.",
+    "The decisive foreground proof row is 680adba1-50ac-47ee-894b-251ecd059f4f: Windows pushed it successfully, S21 stayed foregrounded and subscribed, S21 transport recorded a fresh quick run, and S21 materialized the row without manual sync.",
+    "Global full sync is now live-proven on both devices with no-hint remote project renames against shared project e7dde2a2-8662-4d5a-ad32-3e167ad5576d. Windows and S21 each pulled the remote rename in full mode with dirty scopes empty beforehand.",
+    "Dirty-scope isolation is now live-proven after RealtimeHintHandler learned to normalize nested private-broadcast envelopes: S21 marked shared project e7dde2a2-8662-4d5a-ad32-3e167ad5576d dirty for probe e3d86498-88dc-49e7-9406-9472de84a2fa, quick-synced the scoped quantity, and correctly ignored unrelated remote drift on project 4825141a-7b6b-44f9-9ef1-ba5e89dc39fd.",
+    "Private-channel lifecycle is now live-proven end to end: Windows sign-out revoked row a3a1c799-e8f3-4d4b-9a89-84348f0d3738, the next sign-in created active row dea887bf-911e-4b15-a0a3-3f8079180db7 on the same device_install_id, and post-rebind probe ed816553-474a-40a9-880a-e11d85884110 auto-materialized without manual sync.",
+    "The final mixed-flow soak passed across both devices: create on S21, edit on Windows, corrected tombstone on S21, remove-from-device and fresh full pull on Windows, then integrity + repeat sync all converged cleanly with no deleted-row resurrection.",
+    "The deliberate bad tombstone payload deleted_by = soak_s21 failed loudly with Postgres 22P02 invalid UUID instead of creating silent drift; after correction to the real S21 user UUID, the same row converged normally.",
+    "The release-proof sweep is now complete. No open high-severity sync blocker remains across lifecycle, file-backed, maintenance, insert-only, retry/restart, mode, channel-lifecycle, or mixed-flow validation lanes."
   ]
 }
