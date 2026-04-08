@@ -11,93 +11,6 @@ Need to start documenting through github commits much more
  - create a phase map in a plan so when commit phases agents dont read the entire plan
  - 
 
-• Use this next session:
-                                                                                                                                    
-  Resume sync delete verification on branch `sync-engine-refactor` in `C:\Users\rseba\Projects\Field_Guide_App`.                    
-                                                                                                                                    
-  Before doing anything else:                                                                                                       
-  1. Read `.codex/AGENTS.md`                                                                                                        
-  2. Read `.codex/Context Summary.md`                                                                                               
-  3. Read `.codex/PLAN.md`                                                                                                          
-  4. Read `.codex/CLAUDE_CONTEXT_BRIDGE.md`                                                                                         
-  5. Read `.codex/plans/2026-04-06-payapp-sync-bulletproof-todo.md`                                                                 
-  6. Read `.codex/plans/2026-04-06-delete-propagation-hardening-plan.md`                                                            
-  7. Read `.claude/autoload/_state.md`                                                                                              
-  8. Read `.claude/state/PROJECT-STATE.json`                                                                                        
-  9. Read `.claude/state/feature-sync.json`                                                                                         
-  10. Read `.claude/test-results/2026-04-06_193351_codex_sync-delete-live/report.md`                                                
-  11. Read `.claude/test-results/2026-04-06_193351_codex_sync-delete-live/checkpoint.json`                                          
-                                                                                                                                    
-  Current branch state:                                                                                                             
-  - branch: `sync-engine-refactor`                                                                                                  
-  - head: `604c3fed` (merge of OCR branch back into sync branch)                                                                    
-  - sync delete hardening commits already on branch:                                                                                
-    - `15597815` Add delete propagation verification checkpoint                                                                     
-    - `7af1da6a` Cascade entry deletes from the UI layer                                                                            
-    - `12ad7b43` Retain deleted parent scope for child tombstones                                                                   
-    - `41616481` Extend project delete graph to assignment parity                                                                   
-  - OCR branch was merged back successfully and verified                                                                            
-                                                                                                                                    
-  What was proven live already on S21 + Windows:                                                                                    
-  - Entry delete now converges correctly:                                                                                           
-    - sender tombstones entry + photo + document                                                                                    
-    - sender queue drains                                                                                                           
-    - Supabase rows tombstoned                                                                                                      
-    - storage prefixes emptied                                                                                                      
-    - Windows receiver converges with deleted child rows                                                                            
-  - Project delete now converges much better:                                                                                       
-    - remote RPC tombstones full subtree including `project_assignments`                                                            
-    - local project delete graph was fixed so sender and Windows now both tombstone `project_assignments`                           
-  - The main architecture conclusion:                                                                                               
-    - we need split delete orchestration, not a bigger monolithic `SoftDeleteService`                                               
-    - lock shared delete graph + lock materialized pull scope to prevent graph drift and scope drift                                
-
-  Most important remaining delete-verification work:
-  1. Verify project-delete storage cleanup explicitly
-  2. Verify deleted entry absence in UI on both devices
-  3. Verify deleted project absence in UI on both devices
-  4. Deduplicate `/driver/delete-propagation` project snapshot output
-  5. Continue remaining file-backed delete lanes and revocation/restore/hard-delete lanes
-
-  Known artifact/run context:
-  - live run dir: `.claude/test-results/2026-04-06_193351_codex_sync-delete-live`
-  - run tag: `t138i`
-  - deleted project used in proof: `d2bb6a5d-010f-4e9b-adcb-9188ea442391`
-  - deleted entry used in proof: `1a31fc0c-33ef-4f99-8c07-60ebc9825c4e`
-  - photo id: `7c25e358-351b-42b7-9de2-a04c9659b0be`
-  - document id: `88c32836-4c19-4297-b36e-255ecd0e0b8d`
-
-  Operational rules for this resume:
-  - sync is the top priority
-  - use S21 (`RFCNC0Y975L`) and Windows only for live sync verification
-  - do not pivot into broad UI refactor work
-  - fix sync defects immediately
-  - file non-sync defects to GitHub issues
-  - keep updating the checklist/report/checkpoint artifacts as you go
-
-  Then continue the delete verification from the current proof state.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   CLAUDE - 
 
 
@@ -107,3 +20,81 @@ Need to start documenting through github commits much more
 
   DO NOT STOP until you have finished and the specs intent has been fully captured.  
 
+
+  › Yes let's install docker and figure out how to get the remote work accessible to you unless you've already figured it out                 
+                                                                                                                                            
+
+• Run these from an elevated PowerShell.
+                                                                                                                                            
+  Docker / Local Supabase                                                                                                                   
+                                                                                                                                            
+  Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All -NoRestart                                      
+  Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All -NoRestart                                                 
+                                                                                                                                            
+  wsl --update                                                                                                                              
+                                                                                                                                            
+  winget install --id Docker.DockerDesktop --exact --accept-package-agreements --accept-source-agreements                                   
+                                                                                                                                            
+  Restart-Computer                                                                                                                          
+                                                                                                                                            
+  & "$Env:ProgramFiles\Docker\Docker\Docker Desktop.exe"
+
+  Then verify:
+  docker info
+  supabase --version
+  cd C:\Users\rseba\Projects\Field_Guide_App
+  supabase status
+  supabase start
+
+  If docker version and supabase start work, I’ll be able to run the local Supabase stack, reset/apply migrations, and validate the DB side 
+  of the beta work from this repo.
+
+  Remote Supabase
+  Remote access is already working from this shell. I already confirmed:
+
+  supabase projects list
+
+  and it returned your linked project Construction Inspector App with ref vsqvkxvvmnnhdajtgblj.
+
+  If you want to re-link explicitly from admin PowerShell anyway:
+
+
+  supabase login
+
+  Once Docker is running, tell me the results of:
+
+
+  and I’ll continue with local-stack validation plus the refactor work.
+
+───────────────────────────────────────────────────────────────────────────
+
+Testing notes - 
+
+  - When deleting a project there is no-auto refresh, this needs to be fixed, make sure this doesn't happen in other areas of the app as well. 
+  - It had alot of trouble syncing, took awhile, said it was complete but shows 2 pending and 12 conflicts in the sync dashboard. 
+  - No way to clear the sync dashboard conflicts, this needs to be more intuitive since it is user facing
+  - The integrity checks section is very misleading, not sure what it is even doing
+  - No way to view the pending changes, again if this is user facing it needs to be more intuitive and transparent
+  - I attempted a second sync and it cleared the 2 pending and now there are 15 conflicts? 
+  - Synced again and now there are 20 conflicts
+  
+
+
+  - When editing the activities, when you click done, it doesn't show the data you've typed out, this must be fixed
+  - When creating equipment in the create equipment popup there the equipment is listed and scrollable, this is fine but you can only see one piece of equipment at a time and its extremely unclear you can scroll. Needs to be fixed, the user would never know to scroll to find the equipment to delete/edit
+  - When editing an entry by clicking continue todays entry in the dashboard, it says new entry. I know we use the new entry screen but can we make this a bit more honest / user friendly
+  - If I submit the entry for the day I was working on and I click continue todays entry from the dashboard it starts a new entry. It should ask if you'd like to unsubmit as there is already an entry for this day
+  - We need to have a way to intuitively make a report for a different date, I think the best way to do this is to allow the user to edit the date of a report in the new entry wizard
+  - entries can be backdated by selecting a calendar day prior in the calendar screen, this is good. 
+  - the calendar screen has an overflow error, this tells me that this hasn't been properly tokenized/scaffolded as the sizing should be adaptive. Our responsive scaffolding should've handled this I believe
+  - There are no forms in the Forms screen in the Toolbox, when clicking the + icon it brings up a scroll box on the bottom of the screen that stays down and you can't do anything with it
+  
+   - One state-ownership rule per screen: detail screens render the live provider/model source, not stale screen-local copies after mutation.
+  - One mutation contract: every create/update/delete must either update the canonical provider state or trigger a required reload path immediately.
+  - One route-intent layer: actions like continue today, new entry, view submitted, edit draft should go through shared intent helpers, not screen-local ad hoc navigation.
+  - One preload contract for screens/sheets: if a screen depends on builtin forms, contractor data, etc., it must load that before interactive controls enable.
+  - One responsive content contract for dialogs/sheets: scrolling regions get explicit constraints and visible affordances, not “Flexible inside whatever dialog happens to host it”.
+  - Contract tests for those behaviors: not just widget snapshots, but tests that assert “save updates visible state”, “delete removes item without manual refresh”, “continue today reopens today’s entry”, and “sheet never opens empty when action is enabled”.
+
+  When loading into another project and on a different user/user role that another account is on, it shows their trash as mine, it just had 390 items in my  trash can on a different account
+  The double screen view for the windows version of the dashboard just shows two of the same screen, this is pointless. Better to just keep this screen as one for now until we redesign it better
