@@ -232,3 +232,275 @@ Important architecture note:
   methods, which is why the shared owner currently uses the repository for the
   actual attach mutation instead of a mockable provider-owned method. That is
   now an explicit cleanup follow-up, not hidden drift.
+
+## 2026-04-09 Progress Update 3
+
+Pay-app data is now split the way the product actually needs it:
+- canonical syncable pay-app data stays in `pay_applications`
+- local workbook/export history stays in `export_artifacts`
+
+What landed:
+- retired sync for local-only export history tables:
+  - `entry_exports`
+  - `form_exports`
+  - `export_artifacts`
+- added runtime repair:
+  - `RepairSyncStateV20260409LocalOnlyExportQueue`
+- added upgrade migration:
+  - `v57` removes legacy export-history triggers and purges queued residue
+- rebuilt `pay_applications` as canonical data:
+  - `export_artifact_id` is now optional
+  - local DB migration `v58` rebuilds the table and removes the old
+    artifact-uniqueness assumption
+  - Supabase migration
+    `20260409130500_make_pay_apps_canonical_and_artifact_optional.sql`
+    makes the remote column nullable as well
+- pay-app sync adapter now treats `export_artifact_id` as local-only/local-read:
+  - stripped on push
+  - ignored on pull
+- detail/workbook/delete flows now treat artifacts as local history:
+  - detail loading falls back by `source_record_id`
+  - workbook building falls back by `source_record_id`
+  - deleting an export artifact clears the local pointer instead of deleting
+    canonical pay-app data
+  - deleting a pay app is now its own use case
+
+Verification:
+- targeted sync schema/registry/repair/migration tests are green
+- targeted pay-app use-case/detail-screen tests are green
+- targeted `flutter analyze` is green
+- root `dart run custom_lint` is green
+
+Live device proof:
+- S21 upgraded to the new local schema:
+  - `PRAGMA table_info('pay_applications')` shows
+    `export_artifact_id` with `notnull = 0`
+- live trigger state after install:
+  - no triggers on `entry_exports`, `form_exports`, or `export_artifacts`
+  - `pay_applications` still has insert/update/delete sync triggers
+- live sync state after upgrade was clean:
+  - `pendingCount = 0`
+  - `blockedCount = 0`
+
+Honest remaining gap from this slice:
+- I have device proof for the schema/trigger split and clean queue state
+- I have not yet re-run a full pay-app creation + sync cycle on-device after
+  the canonical/local split
+
+## 2026-04-09 Progress Update 4
+
+The full on-device pay-app cycle is now characterized honestly:
+
+- real S21 flow completed:
+  - navigated to `Pay Items & Quantities`
+  - exported a new pay app through the live dialogs
+  - confirmed the exported detail screen opened for `Pay App #4`
+- queue ownership before sync was correct:
+  - `pendingCount = 1`
+  - the only queued row was `pay_applications/<new-id>`
+  - `export_artifacts`, `form_exports`, and `entry_exports` stayed out of
+    `change_log`
+  - the local pay-app row still held a local `export_artifact_id`, and the
+    local export artifact row existed with a real on-device file path
+- the remote schema exposed the true remaining blocker:
+  - sync failed with Postgres `23502`
+  - remote `pay_applications.export_artifact_id` is still `NOT NULL`
+  - this proves the client split is correct but the linked backend migration
+    is not applied yet
+- landed follow-up protection in source:
+  - `ChangeTracker.markBlocked(...)`
+  - `SyncErrorClassifier.isRemoteSchemaCompatibilityError(...)`
+  - `PushErrorHandler` now immediately blocks this pay-app schema mismatch
+    instead of burning retries
+  - new startup repair:
+    - `RepairSyncStateV20260409PayAppSchemaMismatch`
+  - `SyncStateRepairRunner` catalog bumped to `2026-04-09.2`
+- verified locally:
+  - targeted sync tests green
+  - targeted `flutter analyze` green
+  - root `dart run custom_lint` green
+- verified on the S21 after reinstall:
+  - the already-poisoned pay-app row was converted from `pending` to
+    `blocked` on startup
+  - `driver/sync-status` showed:
+    - `pendingCount = 0`
+    - `blockedCount = 1`
+  - running sync again no longer retried the blocked pay-app row:
+    - sync returned success with `pushed = 0`, `pulled = 0`
+    - the row stayed blocked with the explicit remote-schema-mismatch message
+
+Honest remaining blocker:
+- the linked Supabase project still needs
+  `20260409130500_make_pay_apps_canonical_and_artifact_optional.sql`
+  applied remotely
+- I could not apply it from this environment because:
+  - linked migration history is already drifted (`db push` blocked)
+  - direct `supabase db query --linked` needs `SUPABASE_DB_PASSWORD`, which is
+    not available in this workspace
+
+## 2026-04-09 Progress Update 5
+
+The backend blocker is now closed end to end:
+
+- remote schema is fixed on the linked Supabase project:
+  - `public.pay_applications.export_artifact_id` is now nullable
+  - `pay_applications_export_artifact_id_fkey` exists with `ON DELETE SET NULL`
+- landed the missing operator recovery seam in source:
+  - `LocalSyncStore.resetBlockedPayAppSchemaMismatchChanges()`
+  - `SyncRecoveryService.rerunKnownRepairs()` now requeues blocked pay-app
+    schema-mismatch rows before rerunning the conservative repair catalog
+- verified locally:
+  - new database-backed recovery test is green
+  - targeted `flutter analyze` is green
+  - root `dart run custom_lint` is green
+- verified on the S21 after reinstall:
+  - initial state showed the old blocked pay-app row:
+    - `pendingCount = 0`
+    - `blockedCount = 1`
+  - `POST /driver/run-sync-repairs` requeued it cleanly:
+    - `pendingCount = 1`
+    - `blockedCount = 0`
+  - `POST /driver/sync` then drained it fully:
+    - `pendingCount = 0`
+    - `blockedCount = 0`
+    - `unprocessedCount = 0`
+  - local `pay_applications/<id>` still exists on-device with its local
+    `export_artifact_id`
+  - remote `public.pay_applications/<id>` now exists with:
+    - `application_number = 4`
+    - `export_artifact_id = null`
+
+This closes the pay-app export-history split with honest end-to-end proof:
+
+- canonical pay-app data syncs and is backed up
+- workbook/export history stays local-only
+- stale blocked rows can now be explicitly repaired after backend deployment
+
+## 2026-04-09 Progress Update 6
+
+Entry export is now testable enough for live bundle verification:
+
+- added stable preview-shell keys in source:
+  - `report_pdf_preview_dialog`
+  - `report_pdf_save_as_button`
+  - `report_pdf_share_button`
+- locked with source verification:
+  - new `entry_pdf_preview_screen_test.dart`
+  - existing `entry_pdf_action_owner_test.dart`
+  - targeted `flutter analyze`
+  - root `dart run custom_lint`
+- verified on the S21 against the real Apr 9 draft entry:
+  - the attached `mdot_1126` response still points at
+    `daily_entries/fb3ddde9-9429-48d5-bf4e-de2fabdfebe1`
+  - opening the draft entry and exporting from the live preview now exposes the
+    keyed preview shell
+  - tapping `Save` opens `Export Folder Name` with suggested folder `04-09`
+    instead of the single-PDF save path
+  - screenshot proof:
+    - `.codex/tmp/entry-export-folder-dialog.png`
+
+Conclusion:
+
+- attached forms are still influencing the entry export contract correctly
+- daily-entry export remains the bundle root when forms are attached
+- the remaining open part is the separate 1126 attach-step/create-entry UI flow,
+  not the bundle/export side
+
+## 2026-04-09 Progress Update 7
+
+Shared form export is now closed across the shipped form surfaces.
+
+- Closed the remaining drift between dedicated form shells and the fallback
+  viewer:
+  - the fallback viewer no longer requires preview before export
+  - the fallback viewer no longer submits or marks the response exported
+  - forms now use a shared `Form Exported` follow-up dialog with:
+    - `Not Now`
+    - `Save Copy`
+    - `Share File`
+- Source changes:
+  - added `lib/core/exports/export_save_share_dialog.dart`
+  - upgraded `ExportArtifactCapabilityRegistry` so `form` supports save-copy
+  - widened `ExportFormUseCase` to return `FormExportArtifactResult`
+  - updated `FormPdfService.saveTempPdf(...)` to accept stable generated
+    filenames
+  - rewired `FormExportProvider`, `FormPdfActionOwner`,
+    `FormViewerController`, and `FormViewerScreen` onto the shared contract
+- Verified locally:
+  - targeted form/export tests green
+  - targeted `flutter analyze` green
+  - root `dart run custom_lint` green
+- Verified on the S21:
+  - generic fallback viewer route `/form/fa74c344-0977-4b3a-9263-727796b6af41`
+    opens the shared `Form Exported` dialog
+  - dedicated 0582B shell route
+    `/form/fa74c344-0977-4b3a-9263-727796b6af41?formType=mdot_0582b`
+    opens the same dialog
+  - dedicated 1126 shell route
+    `/form/c1b792f9-1248-420f-a218-a029fce446de?formType=mdot_1126`
+    opens the same dialog
+  - after export, both sampled device DB rows still report `status = open`
+- Proof artifacts:
+  - `.codex/tmp/generic-form-viewer-export-dialog.png`
+  - `.codex/tmp/mdot-0582b-live-export-dialog.png`
+  - `.codex/tmp/mdot-1126-live-export-dialog.png`
+
+## 2026-04-09 Progress Update 8
+
+Shared form export is now verified through the actual save-copy handoff too.
+
+- S21 proof:
+  - from the generic 0582B fallback viewer, choosing `Save Copy` from
+    `Form Exported` hands off to Android's picker
+  - artifact:
+    - `.codex/tmp/0582b-save-copy-picker-verified.png`
+- This means the current shared form export contract is now honestly closed for:
+  - preview
+  - standalone export
+  - shared follow-up dialog
+  - share handoff
+  - save-copy handoff
+- What remains open in the export plan is product-policy work, not plumbing:
+- whether standalone forms should prefer dated-folder defaults
+- whether attach-vs-export should be surfaced as one decision point for
+  attachable forms
+- whether any additional form shells still deserve a dedicated affordance
+
+## 2026-04-09 16:55 ET Additional Export-Contract Progress
+
+What closed in this pass:
+- shared standalone form export now has one date-aware filename policy instead
+  of per-screen literals
+- Forms screen now presents form-export context more honestly:
+  - linked vs standalone response state
+  - form-only export history
+
+What landed:
+- `FormExportFilenamePolicy`
+- `ExportFormUseCase` now defaults to that policy
+- `MdotHubScreen` no longer hardcodes a separate 0582B export filename
+- `FormGalleryResponseTile` now surfaces attachment context
+- `FormGalleryScreen` export history is restricted to `form_pdf`
+
+Honest remaining export-policy gap:
+- attach-vs-export decision for attachable standalone forms
+- dated-folder save path for standalone forms
+
+## 2026-04-09 16:58 ET Attach/Export Contract Closure
+
+- Closed:
+  - attachable standalone forms now surface one shared
+    `Attach Before Export?` decision
+  - 0582B draft-heavy export no longer drifts because the hub saves before
+    export
+  - shared signed-form export validation now aligns standalone and bundled
+    export behavior
+- Device proof:
+  - `.codex/tmp/0582b-attach-export-decision-3.png`
+  - `.codex/tmp/0582b-after-attach-export.png`
+  - `.codex/tmp/forms-gallery-0582b-linked-after-attach.png`
+  - `.codex/tmp/1126-export-blocked-after-edit.png`
+
+Remaining export-plan gap:
+- standalone-form dated-folder behavior if product wants more than the current
+  date-aware filename + Android picker flow

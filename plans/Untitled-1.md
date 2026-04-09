@@ -67,19 +67,11 @@ Need to start documenting through github commits much more
   and I’ll continue with local-stack validation plus the refactor work.
 
 ───────────────────────────────────────────────────────────────────────────
+Please turn these testing notes into a comprehensive spec. I'm going to go to bed for the night and I'd like you to create a TODO out of all of these items and keep iterating until all of them are completed. 
 
 Testing notes - 
 
   - When deleting a project there is no-auto refresh, this needs to be fixed, make sure this doesn't happen in other areas of the app as well. 
-  - It had alot of trouble syncing, took awhile, said it was complete but shows 2 pending and 12 conflicts in the sync dashboard. 
-  - No way to clear the sync dashboard conflicts, this needs to be more intuitive since it is user facing
-  - The integrity checks section is very misleading, not sure what it is even doing
-  - No way to view the pending changes, again if this is user facing it needs to be more intuitive and transparent
-  - I attempted a second sync and it cleared the 2 pending and now there are 15 conflicts? 
-  - Synced again and now there are 20 conflicts
-  
-
-
   - When editing the activities, when you click done, it doesn't show the data you've typed out, this must be fixed
   - When creating equipment in the create equipment popup there the equipment is listed and scrollable, this is fine but you can only see one piece of equipment at a time and its extremely unclear you can scroll. Needs to be fixed, the user would never know to scroll to find the equipment to delete/edit
   - When editing an entry by clicking continue todays entry in the dashboard, it says new entry. I know we use the new entry screen but can we make this a bit more honest / user friendly
@@ -88,13 +80,29 @@ Testing notes -
   - entries can be backdated by selecting a calendar day prior in the calendar screen, this is good. 
   - the calendar screen has an overflow error, this tells me that this hasn't been properly tokenized/scaffolded as the sizing should be adaptive. Our responsive scaffolding should've handled this I believe
   - There are no forms in the Forms screen in the Toolbox, when clicking the + icon it brings up a scroll box on the bottom of the screen that stays down and you can't do anything with it
+  - When loading into another project and on a different user/user role that another account is on, it shows their trash as mine, it just had 390 items in my  trash can on a different account
+  - The double screen view for the windows version of the dashboard just shows two of the same screen, this is pointless. Better to just keep this screen as one for now until we redesign it better
   
-   - One state-ownership rule per screen: detail screens render the live provider/model source, not stale screen-local copies after mutation.
+ Forms -  
+  - The station selection in the quick test section doesn't display a + sign, we display stations as xx+xx so we need to have a + 
+  - The items of work are wrong, there is a table on the 0582B at on the second page of the pdf that displays the different items of work, we want the actual item names in the app and then the exported item of work is the item corresponding item code, we need to have a way to display the Density Requirements 
+  -  when its the 'original' test we just want want it to be numbered chronologically, this should go in descending order per test, except when recheck has been checked, we display a recheck number subsequent to the original until the inspector gets a passing test, and then we continue back with the chronological numbering
+  - It blocks me from exporting a 0582B without required fields, it shouldn't do this, we can always edit the form after its exported as well. forms aren't to be flattened on export
+  - We only need to display to .0 accuracy on the 0582B. We are currently displaying as .00, this needs to be fixed.
+  - After saving the 0582B it doesn't display in the 'saved responses' section of the 0582B tab in the forms gallery
+  - When bringing the app to foreground after you've hit the home button the app loads in very slow, and also doesn't seem to assume state ownership because when i hit the back key it closes the app, this essentially locks the app until its killed and even then restarts to the same screen, so locks the user out of the app. When the app is completely closed and not just backgrounded you should be brought to the projects selection page if auth isn't needed. This is very important to get right, I'm thinking this could possibly be because we don't have proper nested screen routes but I'm not sure, this happens app wide too
+  - Export didn't work, brought up multiple bottom screens, didn't let me select a file path for export, The other options are fine but need to be able to export to a dated folder. Should also prompt to ask if I'd like to attach this to a form or export as is
+  
+
+
+
+
+
+
+
+  - One state-ownership rule per screen: detail screens render the live provider/model source, not stale screen-local copies after mutation.
   - One mutation contract: every create/update/delete must either update the canonical provider state or trigger a required reload path immediately.
   - One route-intent layer: actions like continue today, new entry, view submitted, edit draft should go through shared intent helpers, not screen-local ad hoc navigation.
   - One preload contract for screens/sheets: if a screen depends on builtin forms, contractor data, etc., it must load that before interactive controls enable.
   - One responsive content contract for dialogs/sheets: scrolling regions get explicit constraints and visible affordances, not “Flexible inside whatever dialog happens to host it”.
   - Contract tests for those behaviors: not just widget snapshots, but tests that assert “save updates visible state”, “delete removes item without manual refresh”, “continue today reopens today’s entry”, and “sheet never opens empty when action is enabled”.
-
-  When loading into another project and on a different user/user role that another account is on, it shows their trash as mine, it just had 390 items in my  trash can on a different account
-  The double screen view for the windows version of the dashboard just shows two of the same screen, this is pointless. Better to just keep this screen as one for now until we redesign it better

@@ -1319,3 +1319,453 @@ overnight/device passes.
       already submitted
     - the user now gets a truthful decision point and both resulting actions
       work on-device
+
+## 2026-04-09 Pay-App Sync/Export Contract Update
+
+### Intent Clarified
+
+- filled forms and canonical field data must remain backed up/syncable
+- local export history does not need Supabase backup
+- pay applications follow the same rule:
+  - canonical pay-app data must sync/back up
+  - workbook/export artifacts remain local-only
+
+### Landed Architecture
+
+- local-only export-history sync surface retired for:
+  - `entry_exports`
+  - `form_exports`
+  - `export_artifacts`
+- canonical `pay_applications` kept in the sync engine
+- `pay_applications.export_artifact_id` is now optional local metadata, not
+  remote truth
+- pay-app detail/workbook flows resolve artifacts by either:
+  - direct `export_artifact_id`
+  - fallback `source_record_id`
+- deleting a local artifact only clears local linkage
+- deleting a pay app is now a separate canonical-data action
+
+### Verification Already Closed
+
+- source/test/analyze/custom-lint verification is green for the split
+- S21 upgrade proof is closed for:
+  - schema shape
+  - trigger retirement on local-only export-history tables
+  - canonical sync triggers retained on `pay_applications`
+  - clean queue after upgrade
+
+### Still Open For Honest Closure
+
+- on-device end-to-end pay-app creation/export validation after the split
+- queue proof that export-history tables do not re-enter `change_log`
+- sync proof that canonical `pay_applications` still drains cleanly
+
+## 2026-04-09 Pay-App E2E Result
+
+### Closed
+
+- on-device pay-app creation/export validation after the split
+- queue proof that export-history tables do not re-enter `change_log`
+
+### Result
+
+- real S21 export created a new canonical `pay_applications` row
+- only that canonical row entered `change_log`
+- local-only export history stayed local:
+  - `export_artifacts`
+  - `form_exports`
+  - `entry_exports`
+
+### New Truth Discovered
+
+- sync still cannot fully close because the linked backend schema is behind:
+  - remote `pay_applications.export_artifact_id` is still `NOT NULL`
+  - sync fails with Postgres `23502`
+
+### Containment Landed
+
+- this backend mismatch now blocks immediately instead of poisoning sync:
+  - first failure is quarantined into blocked queue state
+  - startup repair converts already-poisoned matching rows into blocked state
+  - repeat sync no longer retries the row forever
+
+### Still Open
+
+- apply `20260409130500_make_pay_apps_canonical_and_artifact_optional.sql`
+  on the linked remote project
+- after the remote migration, rerun `Repair Sync State` and prove the blocked
+  pay-app row drains cleanly
+
+## 2026-04-09 Pay-App Sync Closure
+
+### Closed
+
+- linked backend migration for canonical pay apps
+- blocked pay-app row repair after backend deployment
+- end-to-end S21 proof that canonical pay-app sync drains cleanly while local
+  export history stays local-only
+
+### Verification
+
+- remote schema:
+  - `public.pay_applications.export_artifact_id` is nullable
+  - export-artifact FK delete rule is `SET NULL`
+- S21:
+  - blocked pay-app row was requeued through `Repair Sync State`
+  - follow-up sync drained to `0 pending / 0 blocked / 0 unprocessed`
+- remote data:
+  - `pay_applications/91571c6c-8f54-456e-89fd-9b0957480333` exists
+  - `application_number = 4`
+  - `export_artifact_id = null`
+
+### Product Outcome
+
+- filled forms and canonical pay apps still back up through sync
+- export history remains local-only and no longer enters `change_log`
+- stale blocked pay-app rows have a legitimate repair path after backend fixes
+
+## 2026-04-09 D3 Bundle Verification Update
+
+### Closed
+
+- attached-form inclusion in the daily-entry export bundle
+
+### Verification
+
+- live form linkage still exists on-device:
+  - `form_responses/c1b792f9-1248-420f-a218-a029fce446de`
+  - `entry_id = fb3ddde9-9429-48d5-bf4e-de2fabdfebe1`
+- entry preview/export shell is now keyed and source-tested:
+  - `report_pdf_preview_dialog`
+  - `report_pdf_save_as_button`
+  - `report_pdf_share_button`
+- S21 proof:
+  - reopening the attached draft entry and tapping export opened
+    `Daily Entry Preview`
+  - tapping save opened `Export Folder Name` with suggested folder `04-09`
+    rather than the standalone PDF save path
+  - screenshot: `.codex/tmp/entry-export-folder-dialog.png`
+
+### Still Open
+
+- the separate 1126 attach-step/create-entry UI flow still needs direct live
+  proof
+## 2026-04-09 15:35 ET MDOT 1126 Typed Signature, Attach Flow, And Reminder Date Closure
+
+- [x] typed signature replaces drawn signature for MDOT 1126
+  - the signature step now validates typed signer text and stamps a PNG generated from typed text instead of using the drawn pad path
+  - on-device on the S21, tapping `Sign` no longer crashes the app or the driver
+- [x] 1126 same-date attach path
+  - verified on-device after fresh rebuild that a signed 1126 for `2026-04-09` reopens the Apr 9 entry surface correctly
+- [x] 1126 no-match create-entry path
+  - verified on-device with a fresh `2026-04-11` 1126 draft
+  - attach step now shows:
+    - notice that no entry matches the inspection date
+    - `Create new entry for 2026-04-11`
+    - `Choose a different existing entry`
+  - driver-keyed tap on `Create new entry for 2026-04-11` created a new daily entry and navigated to `/entry/.../2026-04-11`
+  - debug log proves the created entry id was `cee75291-e61e-46f7-ba47-b5c10bb291ef`
+- [x] reminder-triggered 1126 due-date propagation
+  - fixed the `form-new` path so `inspectionDate` query parameters flow through `FormNewDispatcherScreen` into `createMdot1126Response`
+  - verified on-device with `/form/new/mdot_1126?inspectionDate=2026-04-15`
+  - rainfall step opened with `Apr 15, 2026`, proving reminder-created drafts no longer silently default to `DateTime.now()`
+
+Notes:
+- an earlier wrong-entry result during no-match testing was caused by raw adb coordinate flakiness, not product logic
+- reliable closure was established using the driver’s widget-text tap endpoint instead of raw screen taps
+
+## 2026-04-09 15:58 ET Shared Form Export Contract Closure
+
+- [x] generic form-viewer export parity
+  - `FormViewerController.export()` no longer requires preview first
+  - generic viewer export no longer submits or marks forms exported
+  - successful exports now route through the shared `Form Exported` dialog
+- [x] dedicated-shell export parity across shipped forms
+  - verified on-device that:
+    - generic fallback viewer export opens `Form Exported`
+    - 0582B live shell export opens `Form Exported`
+    - 1126 live shell export opens `Form Exported`
+  - all three surfaces now expose:
+    - `Not Now`
+    - `Save Copy`
+    - `Share File`
+- [x] forms remain editable after export
+  - re-queried the live device DB after generic-viewer and dedicated-shell
+    exports
+  - sampled rows still showed `status = open`
+- proof artifacts:
+  - `.codex/tmp/generic-form-viewer-export-dialog.png`
+  - `.codex/tmp/mdot-0582b-live-export-dialog.png`
+  - `.codex/tmp/mdot-1126-live-export-dialog.png`
+
+## 2026-04-09 16:03 ET Additional Verified Closures
+
+### Closed
+
+- shared standalone form export follow-up is now end-to-end device-verified
+- 1126 typed-signature identity drift is source/test/device-verified enough to
+  leave the highest-risk forms backlog
+
+### Verification
+
+- shared form `Save Copy` branch
+  - from the live generic 0582B viewer on the S21, `Save Copy` opens Android's
+    system folder picker instead of silently failing or looping back to share
+  - screenshot:
+    - `.codex/tmp/0582b-save-copy-picker-verified.png`
+- 1126 signature identity
+  - fresh driver build reaches signature step with authenticated signer prompt:
+    `Type "E2E Test Admin" to sign this form.`
+  - signing still advances cleanly to attach step
+  - screenshots:
+    - `.codex/tmp/1126-signature-step-fresh-build.png`
+    - `.codex/tmp/1126-post-sign-attach-fresh-build.png`
+
+### Source Contract Added
+
+- `TypedSignatureField` now blocks signing when no expected signer identity is
+  available instead of accepting any non-empty typed name
+- `BuildCarryForward1126UseCase` no longer carries forward prior inspector
+  identity into the next weekly draft
+- `SignFormResponseUseCase` now persists `typed_signer_name` alongside the
+  minted audit id
+- `Mdot1126SignatureStep` now prefers the authenticated profile display name
+  over editable header text when validating the signer
+
+### Still Open
+
+- 0582B export UX product closure:
+  - dated-folder behavior
+  - attach-vs-export decision
+  - remaining multi-surface flow cleanup
+- cross-account trash live two-account validation
+- conflict viewer usefulness
+- sync issue taxonomy / reporting
+
+## 2026-04-09 16:40 ET Entry Date Editing Closure
+
+### Closed
+
+- in-flow entry date editing is now source/device-closed for both:
+  - clean date change
+  - collision -> open existing draft
+
+### Root Cause
+
+- `EntryEditorScreen` only loaded entry state on first mount
+- when the route changed to a different `/entry/:projectId/:date?entryId=...`
+  context, the widget state was reused but the screen did not reload
+- result:
+  - route could point at one date/entry while the visible header still showed
+    the previous entry
+
+### Landed
+
+- added explicit route-identity binding helper:
+  - `lib/features/entries/presentation/screens/entry_editor_route_binding.dart`
+- `EntryEditorScreen.didUpdateWidget(...)` now:
+  - detects route identity changes
+  - regenerates the pending create-mode id when needed
+  - reloads the editor state for the new route context
+
+### Verification
+
+- `flutter test test/features/entries/presentation/screens/entry_editor_route_binding_test.dart`
+- targeted `flutter analyze`
+- root `dart run custom_lint`
+
+### S21 Device Proof
+
+- clean branch:
+  - Apr 24 draft -> edit date -> Apr 25
+  - route changed to `/entry/.../2026-04-25`
+  - visible header updated to `Apr 25, 2026`
+  - proof:
+    - `.codex/tmp/entry-date-edit-after-fix-clean-25.png`
+- collision branch:
+  - Apr 23 draft -> edit date -> Apr 24
+  - conflict dialog showed `Entry Already Exists`
+  - tapping `Open Existing Draft` changed the route to `/entry/.../2026-04-24`
+  - visible header updated to `Apr 24, 2026` instead of staying stale on Apr 23
+  - proof:
+    - `.codex/tmp/entry-date-edit-after-fix-clean.png`
+    - `.codex/tmp/entry-date-edit-after-fix-open-existing.png`
+
+## 2026-04-09 16:55 ET 1126 Weekly Draft Dedupe + Forms Context Slice
+
+### Closed In This Pass
+
+- repeated same-date MDOT 1126 creation now reopens the same draft instead of
+  creating duplicates
+- standalone/shared form export now uses one date-aware filename policy
+- Forms screen now surfaces linked-vs-standalone context on saved responses
+- Forms screen export history is now scoped to form PDFs only
+
+### Landed
+
+- new 1126 draft resolver:
+  - `lib/features/forms/domain/usecases/load_open_1126_draft_for_date_use_case.dart`
+- `InspectorFormProvider.createMdot1126Response(...)` now returns the existing
+  same-date open draft before carry-forward/create
+- weekly reminder model now carries optional draft-resume context:
+  - `resumeResponseId`
+- reminder/banner/toolbox/dashboard taps now resume the draft when one exists
+- new shared filename policy:
+  - `lib/features/forms/data/services/form_export_filename_policy.dart`
+- `ExportFormUseCase` now defaults to that shared policy
+- `MdotHubScreen` no longer hardcodes its own 0582B filename
+- `FormGalleryResponseTile` now shows:
+  - `Standalone`
+  - `Linked to daily entry`
+- `FormGalleryScreen` export history now only loads `form_pdf` artifacts
+
+### Verification
+
+- `flutter test test/features/forms/domain/usecases/load_open_1126_draft_for_date_use_case_test.dart test/features/forms/domain/usecases/compute_weekly_sesc_reminder_use_case_test.dart test/features/forms/presentation/screens/form_new_dispatcher_screen_test.dart`
+- `flutter test test/features/forms/data/services/form_export_filename_policy_test.dart test/features/forms/presentation/widgets/form_gallery_response_tile_test.dart test/features/forms/presentation/screens/form_gallery_screen_test.dart test/features/forms/domain/usecases/export_form_use_case_test.dart`
+- targeted `flutter analyze`
+- root `dart run custom_lint`
+
+### S21 Device Proof
+
+- 1126 draft dedupe:
+  - first open:
+    - `/form/new/mdot_1126?inspectionDate=2026-04-15`
+    - route resolved to `/form/ee145e67-a904-4a0d-ba23-068a6525d3bd`
+  - second open with the same inspection date:
+    - same route resolved again to
+      `/form/ee145e67-a904-4a0d-ba23-068a6525d3bd`
+  - this proves same-date weekly creation now resumes instead of duplicating
+- date-aware form filename:
+  - 0582B export dialog now shows:
+    - `MDOT_0582B_2026-04-08_fa74c344.pdf`
+  - proof:
+    - `.codex/tmp/0582b-export-dialog-dated-filename.png`
+- Forms screen response context:
+  - saved responses now show live `Standalone` / `Linked to daily entry`
+  - proof:
+    - `.codex/tmp/forms-gallery-linked-history-cleanup.png`
+- Forms export history scope:
+  - visible artifact list now shows only `Form PDFs`
+  - proof:
+    - `.codex/tmp/forms-gallery-export-history-form-only-2.png`
+
+### Still Open After This Pass
+
+- 0582B export UX still needs the remaining product-policy slice:
+  - dated-folder behavior for standalone form exports
+  - any remaining multi-surface flow cleanup beyond the shared owner path
+- weekly reminder `resume draft` copy is source-landed, but I have not yet
+  captured a device screenshot of the reminder surfaces themselves in a state
+  where the resume banner/card is visible
+
+## 2026-04-09 16:58 ET 0582B Export Decision + 1126 Attach Proof
+
+### Closed
+
+- 0582B attach-vs-export decision is now source/test/device-closed
+- 0582B export now saves dirty hub draft state before export
+- 1126 attach-step is now device-closed for both:
+  - create a new same-date entry and attach
+  - attach to an existing same-date entry
+- standalone 1126 export now blocks after a signed form is edited
+
+### Device Proof
+
+- 0582B attach/export decision
+  - the live 0582B shell now opens:
+    - `Attach Before Export?`
+    - `Export As Is`
+    - `Attach and Export`
+  - proof:
+    - `.codex/tmp/0582b-attach-export-decision-3.png`
+- 0582B save-before-export
+  - edited `counts_mc` to `777` in the live hub
+  - exported without manually saving first
+  - pulled the live device DB and confirmed the same response now stores:
+    - `hub_draft.test.counts_mc = "777"`
+- 0582B attach before export
+  - choosing `Attach and Export`:
+    - showed `Attached to the 2026-04-08 daily entry before export.`
+    - updated the live device DB row to a non-null `entry_id`
+    - updated the Forms gallery subtitle to `Linked to daily entry`
+  - proof:
+    - `.codex/tmp/0582b-after-attach-export.png`
+    - `.codex/tmp/forms-gallery-0582b-linked-after-attach.png`
+- 1126 typed-signature + create-entry attach branch
+  - `/form/new/mdot_1126?inspectionDate=2026-04-28`
+  - typed signer prompt shown with `E2E Test Admin`
+  - attach step showed `Create new entry for 2026-04-28`
+  - tapping it navigated into the Apr 28 entry editor
+  - proof:
+    - `.codex/tmp/1126-signature-step-typed.png`
+    - `.codex/tmp/1126-attach-step-create-entry.png`
+    - `.codex/tmp/1126-after-create-entry-attach.png`
+- 1126 existing-entry attach branch
+  - `/form/new/mdot_1126?inspectionDate=2026-04-25`
+  - attach step showed `2026-04-25 (matches inspection date)`
+  - tapping it navigated into the Apr 25 entry editor
+  - proof:
+    - `.codex/tmp/1126-existing-entry-attach-step.png`
+    - `.codex/tmp/1126-existing-entry-after-attach.png`
+- 1126 export blocked after signed edit
+  - opened signed 1126 `0c84aa6b-a660-4a73-902a-8b4779f79d5d`
+  - changed inspection date from Apr 11 to Apr 12 via the keyed picker
+  - tapping export now surfaces:
+    - `Export blocked: measures, signature`
+  - proof:
+    - `.codex/tmp/1126-export-blocked-after-edit.png`
+
+### Source / Test Closure
+
+- new dialog:
+  - `lib/features/forms/presentation/widgets/form_export_decision_dialog.dart`
+- shared strict export-validation policy:
+  - `lib/features/forms/data/services/form_export_validation_policy.dart`
+- prevention lint:
+  - `no_signature_pad_field_usage`
+- verification:
+  - targeted `flutter test`
+  - targeted `flutter analyze`
+  - root `dart run custom_lint`
+
+## 2026-04-09 17:20 ET Sync Status Conflict Residue Sweep
+
+### New Device Finding
+
+- Live S21 screenshot:
+  - `0 Pending`
+  - `0 Blocked`
+  - `34 Conflicts`
+- The same moment's driver sync status reported:
+  - `pendingCount=0`
+  - `blockedCount=0`
+  - `unprocessedCount=0`
+
+### Validation
+
+- Latest full sync log on-device:
+  - `Sync cycle (full): pushed=0 pulled=0 errors=0 conflicts=0 skippedFk=1 skippedPush=0`
+- Read-only device DB inspection shows:
+  - `84` raw undismissed `conflict_log` rows
+  - `34` grouped logical records
+- Top grouped records are historical `winner = remote` rows, mostly:
+  - `form_responses/*`
+  - `personnel_types/*`
+
+### Meaning
+
+- These are not `34` new unresolved sync failures.
+- The engine already auto-resolved them by keeping the newer remote version.
+- The product bug is the user-facing conflict surface:
+  - historical remote-win conflict history is still being counted as active
+    `need review`
+
+### Open Follow-Up
+
+- downgrade or auto-dismiss non-actionable remote-win conflict history in the
+  user-facing sync status surface
+- keep raw grouped conflict history available only for support/debug
+- continue auditing the reported intermittent yellow border:
+  - fresh driver screenshot did not capture the border
+  - possible sizing/overlay cause is still under investigation

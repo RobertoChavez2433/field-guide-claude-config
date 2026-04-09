@@ -1450,3 +1450,229 @@ What remains architecturally important:
     - `report_pdf_actions_dialog.dart`
   - that is the next best cleanup seam if the goal is one export contract
     across entries/forms/pay apps
+
+## 2026-04-09 13:10 ET Pay-App Sync/Export Research Notes
+
+- Root product distinction now explicit:
+  - canonical business records sync
+  - export history stays local
+- Applied to pay apps:
+  - `pay_applications` remains canonical sync data
+  - workbook/export history remains local through `export_artifacts`
+- Sync-engine classification now reflects that split:
+  - local-only export-history tables:
+    - `entry_exports`
+    - `form_exports`
+    - `export_artifacts`
+  - canonical sync table:
+    - `pay_applications`
+- Adapter behavior for pay apps:
+  - `export_artifact_id` is local-only linkage metadata
+  - remote null cannot wipe local linkage
+  - local linkage does not push back to Supabase
+- Migration/repair strategy:
+  - `v57` retires legacy export-history sync residue
+  - `v58` rebuilds `pay_applications` with nullable `export_artifact_id`
+  - runtime repair purges queued residue for local-only export-history tables
+- Device proof already captured:
+  - no local-only export-history triggers remain on the S21
+  - `pay_applications` still participates in the sync engine
+  - upgraded queue starts clean
+- Remaining research/validation gap:
+  - must prove with a live create/export/sync cycle that canonical pay-app
+    records still sync while local workbook/export history never enters the
+    queue
+
+## 2026-04-09 13:35 ET Pay-App E2E Research Closure
+
+- Live S21 proof now exists for the client-side split:
+  - exported a real new pay app through the UI
+  - observed exactly one queued `change_log` row:
+    - `pay_applications/<new-id>`
+  - observed zero queued rows for:
+    - `export_artifacts`
+    - `form_exports`
+    - `entry_exports`
+  - confirmed local artifact metadata still exists and points at a real local
+    workbook file
+- The true remaining failure is backend deployment drift:
+  - linked remote schema still has `pay_applications.export_artifact_id`
+    `NOT NULL`
+  - therefore canonical pay-app sync currently fails with `23502`
+- New protection added because this class of failure is a deployment mismatch,
+  not a user-data error:
+  - pay-app schema mismatch is now detected explicitly
+  - row is blocked immediately instead of consuming repeated retries
+  - startup repair quarantines existing matching rows into blocked state
+- Practical outcome:
+  - pay-app exports no longer silently poison normal sync runs on-device
+  - they remain safely local and clearly blocked until the backend migration is
+    deployed
+
+## 2026-04-09 14:05 ET Pay-App Research Closure
+
+- Backend deployment drift is no longer hypothetical:
+  - the linked Supabase project was updated
+  - `public.pay_applications.export_artifact_id` is nullable
+  - export-artifact FK now deletes with `SET NULL`
+- Recovery architecture is now complete enough for this stale-state class:
+  - startup repair still quarantines raw schema-mismatch failures
+  - explicit operator repair now requeues already-blocked pay-app rows after
+    backend deployment
+- Live proof:
+  - S21 blocked row moved from `blocked` to `pending` through the repair path
+  - follow-up sync drained cleanly
+  - remote `pay_applications/<id>` exists with `export_artifact_id = null`
+- Research conclusion:
+  - canonical syncable pay-app data + local-only workbook/export history is the
+    correct split
+  - this class of stale state now has:
+    - quarantine on mismatch
+    - explicit requeue after backend fix
+    - verified drain path
+
+## 2026-04-09 14:25 ET Entry Export Research Closure
+
+- The generic attachment refactor now has live bundle-side proof:
+  - the saved `mdot_1126` response remains linked to the Apr 9 draft entry
+  - the entry export preview now exposes stable save/share keys
+  - the save flow chooses folder export (`Export Folder Name`, `04-09`) on the
+    S21 for that attached draft
+- Practical interpretation:
+  - the entry export system still sees attached forms after the shared
+    `FormEntryAttachmentOwner` refactor
+  - bundle-root behavior on daily entries remains intact
+- Remaining research gap is narrower now:
+  - direct live proof for the wizard-side attach-step/create-entry flow itself
+## 2026-04-09 15:35 ET 1126 Attach/Reminder Research Notes
+
+- The attach-step false positive from earlier testing was methodological, not architectural:
+  - raw adb coordinate taps can hit the wrong layer during rapid step transitions
+  - the driver’s widget-text tap endpoint gives reliable proof for button-owned flows
+- The real 1126 attach/product state after fixes is:
+  - same-date match:
+    - explicit recommended row
+    - explicit `Choose a different existing entry` override
+  - no same-date match:
+    - explicit create-entry CTA
+    - explicit override CTA
+    - no ambiguous inline entry list at the default decision point
+- Reminder drift root cause was confirmed in source:
+  - `weekly_sesc_toolbox_todo.dart`
+  - `entry_editor_body.dart`
+  - dashboard reminder slot in `project_dashboard_screen.dart`
+  - all routed to `form-new` without an inspection date
+  - `form_new_dispatcher_screen.dart` only had `projectId`, so it defaulted new 1126 drafts to `DateTime.now()`
+- Reminder fix shape now in source:
+  - `inspectionDate` is a query parameter on `form-new`
+  - dispatcher forwards it into `InspectorFormProvider.createMdot1126Response`
+  - this keeps weekly reminder cadence honest without adding a second creation route
+
+## 2026-04-09 15:58 ET Shared Form Export Contract Notes
+
+- The last export mismatch was between:
+  - dedicated form shells (`MdotHubScreen`, `Mdot1126FormScreen`)
+  - the generic fallback viewer (`FormViewerScreen`)
+- Before this slice:
+  - fallback viewer required preview before export
+  - fallback viewer implicitly submitted open forms
+  - fallback viewer marked forms exported after the PDF write
+  - `FormPdfActionOwner` only shared a temp file and could not offer
+    `Save Copy`
+- The honest contract is now:
+  - forms remain editable after export
+  - export records local artifact/history rows
+  - post-export actions are shared and explicit
+  - shipped form surfaces behave the same whether they use a dedicated shell or
+    the fallback viewer
+- Device proof completed:
+  - generic viewer export dialog opened for saved 0582B response
+    `fa74c344-0977-4b3a-9263-727796b6af41`
+  - live 0582B shell export dialog opened for the same response when routed
+    through `formType=mdot_0582b`
+  - live 1126 shell export dialog opened for
+    `c1b792f9-1248-420f-a218-a029fce446de`
+  - post-export DB inspection confirmed both rows remained `status = open`
+
+## 2026-04-09 16:03 ET Signature Identity And Save-Copy Notes
+
+- 1126 signature identity drift root cause is now narrowed and fixed:
+  - editable header text is no longer the primary signer identity source
+  - carried-forward inspector names no longer silently override the next
+    inspector's signer identity
+  - accepted typed signer text is now stored in response data
+- Practical effect:
+  - UI validation, saved response payload, and audit row now share a more
+    coherent signer story
+  - the remaining gap is broader multi-inspector device validation, not a known
+    single-user source seam
+- Additional device proof:
+  - `Save Copy` from the shared `Form Exported` dialog now reaches Android's
+    picker on the S21
+  - artifact:
+    - `.codex/tmp/0582b-save-copy-picker-verified.png`
+
+## 2026-04-09 16:40 ET Entry Route-Identity Findings
+
+- The remaining entry-date-edit gap was not missing feature code.
+- Source already had:
+  - date edit button
+  - date picker dialog
+  - collision dialog
+  - route-intent navigation to the target entry/date
+- The real bug was route/state drift:
+  - `EntryEditorScreen` did not reload when `projectId`, `entryId`, or `date`
+    changed on the same mounted widget state
+  - that let the route point at one entry while the visible header still
+    rendered another
+- Resolution:
+  - explicit route-identity helper
+  - `didUpdateWidget(...)` reload ownership
+  - new pending-id regeneration for create-mode route hops
+- This is another example of the same broader state-ownership rule:
+  - route changes are mutations of screen identity and must rebind canonical
+    state, not just navigation location
+
+## 2026-04-09 16:55 ET 1126 Dedupe + Forms Context Notes
+
+- Weekly 1126 duplicate-draft drift was still real in source:
+  - creation flow had carry-forward logic but no same-date open-draft reuse
+  - repeated same-date creation could therefore keep creating parallel drafts
+- The smallest honest fix was not a UI patch:
+  - add a same-date open-draft resolver use case
+  - call it before carry-forward/create
+- Reminder logic also needed to acknowledge work-in-progress:
+  - current-cycle open drafts should expose resume context instead of behaving
+    like no weekly work exists yet
+- Export-context drift findings closed in the same pass:
+  - date-aware filenames belong in one shared policy, not screen literals
+  - Forms screen should not mix pay apps/photos/entry exports into form export
+    history
+  - saved response rows need linked-vs-standalone context because attachment
+    state is part of the product meaning, not just metadata
+
+## 2026-04-09 16:58 ET Additional Forms/Export Inventory Closure
+
+- Attach-vs-export is no longer just a planned policy item.
+  - it is now source/test/device-proven for the live 0582B shell
+- The 0582B hub export drift was real and is now closed.
+  - prior state:
+    - preview could reflect unsaved draft state
+    - export used only the persisted response row
+  - landed fix:
+    - `MdotHubScreen` now saves the current draft before export
+  - live proof:
+    - device DB now stores edited `counts_mc = 777` after export without a
+      manual save tap
+- 1126 attach proof is now complete.
+  - create-entry branch verified on-device
+  - existing-entry branch verified on-device
+- standalone signed-form validation is now aligned.
+  - a signed 1126 edited via the keyed date picker now blocks export on-device
+  - current block copy is functionally correct but still somewhat raw:
+    - `measures, signature`
+
+What remains honestly open in research after this closure:
+- standalone-form dated-folder product behavior
+- reminder-surface `resume draft` screenshot proof
+- conflict viewer usefulness
