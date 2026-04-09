@@ -288,3 +288,1165 @@ Bottom-sheet/UI jank risk:
 3. Remove integrity diagnostics from the user-facing sync query/controller path instead of only hiding the widget.
 4. Replace the fragile bottom-sheet content pattern with explicit constraints and visible affordances, then lint against raw scrollable bottom-sheet bodies.
 5. Add dirty-upgrade tests and beta repair tooling after the repair runner lands.
+
+## 2026-04-08 20:13 ET First Enforcement Slice Implemented
+
+### What Landed
+
+- `EntryFlowRouteIntents` now owns the entry-flow route calls that were spread across dashboard and entries presentation.
+- New architecture lint: `no_entry_flow_route_calls_outside_intents`
+- New sync-integrity lint: `no_user_facing_sync_integrity_surface`
+- New architecture lint: `no_scrollable_app_bottom_sheet_body`
+- `AppBottomSheet` now enforces an explicit max-height contract and has a scrollable variant with a visible affordance.
+- Forms new-form picker now uses the new scrollable bottom-sheet path.
+- User-facing sync diagnostics no longer carry integrity data through:
+  - `SyncDiagnosticsSnapshot`
+  - `SyncQueryService`
+  - `SyncDashboardController`
+  - sync dashboard widgets
+
+### Verification Snapshot
+
+- Targeted app `flutter analyze`: green
+- Targeted sync/forms widget/unit tests: green
+- New lint package tests: green
+- Lint package `dart analyze`: only pre-existing unrelated infos
+
+### Remaining Tooling Blocker
+
+- Root `dart run custom_lint` still crashes during workspace discovery on a generated Windows plugin path under `windows/flutter/ephemeral/.plugin_symlinks/flusseract/...`
+- That blocker should be fixed before claiming full-root lint enforcement is fully operational again
+
+## 2026-04-08 20:17 ET Startup Repair Slice Implemented
+
+## 2026-04-09 13:25 ET Entry Export Contract Audit Closure
+
+### Audit Outcome
+
+The remaining entry export drift was not in bundle generation itself. The real
+problem was duplicated presentation ownership:
+
+- `EntryPdfPreviewScreen` owned save/share/export-record side effects inline
+- dead `report_pdf_actions_dialog.dart` and
+  `report_debug_pdf_actions_dialog.dart` still duplicated old preview/share
+  flows even though no callers remained
+
+That combination left the entry export contract structurally weaker than the
+new form/pay-app export seams.
+
+### What Landed
+
+- new owner: `lib/features/entries/presentation/support/entry_pdf_action_owner.dart`
+- `EntryPdfPreviewScreen` now delegates save/share/export-record work to that
+  owner
+- dead report PDF action dialogs removed from
+  `lib/features/entries/presentation/screens/report_widgets/`
+- capability registry updated so entry export/follow-up ownership is explicit
+- new lint:
+  `fg_lint_packages/field_guide_lints/lib/architecture/rules/no_direct_entry_pdf_actions_outside_owner.dart`
+
+### Verification Snapshot
+
+- targeted app tests: green
+- targeted lint test: green
+- targeted `flutter analyze`: green
+- root `dart run custom_lint`: green
+
+### Honest Remaining Gap
+
+This closes the source architecture seam, but not yet the device proof. The
+fresh S21 validation of entry preview/save/share after the owner migration is
+still open.
+
+## 2026-04-09 12:08 ET Generic Form Attachment Audit Closure
+
+### Audit Outcome
+
+Form attachment had a naming/ownership drift problem:
+
+- the only create-for-attach and resolve-candidates use cases were 1126-named
+- `AttachStep` mutated `response.entryId` inline
+- `FormsListScreen` used a separate picker path with no shared attachment owner
+
+That would have made every new attachable form either copy the 1126 stack or
+invent another entry-link flow.
+
+### What Landed
+
+- generic use cases:
+  - `resolve_form_attachment_entry_use_case.dart`
+  - `create_form_attachment_entry_use_case.dart`
+- shared owner:
+  - `form_entry_attachment_owner.dart`
+- rewired consumers:
+  - `attach_step.dart`
+  - `forms_list_screen.dart`
+- new lint:
+  - `no_form_response_entry_attachment_mutation_outside_owner`
+
+### Verification Snapshot
+
+- forms-domain/usecase tests: green
+- forms-support/widget tests: green
+- touched-screen tests: green
+- targeted `flutter analyze`: green
+- root `dart run custom_lint`: green
+
+### Honest Remaining Gaps
+
+- the generic attach flow still needs S21 proof
+- attached-form inclusion in the daily-entry export bundle still needs an
+  explicit end-to-end close after this refactor
+- `InspectorFormProvider` mutation still leans on extension methods, which is a
+  mockability/ownership smell to clean up later
+
+### What Landed
+
+- `lib/features/sync/application/sync_state_repair_runner.dart`
+- `lib/features/sync/application/sync_state_repair_job.dart`
+- first versioned job:
+  - `lib/features/sync/application/repairs/repair_sync_state_v2026_04_08_equipment_tombstones.dart`
+- startup registration from:
+  - `lib/features/sync/application/sync_initializer.dart`
+- supporting queue repair primitive:
+  - `lib/features/sync/engine/local_sync_store.dart::resetRetryExhaustedChanges(...)`
+
+### Why This Is The Right First Repair
+
+- The stale blocked-sync condition currently on-device was known exhausted
+  `equipment` delete rows carrying the old `contractor:` UUID error.
+- The push/router code already has the source fix for contractor-derived
+  fallback project IDs.
+- That means the missing piece was not another routing change; it was a way to
+  reset the poisoned retries on upgraded devices so the fixed code can run.
+
+### Coverage
+
+- `test/features/sync/application/sync_state_repair_runner_test.dart`
+  verifies:
+  - matching exhausted rows are reset
+  - repair metadata is recorded
+  - the versioned job only runs once per local DB
+
+## 2026-04-08 20:05 ET Root `custom_lint` Blocker Closed
+
+### Root Cause
+
+- The failure was not in any app lint rule. It was in `custom_lint` workspace
+  discovery itself.
+- `custom_lint 0.8.1` scans the working directory with a recursive
+  `Directory.listSync(recursive: true)` before it evaluates analyzer excludes.
+- On this repo, that walk followed
+  `windows/flutter/ephemeral/.plugin_symlinks/flusseract` into generated Android
+  `.cxx` output and hit a broken generated path, throwing
+  `PathNotFoundException` before rule execution.
+
+### Durable Fix
+
+- Vendored the CLI package into:
+  - `third_party/custom_lint_patched`
+- Patched `lib/src/workspace.dart` in the vendored package so root discovery:
+  - walks directories safely
+  - skips broken/generated paths instead of crashing
+  - does not follow symlinked trees during root discovery
+- Wired the app to the patched package through:
+  - `pubspec.yaml` `dependency_overrides.custom_lint`
+
+### Why This Approach Was Chosen
+
+- `analysis_options.yaml` excludes could not solve the issue because the crash
+  happened before analyzer filtering.
+- Shell cleanup of `windows/flutter/ephemeral` would be fragile and would
+  regress every time generated plugin artifacts reappeared.
+- A repo-owned patch keeps `dart run custom_lint` stable in local dev and CI
+  without relying on manual cleanup discipline.
+
+### Verification
+
+- `flutter pub get`: picked up `custom_lint 0.8.1` from path
+  `third_party/custom_lint_patched`
+- root `dart run custom_lint`: green
+- targeted `flutter test test/features/sync/application/sync_state_repair_runner_test.dart`: green
+
+## 2026-04-08 20:33 ET Blocked Queue Visibility + Repair Ownership
+
+### Core Finding
+
+- The dashboard previously reported only pushable pending rows plus grouped
+  conflicts.
+- Retry-exhausted `change_log` rows were effectively invisible even though they
+  are the local poison that keeps invalidating verification sessions.
+
+### Direction Landed
+
+- Blocked queue state is now a first-class diagnostics surface, not an implicit
+  absence from pending counts.
+- Build/database/repair identity is now part of the sync diagnostics snapshot.
+
+### Ownership Map
+
+- blocked queue SQL ownership:
+  - `lib/features/sync/engine/local_sync_store.dart`
+- dashboard diagnostics assembly:
+  - `lib/features/sync/application/sync_query_service.dart`
+- operator-facing repair actions:
+  - `lib/features/sync/application/sync_recovery_service.dart`
+- startup one-time repair execution:
+  - `lib/features/sync/application/sync_state_repair_runner.dart`
+
+### Resulting UX Surface
+
+- The sync dashboard now distinguishes:
+  - pending uploads
+  - blocked queue rows
+  - grouped record conflicts
+- The dashboard now exposes:
+  - app/build version
+  - SQLite schema version
+  - repair catalog version
+  - applied repair count
+  - latest applied repair job metadata
+
+### Enforcement Added
+
+- Added `no_sync_state_repair_runner_instantiation_outside_approved_owners`.
+- Repair-runner execution is now constrained to the startup owner and the
+  explicit recovery-service owner.
+
+### Remaining Gap
+
+- `Repair Blocked Queue` currently reruns only known versioned repair jobs.
+- This is intentionally safer than blindly resetting every blocked `change_log`
+  row.
+- Broader blocked-row healing still needs more versioned jobs and dirty-upgrade
+  coverage.
+
+## 2026-04-08 20:49 ET On-Device Dirty-State Verification
+
+### What Was Proven On The S21
+
+- A deliberately poisoned queue row can now be surfaced, repaired, and cleared
+  on the real device without DB surgery after the repair action.
+- The exact verified sequence was:
+  - blocked synthetic row injected into `change_log`
+  - dashboard surfaced `Blocked = 1`
+  - repair action converted it to `Pending = 1`
+  - sync cleared the row to a clean queue
+
+### Verification Artifacts
+
+- `.codex/tmp/device_sync_verify/sync-dashboard-blocked-before.png`
+- `.codex/tmp/device_sync_verify/sync-dashboard-after-repair.png`
+- `.codex/tmp/device_sync_verify/sync-dashboard-clean.png`
+
+### Important Finding
+
+- The user-facing dashboard semantics were correct.
+- The driver-only verification endpoint was not:
+  - `/driver/sync-status` still counted all `processed = 0` rows as pending
+  - this meant blocked rows were surfaced honestly in the UI but lied about by
+    the harness
+
+### Follow-On Fix
+
+- Updated `lib/core/driver/driver_data_sync_handler.dart` so the driver endpoint
+  now exposes:
+  - `pendingCount`
+  - `blockedCount`
+  - `unprocessedCount`
+- Added `test/core/driver/driver_data_sync_handler_test.dart` to lock that
+  queue classification contract.
+
+### Why This Matters
+
+- The sync system can only be credibly verified if the verification harness uses
+  the same queue semantics as the app.
+- This closes one of the invisible-headache failure modes:
+  - correct product behavior
+  - misleading debug endpoint
+  - wasted time chasing a non-product bug
+
+## 2026-04-08 21:11 ET Additional Runtime Repair Classes
+
+### Promoted From Legacy/Upgrade Knowledge Into Runtime Repair
+
+- `project_assignments` `change_log` residue:
+  - previously only represented in upgrade repair logic and root-cause analysis
+  - now promoted into the live versioned runtime repair catalog
+- builtin `inspector_forms` `change_log` residue:
+  - previously handled only in old migration cleanup after trigger fixes
+  - now promoted into the runtime repair catalog for dirty upgraded devices
+
+### Why These Two Matter
+
+- Both are impossible steady-state push rows.
+- Both create the exact stale-poison pattern that keeps verification sessions
+  from starting from a true current-state baseline.
+- Both are safer to purge than to retry because the correct steady state is
+  “these rows should not exist in `change_log` at all.”
+
+### New Runtime Ownership Shape
+
+- repair-safe queue purge primitives now live in:
+  - `lib/features/sync/engine/local_sync_store.dart`
+- versioned repair jobs now live in:
+  - `lib/features/sync/application/repairs/`
+- catalog assembly remains owned by:
+  - `lib/features/sync/application/sync_state_repair_runner.dart`
+
+### Enforcement Added
+
+- Added lint:
+  - `no_sync_state_repair_job_outside_repairs_directory`
+- This is an honest static rule because path ownership is locally knowable.
+- Registration completeness is still better handled as test/process discipline
+  until we have a reliable cross-file rule.
+
+## 2026-04-08 21:43 ET Live Device Repair Proof
+
+### What Was Actually Proved
+
+- The new `project_assignments` and builtin-form stale-state repairs are not
+  just unit-tested; they executed successfully on the S21 against deliberate
+  synthetic poison rows.
+- The proof path was:
+  - inject one approved poison scenario
+  - verify `blocked = 1` through the live driver/dashboard state
+  - run the sanctioned repair service
+  - verify queue returned to `pending = 0`, `blocked = 0`,
+    `unprocessed = 0`
+
+### Why The Harness Needed Refactoring
+
+- The first attempt put synthetic `change_log` writes directly in
+  `DriverDataSyncHandler`.
+- Existing lints correctly rejected that as architecture drift:
+  - `no_change_log_mutation_outside_sync_owners`
+  - `no_raw_sync_sql_outside_store_owners`
+  - `no_sync_handler_construction_outside_factory`
+- Correct fix:
+  - `SyncInitializer` now constructs `SyncPoisonStateService`
+  - `SyncPoisonStateService` is the explicit sync-application poison owner
+  - `LocalSyncStore` owns the actual row injection and query selection
+  - driver layer only triggers the sanctioned service
+
+### Product-Surface Insight
+
+- `rerunKnownRepairs()` is broader than “reset blocked queue.”
+- Some repair jobs reset retries.
+- Some repair jobs purge impossible stale rows.
+- Therefore user/dev copy must stay generic:
+  - `Repair Sync State`
+  - not `Reset blocked rows`
+
+### Fresh-State Tooling Progress
+
+- We now have three layers of stale-state recovery:
+  - startup versioned repair runner
+  - operator-triggered repair service
+  - driver-only deliberate poison injection for proof
+- Debug settings now expose:
+  - `Repair Sync State`
+  - `Rebuild Sync Diagnostics`
+
+### Still Missing
+
+- Cold-start upgrade proof for these two repair classes on the already-upgraded
+  S21 is still not explicitly replayed.
+- We would need either:
+  - repair-metadata reset tooling
+  - or a clean upgraded fixture device state
+  - to prove the exact first-launch metadata gate, not just the shared repair
+    job execution path
+
+## 2026-04-08 22:15 ET One-Screen Sync Status Audit
+
+### Corrected Direction
+
+- Do not split sync into a production `Sync Status` screen plus a separate
+  dashboard.
+- Keep the existing sync dashboard route and collapse it into one surface with:
+  - user-safe status always visible
+  - raw diagnostics/debug tools only in debug mode
+
+### Key Findings
+
+- `ConflictResolver` is present and functional, but it only does:
+  - LWW winner selection
+  - grouped conflict history logging via `conflict_log`
+- `ConflictViewerScreen` remains a debug inspection/replay tool.
+- The actual missing product seam was the absence of provider-owned sync
+  attention projection.
+
+### Code Seams Confirmed
+
+- engine resolution owner:
+  - `lib/features/sync/engine/conflict_resolver.dart`
+- grouped conflict restore/dismiss owner:
+  - `lib/features/sync/data/datasources/local/conflict_local_datasource.dart`
+- raw conflict UI:
+  - `lib/features/sync/presentation/screens/conflict_viewer_screen.dart`
+- single user-facing sync route/screen:
+  - `lib/core/router/routes/sync_routes.dart`
+  - `lib/features/sync/presentation/screens/sync_dashboard_screen.dart`
+- status propagation seams:
+  - `lib/features/sync/presentation/providers/sync_provider.dart`
+  - `lib/features/sync/presentation/widgets/sync_status_icon.dart`
+  - `lib/core/router/shell_banners.dart`
+
+### Architecture Changes Landed
+
+- `SyncProvider` now owns:
+  - pending upload projection
+  - blocked queue projection
+  - grouped conflict attention projection
+  - deduped user-safe sync notices
+- The user-facing screen now reads `Sync Status`.
+- Debug-only sections remain on the same route rather than moving to a second
+  production screen.
+- The raw conflict route is now debug-only.
+- The sync status actions reuse the existing help/support flow for
+  `Report Sync Issue`.
+
+### New Enforcement
+
+- Added lint:
+  - `no_sync_conflict_navigation_outside_debug_owners`
+
+### Next Lint Opportunities
+
+- `no_conflict_repository_usage_outside_debug_owners`
+- `no_sync_debug_surface_outside_debug_gates`
+- `no_sync_dashboard_debug_copy_in_user_surface`
+
+### Remaining Product Gap
+
+- This is still automatic resolution plus notices, not a full merge editor.
+- The next honest product improvement is a support taxonomy so sync reports are
+  classified well enough to be actionable without handing users raw
+  conflict-log tooling.
+
+## 2026-04-08 22:44 ET Beta Testing Notes Spec Audit
+
+### New Working Spec
+
+- Added `.codex/plans/2026-04-08-beta-testing-notes-spec.md` as the current
+  working implementation spec for the latest beta device-testing notes.
+
+### High-Signal Findings
+
+- The latest notes are not one class of bug. They cluster into six architecture
+  buckets:
+  - stale state ownership after mutation
+  - route-intent honesty
+  - preload contract gaps
+  - responsive dialog/sheet/layout issues
+  - 0582B domain/export correctness
+  - cross-account/resume restoration safety
+- Several user-reported items are already partially addressed in source and
+  should be treated as verification work, not blindly reimplemented:
+  - continue-today title honesty
+  - submitted-entry prompt
+  - some equipment dialog scroll affordance work
+- The highest-confidence still-open code defects are:
+  - activities section reading from a stale widget entry snapshot after save
+  - wide dashboard duplicating content through the temporary side panel
+  - forms gallery/create flow lacking a real builtin-form preload contract
+  - 0582B export validation remaining stricter than the intended product flow
+  - trash visibility rules likely being too weak for cross-account isolation
+
+### Enforcement Follow-Up
+
+- New lint candidates promoted into the live backlog:
+  - no dashboard duplicate side panel before desktop redesign
+  - no form creation action before builtin forms are ready
+  - no raw 0582B item-of-work options outside a dedicated registry/owner
+- Runtime/test-first items still not honest enough for static lint:
+  - state ownership per screen
+  - mutation completeness
+  - trash scope correctness
+  - foreground resume safety
+
+## 2026-04-08 23:08 ET First Testing-Notes Implementation Wave
+
+### Landed
+
+- `EntryActivitiesSection` no longer depends solely on the widget-entry snapshot
+  for read-only rendering after save.
+- The dashboard no longer duplicates quick stats/budget content on wide layouts.
+- `FormGalleryScreen` now has an explicit builtin-form preload contract:
+  - loading state while builtin forms are loading
+  - retryable empty state when builtin forms are unavailable
+  - disabled create action until builtin forms are ready
+  - corrected bottom-sheet close context for the add-form flow
+
+### Verification
+
+- `test/features/entries/presentation/widgets/entry_activities_section_test.dart`
+- `test/features/forms/presentation/screens/form_gallery_screen_test.dart`
+- targeted `flutter analyze`
+- root `dart run custom_lint`
+
+### What This Closed
+
+- one real stale-after-save state-ownership defect
+- one real desktop duplicate-content regression
+- one real preload-contract gap in the forms gallery
+- one concrete bottom-sheet interaction bug that matched the user-reported
+  stuck add-form sheet behavior
+
+## 2026-04-08 23:18 ET 0582B Export Policy Slice
+
+### Landed
+
+- `ExportFormUseCase` no longer validates required export fields before PDF
+  generation.
+
+### Why This Was Safe
+
+- The user-reported blocker was on the 0582B hub export path, which uses
+  `FormExportProvider -> ExportFormUseCase`.
+- That path does not depend on the later generic `markAsExported()` repository
+  transition to generate the PDF artifact.
+
+### What This Closed
+
+- the concrete blocker where incomplete 0582B forms failed before export even
+  though the intended product flow is “export now, edit later”
+
+## 2026-04-08 23:59 ET 0582B Catalog + Editable Export Follow-Through
+
+### Concrete Findings Closed
+
+- The 0582B quick-test UI was still using fake item-of-work placeholders
+  (`Mainline / Shoulder / Other`) even though the shipped PDF carries a real
+  page-2 density-requirements table with export codes, spec sections, and
+  minimum compaction thresholds.
+- The Forms Gallery stale-response problem was not in the save path itself; it
+  was a missing reload contract:
+  - `DocumentProvider.loadDocuments()` only ran on project changes
+  - returning from `/form/:responseId` did not refresh the gallery list
+- The generic form-viewer export path still encoded the wrong product contract:
+  - exported responses became uneditable
+  - re-export from an already exported response was blocked by local status
+    semantics, even though exported PDFs are meant to be artifacts, not locks
+
+### What Landed
+
+- New 0582B catalog:
+  - `lib/features/forms/data/registries/mdot_0582b_item_of_work_catalog.dart`
+- New shared formatting helpers:
+  - `lib/features/forms/data/services/mdot_0582b_display_formatter.dart`
+- 0582B UI/export surfaces updated:
+  - `hub_quick_test_content.dart`
+  - `form_viewer_sections.dart`
+  - `entry_form_card.dart`
+  - `mdot_0582b_pdf_filler.dart`
+- Forms Gallery return-path reloads:
+  - `form_gallery_response_tile.dart`
+  - `form_gallery_screen.dart`
+- Editable-export contract update:
+  - `form_response.dart`
+  - `form_response_repository.dart`
+  - `form_viewer_controller_test.dart`
+
+### Enforcement Added
+
+- `no_raw_0582b_item_of_work_options`
+  - purpose: keep fake inline 0582B options from reappearing once the shipped
+    catalog exists
+  - tuned after first run so it only targets the forms feature and does not
+    flag unrelated `"Other"` diagnostics buckets elsewhere in the app
+
+## 2026-04-09 00:34 ET 1126 Header + Pay-App Workbook Audit
+
+### MDOT 1126 Header Findings
+
+- The current 1126 implementation is internally inconsistent about header
+  ownership:
+  - creation path seeds known header values into `FormResponse.headerData`
+  - UI render path (`header_step.dart`) reads only `responseData['header']`
+  - edit path (`mdot_1126_form_screen.dart::_patchHeader`) persists edits back
+    into `responseData['header']`
+- This is the direct root cause for the user report that the SESC header does
+  not auto-load like 0582B.
+- It also means the 1126 wizard is violating the intended standard:
+  - canonical persisted model source should be `headerData`
+  - legacy nested header payload should be treated as compatibility input, not
+    the active source of truth
+
+### Standardization Direction
+
+- Reuse `AutoFillService`, but extend it with builtin-form-specific header
+  helpers instead of ad hoc screen-local header maps.
+- Normalize 1126 on load:
+  - merge `headerData`
+  - then any legacy `responseData['header']` values as fallback only
+  - then known project/profile autofill for any still-missing values
+  - persist the canonical result back into `headerData`
+  - strip legacy nested header payload from `responseData`
+
+### Pay-App Workbook Findings
+
+- Current pay-app export is artifact-correct but product-incomplete:
+  - each pay app persists as its own `.xlsx`
+  - there is no project workbook accumulation/export flow
+  - the dialog copy and action model still imply “single file” rather than
+    “project workbook”
+- Best-fit implementation without breaking the current export-artifact/sync
+  model:
+  - keep the internal saved pay-app artifact as a per-pay-app workbook
+  - add a separate project-workbook export path that builds a user-facing
+    workbook from the saved pay-app artifacts for that project
+  - this preserves snapshot fidelity while adding the inspector-facing export
+    model the user expects
+
+## 2026-04-09 06:04 ET 1126 Header Ownership + Project Workbook Closure
+
+### What Landed
+
+- Added `FormHeaderOwnershipService` as the sanctioned owner for migrating
+  legacy builtin-form nested headers into canonical `FormResponse.headerData`.
+- Rewired `Mdot1126FormScreen` to use that service during load, merging:
+  - canonical header data
+  - legacy nested header fallback
+  - known project/profile autofill for still-missing values
+- Simplified `Mdot1126HeaderStep` so it now renders directly from
+  `parsedHeaderData` instead of trying to merge a second screen-local header
+  source.
+- Added `ProjectPayAppWorkbookFileService` and
+  `RebuildProjectPayAppWorkbookUseCase`.
+- Reworked pay-app post-export behavior so the canonical per-project workbook
+  is rebuilt and written to a stable app-documents path on every successful
+  pay-app export.
+
+### Enforcement Added
+
+- `no_nested_form_header_access_outside_header_owners`
+  - purpose: prevent new builtin-form code from drifting back to
+    `responseData['header']` as a second source of truth
+  - approved owners limited to migration/export compatibility files only
+
+### Research Outcome
+
+- The right standard is now clearer:
+  - `headerData` is the canonical persisted header owner for builtin forms
+  - nested header payloads are compatibility input only
+  - project workbook export should be a maintained local aggregate artifact,
+    not rebuilt only at the last save prompt
+
+## 2026-04-09 06:28 ET S21 Device Validation Inventory
+
+### Confirmed On-Device Passes
+
+- Dashboard hydration:
+  - Springfield still loads with `131` pay items on the live device
+  - the earlier stale `0 pay items` regression remains closed in the current
+    build
+- Activities state-ownership repair:
+  - editing `Activities`, saving, and returning to read-only now shows the
+    exact new text immediately
+  - this validates the controller/live-state rendering fix, not just the
+    widget test
+- Continue-today route intent:
+  - dashboard shows `Continue Today's Entry`
+  - tapping it reopens the same draft
+  - entry title remains the honest date label instead of `New Entry`
+- Calendar functional backdating:
+  - selecting a prior date still surfaces that day's entries
+  - tapped prior-day entry reopened correctly
+- Pay-app export path:
+  - date-range dialog -> zero-entry warning -> number confirmation ->
+    exported dialog is working end to end on-device
+  - exported dialog now correctly offers:
+    - `Save Project Workbook`
+    - `Share File`
+  - `Save Project Workbook` launches Android DocumentsUI, proving the save-copy
+    handoff exists now
+
+### Confirmed On-Device Failures / Partial Closures
+
+- Calendar layout:
+  - still visibly overflowed on-device
+  - screenshot captured the live Flutter warning stripe:
+    `BOTTOM OVERFLOWED BY 154 PIXELS`
+- MDOT 1126 header autofill:
+  - improvement is partial, not complete
+  - populated:
+    - project name
+    - contractor name
+    - inspector name
+  - still blank on-device:
+    - permit number
+    - location
+- Forms gallery create flow:
+  - add sheet is much better visually:
+    - real form options render
+    - `Scroll for more` affordance is visible
+  - but create-path closure is still not proven:
+    - selecting `MDOT 1126 Weekly SESC` from the sheet dismissed it and left
+      the app on `/forms`
+    - this may be a real create-flow bug or a remaining targeting ambiguity,
+      but it is not honest to mark the `+` path complete yet
+- Conflict viewer clarity:
+  - grouped conflicts load
+  - card labels remain too generic to distinguish logical records on-device
+
+### New Restoration / Export Finding
+
+- The highest-severity new device issue is the Android picker return path:
+  - after entering the pay-app `Save Project Workbook` flow and relaunching the
+    app, the visible UI resumed into an orphaned `Pay Items` screen with
+    `0 items`
+  - route state and visible UI drifted apart
+  - Android back returned to the system picker instead of a valid app root
+- Important scoping note:
+  - force-stop + relaunch returns correctly to `Projects`
+  - this isolates the bug to resume/restoration around the picker/export flow,
+    not generic cold-start auth routing
+
+### Useful Artifact Index
+
+- Forms:
+  - `.codex/tmp/s21-forms-add-sheet.png`
+  - `.codex/tmp/s21-1126-saved-response-open.png`
+  - `.codex/tmp/s21-0582b-saved-response-open.png`
+- Pay app:
+  - `.codex/tmp/s21-pay-app-export-open.png`
+  - `.codex/tmp/s21-pay-app-export-step2.png`
+  - `.codex/tmp/s21-pay-app-export-step3.png`
+  - `.codex/tmp/s21-pay-app-export-finished.png`
+  - `.codex/tmp/s21-pay-app-save-workbook-system-picker.png`
+- Entry/calendar:
+  - `.codex/tmp/s21-entry-after-start-today.png`
+  - `.codex/tmp/s21-activities-after-save.png`
+  - `.codex/tmp/s21-dashboard-after-entry-created.png`
+  - `.codex/tmp/s21-continue-today-reopen.png`
+  - `.codex/tmp/s21-calendar-screen.png`
+  - `.codex/tmp/s21-calendar-backdate-selected.png`
+  - `.codex/tmp/s21-calendar-entry-open.png`
+
+### Research Direction Locked By This Pass
+
+- Resume/restoration needs a specific export/picker hardening slice:
+  - route/UI state must stay aligned after leaving the app for DocumentsUI
+  - returning from external picker workflows cannot strand the user in an
+    orphaned project-scoped screen with lost project context
+- 1126 header closure now needs data-source completion, not ownership theory:
+  - ownership is better
+  - remaining blank fields mean the preload inputs themselves are still
+    incomplete or inconsistently mapped
+
+## 2026-04-09 07:12 ET Follow-Up Audit Note: Resume And Forms Recovery Slice
+
+Additional repo-backed findings after the latest implementation wave:
+
+- `lib/core/router/app_router.dart`
+  - restoration policy is now materially narrower: only root shell routes are
+    restorable, while project-scoped editor/export/settings/sync utility flows
+    are explicitly non-restorable
+  - this is the correct seam for preventing external-picker resume from
+    restoring back into transient nested routes
+- `lib/features/quantities/presentation/screens/quantities_screen.dart`
+  - the screen now reacts to late project restoration instead of assuming the
+    selected project existed at first build
+  - this closes the exact stale-state class that produced an orphaned
+    `Pay Items / 0 items` screen after external picker resume
+- `lib/features/forms/presentation/screens/form_gallery_screen.dart`
+  - the add-form sheet now round-trips a selected `InspectorForm` explicitly
+    and routes `MDOT 1126` through the shared creation dispatcher
+  - the preload contract is now stronger both in product code and in the
+    refreshed widget coverage
+- `lib/features/forms/presentation/screens/mdot_1126_form_screen.dart`
+  - header autofill coverage has been extended to include permit/location
+    fallback resolution instead of only the already-known project/contractor/
+    inspector fields
+- `lib/features/entries/presentation/widgets/home_screen_body.dart`
+  - compact calendar/day layout is now scroll-based, which is the right shared
+    responsive direction rather than adding one-off pixel constraints around the
+    previous overflow path
+
+This slice is source-verified but not yet device-verified. The remaining truth
+source for closure is live S21 validation of:
+- picker resume correctness
+- calendar overflow removal
+- forms `+` creation routing
+- 1126 permit/location header population
+
+## 2026-04-09 07:20 ET Device Truth Update
+
+What the S21 pass proved:
+
+- the compact calendar layout change was the right fix; the prior overflow no
+  longer reproduced and no overflow logs were emitted during the validation
+- the forms add-sheet bug was split into two layers:
+  - structural sheet bug: fixed
+  - duplicate visible text targets in the gallery plus sheet: still a driver
+    targeting nuance, not a product regression once the actual sheet row is
+    tapped
+- 1126 header autofill is now live with permit/location populated on device
+
+What remains architecturally important:
+
+- the external-picker resume problem is no longer a pure missing-project-state
+  issue
+- it is now a route/back-stack truth problem:
+  - visible UI, internal route state, and Android task stack can still diverge
+    after launcher relaunch from `DocumentsUI`
+- `Mdot1126FormScreen` is now the outlier form surface for app-bar affordances:
+  - it lacks the preview/export parity already present on `FormViewerScreen`
+    and `MdotHubScreen`
+
+## 2026-04-09 08:05 ET Follow-Up Audit Note: What The New Pass Proved
+
+- `Mdot1126FormScreen` is no longer an affordance outlier
+  - preview/export parity is now implemented and live on-device
+- the launcher-resume fix was best solved at the Android activity/task layer,
+  not with more Flutter-side restoration heuristics
+  - `singleTask` removed the user-facing back-stack resurrection of
+    `DocumentsUI`
+- the remaining inconsistency after picker relaunch is currently in diagnostics
+  - visible UI and user-facing back behavior are correct
+  - `DriverWidgetInspector.currentRouteName()` still reported `/quantities`
+    while pay-app detail was visible
+  - this points to driver route inspection being too shallow for that relaunch
+    case, and it should be tracked separately from product routing truth
+
+## 2026-04-09 09:15 ET Audit Follow-Up: Remaining Closure Inventory
+
+### Remaining Product Gaps After Full Reconciliation
+
+- Cross-account trash isolation remains unclosed.
+  - No later artifact proves that same-device account switching clears or
+    re-scopes trash results correctly.
+- Entry date editing remains a real feature gap.
+  - Calendar backdating is proven, but there is still no direct in-flow
+    report-date editing contract.
+- 0582B original/recheck numbering remains open.
+- 0582B export UX remains open around:
+  - dated-folder support
+  - attach-vs-export decision
+  - multi-surface export-flow cleanup
+- 1126 / SESC remains broader than header ownership.
+  - header autofill and preview/export parity are closed
+  - broader wizard/carry-forward friction still needs an explicit pass
+- grouped conflict viewer usefulness remains weak even after conflict grouping
+  and sync-surface simplification
+- sync report taxonomy remains the next honest product improvement for the
+  simplified production sync surface
+
+### Source-Landed But Still Unverified Enough To Keep Open
+
+- project delete immediate UI refresh and valid fallback selection
+- Windows dashboard duplicate-pane removal on Windows
+- generic form-viewer parity for incomplete 0582B export if the same rule must
+  hold outside the hub flow
+- repeated pay-app workbook accumulation across multiple exports
+- broader app-wide foreground resume slowness outside the now-fixed
+  picker-resume/back-stack path
+
+### Lint Exploration From This Reconciliation
+
+- Honest candidate lint areas:
+  - owner restriction for restoration-sensitive external-intent/picker launch
+    flows
+  - owner restriction for stale screen-local read-only rendering when a live
+    provider/controller source is available
+  - owner restriction for destructive mutations so refresh/reload ownership
+    cannot drift
+  - expanded shared route-intent enforcement for continue/edit/open-submitted
+    entry paths
+  - preload gating enforcement at action-trigger sites
+- Not honest enough for static lint alone:
+  - Android task-stack correctness
+  - route/back behavior after background/foreground
+  - trash scope correctness
+  - accumulation correctness in exported workbooks
+- Conclusion:
+  - the navigation/state bugs from this wave are partly lint-preventable, but
+    the lockout/resume class must still be handled as a lint + contract-test +
+
+### 2026-04-09 Project Removal Semantics Finding
+
+- The latest project-delete verification found a distinct stale-state bug that
+  was not just provider refresh drift.
+- Local device removal intentionally preserves the `projects` metadata row so a
+  project can remain known/available after eviction.
+- The merged projects loader was still defining local/on-device membership from
+  `projects` table presence alone, so removed projects stayed visible as local.
+- Correct semantic definition:
+  - known/available project = metadata row in `projects`
+  - on-device/enrolled project = `projects INNER JOIN synced_projects`
+- Fix landed in the repository/use-case layer by adding
+  `getEnrolledByCompanyId()` and switching `FetchRemoteProjectsUseCase` to use
+  the enrolled join.
+- Risk class:
+  - any UI that treats metadata presence as local enrollment can recreate this
+    stale state bug
+  - this is a strong candidate for future lint/contract-test coverage around
+    source-of-truth ownership for merged list state
+- Additional device finding from the same verification:
+  - the original `ProjectDeleteSheet` was also violating the responsive
+    bottom-sheet contract
+  - a persistent sync error banner could push the confirm action below the fold
+    while the sheet body remained non-scrollable
+  - fix landed by moving the path to `AppBottomSheet.showScrollable()` and
+    making the sheet body itself a `SingleChildScrollView`
+- Final closure detail from the cold-start persistence pass:
+  - there were two separate assignment-enrollment owners, and both had to be
+    brought under the same manual-removal contract
+  - application path:
+    - `SyncEnrollmentService.handleAssignmentPull()`
+  - engine path:
+    - `EnrollmentHandler.reconcile()`
+    - `EnrollmentHandler.enrollFromAssignments()`
+  - a user-intent marker in `sync_metadata` now gates all auto-enrollment until
+    the user explicitly downloads the project again
+  - lesson:
+    - when we standardize ownership rules, we need to audit every duplicate
+      owner path, not just the first one that matches the bug
+  - end-to-end device proof now covers the full intent cycle:
+    - manual local removal
+    - cold relaunch with project still suppressed
+    - explicit user redownload restoring the project
+    device-proof problem, not a lint-only problem
+
+## 2026-04-09 09:45 ET Follow-Up: What Was Honest Enough To Enforce
+
+- `form-new` route ownership was honest enough for static lint.
+  - landed:
+    - `no_form_new_route_calls_outside_approved_owners`
+  - why it qualifies:
+    - the stuck/empty form-create bug depended on route ownership drifting past
+      the approved preload-aware creation surfaces
+    - this is a concrete named-route ownership signal, not a vague UX smell
+- project-delete refresh was not honest enough for lint.
+  - what was done instead:
+    - fixed provider-side fallback selection directly
+    - added provider contract tests
+  - why no lint:
+    - the stale-delete bug was behavioral state repair, not a clean static AST
+      smell
+- submitted-entry continue behavior was also better handled as a contract test
+  than lint.
+  - landed:
+    - widget tests for prompt visibility, revert-to-draft, and open-submitted
+  - why no lint:
+    - the bug is about runtime branching and navigation side effects, not a
+      single forbidden API usage
+
+## 2026-04-09 09:52 ET Equipment Manager Follow-Up
+
+- The equipment-manager report is now closed for the actual contractor edit
+  flow in the entry editor.
+- The narrow fix was better than a broad dialog-host mutation:
+  - first attempted approach:
+    - make all `AppDialog.show()` dialogs `scrollable: true`
+  - outcome:
+    - not trusted as a repo-wide change; the equipment add path became unstable
+      enough during device probing that it was not honest to keep the global
+      behavior change
+  - final approach:
+    - localize the responsive fix to `EquipmentManagerDialog`
+    - remove auto-focus when equipment already exists
+    - add explicit helper copy for multi-item lists
+    - constrain and scroll the dialog body under keyboard insets
+- Device proof on the S21:
+  - open state shows existing equipment immediately
+  - helper copy makes discoverability explicit
+  - focusing the text field no longer reproduces the overflow stripe
+- Architectural lesson:
+  - this bug class did not expose a clean static-lint signal
+  - the honest protection here is:
+    - localized responsive component ownership
+    - widget tests around autofocus/scroll behavior
+    - device proof for keyboard/IME layout states
+
+## 2026-04-09 10:05 ET Trash Scope Follow-Up
+
+- The cross-account trash report had a second state-ownership seam beyond the
+  SQL filter itself.
+- `TrashScreen` originally:
+  - loaded deleted items once in `didChangeDependencies()`
+  - used `context.read<AuthProvider>()`, which does not subscribe to auth
+    scope changes
+  - kept the old grouped trash state alive if the mounted screen survived an
+    account switch
+- Landed fix:
+  - treat `userId + isAdmin` as the trash-scope identity
+  - reset the controller and reload trash when that scope changes
+  - subscribe to auth-scope changes by reading the provider with dependency
+    tracking in `didChangeDependencies()`
+- Coverage:
+  - new widget test simulates a mounted-screen user switch and proves
+    `User One Entry` is replaced by `User Two Entry`
+- Honest conclusion:
+  - this is another state-ownership/runtime bug class, not a good lint target
+  - a lint cannot honestly prove account-scope reload correctness here
+  - the right protection is:
+    - explicit reload ownership
+    - contract tests for account-switch behavior
+    - real multi-account device proof before final closure
+
+## 2026-04-09 09:26 ET Device Proof: Submitted Entry Prompt Path
+
+- The submitted-entry flow no longer belongs in the unverified bucket.
+- S21 proof sequence on the current driver build:
+  - selected Springfield
+  - opened the Apr 9 draft from `1 Draft — Tap to Review`
+  - submitted the draft from review
+  - dashboard switched to `Today's Entry Submitted`
+  - tapping the card opened `Today's Entry Already Exists`
+- Both decision branches were validated on-device:
+  - `Open Submitted` opened the existing submitted report
+  - `Revert to Draft` reopened the same entry in editable form state and showed
+    `Entry reverted to draft`
+  - after backing to dashboard, the state was honest again:
+    - `1 Draft — Tap to Review`
+    - `Continue Today's Entry`
+- Conclusion:
+  - the original bug class is closed:
+    - dashboard no longer silently creates a new entry when today's entry is
+      already submitted
+  - this remains a contract-test/device-proof class, not a realistic lint-only
+    candidate
+## 2026-04-09 11:05 ET Forms/Export Validation Notes
+
+- 0582B numbering root cause was still real:
+  - hub/controller logic treated every sent test row as a new chronological
+    test by incrementing blindly
+  - the product note required original numbering to stay chronological while
+    rechecks remain attached to the failed original until a passing result
+- Resolution:
+  - extracted `Mdot0582bTestNumberingService`
+  - moved next-test resolution out of ad hoc controller math
+  - kept the recheck chain open only when failure can be evaluated honestly
+    from:
+    - `percent_compaction`
+    - selected item-of-work density requirement
+  - unknown/incomplete rows do not hold the workflow hostage in recheck mode
+- S21 proof captured:
+  - failing original stayed on `Test #2`
+  - the next draft became `Test #2 · Recheck #1`
+  - a passing recheck reset to `Test #3`
+- Forms/export revalidation truth:
+  - 1126 saved response header/autofill is healthy on-device
+  - 1126 preview/export are healthy on-device
+  - 0582B export is healthy on-device even when the current draft is incomplete
+- Pay-app workbook accumulation proof:
+  - canonical workbook path exists in-app under:
+    - `app_flutter/exports/pay-applications/project-workbooks/...`
+  - direct workbook inspection showed three worksheets:
+    - `Pay App #1`
+    - `Pay App #2`
+    - `Pay App #3`
+  - this is now backed by a regression test at:
+    - `test/features/pay_applications/domain/usecases/build_project_pay_app_workbook_use_case_test.dart`
+- Remaining forms/export gaps after this research pass:
+  - 0582B export UX still needs a real product pass:
+    - dated-folder support
+    - attach-vs-export decision
+    - flow cleanup
+  - 1126 / SESC still needs broader e2e proof beyond header + preview/export:
+    - carry-forward
+    - attach-step/create-entry
+    - reminders
+  - generic form-viewer export parity still needs an explicit close/decision
+
+## 2026-04-09 11:30 ET Shared Form PDF Contract Notes
+
+- Structural drift confirmed:
+  - before this slice, three different form shells each owned their own
+    preview/export/share flow:
+    - `mdot_hub_screen.dart`
+    - `mdot_1126_form_screen.dart`
+    - `form_viewer_screen.dart`
+  - the duplicated logic was not just cosmetic:
+    - preview route ownership differed
+    - snackbar/share sequencing differed
+    - builtin-form lookup lived ad hoc in the 0582B hub
+- Standardization landed:
+  - `FormPdfActionOwner` now owns:
+    - open preview shell from bytes
+    - preview a filled response
+    - preview form data
+    - preview debug form
+    - export/share generated file path
+    - builtin-form lookup for preview use cases
+- Enforcement landed:
+  - `no_direct_form_pdf_actions_outside_owner`
+  - narrowed intentionally to top-level form `*_screen.dart` files so it does
+    not falsely fire on legitimate non-export internal PDF generation like the
+    1126 pre-sign hash path in `mdot_1126_steps.dart`
+- S21 proof after refactor:
+  - 1126 preview/export remained healthy
+  - 0582B preview/export remained healthy
+  - Android chooser handoff confirms the shared export owner still reaches the
+    real device boundary rather than only succeeding in local tests
+- Remaining architectural form gap:
+  - preview/export is now standardized, but attach-to-entry is still not a
+    unified reusable contract for future forms
+  - that is the next shared-form seam to formalize once the product policy is
+    settled
+
+## 2026-04-09 11:45 ET Export Artifact Audit Notes
+
+- Export ownership is currently split into three major artifact families:
+  - forms:
+    - `FormPdfActionOwner`
+  - entries:
+    - `EntryPdfPreviewScreen`
+    - `report_pdf_actions_dialog.dart`
+    - `ExportEntryUseCase`
+  - pay apps:
+    - `QuantitiesPayAppExporter`
+    - `PayAppDetailFileOps`
+    - `ExportSaveShareDialog`
+- Conclusion from audit:
+  - forms already have a shared preview/export owner
+  - entries and pay apps still behave as isolated export systems
+  - the next honest standardization seam is not “one owner for everything”
+    but:
+    - one shared export capability registry
+    - then specialized owners per artifact family that must declare their
+      capability
+- durable implementation plan captured in:
+  - `.codex/plans/2026-04-09-export-artifact-contract-plan.md`
+
+## 2026-04-09 12:00 ET Export Capability Registry Notes
+
+- The first shared cross-artifact export seam now exists:
+  - `ExportArtifactCapabilityRegistry`
+- Registry currently declares the baseline contract for:
+  - `form`
+  - `entry`
+  - `pay_app`
+- Adoption is intentionally partial but meaningful:
+  - forms:
+    - `FormPdfActionOwner` asserts/declares against `form`
+  - entries:
+    - preview/report export surfaces now declare against `entry`
+  - pay apps:
+    - export/detail file owners now declare against `pay_app`
+- This is enough to make the architecture explicit before deeper refactors:
+  - exported-file follow-up ownership is still duplicated
+  - attachment semantics are still not unified
+  - but future work now has a single contract vocabulary instead of three
+    unrelated export implementations
+
+## 2026-04-09 12:15 ET Exported-File Action Owner Notes
+
+- Shared follow-up owner now exists for already-exported local artifacts:
+  - `ExportArtifactFileActionOwner`
+- Direct file-action duplication removed from:
+  - `PayAppDetailFileOps`
+  - `SettingsSavedExportActions`
+  - `QuantitiesPayAppExporter`
+- This made the next honest lint possible:
+  - `no_direct_export_artifact_file_service_usage_outside_owner`
+- Remaining export-system duplication after this slice:
+  - entry export still has two UI-level owners:
+    - `EntryPdfPreviewScreen`
+    - `report_pdf_actions_dialog.dart`
+  - that is the next best cleanup seam if the goal is one export contract
+    across entries/forms/pay apps

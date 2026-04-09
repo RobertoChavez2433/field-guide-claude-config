@@ -2,6 +2,11 @@
 
 ## Active Codex Plans In `.codex/plans/`
 
+- `2026-04-08-lint-first-enforcement-plan.md`:
+  Lint-first implementation queue for the current beta hardening wave,
+  covering route-intent ownership, sync repair scaffolding, integrity
+  diagnostics removal, bottom-sheet constraints, and the contract-test follow-up
+  matrix.
 - `2026-04-08-beta-central-tracker.md`:
   Canonical append-only beta tracker. This is now the primary source of truth
   for phases, sprint slices, blocker status, verification status, and links to
@@ -19,6 +24,11 @@
   Durable working reference for the current beta audit pass, including the
   Notion export path, the CodeMunch repo snapshot, and the live god-sized
   surface queue.
+- `2026-04-08-beta-testing-notes-spec.md`:
+  Comprehensive implementation spec for the latest beta testing notes,
+  including root-cause classification, contract-test backlog, lint-first
+  candidates, and execution order across state ownership, forms, 0582B, trash,
+  and resume/restoration issues.
 
 ## Archived Codex Plans
 

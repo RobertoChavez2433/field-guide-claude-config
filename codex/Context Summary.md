@@ -20,6 +20,7 @@
 
 - Latest session handoff source: `.claude/autoload/_state.md`
 - Durable project patterns: `.claude/memory/MEMORY.md`
+- Auto-load testing preference reference: `.codex/testing-principles.md`
 - Highest-priority active Codex tracker: `.codex/plans/2026-04-08-beta-central-tracker.md`
 - Environment handoff state: Supabase CLI, remote project access, Docker/Desktop, and local Supabase stack validation are working; `supabase start`, `supabase status`, `supabase migration list --local`, and `supabase db reset` now succeed from repo state
 - Current verified refactor state:
