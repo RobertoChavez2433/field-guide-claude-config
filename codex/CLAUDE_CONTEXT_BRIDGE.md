@@ -48,7 +48,7 @@ Load these by domain, not all at once:
 - Auth: `.claude/rules/auth/supabase-auth.md`
 - Sync: `.claude/rules/sync/sync-patterns.md`
 - Database schema: `.claude/rules/database/schema-patterns.md`
-- Testing: `.claude/rules/testing/patrol-testing.md`
+- Testing: `.claude/rules/testing/testing.md`
 - PDF: `.claude/rules/pdf/pdf-generation.md`
 - Shared analyzer abstractions: `.claude/docs/guides/implementation/shared-analyzer-safe-patterns.md`
 
@@ -57,20 +57,11 @@ Load these by domain, not all at once:
 These are useful as routing/reference docs even when Codex is doing the work
 itself:
 
-- PLAN: `.claude/agents/planning-agent.md`
-- IMPLEMENT: `.claude/agents/frontend-flutter-specialist-agent.md`,
-  `.claude/agents/backend-data-layer-agent.md`,
-  `.claude/agents/backend-supabase-agent.md`,
-  `.claude/agents/auth-agent.md`,
-  `.claude/agents/pdf-agent.md`
+- PLAN/PLAN FRAGMENTS: `.claude/agents/plan-writer-agent.md`
 - REVIEW: `.claude/agents/code-review-agent.md`,
-  `.claude/agents/security-agent.md`
-- TEST/VERIFY: `.claude/agents/qa-testing-agent.md`
-
-The machine-readable summary lives in:
-
-- `.claude/state/AGENT-FEATURE-MAPPING.json`
-- `.claude/state/AGENT-CHECKLIST.json`
+  `.claude/agents/security-agent.md`,
+  `.claude/agents/completeness-review-agent.md`
+- DEBUG RESEARCH: `.claude/agents/debug-research-agent.md`
 
 ## Skills And How Claude Uses Them
 
@@ -87,18 +78,6 @@ Claude skill definitions live in `.claude/skills/*/SKILL.md`.
 - `test`
 - `audit-config`
 - `dispatching-parallel-agents` (workflow pattern / internal Codex wrapper)
-
-### Agent-attached skills
-
-- `planning-agent`: `brainstorming`, `dispatching-parallel-agents`
-- `frontend-flutter-specialist-agent`: `interface-design`
-- `pdf-agent`: `pdf-processing`
-- `qa-testing-agent`: `systematic-debugging`
-
-Claude identifies skills through:
-
-- `user-invocable: true` in the skill frontmatter for slash-command style use
-- `skills:` in agent frontmatter for automatic attachment
 
 Codex does not auto-run these skills. Use the relevant `SKILL.md` file as a
 targeted workflow reference when the task matches.
@@ -118,13 +97,9 @@ Codex-facing wrappers for the shared workflows live in:
 Those wrappers are the preferred reference for Codex behavior because they are
 adapted to this environment while still targeting the same `.claude` files.
 
-Codex uses the same agent names as internal personas and routing references:
-
-- implement personas: `frontend-flutter-specialist-agent`,
-  `backend-data-layer-agent`, `backend-supabase-agent`, `auth-agent`,
-  `pdf-agent`
-- review personas: `code-review-agent`, `security-agent`
-- test/debug persona: `qa-testing-agent`
+Codex uses the live agent files as routing references for review, planning, and
+debug research. Implementation itself is handled by generic workers plus the
+shared rules and skills.
 
 Persona mapping and usage notes live in:
 

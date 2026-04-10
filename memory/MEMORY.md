@@ -40,11 +40,11 @@
 ### Agent Usage Patterns
 - User prefers ALL work done via agents - research, implementation, testing
 - Use parallel agents when tasks are independent
-- pdf-agent for PDF analysis; implement workers with the appropriate domain rules for Dart code changes
-- code-review-agent for verification; qa-testing-agent for testing
+- Live review agents are `code-review-agent`, `security-agent`, and `completeness-review-agent`
+- `debug-research-agent` is the scoped read-only helper for deep debugging work
+- `plan-writer-agent` writes plan fragments from prepared tailor output
+- Implementation work now uses generic workers guided by the domain rules, not a large fleet of long-lived specialist agent files
 - Agents sometimes revert each other's changes - verify file state after parallel agent runs
-- **FIXED (2026-02-11)**: All agents now have `permissionMode: acceptEdits` to prevent file-write failures
-- Global `~/.claude/settings.json` has `"defaultMode": "acceptEdits"` so built-in subagents inherit it
 - Known Claude Code Windows bugs: #4462, #7032, #5465 - subagent file writes may not persist
 - Context handoff: subagents start fresh - always pass full context in Task prompt or write to `.claude/plans/`
 
