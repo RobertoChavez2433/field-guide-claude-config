@@ -344,14 +344,14 @@ When hard-deleting test data from Supabase, delete in this order to avoid FK vio
 
 ## Checkpoint Schema
 
-Write `.claude/test_results/<run>/checkpoint.json` after every flow:
+Write `.claude/test-results/<run>/checkpoint.json` after every flow:
 
 ```json
 {
   "run_id": "2026-03-25_14-30",
   "suite": "sync",
   "platform": "dual (android:4948 + windows:4949)",
-  "results_dir": ".claude/test_results/2026-03-25_14-30",
+  "results_dir": ".claude/test-results/2026-03-25_14-30",
   "run_tag": "k1a2b",
   "completed": { "S01": "PASS", "S02": "PASS" },
   "next_flow": "S03",
@@ -397,7 +397,7 @@ After S03, S06, and S09, output:
 ```
 
 On resume:
-1. Find latest run dir in `.claude/test_results/`
+1. Find latest run dir in `.claude/test-results/`
 2. Read `checkpoint.json`
 3. Load `ctx` to restore all entity IDs
 4. **Restore screen state** (see Resume Protocol below)
@@ -458,7 +458,7 @@ curl -s -X POST "${SUPABASE_URL}/storage/v1/object/list/<bucket>" \
 
 ## Report Protocol
 
-Write `.claude/test_results/<run>/report.md` with these 9 sections:
+Write `.claude/test-results/<run>/report.md` with these 9 sections:
 
 ### 1. Header
 ```markdown

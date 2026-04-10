@@ -1,153 +1,99 @@
 ---
-description: "Deep semantic audit of .claude/ docs against the current codebase. Validates paths, class references, security invariants, and generates .claude/doc-drift-map.json."
+name: audit-docs
+description: "Audits the live .claude and .codex workflow surface against the current repo, then writes a drift report and optional mapping refresh."
+user-invocable: true
+disable-model-invocation: true
 ---
 
-# /audit-docs
+# Audit Docs
 
-One-command deep audit of `.claude/` configuration against the live codebase. Replaces the simpler `/audit-config`.
+Audit the live `.claude/` and `.codex/` workflow surface against the current
+repo. This replaces the older `/audit-config` name.
 
-## Flags
+## Goals
 
-- `--regen-map` — Skip phases 2-5 and jump directly to phase 6 (regenerate mapping only)
+- find broken paths and renamed files
+- find stale agent, skill, and wrapper references
+- check live workflow cohesion
+- verify security-critical prompts and rules still exist
+- optionally refresh `.claude/doc-drift-map.json`
 
-## Iron Law
+## Modes
 
-This skill NEVER modifies security rules or architectural decisions. Auto-fixes are limited to reference updates (paths, class names). All other changes require user approval.
+- default: full live-surface audit
+- `--regen-map`: refresh `.claude/doc-drift-map.json` only
 
----
+## Scope
 
-## Phase 1: Index
+Primary targets:
 
-```
-mcp__jcodemunch__index_folder(path: ".", use_ai_summaries: true, max_files: 2000)
-```
+- `.claude/CLAUDE.md`
+- `.claude/rules/`
+- `.claude/skills/`
+- `.claude/agents/`
+- `.claude/memory/`
+- `.codex/`
 
-Reuse existing index if < 1 hour old (check `mcp__jcodemunch__get_session_stats()`).
+Treat historical directories as out of scope unless the user explicitly asks:
 
-**Fallback**: If CodeMunch unavailable, use Glob + Grep + Read. Skip semantic analysis (phases 3 + 3.5) with warning.
+- `logs/`
+- `code-reviews/`
+- `adversarial_reviews/`
+- `plans/completed/`
+- `backlogged-plans/`
+- historical test artifact directories
 
----
+## Workflow
 
-## Phase 2: Structural Scan
+1. Refresh or verify the CodeMunch index.
+2. Scan the live workflow files for explicit path references.
+3. Validate referenced files and symbols against disk and the indexed repo.
+4. Check live routing consistency across rules, skills, agents, memory, and
+   Codex wrappers.
+5. Check the security-critical invariants.
+6. Write the report.
+7. If requested, regenerate `.claude/doc-drift-map.json`.
 
-1. `mcp__jcodemunch__get_file_tree(path: ".")` — get current codebase structure
-2. Grep all `.claude/` files for explicit `lib/` paths — validate each against disk
-3. `mcp__jcodemunch__search_symbols(query: "<className>")` for PascalCase class names found in docs
-4. Check for renamed/moved files by searching for basename matches
+## Security-Critical Invariants
 
-**Output**: List of broken paths and stale class references with file:line locations.
+Never auto-fix these. Report them only.
 
----
+- `security-agent.md` remains report-only and read-only in spirit
+- `CLAUDE.md` still carries the security non-negotiable
+- auth and sync rules still retain their key sentinels
+- no workflow silently weakens security boundaries to reduce friction
 
-## Phase 3: Semantic Analysis
+## Auto-Fix Policy
 
-For each rule file and agent definition:
-1. `mcp__jcodemunch__get_class_hierarchy(class_name: "<name>")` — verify inheritance claims
-2. `mcp__jcodemunch__get_file_outline(path: "<file>")` — verify method/property claims
-3. `mcp__jcodemunch__find_dead_code()` — check for docs referencing removed code
-4. `mcp__jcodemunch__get_blast_radius(symbol: "<name>")` — verify impact claims
+Without explicit user approval, this skill may only auto-fix:
 
-**Skip if**: CodeMunch unavailable. Print `[WARN] Semantic analysis skipped — CodeMunch not available`.
+- broken file paths
+- renamed skill or rule filenames
+- stale wrapper references
+- stale mapping entries in `.claude/doc-drift-map.json`
 
----
+It must not rewrite architectural policy, security rules, or feature docs on
+its own.
 
-## Phase 3.5: Pattern Discovery
+## Outputs
 
-1. **Convention deviation scan** — check if documented patterns (naming, structure) match actual codebase conventions
-2. **Coupling scan** — verify documented dependency relationships against actual imports
-3. **Guard clause scan** — find `// WHY:`, `// HACK:`, `// FROM SPEC:` comments that may need documentation
-4. **Ordering dependency scan** — verify documented ordering constraints (e.g., tier ordering) against actual code
+Write:
 
----
+- report: `.claude/outputs/audit-docs-report-YYYY-MM-DD.md`
+- optional map refresh: `.claude/doc-drift-map.json`
 
-## Phase 4: Coverage Check
+## Report Shape
 
-1. **Feature dir coverage** — every `lib/features/*/` dir should have matching rule coverage
-2. **Agent `@` import validation** — verify `@.claude/` references in agent bodies resolve
-3. **Agent model verification** — all agents must have `model: opus`
-4. **Memory accuracy flags** — check `.claude/memory/` entries against current codebase state
-5. **Routing table coverage** — verify worker-rules.md routing table covers all `lib/` subdirectories
+The report should include:
 
----
+- summary counts
+- broken paths
+- stale references
+- live cohesion gaps
+- security invariant results
+- recommended fix order
 
-## Phase 5: Security Invariants
+## Naming
 
-These checks are **immutable** — they cannot be auto-fixed, only reported.
-
-- [ ] `security-agent.md` has `disallowedTools: Write, Edit, Bash`
-- [ ] `security-agent.md` body contains "NEVER MODIFY CODE. REPORT ONLY."
-- [ ] CLAUDE.md contains "Security is non-negotiable"
-- [ ] `sync-patterns.md` contains RLS sentinels (`rlsDenial`, `42501`)
-- [ ] `supabase-auth.md` contains token storage sentinels (`flutter_secure_storage`, "Never log tokens")
-- [ ] `supabase-sql.md` contains company-scoped RLS sentinel (`get_my_company_id`)
-- [ ] All rule files with `paths:` frontmatter have valid glob patterns
-
----
-
-## Phase 6: Regenerate Mapping
-
-Build fresh `.claude/doc-drift-map.json` from scan results:
-
-1. Read existing `.claude/doc-drift-map.json` (if present)
-2. Rebuild `zones` from routing table + discovered patterns
-3. Rebuild `path_references` by grepping `.claude/` docs for explicit `lib/` paths
-4. Rebuild `global_checks` (new feature dirs, new agents/skills, workflow changes)
-5. Write to `.claude/doc-drift-map.json`
-
-If `--regen-map` flag: skip phases 2-5, jump here directly.
-
----
-
-## Phase 7: Report + Gotcha Graduation
-
-1. Save report to `.claude/outputs/audit-docs-report-YYYY-MM-DD.md`
-2. Present summary to user
-3. **Auto-fix offer** — reference updates only (broken paths, renamed classes). Never prose or architectural decisions.
-4. **Gotcha graduation prompt** — for any undocumented patterns discovered in phase 3.5, ask user if they should be added to the appropriate rule file's Gotchas section.
-
-### Report Format
-
-```markdown
-# Doc Drift Audit — YYYY-MM-DD
-
-**Branch**: [current branch]
-**Commit**: [commit hash]
-
-## Summary
-- Broken paths: [N]
-- Stale class references: [N]
-- Missing coverage: [N]
-- Security invariants: [PASS/FAIL]
-- Undocumented patterns: [N]
-
-## Broken Paths
-[file:line — broken reference — suggested fix]
-
-## Stale References
-[file:line — class name — status]
-
-## Coverage Gaps
-[feature dir — missing rule coverage]
-
-## Security Invariants
-[PASS/FAIL for each of 7 checks]
-
-## Undocumented Patterns
-[pattern — location — suggested gotcha text]
-
-## .claude/doc-drift-map.json
-[regenerated/unchanged — zone count — path_references count]
-```
-
----
-
-## Scope Exclusions
-
-Not scanned:
-- `logs/` (historical archives)
-- `adversarial_reviews/` (historical reviews)
-- `code-reviews/` (historical reviews)
-- `test-results/` (historical test data)
-- `backlogged-plans/` (future-looking)
-- `plans/completed/` (historical plans)
-- `plans/parts/` (in-progress plan fragments)
+Prefer `/audit-docs`. Treat `/audit-config` as a legacy alias only if it still
+appears in older wrappers or habits.

@@ -1,11 +1,11 @@
 # Codex Plans
 
-This folder is now for lightweight bridge notes only when Codex needs to point
-at shared planning work without duplicating it.
+This is the canonical home for new Codex-authored plans.
 
-Store new Codex-authored plans in `.claude/plans/` using:
+Use:
 
-- `YYYY-MM-DD-<topic>-codex-plan.md`
+- `YYYY-MM-DD-<topic>-plan.md`
 
-If this folder is used at all, keep notes lightweight and reference the shared
-`.claude/plans/` artifact instead of cloning its contents.
+Prefer short, execution-oriented plans. If an existing `.claude/plans/*.md`
+artifact already covers the work, reference it from `.codex/PLAN.md` instead of
+duplicating it unless you need a Codex-specific addendum or handoff.

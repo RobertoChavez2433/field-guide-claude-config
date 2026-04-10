@@ -156,6 +156,83 @@ An item is not complete until all of the following are true:
 - Current assessment:
   - feature gap, not just bug
 
+#### B4. Daily-entry PDF preview red screen
+
+- User note:
+  - entry export/preview hit another red screen on-device
+- Verified root cause:
+  - this was a `printing` package race, not a stale IDR/PDF mapping problem
+  - `PdfPreviewRaster._raster()` checked `mounted`, awaited `page.toPng()`,
+    then wrote back into `pages[pageNum]`
+  - if the preview disposed during that await, `dispose()` cleared `pages` and
+    the resumed write crashed with `RangeError`
+- Files:
+  - `third_party/printing_patched/lib/src/preview/raster.dart`
+  - `pubspec.yaml`
+  - `test/core/exports/printing_raster_patch_contract_test.dart`
+- Required contract:
+  - previewing an already-generated entry PDF must not red-screen if the
+    preview route is rebuilding or being torn down while the preview raster is
+    still in flight
+- 2026-04-09 closure:
+  - app now uses a vendored patched `printing` package
+  - the patched raster path re-checks `mounted` after `await page.toPng()` and
+    safely handles list shrinkage before write-back
+  - verified on the S21 after reinstall by reopening the same
+    `Continue Today's Entry -> Export PDF` flow with a cleared log buffer and
+    no new `RangeError` / `Duplicate GlobalKey` entries
+
+#### B5. Daily-entry / IDR PDF mapping fidelity
+
+- User notes:
+  - entry PDF mappings are still wrong
+  - contractor/equipment rows do not line up with the real PDF
+  - equipment check-state is not honestly represented
+  - exported text must preserve the canonical template formatting
+- Canonical source of truth:
+  - `Pre-devolopment and brainstorming/Form Templates for export/IDR 2019-XX-XX Initials.pdf`
+  - shipped runtime template: `assets/templates/idr_template.pdf`
+- Verified audit findings:
+  - the writer does not currently set the day dropdown field
+  - the writer only fills text fields; checkbox state is not written
+  - equipment rows are under-mapped relative to the real template
+  - equipment row assignment is position-based and currently depends on load
+    order instead of a stable export order
+  - the first subcontractor personnel block is only partially mapped
+- Files:
+  - `lib/features/pdf/services/idr_pdf_template_writer.dart`
+  - `lib/features/entries/presentation/controllers/pdf_data_builder.dart`
+  - `test/features/forms/services/form_export_mapping_matrix_test.dart`
+  - `test/services/pdf_field_mapping_test.dart`
+- Required contract:
+  - the exported IDR must preserve the canonical AcroForm field structure
+  - contractor/personnel/equipment rows must map deterministically
+  - used equipment must be visible both by text row and checkbox state
+  - blank/unused rows must clear cleanly
+  - daily-entry export must continue to use the canonical clean template and
+    must remain editable after export
+
+#### B6. Connectivity recovery / stale offline state
+
+- User note:
+  - after connectivity is restored, the app can stay on a blank dashboard with
+    a stuck offline banner
+- Live S21 proof:
+  - Android connectivity was validated as restored while the app still showed
+    `Select Project`, an offline banner, and a spinner/blank dashboard state
+- Proof artifacts:
+  - `.codex/tmp/live_debug/post-adb-recover.png`
+  - `.codex/tmp/live_debug/post-network-restore-2.png`
+  - `.codex/tmp/live_debug/post-retry-tap.png`
+- Files:
+  - `lib/features/dashboard/presentation/screens/project_dashboard_screen.dart`
+  - `lib/features/sync/presentation/providers/sync_provider.dart`
+  - `lib/features/network/` and app-lifecycle connectivity owners
+- Required contract:
+  - when Android connectivity returns, the app must clear stale offline state,
+    recover to a valid visible project/dashboard state, and not strand the user
+    behind a stale banner/loading view
+
 ### C. Responsive Layout And Dialog/Sheet Contracts
 
 #### C1. Equipment manager scroll affordance
@@ -245,6 +322,47 @@ An item is not complete until all of the following are true:
   - source/test/lint closed
   - still needs device proof that attached forms continue to bundle/export
     correctly after the generic attachment refactor
+
+#### D4. Attached form cards inside entry editor
+
+- User note:
+  - once a form is already attached inside an entry, the card should not show
+    internal quick-action chips like `+ Test`, `+ Proctor`, or `+ Weights`
+  - the card should show the export-style filename for the attachment
+  - that name must be editable because inspectors/company workflows use file
+    naming conventions
+  - tapping the attachment card should open the actual form wizard/editor
+  - `View Form` must stay available as a fast preview/verification action
+- Device proof of the pre-fix failure:
+  - `.codex/tmp/live_debug/entry-attached-0582b-forms-visible.png`
+- Files:
+  - `lib/features/entries/presentation/widgets/entry_form_card.dart`
+  - `lib/features/entries/presentation/widgets/entry_forms_section.dart`
+  - `lib/features/forms/data/services/form_attachment_display_name_policy.dart`
+  - `lib/features/forms/data/services/form_export_filename_policy.dart`
+- Required contract:
+  - all attached forms render through the same generic attachment-card pattern
+  - export/display naming comes from one shared policy
+  - editing the attachment name updates the same filename policy used by export
+  - preview is separate from edit/open-form intent
+- 2026-04-09 closure:
+  - source/test/lint are now closed for the shared attachment-card contract
+  - S21 device proof is closed on the real attached 0582B row:
+    - no internal `+ Test / + Proctor / + Weights` chips remain
+    - the card shows the export-style filename
+    - tapping the card opens the real 0582B wizard/editor
+    - `View Form` opens the real PDF preview shell
+    - renaming the attachment persists the new filename
+      `CompanyPrefix_0582B_Apr08.pdf`
+  - shared seam hardening:
+    - `AppTextField` now forwards its key to the underlying `TextFormField`,
+      which made the rename dialog honestly driver-testable instead of only
+      wrapper-detectable
+  - proof artifacts:
+    - `.codex/tmp/live_debug/entry-editor-after-scroll-forms.png`
+    - `.codex/tmp/live_debug/entry-form-card-open-result.png`
+    - `.codex/tmp/live_debug/entry-form-card-preview-result.png`
+    - `.codex/tmp/live_debug/entry-attachment-renamed-final.png`
 
 ### E. 0582B Domain Correctness And Export Flow
 
@@ -1495,6 +1613,29 @@ Notes:
   - sampled rows still showed `status = open`
 - proof artifacts:
   - `.codex/tmp/generic-form-viewer-export-dialog.png`
+
+## 2026-04-09 22:30 ET Attached Form Card UX Closure
+
+- [x] attached forms in the entry-editor Forms section now use the export-name
+  presentation contract
+  - on-device attached 0582B no longer shows internal quick-action chips
+  - the visible card title is the export-style filename
+  - the filename is editable and the renamed value persists on-device:
+    `CompanyPrefix_0582B_Apr08.pdf`
+  - tapping the card opens the form wizard/editor
+  - `View Form` remains available and opens PDF preview for quick verification
+- proof artifacts:
+  - `.codex/tmp/live_debug/entry-for-rename-proof.png`
+  - `.codex/tmp/live_debug/entry-form-open-after-tap.png`
+  - `.codex/tmp/live_debug/entry-attached-form-preview-open.png`
+
+Status change:
+- remove the attached-form-card UX item from the active backlog
+- this leaves the real remaining forms/export backlog as:
+  - 0582B export destination UX / dated-folder policy
+  - broader 1126 / SESC reminder/workflow hardening
+  - sync issue taxonomy / reporting
+  - conflict viewer usefulness
   - `.codex/tmp/mdot-0582b-live-export-dialog.png`
   - `.codex/tmp/mdot-1126-live-export-dialog.png`
 
@@ -1659,6 +1800,31 @@ Notes:
   captured a device screenshot of the reminder surfaces themselves in a state
   where the resume banner/card is visible
 
+## 2026-04-09 18:48 ET Rename Crash Closure
+
+- The reported yellow border was confirmed as Flutter's red error screen, not a
+  sizing/border issue.
+- The crash path is now closed:
+  - attached-form rename uses a dedicated `RenameAttachedFormDialog`
+  - controller ownership stays inside the dialog route instead of caller-owned
+    dialog content
+- Local verification:
+  - `flutter test test/features/entries/presentation/widgets/rename_attached_form_dialog_test.dart`
+  - targeted `flutter analyze`
+  - root `dart run custom_lint`
+- S21 proof:
+  - opened the live attached 0582B rename dialog
+  - entered `0582B_Rename_Verify.pdf`
+  - saved without any red-screen crash
+  - the card updated live inside the entry editor
+  - `/driver/local-record` confirms the persisted
+    `attachment_display_name = 0582B_Rename_Verify.pdf`
+- Proof artifacts:
+  - `.codex/tmp/live_debug/device-current-screen-adb.png`
+  - `.codex/tmp/live_debug/entry-rename-dialog-after-fix.png`
+  - `.codex/tmp/live_debug/entry-rename-typed-after-fix.png`
+  - `.codex/tmp/live_debug/entry-after-rename-save-fix.png`
+
 ## 2026-04-09 16:58 ET 0582B Export Decision + 1126 Attach Proof
 
 ### Closed
@@ -1715,6 +1881,18 @@ Notes:
     - `Export blocked: measures, signature`
   - proof:
     - `.codex/tmp/1126-export-blocked-after-edit.png`
+- attached entry-form card contract
+  - fresh S21 build now shows attached 0582B forms in the entry editor as the
+    export-style filename, not as 0582B quick-action chips
+  - the live card now shows:
+    - `CompanyPrefix_0582B_Apr08.pdf`
+    - `MDOT_0582B • Tap to edit form`
+    - separate `View Form` action
+  - the old `+ Test`, `+ Proctor`, and `+ Weights` entry-card actions are gone
+  - proof:
+    - `.codex/tmp/live_debug/post-scroll-entry.png`
+    - `.codex/tmp/live_debug/entry-form-open-after-tap.png`
+    - `.codex/tmp/live_debug/entry-attached-form-preview-open.png`
 
 ### Source / Test Closure
 
@@ -1769,3 +1947,101 @@ Notes:
 - continue auditing the reported intermittent yellow border:
   - fresh driver screenshot did not capture the border
   - possible sizing/overlay cause is still under investigation
+
+### Closure
+
+- Reinstalled the latest build on the S21 and ran another full sync.
+- User-facing Sync Status is now correct:
+  - `Synced`
+  - `0 Pending`
+  - `0 Blocked`
+  - `0 Conflicts`
+- Raw grouped history is still preserved for debug:
+  - `View Conflict Log`
+  - `34 logical conflicts in grouped history`
+- This closes the false-active conflict count bug for the product surface while
+  preserving support/debug history.
+- Proof:
+  - `.codex/tmp/live_debug/device-sync-after-fix.png`
+
+## 2026-04-09 Backlog Reconciliation
+
+The historical spec contains many append-only TODO snapshots. The real
+remaining backlog after the latest source and S21 verification passes is now:
+
+- still genuinely open:
+  - cross-account trash isolation still needs real two-account device proof
+  - broader 1126 / SESC hardening beyond header + preview/export + attach flow
+  - reminder-surface `resume draft` proof for the weekly SESC workflow
+  - standalone-form dated-folder export policy / UX
+  - grouped conflict viewer usefulness
+  - support-facing sync issue taxonomy / reporting
+  - broader app-wide resume/back validation outside the already-fixed picker
+    path
+  - Windows dashboard duplicate-pane validation
+- implemented but still needing device proof:
+  - none in the attached-form/export card slice after the 2026-04-09 S21 pass
+- stale items that should be treated as checked off:
+  - attached entry-form cards showing form-internal 0582B quick-action chips
+  - attached-form tap-to-edit and separate preview affordance
+  - generic attach-to-entry export/bundle behavior
+  - entry export migration proof
+  - pay-app workbook accumulation/export proof
+  - false-active user-facing sync conflict count
+
+## 2026-04-09 18:22 ET Rename-Flow Verification Crash
+
+The earlier "yellow border" report is now explained by a real Flutter debug
+error surface, not an app-painted border.
+
+Device screenshot:
+- `.codex/tmp/live_debug/device-crash-yellow-border-driver.png`
+
+Runtime evidence captured from the debug server:
+- `FlutterError: A TextEditingController was used after being disposed`
+- framework assertion `_dependents.isEmpty`
+- duplicate overlay `GlobalKey` errors
+
+Meaning:
+- the attached-form card contract itself is still product-correct on-device
+- the remaining failure is the rename-save verification path under automated
+  modal text entry
+- this should be carried as a separate crash/verification seam, not as a
+  regression of the attached-form card UI contract
+## 2026-04-09 18:40 - Device Crash Clarification
+
+- The reported "yellow border" is a Flutter red assertion screen, not a render-size border.
+- Fresh device screenshot captured at `.codex/tmp/live_debug/device-current-after-crash-adb.png`.
+- Runtime assertions observed from the same interaction:
+  - `A TextEditingController was used after being disposed`
+  - `_dependents.isEmpty`
+  - duplicate overlay `GlobalKey` follow-on errors
+- Trigger path: attached-form rename dialog teardown after automated text entry.
+- Current code now routes the rename action through the dedicated dialog seam:
+  - `lib/features/entries/presentation/widgets/rename_attached_form_dialog.dart`
+  - caller normalized in `lib/features/entries/presentation/widgets/entry_forms_section.dart`
+
+## 2026-04-09 18:40 - Reconciled Remaining TODOs
+
+- Weekly SESC reminder live proof in a real resume-draft state.
+- Narrowed 1126 / SESC workflow validation:
+  - week-over-week reminder routing
+  - carry-forward/resume polish
+  - signed-response reopen/edit/re-export validation
+- Standalone-form export destination UX decision and validation.
+- Conflict viewer usefulness.
+- Sync issue taxonomy/reporting refinement.
+- Verification-only tail:
+  - cross-account trash device proof
+  - broader resume/back validation
+  - Windows validation tail
+
+### Explicitly Closed / Do Not Reopen
+
+- Attached-form card contract and rename affordance shape
+- generic form-viewer export parity
+- 1126 attach-step/create-entry
+- 0582B attach-vs-export decision
+- entry bundle export with attached forms
+- pay-app workbook accumulation/export proof
+- false-active sync conflict count on the user-facing screen

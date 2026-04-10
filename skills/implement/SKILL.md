@@ -16,9 +16,11 @@ reports progress back to the user.
 1. The orchestrator never edits source files.
 2. The orchestrator never reads a phase body into its own context.
 3. The orchestrator never writes a checkpoint or resume file.
-4. The orchestrator never launches headless `claude`, JSON-schema harnesses, or parsing pipelines.
-5. The orchestrator never runs analyze, tests, build commands, `flutter clean`, or git commands.
-6. Every dispatched implementer, reviewer, and fixer uses `model: opus`.
+4. The orchestrator never launches headless `claude`, JSON-schema harnesses, or
+   parsing pipelines.
+5. The orchestrator never runs analyze, tests, build commands, `flutter clean`,
+   or git commands.
+6. Implementers and fixers run on Sonnet. Reviewers run on Opus.
 7. Every dispatched agent begins by reading the correct rules file:
    `references/worker-rules.md` for implementers and fixers,
    `references/reviewer-rules.md` for reviewers.
@@ -28,7 +30,7 @@ reports progress back to the user.
 The main conversation may use only:
 
 - `Read` for the plan header region
-- `Grep` to find `## Phase N` headings if the header lacks line ranges
+- `Grep` to find `## Phase N` headings if the header lacks ranges
 - `Agent` for all implementation, review, and fix work
 - `Bash` only for `mkdir -p .claude/backlogged_reviews`
 - `Write` only for `.claude/backlogged_reviews/<plan-name>.md`
@@ -36,14 +38,14 @@ The main conversation may use only:
 ## Plan Intake
 
 1. Accept `/implement <plan-path> [phase-numbers]`.
-2. If the user passes a bare filename, resolve it under `.claude/plans/`.
+2. If the user passes a bare filename, resolve it under `.claude/plans/` and
+   `.codex/plans/`.
 3. Read only the plan header region.
 4. Extract:
    - the spec path from `**Spec:**`
    - the phase list
    - per-phase line ranges from the machine-readable header block
-5. If the header does not declare ranges, use `Grep` on `## Phase N` headings and
-   infer ranges from those heading lines.
+5. If the header lacks ranges, infer them from `## Phase N` headings.
 6. Present the phase list and ask:
 
 ```text
@@ -54,12 +56,12 @@ Do not continue until the user confirms.
 
 ## Per-Phase Loop
 
-Run phases strictly in sequence. A phase is not closed until completeness review
-returns zero findings of any severity.
+Run phases strictly in sequence. A phase is not closed until completeness
+review returns zero findings at every severity.
 
 ### Step 1: Dispatch Implementer
 
-Dispatch a `general-purpose` agent on `model: opus` with an inline prompt that
+Dispatch a `general-purpose` agent on Sonnet with an inline prompt that
 includes:
 
 - the plan path
@@ -82,12 +84,12 @@ NOTES:
 - ...
 ```
 
-The implementer owns source edits, `flutter analyze`, and `dart run custom_lint`.
-The orchestrator only records the reply.
+The implementer owns source edits, `flutter analyze`, and `dart run
+custom_lint`. The orchestrator records the reply only.
 
 ### Step 2: Dispatch Completeness Reviewer
 
-Dispatch `completeness-review-agent` on `model: opus` with:
+Dispatch `completeness-review-agent` on Opus with:
 
 - `mode: per-phase`
 - `spec_path`
@@ -100,14 +102,13 @@ If the reviewer returns zero findings, the phase passes.
 
 ### Step 3: Fix Findings
 
-If the completeness reviewer returns any finding at any severity, dispatch a
-narrow `general-purpose` fixer on `model: opus` with:
+If completeness returns any finding, dispatch a narrow `general-purpose` fixer
+on Sonnet with:
 
 - instruction to read `references/worker-rules.md` first
 - the inline findings list only
 
-Do not send the fixer the spec path, plan path, or plan line range. The findings
-must already carry the file and fix guidance needed to act.
+Do not send the fixer the full spec or plan body.
 
 ### Step 4: Cap And Escalation
 
@@ -117,8 +118,7 @@ The per-phase review/fix loop has a hard cap of 3 cycles.
 - Cycle 2: review, then fix if needed
 - Cycle 3: terminal reviewer pass
 
-If cycle 3 still returns findings, escalate in the main conversation with the
-remaining findings and ask:
+If cycle 3 still returns findings, escalate with:
 
 ```text
 continue / stop / manual fix
@@ -134,30 +134,26 @@ After a phase closes, print a terse status block with:
 - files modified count
 - lint status
 
-Then move to the next phase.
-
 ## Final Gate
 
 After every requested phase passes, run one final quality sweep.
 
 ### Final Review Fan-Out
 
-Dispatch these three reviewers in parallel in a single orchestrator message,
-all on `model: opus`:
+Dispatch these three reviewers in parallel:
 
 1. `completeness-review-agent` with `mode: final-sweep`
 2. `code-review-agent`
 3. `security-agent`
 
-The completeness reviewer receives the union of all modified files. The other
-reviewers receive the final file set for the whole run.
+All final reviewers run on Opus.
 
 ### Finding Split
 
-Split final findings into two buckets:
+Split final findings into:
 
 - fixer-bound:
-  - every completeness finding, regardless of severity
+  - every completeness finding
   - CRITICAL, HIGH, and MEDIUM code-review findings
   - CRITICAL, HIGH, and MEDIUM security findings
 - backlog-bound:
@@ -168,7 +164,7 @@ Completeness findings are never backlogged.
 
 ### Final Fix Loop
 
-If the fixer-bound bucket is non-empty, dispatch a narrow fixer with
+If the fixer-bound bucket is non-empty, dispatch a narrow Sonnet fixer with
 `references/worker-rules.md` plus the inline findings list, then rerun the full
 three-reviewer sweep.
 
@@ -183,8 +179,8 @@ stop / manual fix / accept-as-is and backlog
 
 At the end of the final gate:
 
-1. Run `mkdir -p .claude/backlogged_reviews`
-2. Write `.claude/backlogged_reviews/<plan-name>.md`
+1. run `mkdir -p .claude/backlogged_reviews`
+2. write `.claude/backlogged_reviews/<plan-name>.md`
 
 That file contains:
 
@@ -207,6 +203,6 @@ End with a concise summary that includes:
 
 ## Reference Files
 
-- `references/worker-rules.md` — implementer and fixer rules
-- `references/reviewer-rules.md` — reviewer rules
-- `references/severity-standard.md` — severity and verdict policy
+- `references/worker-rules.md`
+- `references/reviewer-rules.md`
+- `references/severity-standard.md`

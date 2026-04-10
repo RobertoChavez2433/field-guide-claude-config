@@ -132,7 +132,7 @@ Not honestly lintable by itself:
 - [x] Make entry preview/export flow declare/use the `entry` capability
 - [x] Make pay-app export and pay-app detail file ops declare/use the
       `pay_app` capability
-- [ ] Replace hardcoded follow-up labels/messages where the capability record
+- [x] Replace hardcoded follow-up labels/messages where the capability record
       should own them
 
 ### Phase 3: Shared Exported-File Action Owner
@@ -154,15 +154,19 @@ Not honestly lintable by itself:
 
 - [x] Design generic attach-to-entry capability seam for forms
 - [x] Determine whether all attachable forms should share one attach owner
-- [ ] Keep pay-app explicitly outside that attach contract
-- [ ] Verify attached forms still export inside entry bundle
+- [x] Keep pay-app explicitly outside that attach contract
+- [x] Verify attached forms still export inside entry bundle
+- [x] Add a shared attached-form presentation contract for entry-editor cards
+      so attached forms stop rendering form-internal quick actions
 
 ### Phase 6: Device Validation
 
-- [ ] S21 proof: form preview/export still healthy
-- [ ] S21 proof: entry preview/save/share still healthy after migration
-- [ ] S21 proof: pay-app export/save/share still healthy after migration
-- [ ] S21 proof: entry bundle still includes attached forms correctly
+- [x] S21 proof: form preview/export still healthy
+- [x] S21 proof: entry preview/save/share still healthy after migration
+- [x] S21 proof: pay-app export/save/share still healthy after migration
+- [x] S21 proof: entry bundle still includes attached forms correctly
+- [x] S21 proof: attached entry-form cards show export-style editable names,
+      tap into the wizard, and keep preview separate
 
 ## First Slice To Implement Now
 
@@ -232,6 +236,103 @@ Important architecture note:
   methods, which is why the shared owner currently uses the repository for the
   actual attach mutation instead of a mockable provider-owned method. That is
   now an explicit cleanup follow-up, not hidden drift.
+
+## 2026-04-09 Progress Update 4
+
+Attached forms inside the entry editor now have a shared presentation contract
+instead of leaking form-internal 0582B quick actions into the daily-entry UI.
+
+What landed:
+- added `FormAttachmentDisplayNamePolicy`
+- rewired `FormExportFilenamePolicy` to honor the same custom attachment name
+  used by the entry-editor card
+- entry attachment cards now:
+  - show the export-style filename
+  - open the form wizard on card tap
+  - keep `View Form` as a separate preview action
+  - offer rename through a shared filename dialog
+- `FormAttachmentManager` now supports in-place replacement after attachment
+  rename
+
+Verification:
+- `flutter test test/features/entries/presentation/widgets/entry_form_card_test.dart test/features/forms/data/services/form_attachment_display_name_policy_test.dart test/features/forms/data/services/form_export_filename_policy_test.dart test/features/entries/presentation/widgets/entry_forms_section_test.dart`
+- targeted `flutter analyze`
+- root `dart run custom_lint`
+
+## 2026-04-09 Device Closure: Attached Entry-Form Card Contract
+
+- [x] S21 proof on the real attached 0582B row
+  - the entry editor now shows the attached form with an export-style filename
+    instead of internal 0582B quick-action chips
+  - the visible attachment name is editable:
+    - live device proof shows the persisted renamed filename
+      `CompanyPrefix_0582B_Apr08.pdf`
+  - tapping the attached form card opens the real 0582B wizard/editor
+  - tapping `View Form` opens the real PDF preview shell for quick
+    verification before bundle export
+  - `AppTextField` now forwards its key to the underlying `TextFormField`,
+    which made the rename dialog honestly driver-typable instead of only
+    wrapper-detectable
+- proof artifacts:
+  - `.codex/tmp/live_debug/entry-editor-after-scroll-forms.png`
+  - `.codex/tmp/live_debug/entry-form-card-open-result.png`
+  - `.codex/tmp/live_debug/entry-form-card-preview-result.png`
+  - `.codex/tmp/live_debug/entry-attachment-renamed-final.png`
+
+Status change:
+- remove `attached entry-form cards need S21 proof` from the export-contract
+  backlog
+- keep only the narrower export backlog:
+  - capability-driven follow-up labels/messages
+  - standalone-form dated-folder product decision
+
+## 2026-04-09 Progress Update 5
+
+Attached-form presentation is now device-proven on the S21, not just
+source/test-clean.
+
+What was validated live:
+- entry-editor attachment cards now show the export-style filename instead of
+  0582B quick-action chips
+- the live device screenshot confirms the attachment card renders the renamed
+  filename (`CompanyPrefix_0582B_Apr08.pdf`) in the Forms section
+- tapping the attached 0582B card opens the real 0582B wizard/editor
+- tapping `View Form` opens the real PDF preview shell for quick verification
+- the bundle/export path remains intact for attached forms
+
+Artifacts:
+- `.codex/tmp/live_debug/post-scroll-entry.png`
+- `.codex/tmp/live_debug/entry-form-open-after-tap.png`
+- `.codex/tmp/live_debug/entry-attached-form-preview-open.png`
+
+Open export-contract backlog after this closure:
+- dated-folder behavior for standalone form exports is still a product-policy
+  decision rather than an unresolved plumbing bug
+
+## 2026-04-09 Progress Update 6
+
+The shared export capability contract now owns the remaining follow-up dialog
+copy that was still hardcoded in live form and pay-app owners.
+
+What landed:
+- `ExportArtifactCapability` now declares:
+  - `exportedDialogTitle`
+  - `exportedDialogBodyText`
+  - `saveCopyActionLabel`
+  - `shareActionLabel`
+  - `saveCopyDialogTitle`
+- `FormPdfActionOwner` now reads its exported/saved-copy dialog copy from the
+  shared capability record
+- `QuantitiesPayAppExporter` now does the same for pay-app export follow-up
+  copy
+
+Verification:
+- `flutter test test/core/exports/export_artifact_capability_registry_test.dart test/features/forms/presentation/support/form_pdf_action_owner_test.dart`
+- targeted `flutter analyze`
+- root `dart run custom_lint`
+
+Honest remaining gap from this slice:
+- the new card contract still needs S21 proof on the real attached 0582B row
 
 ## 2026-04-09 Progress Update 3
 
@@ -504,3 +605,29 @@ Honest remaining export-policy gap:
 Remaining export-plan gap:
 - standalone-form dated-folder behavior if product wants more than the current
   date-aware filename + Android picker flow
+
+## 2026-04-09 18:22 ET Rename-Flow Verification Crash
+
+While finishing the last live proof for attached-form renaming on the S21, the
+app hit Flutter's red error surface during driver-driven modal text entry.
+
+What is already device-proven:
+- attached-form cards show export-style filenames
+- tapping the card opens the form wizard/editor
+- `View Form` opens the PDF preview shell
+- the rename affordance is visible and opens `Rename Attached Form`
+
+Crash artifacts:
+- `.codex/tmp/live_debug/device-crash-yellow-border-driver.png`
+- `.codex/tmp/live_debug/debug-server-logs-latest.ndjson`
+
+Captured runtime errors:
+- `FlutterError: A TextEditingController was used after being disposed`
+- framework assertion: `_dependents.isEmpty`
+- duplicate overlay `GlobalKey` errors
+
+Current assessment:
+- the attached-form card product contract is live and largely closed
+- the remaining gap is the rename-save automation path, which currently
+  destabilizes the modal teardown under driver text injection and needs a
+  dedicated follow-up

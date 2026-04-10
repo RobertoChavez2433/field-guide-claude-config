@@ -1,5 +1,0 @@
-S19 rerun since: 2026-04-06T00:18:13.7725522Z
-Observed private-channel subscribe after login/rebind
-No deactivate RPC failure found
-Observed automatic quick pull after rebind mutation
-Error logs present in S19 rerun window

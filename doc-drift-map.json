@@ -7,7 +7,7 @@
       "pattern": "lib/core/driver/**",
       "docs": [
         ".claude/docs/features/feature-sync-architecture.md",
-        ".claude/rules/testing/patrol-testing.md",
+        ".claude/rules/testing/testing.md",
         ".claude/docs/directory-reference.md"
       ],
       "claude_md_sections": [],
@@ -148,7 +148,7 @@
     {
       "pattern": "test/**",
       "docs": [
-        ".claude/rules/testing/patrol-testing.md"
+        ".claude/rules/testing/testing.md"
       ],
       "claude_md_sections": [],
       "signals": ["new_file", "deleted_file", "renamed_file"],
@@ -157,7 +157,7 @@
     {
       "pattern": "integration_test/**",
       "docs": [
-        ".claude/rules/testing/patrol-testing.md"
+        ".claude/rules/testing/testing.md"
       ],
       "claude_md_sections": [],
       "signals": ["new_file", "deleted_file", "renamed_file"],
@@ -194,7 +194,7 @@
       "pattern": "lib/core/driver/**",
       "docs": [
         ".claude/docs/features/feature-sync-architecture.md",
-        ".claude/rules/testing/patrol-testing.md"
+        ".claude/rules/testing/testing.md"
       ],
       "sections": []
     },

@@ -106,3 +106,11 @@ Testing notes -
   - One preload contract for screens/sheets: if a screen depends on builtin forms, contractor data, etc., it must load that before interactive controls enable.
   - One responsive content contract for dialogs/sheets: scrolling regions get explicit constraints and visible affordances, not “Flexible inside whatever dialog happens to host it”.
   - Contract tests for those behaviors: not just widget snapshots, but tests that assert “save updates visible state”, “delete removes item without manual refresh”, “continue today reopens today’s entry”, and “sheet never opens empty when action is enabled”.
+
+  DevKey - 
+
+  ❯ Also, its note quite like microsfot swiftkey, the emoji icon isn't colored in 
+ the swiftkey, its just like a see through black, review the screenshot in the  
+repo to see what I mean. Also, you can't see any of the longpress icons like    
+you can in swiftkey. This should be a toggleable option in settings. Update the 
+ TODO's and continue                                                         

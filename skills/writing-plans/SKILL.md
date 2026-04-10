@@ -7,38 +7,37 @@ disable-model-invocation: true
 
 # Writing Plans
 
-Use tailor output to write an implementation plan. The plan must include a
-machine-readable phase-range block so `/implement` can execute by phase without
-reading plan bodies into orchestrator context.
+Use approved tailor output to write an implementation plan. The plan must carry
+a machine-readable `Phase Ranges` block so `/implement` can execute by phase
+without loading full plan bodies into orchestrator context.
 
 ## Prerequisite
 
-`/tailor` must already have been run for the spec. If the matching tailor output
-does not exist, stop and tell the user to run `/tailor <spec-path>` first.
+`/tailor` must already exist for the spec. If the matching tailor directory is
+missing, stop and tell the user to run `/tailor <spec-path>` first.
 
 ## Workflow
 
 1. Read the spec.
 2. Find the matching tailor directory.
-3. Load the tailor output as the source of implementation context.
-4. Decide whether the main agent writes the plan directly or whether
-   `plan-writer-agent` subagents are warranted.
+3. Load only the tailor output needed to write the plan.
+4. Decide whether the main agent writes directly or whether
+   `plan-writer-agent` fragments are warranted.
 5. Write the plan.
 6. Run the three review sweeps.
-7. Fix findings and rerun sweeps up to 3 cycles.
+7. Apply fixes directly and rerun sweeps up to 3 cycles.
 8. Present the final plan summary.
 
 ## Writer Strategy
 
 - Write directly for small and medium plans.
-- Use `plan-writer-agent` only when the plan is genuinely large enough to merit
-  a split.
-- Multi-writer plans should split on natural phase boundaries, not arbitrary
-  file groups.
+- Use `plan-writer-agent` only when the plan is large enough to justify a
+  split.
+- Split on phase boundaries, not arbitrary file groups.
 
 ## Plan Header
 
-Every plan must start with a header like this:
+Every plan must start with:
 
 ```markdown
 # <Feature Name> Implementation Plan
@@ -57,59 +56,50 @@ Every plan must start with a header like this:
 | Phase | Name | Start | End |
 | --- | --- | --- | --- |
 | 1 | <phase name> | <line number> | <line number> |
-| 2 | <phase name> | <line number> | <line number> |
-
----
 ```
-
-The `Phase Ranges` block is mandatory for new plans.
 
 ## Phase Range Rules
 
-- Populate the table after the plan body is assembled so the line numbers match
-  the saved file.
-- `Start` and `End` are 1-based line numbers in the final plan file.
-- Each phase row maps to the matching `## Phase N:` section.
-- If the line numbers change during review fixes, update the table before the
-  final save.
+- Fill the table after the plan body is assembled so line numbers match the
+  saved file.
+- `Start` and `End` are 1-based line numbers in the final file.
+- Each row maps to the matching `## Phase N:` section.
+- If review edits change line numbers, update the table before final save.
 
 ## Plan Body Rules
 
-- Use real file paths, real symbols, and real imports from tailor output.
+- Use real file paths, symbols, and imports from tailor output.
 - Keep steps concrete and executable.
-- Include enough detail that an implementer does not need to guess.
-- Do not include `flutter test` steps in plans.
-- Local verification in plans is limited to `flutter analyze` where appropriate.
+- Include enough detail that implementers do not need to guess.
+- Do not include `flutter test` in the plan body.
+- Local verification in the plan body is limited to `flutter analyze` and
+  targeted checks when truly needed.
 
 ## Review Loop
 
-Run these three reviewers every cycle:
+Run these reviewers every cycle:
 
 - `code-review-agent`
 - `security-agent`
 - `completeness-review-agent`
 
-Completeness review verifies fidelity to the spec. It does not get to rewrite
-the spec.
-
 If any reviewer returns findings:
 
-1. Consolidate them.
-2. Dispatch `plan-fixer-agent`.
-3. Rerun all three sweeps.
+1. consolidate them
+2. fix the plan directly in the main conversation
+3. rerun all three sweeps
 
 Maximum 3 cycles. If findings still remain, escalate to the user.
 
 ## Hard Gates
 
-<HARD-GATE>
-Do not write the plan until tailor output is loaded.
+Do not write the final plan until tailor output is loaded.
 
 Do not present the plan as final until:
+
 1. the header is complete
 2. the `Phase Ranges` table is populated
-3. the review loop is complete or escalated
-</HARD-GATE>
+3. the review loop is complete or explicitly escalated
 
 ## Save Locations
 

@@ -238,6 +238,42 @@ Sync recovery:
 - `lib/features/sync/engine/sync_metadata_store.dart`
   - current durable key-value seam for repair job bookkeeping
 - `lib/features/sync/engine/change_tracker.dart`
+
+## 2026-04-09 20:47 ET Printing Preview Race Note
+
+- the latest daily-entry export red screen was not a bad PDF-template mapping
+  issue
+- live S21 logs traced it to `printing-5.14.2` preview rasterization:
+  `PdfPreviewRaster._raster()` can clear its `pages` list during `dispose()`
+  after an `await page.toPng()`, then crash on `pages[pageNum]`
+- repo now vendors a patched local `printing` package at
+  `third_party/printing_patched`
+- this is now part of the repo’s durable architectural state in the same way
+  the vendored `custom_lint` patch is
+
+## 2026-04-09 21:24 ET IDR Export Audit Delta
+
+- the daily-entry export surface is no longer blocked by the red-screen crash,
+  but the IDR mapping itself is still incomplete versus the canonical template
+- current `IdrPdfTemplateWriter` gaps confirmed during the audit:
+  - no combo/dropdown handling for the day field
+  - no checkbox handling for equipment usage indicators
+  - incomplete contractor/equipment row coverage relative to the template
+  - first subcontractor personnel mapping is only partially represented
+  - row assignment currently depends on provider/equipment load order instead
+    of a stable export order
+- canonical annotated audit artifacts saved at:
+  - `.codex/tmp/live_debug/idr_template_annotated/page_1_annotated.png`
+  - `.codex/tmp/live_debug/idr_template_annotated/page_2_annotated.png`
+
+## 2026-04-09 21:24 ET Connectivity Recovery Finding
+
+- a new device-only state bug surfaced while forcing offline/online recovery to
+  verify snackbar dismissal
+- after Android connectivity recovered, the app could remain on a blank
+  dashboard with a stuck offline banner and `Select Project` shell state
+- this points to stale app-owned connectivity/project-state reconciliation
+  rather than a real transport outage
   - retry exhaustion currently creates queue rot with no healing/requeue path
 
 User-facing sync diagnostics drift:
@@ -258,6 +294,42 @@ Route-intent drift:
 - `lib/features/entries/presentation/screens/entry_editor_state_mixin.dart`
 
 Bottom-sheet/UI jank risk:
+
+## 2026-04-09 22:30 ET Attached Entry-Form Card Device Proof
+
+- The attached-form presentation contract is now device-proven on the S21.
+- Real attached 0582B row shows:
+  - export-style filename on the card
+  - no leaked internal 0582B quick-action chips
+  - separate `View Form` preview action
+  - tap-through to the real 0582B wizard/editor
+- The editable attachment naming path is also live and persisted on-device:
+  - current visible name:
+    `CompanyPrefix_0582B_Apr08.pdf`
+- Proof artifacts:
+  - `.codex/tmp/live_debug/entry-for-rename-proof.png`
+  - `.codex/tmp/live_debug/entry-form-open-after-tap.png`
+  - `.codex/tmp/live_debug/entry-attached-form-preview-open.png`
+
+## 2026-04-09 18:05 ET Entry Attachment Card Audit Note
+
+New device proof added to the export/forms backlog:
+- `.codex/tmp/live_debug/entry-attached-0582b-forms-visible.png`
+
+What it surfaced:
+- attached-form cards inside the entry editor were still rendering
+  form-internal quick-action affordances (`+ Test`, `+ Proctor`, `+ Weights`)
+  instead of an entry-owned attachment contract
+- the card title was still the raw form label (`MDOT_0582B`) instead of an
+  export-style filename that inspectors can rename to match company naming
+  conventions
+
+Static-analysis takeaway:
+- this is a good candidate for a future lint only if the signal is structural
+  enough to detect direct `FormQuickActionRegistry` usage from entry attachment
+  surfaces
+- the actual tap/edit/preview behavior still requires widget + device proof,
+  not lint-only enforcement
 - `lib/core/design_system/surfaces/app_bottom_sheet.dart`
   - currently uses `Flexible` around arbitrary child content
   - this does not guarantee visible constraints, scroll affordance, or stable height behavior
@@ -1676,3 +1748,147 @@ What remains honestly open in research after this closure:
 - standalone-form dated-folder product behavior
 - reminder-surface `resume draft` screenshot proof
 - conflict viewer usefulness
+
+## 2026-04-09 17:20 ET Conflict Residue Research Update
+
+- The `34 conflicts` screenshot is consistent with the current Sync Status copy,
+  but it is not evidence of `34` fresh unresolved sync operations.
+- Device validation proves a split between engine state and surface state:
+  - sync engine latest full cycle logged `conflicts=0`
+  - driver sync status simultaneously reported no pending/blocked/unprocessed
+    work
+  - local DB still holds `84` raw undismissed `conflict_log` rows that collapse
+    to `34` logical records
+- The top grouped records are mostly `winner = remote` rows for:
+  - `form_responses`
+  - `personnel_types`
+- Research conclusion:
+  - grouped conflict history is still being projected as active user-review
+    state even when the engine has already auto-resolved by keeping remote
+  - the remaining sync-surface problem is now historical-residue containment,
+    not queue poisoning
+- Additional open research thread:
+  - user reported intermittent yellow border around the app
+  - fresh driver screenshot did not reproduce it
+  - possibilities under review:
+    - app-owned overlay/debug wrapper
+    - intermittent sizing/border decoration at a root shell
+    - system/developer overlay outside app control
+
+## 2026-04-09 17:26 ET Conflict Projection Resolution + Border Audit Result
+
+- The conflict-surface fix is now device-proven:
+  - after reinstall and a fresh full sync, user-facing Sync Status shows
+    `0 Conflicts`
+  - grouped history remains available in debug as:
+    - `34 logical conflicts in grouped history`
+- Research conclusion:
+  - the correct separation is:
+    - product surface = current actionable sync attention
+    - debug/support surface = grouped historical conflict log
+- Yellow-border audit conclusion:
+  - no app-owned root wrapper was found that should paint a full-screen yellow
+    frame
+  - likely code paths checked:
+    - `app_widget.dart`
+    - `main_driver.dart`
+    - `scaffold_with_nav_bar.dart`
+    - `shell_banners.dart`
+    - `app_scaffold.dart`
+    - `app_lock_gate.dart`
+  - current best explanation is external/system overlay rather than app-owned
+    layout code
+
+## 2026-04-09 18:20 ET Attached Entry-Form Card Research Closure
+
+- Fresh S21 validation confirms the attached-form presentation work is real,
+  not just source-only:
+  - attached 0582B cards in the entry editor now surface the export-style
+    filename
+  - the old entry-card leakage of 0582B quick actions (`+ Test`, `+ Proctor`,
+    `+ Weights`) is gone
+  - the entry attachment still preserves two distinct user intents:
+    - tap card -> reopen the form wizard/editor
+    - tap `View Form` -> preview the rendered PDF
+- The live renamed filename currently visible on-device is:
+  - `CompanyPrefix_0582B_Apr08.pdf`
+- Artifacts:
+  - `.codex/tmp/live_debug/post-scroll-entry.png`
+  - `.codex/tmp/live_debug/entry-form-open-after-tap.png`
+  - `.codex/tmp/live_debug/entry-attached-form-preview-open.png`
+- Research conclusion:
+  - this item should leave the active backlog
+  - the remaining forms/export research focus is now:
+    - weekly 1126 reminder/resume-draft surfaces
+    - broader 1126 / SESC workflow hardening
+    - standalone-form dated-folder export policy
+
+## 2026-04-09 18:22 ET Rename Modal Driver Teardown Closure
+
+The remaining rename proof gap was not an entry-form business-logic failure.
+It was a shared input/testability seam plus a dirty local ADB state.
+
+Verified root causes:
+- `AppTextField` kept its key on the wrapper widget instead of forwarding it to
+  the underlying `TextFormField`
+- the driver could detect the rename field but could not type into it honestly
+- local workstation ADB had accumulated hung child processes during repeated
+  restart attempts, which made the failure look worse than it was
+
+What closed it:
+- `lib/core/design_system/molecules/app_text_field.dart`
+  now forwards `key` into the underlying `TextFormField`
+- the attached-form rename dialog in
+  `lib/features/entries/presentation/widgets/entry_forms_section.dart`
+  now uses the shared export filename keys
+- after a clean driver relaunch, the S21 rename flow completed and persisted
+  `CompanyPrefix_0582B_Apr08.pdf`
+
+Research conclusion:
+- the rename-save path is now device-closed
+- the old rename crash/runtime note should not remain in the active backlog
+## 2026-04-09 18:40 - Lint Candidates From Current Bug Classes
+
+- `no_form_response_mutation_outside_approved_owners`
+  - goal: keep form mutations behind owners/use cases that also refresh canonical UI state
+- `no_form_fill_route_calls_outside_approved_owners`
+  - goal: route-intent ownership for `form-fill` opens
+- `no_form_selection_ui_outside_approved_owners`
+  - goal: preload-gated form selection only
+- `form_gallery_preload_contract_sync`
+  - goal: statically protect the empty/locked sheet class
+- `no_file_picker_platform_outside_external_intent_owners`
+  - goal: external intent / picker launch ownership
+- `no_material_page_route_outside_route_owners`
+  - goal: avoid ad hoc navigation drift and restoration bugs
+- `no_attachment_display_name_key_outside_policy`
+  - goal: keep attachment filename/display-name logic behind policy
+- `entry_form_attachment_contract_sync`
+  - goal: preserve the attached-form card contract
+- `no_raw_export_filename_policy_bypass_for_forms`
+  - goal: prevent form export filename drift
+- `no_raw_date_picker_outside_design_system_or_owned_dialog_helpers`
+  - goal: modal/date-picker consistency where statically honest
+
+## 2026-04-09 18:48 ET Rename Crash Closed With Dedicated Dialog Ownership
+
+- The reported yellow border was confirmed as Flutter's red assertion surface,
+  not app-owned border rendering.
+- The fragile seam was the attached-form rename modal path.
+- The corrected ownership is now:
+  - `RenameAttachedFormDialog`
+  - `showRenameAttachedFormDialog(...)`
+  - `EntryFormsSection` delegating to that dialog instead of managing the
+    modal controller lifecycle itself
+- Live device proof:
+  - rename dialog opened on the attached 0582B row
+  - typing/saving no longer crashed the app
+  - the entry-editor card updated to `0582B_Rename_Verify.pdf`
+  - `/driver/local-record` confirms
+    `response_data.attachment_display_name = 0582B_Rename_Verify.pdf`
+- Research conclusion:
+  - the rename-runtime crash should leave the active backlog
+  - the remaining form/export research focus is now:
+    - weekly 1126 reminder/resume-draft surfaces
+    - broader 1126 / SESC workflow validation
+    - standalone-form dated-folder export policy

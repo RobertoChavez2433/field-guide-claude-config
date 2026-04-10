@@ -2,33 +2,31 @@
 
 These are Codex-facing wrappers around the shared `.claude` workflows.
 
-They exist because Codex cannot register native slash commands from the repo,
-but it can follow documented compatibility conventions.
-
-## Supported Compatibility Aliases
+## Supported Aliases
 
 - `/resume-session` or `resume session`
 - `/end-session` or `end session`
 - `/implement <plan>` or `implement <plan>`
 - `/writing-plans <spec>` or `writing plans <spec>`
 - `/brainstorming` or `brainstorming` or `brainstorm <topic>`
+- `/tailor <spec>` or `tailor <spec>`
 - `/systematic-debugging` or `systematic debugging` or `systematic debug <issue>`
 - `/test ...` or `test ...`
-- `/audit-config` or `audit config`
+- `/audit-docs` or `audit docs`
+- legacy alias: `/audit-config` or `audit config`
 
 ## Design Rules
 
-- Update the same `.claude` handoff/state files Claude uses.
-- Prefer the same `.claude` artifact directories Claude uses for specs, plans,
-  reviews, and checkpoints.
-- Tag Codex-authored shared artifacts with `-codex-` in the filename.
-- Follow the same no-noise, targeted-context approach.
+- Update the same shared `.claude` state and handoff files when appropriate.
+- Store new Codex-authored plans in `.codex/plans/`.
+- Tag shared Codex-authored artifacts with `-codex-` when they live under
+  `.claude/`.
+- Keep wrappers short and push detail to the upstream `.claude` skill only when
+  needed.
 - Prefer these wrappers first when working in Codex.
-- Use the matching `.claude/skills/*/SKILL.md` file as the upstream reference
-  when more detail is needed.
 
 ## Persona Rule
 
-- When a Claude workflow would dispatch a named agent, Codex should use that
-  same agent name as an internal persona or review mode.
-- These personas are not slash commands; they are routing and reasoning modes.
+When a Claude workflow would dispatch a named agent, Codex should use that same
+agent name as a review or routing persona. Generic implementation work stays
+generic unless a live agent actually exists.

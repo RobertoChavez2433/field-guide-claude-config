@@ -1,9 +1,0 @@
-{"category":"sync","level":"info","message":"SyncCoordinator: starting full sync","timestamp":"2026-04-06T19:43:58.914748","deviceId":"2b28fba7","id":8101,"receivedAt":"2026-04-06T23:44:00.380Z","_size":390}
-{"category":"sync","level":"info","message":"Reachability check passed (HTTP 200)","timestamp":"2026-04-06T19:43:59.192452","deviceId":"2b28fba7","id":8102,"receivedAt":"2026-04-06T23:44:00.652Z","_size":392}
-{"category":"sync","level":"info","message":"full push complete: 1 pushed, 0 errors","timestamp":"2026-04-06T19:43:59.569189","deviceId":"2b28fba7","id":8103,"receivedAt":"2026-04-06T23:44:01.030Z","_size":396}
-{"category":"sync","level":"info","message":"Pull skip (adapter.skipPull): user_consent_records","timestamp":"2026-04-06T19:44:01.724956","deviceId":"2b28fba7","id":8104,"receivedAt":"2026-04-06T23:44:03.185Z","_size":420}
-{"category":"sync","level":"info","message":"full pull complete: 1 pulled, 0 errors","timestamp":"2026-04-06T19:44:01.741829","deviceId":"2b28fba7","id":8105,"receivedAt":"2026-04-06T23:44:03.202Z","_size":396}
-{"category":"sync","level":"info","message":"Full sync: integrity check not due yet","timestamp":"2026-04-06T19:44:01.757963","deviceId":"2b28fba7","id":8106,"receivedAt":"2026-04-06T23:44:03.215Z","_size":396}
-{"category":"sync","level":"info","message":"Sync cycle (full): pushed=1 pulled=1 errors=0 conflicts=1 skippedFk=0 skippedPush=0 duration=2549ms","timestamp":"2026-04-06T19:44:01.761745","deviceId":"2b28fba7","id":8107,"receivedAt":"2026-04-06T23:44:03.219Z","_size":518}
-{"category":"sync","level":"info","message":"PostSyncHooks: Company members pulled","timestamp":"2026-04-06T19:44:01.876138","deviceId":"2b28fba7","id":8108,"receivedAt":"2026-04-06T23:44:03.334Z","_size":394}
-{"category":"sync","level":"info","message":"PostSyncHooks: last_synced_at updated","timestamp":"2026-04-06T19:44:01.970905","deviceId":"2b28fba7","id":8109,"receivedAt":"2026-04-06T23:44:03.432Z","_size":394}

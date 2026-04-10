@@ -1,6 +1,0 @@
-S12 since: 2026-04-06T00:10:03.8810657Z
-Marker: RT6 resume quick-sync marker
-Observed app-resumed quick sync trigger
-Observed no-dirty-scopes fallback pull
-Missing quick sync pulled=1 on resume
-Error logs present in S12 window
