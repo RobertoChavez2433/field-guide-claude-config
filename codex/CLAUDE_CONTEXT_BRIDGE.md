@@ -40,6 +40,7 @@ For sync work, prefer:
 Load by domain, not all at once:
 
 - `.claude/rules/architecture.md`
+- `.claude/rules/build-rules.md`
 - `.claude/rules/platform-standards.md`
 - `.claude/rules/frontend/flutter-ui.md`
 - `.claude/rules/frontend/ui-prototyping.md`
