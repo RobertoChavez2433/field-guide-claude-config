@@ -21,6 +21,12 @@ review agents.
 - implementers and fixers are generic Sonnet workers
 - reviewers use the live Claude review agents
 - do not invent specialist agents that no longer exist
+- test real behavior, not mock presence
+- prefer real production seams over large mock stacks
+- do not add test-only hooks, methods, or lifecycle APIs to production code
+- mock only at lower-level boundaries after the real dependency chain is understood
+- if a test is hard to write honestly, extract a real production seam instead of
+  inventing a test-only escape hatch
 
 ## Workflow
 

@@ -16,16 +16,16 @@ programmatically.
 
 ## Reference Order
 
-1. `.claude/skills/pdf-processing/SKILL.md`
-2. `.claude/skills/pdf-processing/references/forms-workflow.md`
-3. `.claude/skills/pdf-processing/references/extraction-enhancement.md`
-4. `.claude/skills/pdf-processing/references/idr-template-mapping.md`
-5. `.claude/skills/pdf-processing/references/cli-commands.md`
+1. `.claude/rules/pdf/pdf-generation.md`
+2. `.claude/skills/implement/references/pdf-generation-guide.md`
+3. `.claude/rules/testing/testing.md`
+4. `lib/features/pdf/services/`
+5. `lib/features/forms/data/services/`
 
 ## Script Surface
 
-Use the existing Python scripts in `.claude/skills/pdf-processing/scripts/`
-when the task needs deterministic PDF analysis or field inspection.
+Use repo-owned scripts and the existing project PDF services when the task needs
+deterministic PDF analysis, field inspection, or export verification.
 
 ## Project Files
 
@@ -33,3 +33,8 @@ when the task needs deterministic PDF analysis or field inspection.
 - `lib/features/pdf/services/pdf_service.dart`
 - `lib/features/pdf/services/pdf_import_service.dart`
 - `lib/features/pdf/services/extraction/pipeline/extraction_pipeline.dart`
+
+## Upstream Note
+
+There is no current dedicated upstream Claude `pdf-processing` skill in this
+repo. Use the live PDF rule and `implement` reference guide instead.

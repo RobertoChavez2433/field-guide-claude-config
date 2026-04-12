@@ -17,12 +17,13 @@ project state.
 - Update only the shared `.claude` handoff/state files that materially changed.
 - Keep `_state.md` session entries compressed.
 - Do not create or update `.claude/defects/*`; GitHub issues are the defect system of record.
+- Do not invent per-feature state JSON files unless the repo restores that
+  surface.
 
 ## Primary Files To Update
 
 - `.claude/autoload/_state.md`
 - `.claude/state/PROJECT-STATE.json` when project-level status/blockers changed
-- `.claude/state/feature-<name>.json` only for features materially touched
 
 ## Workflow
 
@@ -43,13 +44,13 @@ project state.
 
 3. If `_state.md` holds more than 5 sessions, rotate the oldest session into
    `.claude/logs/state-archive.md`.
-4. Update `.claude/state/PROJECT-STATE.json` or touched
-   `.claude/state/feature-<name>.json` only if status actually changed.
+4. Update `.claude/state/PROJECT-STATE.json` only if project-level status,
+   blockers, or active priorities actually changed.
 5. If this session discovered a new unresolved bug, capture the GitHub issue ID
    or filing requirement in `_state.md` or the relevant feature/project state.
 6. Present a compact handoff summary:
    - session summary
-   - features touched
+   - repo surfaces touched
    - GitHub issues filed or still open
    - next priorities
    - reminder that `resume session` loads the handoff next time

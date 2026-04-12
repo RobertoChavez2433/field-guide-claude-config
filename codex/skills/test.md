@@ -20,6 +20,13 @@ test-results root without inventing wave agents or fixer agents.
 - use the same sync proof standard Claude uses
 - do not auto-fix failures
 - do not reference deleted test agents
+- test real behavior, not mock presence or placeholder rendering
+- prefer real production seams over large mock stacks
+- do not add test-only hooks, methods, or lifecycle APIs to production code
+- mock only at lower-level boundaries after the real dependency chain is understood
+- if a test is hard to write honestly, extract a real production seam instead of
+  inventing a test-only escape hatch
+- use `TestingKeys`; do not rely on fake test IDs
 
 ## Workflow
 
