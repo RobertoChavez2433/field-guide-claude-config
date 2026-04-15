@@ -107,6 +107,19 @@
   lives at `docs/testing/pdf-extraction-heuristic-testing-standard.md`; the
   condensed agent rule lives at
   `.claude/rules/pdf/pdf-extraction-testing.md`.
+- `2026-04-15-pdf-extraction-post-decomposition-todo.md`:
+  Active to-do style tracker for the post-decomposition extraction iteration
+  loop. Current evidence: fresh original-four replay reproduced the Berrien
+  `16` mismatch baseline, fresh full-corpus replay reproduced `427` asserted
+  mismatches plus `2` trace-contract failures, compact replay audit output now
+  lands under `.claude/test-results/2026-04-15/`, and the most upstream
+  confirmed first-bad stage is `text_recognition` via `ocr_source_error`.
+  Priority 0 is now source/provider/rendering: prove a Vision table-region OCR
+  route against the current full-page Vision cache before adding more
+  downstream canonicalization. Existing notes show the previously tested
+  Document AI processor underperformed Vision image OCR on Berrien/Huron/Grand
+  Blanc, so Document AI is not the next retry unless a new processor/config
+  hypothesis is defined.
 
 ## Archived Codex Plans
 
