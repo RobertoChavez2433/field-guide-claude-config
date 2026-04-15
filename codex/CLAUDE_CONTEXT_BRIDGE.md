@@ -51,6 +51,7 @@ Load by domain, not all at once:
 - `.claude/rules/database/schema-patterns.md`
 - `.claude/rules/testing/testing.md`
 - `.claude/rules/pdf/pdf-generation.md`
+- `.claude/rules/pdf/pdf-extraction-testing.md`
 
 ## Agent Files
 
