@@ -120,6 +120,11 @@
   Document AI processor underperformed Vision image OCR on Berrien/Huron/Grand
   Blanc, so Document AI is not the next retry unless a new processor/config
   hypothesis is defined.
+- `2026-04-16-pdf-extraction-post-100-decomposition-trace-todo.md`:
+  Active post-100% structural hardening tracker for the PDF extraction
+  pipeline. It preserves the zero-mismatch/zero-trace-contract baseline while
+  splitting new post-processing heuristics, row-data parsing, provenance, and
+  test counterparts away from god-class/god-test shapes.
 
 ## Archived Codex Plans
 
