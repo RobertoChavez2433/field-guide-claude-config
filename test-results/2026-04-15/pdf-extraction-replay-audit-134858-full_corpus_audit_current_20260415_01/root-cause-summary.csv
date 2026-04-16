@@ -1,7 +1,0 @@
-"root_cause_bucket","count"
-"post_normalization_error","198"
-"row_parsing_error","125"
-"ocr_source_error","48"
-"numeric_interpretation_error","27"
-"field_confidence_error","15"
-"cell_assignment_error","14"
