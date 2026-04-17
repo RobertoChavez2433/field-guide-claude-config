@@ -16,19 +16,19 @@ Quantities owns bid item import, quantity calculator entry, quantity edits, and 
 - name: forward_happy
   requires: [base_data]
   appliesTo: { roles: [admin, engineer, officeTechnician, inspector], devices: [s21, s10] }
-  steps: [ { navigate: /quantities }, { find: quantities_screen } ]
+  steps: [ { navigate: /quantities }, { find: quantities_screen }, { tap: quantities_sort_button }, { tap: quantities_sort_item_number } ]
 - name: backward_traversal
   requires: [entry_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /quantity-calculator/harness-entry-001 }, { find: quantity_calculator_screen }, { navigate: /quantities } ]
+  steps: [ { navigate: /quantity-calculator/harness-entry-001 }, { find: quantity_calculator_screen }, { back: true }, { find: quantities_screen } ]
 - name: nav_bar_switch_mid_flow
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: quantities_screen }, { navigate: /projects } ]
+  steps: [ { navigate: /quantities }, { find: quantities_screen }, { tap: projects_nav_button }, { find: project_list_screen } ]
 - name: back_at_root
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /quantities }, { find: quantities_screen } ]
+  steps: [ { navigate: /quantities }, { find: quantities_screen }, { back: true } ]
 - name: deep_link_entry
   requires: [entry_draft]
   appliesTo: { roles: [admin, inspector], devices: [s21, s10] }

@@ -16,19 +16,19 @@ Pay applications own saved pay application detail, replacement/blocking cases, c
 - name: forward_happy
   requires: [pay_app_draft]
   appliesTo: { roles: [admin, engineer, officeTechnician], devices: [s21, s10] }
-  steps: [ { navigate: /pay-app/harness-pay-app-001 }, { find: pay_app_detail_screen } ]
+  steps: [ { navigate: /pay-app/harness-pay-app-001 }, { find: pay_app_detail_screen }, { tap: pay_app_compare_button }, { find: contractor_comparison_screen } ]
 - name: backward_traversal
   requires: [pay_app_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /pay-app/harness-pay-app-001/compare }, { find: contractor_comparison_screen }, { navigate: /pay-app/harness-pay-app-001 } ]
+  steps: [ { navigate: /pay-app/harness-pay-app-001/compare }, { find: contractor_comparison_screen }, { back: true }, { find: pay_app_detail_screen } ]
 - name: nav_bar_switch_mid_flow
   requires: [pay_app_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: pay_app_detail_screen }, { navigate: /settings } ]
+  steps: [ { navigate: /pay-app/harness-pay-app-001 }, { find: pay_app_detail_screen }, { tap: pay_app_compare_button }, { find: contractor_comparison_screen }, { navigate: /settings }, { find: settings_screen } ]
 - name: back_at_root
   requires: [pay_app_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /pay-app/harness-pay-app-001 }, { find: pay_app_detail_screen } ]
+  steps: [ { navigate: /pay-app/harness-pay-app-001 }, { find: pay_app_detail_screen }, { back: true } ]
 - name: deep_link_entry
   requires: [pay_app_draft]
   appliesTo: { roles: [admin, engineer, officeTechnician], devices: [s21, s10] }

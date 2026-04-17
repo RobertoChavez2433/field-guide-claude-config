@@ -14,19 +14,19 @@ Calculator owns HMA/concrete tabs and quantity-calculator tab preservation.
 - name: forward_happy
   requires: [base_data]
   appliesTo: { roles: [admin, engineer, officeTechnician, inspector], devices: [s21, s10] }
-  steps: [ { navigate: /calculator }, { find: calculator_screen } ]
+  steps: [ { navigate: /toolbox }, { find: toolbox_home_screen }, { tap: toolbox_calculator_card }, { find: calculator_screen } ]
 - name: backward_traversal
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: calculator_screen }, { navigate: /toolbox } ]
+  steps: [ { navigate: /calculator }, { find: calculator_screen }, { back: true }, { find: toolbox_home_screen } ]
 - name: nav_bar_switch_mid_flow
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: calculator_screen }, { navigate: /settings } ]
+  steps: [ { navigate: /toolbox }, { find: toolbox_home_screen }, { tap: settings_nav_button }, { find: settings_screen } ]
 - name: back_at_root
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /calculator }, { find: calculator_screen } ]
+  steps: [ { navigate: /calculator }, { find: calculator_screen }, { back: true } ]
 - name: deep_link_entry
   requires: [base_data]
   appliesTo: { roles: [admin, inspector], devices: [s21, s10] }

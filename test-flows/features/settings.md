@@ -20,19 +20,19 @@ Settings owns profile, saved exports, app lock, legal/help surfaces, admin dashb
 - name: forward_happy
   requires: [base_data]
   appliesTo: { roles: [admin, engineer, officeTechnician, inspector], devices: [s21, s10] }
-  steps: [ { navigate: /settings }, { find: settings_screen }, { navigate: /edit-profile }, { find: edit_profile_screen } ]
+  steps: [ { navigate: /settings }, { find: settings_screen }, { tap: settings_edit_profile_tile }, { find: edit_profile_screen } ]
 - name: backward_traversal
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /settings/trash }, { find: trash_screen }, { navigate: /settings } ]
+  steps: [ { navigate: /settings/trash }, { find: trash_screen }, { back: true }, { find: settings_screen } ]
 - name: nav_bar_switch_mid_flow
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /settings }, { find: settings_screen }, { navigate: /projects } ]
+  steps: [ { navigate: /settings }, { find: settings_screen }, { tap: projects_nav_button }, { find: project_list_screen } ]
 - name: back_at_root
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /settings }, { find: settings_screen } ]
+  steps: [ { navigate: /settings }, { find: settings_screen }, { back: true } ]
 - name: deep_link_entry
   requires: [pay_app_draft]
   appliesTo: { roles: [admin, engineer, officeTechnician, inspector], devices: [s21, s10] }
@@ -44,7 +44,7 @@ Settings owns profile, saved exports, app lock, legal/help surfaces, admin dashb
 - name: export_verification
   requires: [pay_app_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /settings/saved-exports }, { find: settings_saved_exports_screen } ]
+  steps: [ { navigate: /settings }, { find: settings_screen }, { tap: settings_saved_exports_tile }, { find: settings_saved_exports_screen } ]
 - name: role_restriction
   requires: [base_data]
   appliesTo: { roles: [engineer, officeTechnician, inspector], devices: [s21, s10] }

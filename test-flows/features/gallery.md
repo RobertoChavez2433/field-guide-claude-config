@@ -14,19 +14,19 @@ Gallery owns browsing project photos from the toolbox/gallery surface across pho
 - name: forward_happy
   requires: [base_data]
   appliesTo: { roles: [admin, engineer, officeTechnician, inspector], devices: [s21, s10] }
-  steps: [ { navigate: /gallery }, { find: gallery_screen } ]
+  steps: [ { navigate: /gallery }, { find: gallery_screen }, { tap: gallery_filter_button } ]
 - name: backward_traversal
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: gallery_screen }, { navigate: /toolbox } ]
+  steps: [ { navigate: /gallery }, { find: gallery_screen }, { back: true }, { find: toolbox_home_screen } ]
 - name: nav_bar_switch_mid_flow
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: gallery_screen }, { navigate: /settings } ]
+  steps: [ { navigate: /gallery }, { find: gallery_screen }, { tap: settings_nav_button }, { find: settings_screen } ]
 - name: back_at_root
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /gallery }, { find: gallery_screen } ]
+  steps: [ { navigate: /gallery }, { find: gallery_screen }, { back: true } ]
 - name: deep_link_entry
   requires: [base_data]
   appliesTo: { roles: [admin, inspector], devices: [s21, s10] }

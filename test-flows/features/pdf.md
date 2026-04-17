@@ -15,15 +15,15 @@ PDF import owns bid-item and M&P preview UX. Deep-link entry to preview routes r
 - name: forward_happy
   requires: [pdf_import_result_staged]
   appliesTo: { roles: [admin, engineer, officeTechnician], devices: [s21, s10] }
-  steps: [ { find: pdf_preview_screen } ]
+  steps: [ { find: pdf_preview_screen }, { tap: pdf_preview_select_all_button } ]
 - name: backward_traversal
   requires: [pdf_import_result_staged]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: mp_preview_screen } ]
+  steps: [ { find: mp_preview_screen }, { back: true }, { find: quantities_screen } ]
 - name: back_at_root
   requires: [pdf_import_result_staged]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: pdf_preview_screen } ]
+  steps: [ { find: pdf_preview_screen }, { back: true } ]
 - name: orientation_change
   requires: [pdf_import_result_staged]
   appliesTo: { roles: [admin], devices: [s21, s10] }

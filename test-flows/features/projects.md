@@ -18,19 +18,19 @@ Projects owns project list/setup, project-scoped configuration, archive/remove f
 - name: forward_happy
   requires: [project_draft, location_a, contractor_a]
   appliesTo: { roles: [admin, engineer, officeTechnician], devices: [s21, s10] }
-  steps: [ { navigate: /projects }, { find: project_list_screen }, { navigate: /project/new }, { find: project_setup_screen } ]
+  steps: [ { navigate: /projects }, { find: project_list_screen }, { tap: project_create_button }, { find: project_setup_screen } ]
 - name: backward_traversal
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /project/harness-project-001/edit }, { find: project_setup_screen }, { navigate: /projects } ]
+  steps: [ { navigate: /project/harness-project-001/edit }, { find: project_setup_screen }, { back: true }, { find: project_list_screen } ]
 - name: nav_bar_switch_mid_flow
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /project/harness-project-001/edit }, { find: project_setup_screen }, { navigate: /settings }, { find: settings_screen } ]
+  steps: [ { navigate: /project/harness-project-001/edit }, { find: project_setup_screen }, { tap: project_locations_tab }, { tap: project_contractors_tab } ]
 - name: back_at_root
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /projects }, { find: project_list_screen } ]
+  steps: [ { navigate: /projects }, { find: project_list_screen }, { back: true } ]
 - name: deep_link_entry
   requires: [base_data]
   appliesTo: { roles: [admin, engineer, officeTechnician], devices: [s21, s10] }

@@ -24,16 +24,17 @@ Authentication owns sign-in, registration, recovery, OTP/status routing, and acc
   appliesTo: { roles: [admin, engineer, officeTechnician, inspector], devices: [s21, s10] }
   steps:
     - find: login_screen
-    - navigate: /register
+    - tap: login_sign_up_button
     - find: register_screen
   assertions: [ { current_route: /register } ]
 - name: backward_traversal
   requires: [otp_required_profile]
   appliesTo: { roles: [admin], devices: [s21, s10] }
   steps:
-    - navigate: /forgot-password
-    - find: forgot_password_screen
     - navigate: /login
+    - tap: forgot_password_link
+    - find: forgot_password_screen
+    - back: true
   assertions: [ { current_route: /login } ]
 - name: back_at_root
   requires: [pending_profile]
@@ -41,6 +42,7 @@ Authentication owns sign-in, registration, recovery, OTP/status routing, and acc
   steps:
     - navigate: /login
     - find: login_screen
+    - back: true
 - name: deep_link_entry
   requires: [otp_required_profile]
   appliesTo: { roles: [admin, inspector], devices: [s21, s10] }

@@ -15,19 +15,19 @@ Analytics owns project-level pay application and item drilldown reporting, inclu
 - name: forward_happy
   requires: [pay_app_draft]
   appliesTo: { roles: [admin, engineer, officeTechnician], devices: [s21, s10] }
-  steps: [ { navigate: /analytics/harness-project-001 }, { find: project_analytics_screen } ]
+  steps: [ { navigate: /analytics/harness-project-001 }, { find: project_analytics_screen }, { tap: analytics_date_filter } ]
 - name: backward_traversal
   requires: [pay_app_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: project_analytics_screen }, { navigate: / } ]
+  steps: [ { navigate: /analytics/harness-project-001 }, { find: project_analytics_screen }, { back: true }, { find: project_dashboard_screen } ]
 - name: nav_bar_switch_mid_flow
   requires: [pay_app_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: project_analytics_screen }, { navigate: /settings } ]
+  steps: [ { navigate: / }, { find: project_dashboard_screen }, { tap: dashboard_analytics_card }, { find: project_analytics_screen }, { tap: settings_nav_button }, { find: settings_screen } ]
 - name: back_at_root
   requires: [pay_app_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /analytics/harness-project-001 }, { find: project_analytics_screen } ]
+  steps: [ { navigate: /analytics/harness-project-001 }, { find: project_analytics_screen }, { back: true } ]
 - name: deep_link_entry
   requires: [pay_app_draft]
   appliesTo: { roles: [admin, engineer, officeTechnician], devices: [s21, s10] }

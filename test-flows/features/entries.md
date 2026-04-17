@@ -21,19 +21,19 @@ Entries owns daily entry creation, editing, review/submit lifecycle, entry PDF e
 - name: forward_happy
   requires: [entry_draft]
   appliesTo: { roles: [admin, engineer, officeTechnician], devices: [s21, s10] }
-  steps: [ { navigate: /entries }, { find: entries_list_screen }, { navigate: /entry/harness-project-001/2026-04-16 }, { find: entry_editor_screen } ]
+  steps: [ { navigate: /entries }, { find: entries_list_screen }, { tap: entries_list_filter_button }, { navigate: /entry/harness-project-001/2026-04-16 }, { find: entry_editor_screen } ]
 - name: backward_traversal
   requires: [entry_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /review-summary }, { find: review_summary_screen }, { navigate: /entries } ]
+  steps: [ { navigate: /review-summary }, { find: review_summary_screen }, { back: true }, { find: entries_list_screen } ]
 - name: nav_bar_switch_mid_flow
   requires: [entry_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: entry_editor_screen }, { navigate: /settings }, { find: settings_screen } ]
+  steps: [ { navigate: /entry/harness-project-001/2026-04-16 }, { find: entry_editor_screen }, { tap: entry_wizard_save_draft }, { navigate: /settings }, { find: settings_screen } ]
 - name: back_at_root
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /entries }, { find: entries_list_screen } ]
+  steps: [ { navigate: /entries }, { find: entries_list_screen }, { back: true } ]
 - name: deep_link_entry
   requires: [entry_draft]
   appliesTo: { roles: [admin, engineer, officeTechnician], devices: [s21, s10] }
@@ -41,7 +41,7 @@ Entries owns daily entry creation, editing, review/submit lifecycle, entry PDF e
 - name: tab_switch_mid_edit
   requires: [entry_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: entry_editor_screen }, { navigate: /projects }, { find: project_list_screen } ]
+  steps: [ { navigate: /entry/harness-project-001/2026-04-16 }, { find: entry_editor_screen }, { tap: entry_wizard_save_draft }, { navigate: /projects }, { find: project_list_screen } ]
 - name: orientation_change
   requires: [entry_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
@@ -49,7 +49,7 @@ Entries owns daily entry creation, editing, review/submit lifecycle, entry PDF e
 - name: export_verification
   requires: [entry_submitted]
   appliesTo: { roles: [admin, engineer, officeTechnician, inspector], devices: [s21, s10] }
-  steps: [ { navigate: /report/harness-entry-001 }, { find: entry_editor_screen } ]
+  steps: [ { navigate: /report/harness-entry-001 }, { find: entry_editor_screen }, { tap: report_export_pdf_button } ]
 - name: role_restriction
   requires: [entry_draft]
   appliesTo: { roles: [inspector], devices: [s21, s10] }

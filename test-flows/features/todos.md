@@ -18,15 +18,15 @@ Todos owns task creation, edits, completion, deletion, and tab-switch preservati
 - name: backward_traversal
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: todos_screen }, { navigate: /toolbox } ]
+  steps: [ { navigate: /todos }, { find: todos_screen }, { back: true }, { find: toolbox_home_screen } ]
 - name: nav_bar_switch_mid_flow
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: todos_screen }, { navigate: /settings } ]
+  steps: [ { navigate: /todos }, { find: todos_screen }, { tap: settings_nav_button }, { find: settings_screen } ]
 - name: back_at_root
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /todos }, { find: todos_screen } ]
+  steps: [ { navigate: /todos }, { find: todos_screen }, { back: true } ]
 - name: deep_link_entry
   requires: [base_data]
   appliesTo: { roles: [admin, inspector], devices: [s21, s10] }

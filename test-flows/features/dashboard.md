@@ -15,19 +15,19 @@ Dashboard covers the project hub and calendar/home composition. `HomeScreen` is 
 - name: forward_happy
   requires: [base_data]
   appliesTo: { roles: [admin, engineer, officeTechnician, inspector], devices: [s21, s10] }
-  steps: [ { navigate: / }, { find: project_dashboard_screen } ]
+  steps: [ { navigate: / }, { find: project_dashboard_screen }, { tap: dashboard_toolbox_card }, { find: toolbox_home_screen } ]
 - name: backward_traversal
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /calendar }, { find: home_screen }, { navigate: / } ]
+  steps: [ { navigate: / }, { tap: calendar_nav_button }, { find: home_screen }, { back: true } ]
 - name: nav_bar_switch_mid_flow
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /projects }, { find: project_list_screen }, { navigate: / } ]
+  steps: [ { navigate: / }, { tap: projects_nav_button }, { find: project_list_screen }, { tap: dashboard_nav_button }, { find: project_dashboard_screen } ]
 - name: back_at_root
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: / }, { find: project_dashboard_screen } ]
+  steps: [ { navigate: / }, { find: project_dashboard_screen }, { back: true } ]
 - name: deep_link_entry
   requires: [base_data]
   appliesTo: { roles: [admin, inspector], devices: [s21, s10] }

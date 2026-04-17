@@ -18,19 +18,19 @@ Forms owns gallery, MDOT form workflows, section-by-section completion, and edit
 - name: forward_happy
   requires: [form_response_draft]
   appliesTo: { roles: [admin, engineer, officeTechnician, inspector], devices: [s21, s10] }
-  steps: [ { navigate: /forms }, { find: form_gallery_screen }, { navigate: /form/harness-response-001 }, { find: mdot_hub_screen } ]
+  steps: [ { navigate: /forms }, { find: form_gallery_screen }, { navigate: /form/harness-response-001 }, { find: mdot_hub_screen }, { tap: mdot_hub_save_button } ]
 - name: backward_traversal
   requires: [form_response_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { find: mdot_hub_screen }, { navigate: /forms } ]
+  steps: [ { navigate: /form/harness-response-001 }, { find: mdot_hub_screen }, { back: true }, { find: form_gallery_screen } ]
 - name: nav_bar_switch_mid_flow
   requires: [form_response_draft]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /form/harness-response-001 }, { find: mdot_hub_screen }, { navigate: /settings } ]
+  steps: [ { navigate: /form/harness-response-001 }, { find: mdot_hub_screen }, { tap: mdot_hub_save_button }, { navigate: /settings }, { find: settings_screen } ]
 - name: back_at_root
   requires: [base_data]
   appliesTo: { roles: [admin], devices: [s21, s10] }
-  steps: [ { navigate: /forms }, { find: form_gallery_screen } ]
+  steps: [ { navigate: /forms }, { find: form_gallery_screen }, { back: true } ]
 - name: deep_link_entry
   requires: [form_response_draft]
   appliesTo: { roles: [admin, inspector], devices: [s21, s10] }
