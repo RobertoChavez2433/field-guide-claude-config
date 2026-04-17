@@ -6,6 +6,11 @@ Session history archive. See `.claude/autoload/_state.md` for current state (las
 
 ## April 2026
 
+### Session 753 (2026-04-10, Codex)
+**Work**: Restarted the local build/device layer, rebuilt and reinstalled a fresh real-auth debug APK, proved the Samsung now opens on the real login screen instead of the old mock-auth session, signed in with the real inspector account, passed consent, and confirmed sync health on-device. That live replay exposed a post-auth routing bug: after consent the app landed on `Dashboard` with `No Project Selected`. Fixed the route owners so fresh auth/consent and no-project dashboard taps land on `Projects` instead. Also audited the handoff notes with two agent passes, reopened the still-live device items, and identified a separate inspector-role contract bug in the Calendar no-project state: it still shows `Create Project`.
+**Decisions**: Treat code/test green and live-device green as separate states in the notes. Keep the reopened TODO list explicit until the real-device Samsung replay and the project-backed 0582B lane are both complete.
+**Next**: Fix the inspector Calendar no-project CTA so inspectors never see `Create Project`, then continue Samsung live-device validation. After that, resume 0582B device verification only when a real project exists for the inspector account.
+
 ### Session 740 (2026-04-06)
 **Work**: Full tailor + writing-plans pipeline for pay-application spec. 3 parallel writers, 3 parallel reviewers, 1 fixer cycle.
 **Next**: Review Cycle 2 → implement.
