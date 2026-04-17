@@ -36,6 +36,15 @@
 | export_verification | Export and verify file/PDF integrity |
 | role_restriction | Assert role-gated denial/allowance |
 
+## Manual Overlays
+
+- `manual/manual-ui-sweep.md`: manually driven dashboard-surface sweep with
+  organized findings, logs, screenshots, and sync evidence.
+- `manual/role-boundaries.md`: manually driven RLS and role-boundary checks for
+  admin, engineer, officeTechnician, and inspector. This complements feature
+  `role_restriction` sub-flows and is not parsed by
+  `tools/validate_feature_spec.py`.
+
 ## Retired Flow ID Index
 
 - T01 -> auth.md

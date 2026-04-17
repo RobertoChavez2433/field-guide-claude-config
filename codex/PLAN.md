@@ -146,6 +146,11 @@
   controlled beta switch, Codemagic as the single build/distribution system,
   Firebase App Distribution as the Android TestFlight equivalent, and
   `field-guide-beta-v<version>+<build>` as the shared iOS/Android beta label.
+- `2026-04-16-manual-ui-rls-testing-checklist-plan.md`:
+  Corrective checklist for the UI E2E feature-harness refactor, replacing
+  route-only runner passes with manually driven S21/S10 bug-discovery sweeps,
+  organized test-result artifacts, debug-log/sync review, and first-class
+  RLS/role-boundary coverage.
 
 ## Archived Codex Plans
 

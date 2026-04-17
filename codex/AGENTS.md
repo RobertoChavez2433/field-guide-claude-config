@@ -66,6 +66,10 @@ library:
 
 - Test real behavior, not mock presence or mock-only rendering.
 - Do not use `MOCK_AUTH`; verify auth and sync only against real sessions and real backend state.
+- UI E2E is a bug-discovery gate: a cell is not passed if screenshots, sync
+  state, or debug logs show UI/layout/runtime/sync defects.
+- Keep E2E flows concise: seed feature preconditions through `/driver/seed`;
+  auth/setup stays in auth flows only.
 - Keep S21 primary; prefer `flutter run` hot reload/restart for Dart/UI iteration.
 - Prefer `scripts/flutter_run_endpoint.ps1` for S21 `flutter run`; use
   `POST http://127.0.0.1:4950/reload` before restart/rebuild.

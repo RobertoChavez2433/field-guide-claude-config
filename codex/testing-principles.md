@@ -10,6 +10,8 @@ User preference baseline for test work in this repo.
 - Mock only after understanding the real dependency chain and side effects.
 - When mocking data, mirror the full real structure, not a partial guess.
 - Treat tests as part of implementation, not follow-up.
+- UI E2E cells fail on visible UI defects, sync defects, or new debug-log
+  errors; route/key assertions alone are not enough.
 
 ## Practical Rules
 
@@ -22,6 +24,8 @@ User preference baseline for test work in this repo.
   use case would make the production architecture clearer.
 - If a test depends on repository/provider side effects, keep those side effects
   real or mock at a lower level instead of mocking away the behavior under test.
+- Keep feature flows small: seed preconditions directly instead of replaying
+  setup or auth through unrelated screens.
 
 ## Red Flags
 

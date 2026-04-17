@@ -1,36 +1,50 @@
 ---
 name: test
-description: "Run HTTP-driver E2E flows, write shared test artifacts, and report failures without turning the skill into an auto-fix workflow."
+description: "Manually drive UI E2E flows through the HTTP driver, collect logs/screenshots/sync evidence, and report failures without turning the skill into an auto-fix workflow."
 user-invocable: true
 disable-model-invocation: true
 ---
 
 # Test
 
-Run end-to-end flows through the HTTP driver. This skill executes flows,
-captures evidence, writes artifacts, and reports failures. It does not turn
-failed tests into an automatic repair pipeline.
+Manually drive end-to-end flows through the HTTP driver/debug server. This
+skill captures evidence, writes organized artifacts, and reports failures. It
+does not treat route-only runner output as a pass and does not turn failures
+into an automatic repair pipeline.
 
 ## Artifact Root
 
-Write live test artifacts to:
+Write live test artifacts to one folder:
 
-- `.claude/test-results/YYYY-MM-DD_HHmm_<descriptor>/`
+- `.claude/test-results/YYYY-MM-DD_HHmm-manual-ui-rls-sweep/`
 
 Use only this root for new runs.
 
+Required files: `README.md`, `coverage.md`, `findings.md`,
+`findings.jsonl`, and `run-manifest.json`.
+
+Required evidence folders: `devices/s21/{logs,screenshots,sync}/`,
+`devices/s10/{logs,screenshots,sync}/`, `features/`, `rls/by-role/`, and
+`rls/service-role-checks/`.
+
 ## Hard Rules
 
-1. Use `/driver/wait` or `/driver/find` to prove state changes. Do not rely on
+1. Claude is the user. Manually drive the app; helpers may collect evidence
+   but must not decide pass/fail for a broad flow.
+2. Use `/driver/wait` or `/driver/find` to prove state changes. Do not rely on
    blind sleeps.
-2. Read the relevant `testing_keys/*.dart` file before guessing keys.
-3. Save screenshots for every flow, but only inspect them inline when a failure
-   signal appears.
-4. Do not auto-fix failures or dispatch fixer agents from this skill.
-5. Bugs live in GitHub Issues, not local defect files.
-6. Keep flows feature-scoped. Do not thread setup or auth through downstream
+3. Read the relevant `testing_keys/*.dart` file before guessing keys.
+4. Capture screenshots at checkpoints, but review only failed/warning cells,
+   visually ambiguous screens, suspected layout defects, and representative
+   proof images.
+5. Do not auto-fix failures or dispatch fixer agents from this skill.
+6. Bugs live in the run folder first: `findings.md` plus `findings.jsonl`.
+7. Keep flows feature-scoped. Do not thread setup or auth through downstream
    features; use `/driver/seed` preconditions unless the selected feature is
    `auth`.
+8. UI E2E cells fail on visible UI defects, sync defects, permission defects,
+   bad back/forward flow, nested-screen confusion, or new debug-log errors;
+   route/key assertions alone are not enough.
 
 ## Concise Flow Shape
 
@@ -94,6 +108,8 @@ Then load only the feature or sync docs the requested scope needs:
 - `test-flows/sync/flows-S04-S06.md`
 - `test-flows/sync/flows-S07-S10.md`
 - `test-flows/sync/flows-S11-S19.md`
+- `test-flows/manual/manual-ui-sweep.md`
+- `test-flows/manual/role-boundaries.md`
 
 ## Inputs
 
@@ -106,7 +122,8 @@ Supported command shapes:
 - `/test sync`
 - `/test S01`
 - `/test T15-T23`
-- `/test full`
+- `/test manual-ui-sweep`
+- `/test role-boundaries`
 - `/test --resume`
 
 ## Workflow
@@ -117,29 +134,33 @@ Supported command shapes:
 - verify driver readiness
 - start or reuse the driver with `tools/start-driver.ps1`
 - read `.claude/test-credentials.secret`
-- create the run directory
+- create the run directory and required subfolders
 
 Prefer `tools/start-driver.ps1` over manual launch commands.
 
 ### 2. Execute Flows
 
-For each feature sub-flow:
+For each feature sub-flow or manual checklist cell:
 
 1. call `POST /driver/seed` with each YAML `requires` precondition
-2. perform the steps from the feature or sync doc
+2. manually perform the steps from the feature, sync, or manual overlay doc
 3. verify the expected state with `/driver/find` and `/driver/current-route`
-4. scan for new errors
-5. save a screenshot
-6. record PASS or FAIL in the checkpoint
+4. scan debug-server errors for the cell window
+5. capture a screenshot when useful; review it when the cell fails, warns, is
+   visually ambiguous, or needs representative proof
+6. inspect sync state on both devices for sync-relevant cells
+7. record PASS or FAIL in `coverage.md`
+8. record every defect in `findings.md` and `findings.jsonl`
 
 ### 3. Per-Feature Wrap-Up
 
 After each feature:
 
-- scan debug-server errors since tier start
+- scan debug-server errors since feature start
 - capture a log summary if needed for the report
-- update `checkpoint.json`
-- update `report.md`
+- update `coverage.md`
+- update `findings.md`
+- update `findings.jsonl`
 
 ### 4. Compaction / Resume
 
@@ -169,21 +190,31 @@ Track:
 - current role
 - completed flows
 - next flow
-- bugs
+- findings
 - observations
 - any persisted IDs needed for resume
 
-## Report File
+## Findings Files
 
-Write after every tier:
+Write after every feature:
 
-- `.claude/test-results/<run>/report.md`
+- `.claude/test-results/<run>/findings.md`
+- `.claude/test-results/<run>/findings.jsonl`
 
-Keep it short:
+Each finding must include:
 
-- tier results table
-- bugs found
-- notable observations
+- id
+- severity: blocker, high, medium, low
+- category
+- feature
+- device
+- role
+- route and screen
+- steps, expected result, actual result
+- log evidence path
+- screenshot evidence path when useful
+- sync evidence path when relevant
+- status: open, fixed, retest-needed, spec-gap, or blocked
 
 ## Failure Signals
 
@@ -194,8 +225,9 @@ Treat these as authoritative failures:
 - `/driver/find` proves the target never appeared
 - debug server reports new errors for the operation window
 - sync does not settle when the flow expects it to
-
-Use screenshots only to clarify a real failure, not to guess current state.
+- visible UI defects, sync defects, or debug-log runtime errors appear
+- permission or RLS behavior disagrees with the role contract
+- back/forward flow creates nested, stranded, or confusing screens
 
 ## Missing-Key Protocol
 
@@ -213,12 +245,17 @@ Always be explicit about the account in use.
 
 - default role: `admin`
 - inspector flows use the inspector account from credentials
+- role-boundary runs cover `admin`, `engineer`, `officeTechnician`, and
+  `inspector`
 
 After login or role switch:
 
 1. normalize to a known screen
 2. verify the expected project context
 3. dismiss overlays before continuing
+
+For denied paths, record both UI behavior and backend/log behavior when
+possible. Service-role checks are verification-only and never the app actor.
 
 ## Driver And Platform Notes
 

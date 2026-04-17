@@ -30,6 +30,10 @@ test-results root without inventing wave agents or fixer agents.
 - if a test is hard to write honestly, extract a real production seam instead of
   inventing a test-only escape hatch
 - use `TestingKeys`; do not rely on fake test IDs
+- UI E2E cells fail on visible UI defects, sync defects, or new debug-log
+  errors; route/key assertions alone are not enough
+- keep feature flows concise: use seeded preconditions instead of replaying
+  auth/setup through downstream features
 - for PDF extraction replay review, use compact failure CSVs and the audit
   script; do not broad-load huge replay JSON files with PowerShell or rely on
   truncated console/JSON dumps
@@ -52,5 +56,6 @@ test-results root without inventing wave agents or fixer agents.
 ## Notes
 
 - use `tools/start-driver.ps1` and `tools/stop-driver.ps1`
-- inspect screenshots only when a real failure signal appears
+- save screenshots for every UI cell, but manually inspect only failures,
+  warnings, and small feature/device samples
 - keep artifacts shared so either tool can resume the run
