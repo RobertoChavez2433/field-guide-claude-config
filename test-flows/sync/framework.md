@@ -269,6 +269,13 @@ curl -s http://127.0.0.1:4949/driver/screenshot --output "$RESULTS_DIR/inspector
 ```
 
 > **BANNED:** Do NOT use `POST /driver/sync`. All sync MUST go through the UI.
+
+For timing evidence, use `tools/measure-device-sync.ps1` after launching the
+real device driver app. The script navigates to the Sync Dashboard, taps
+`sync_now_full_button`, polls `/driver/sync-status`, and writes a JSON artifact
+under `.claude/test-results/<date>/device-sync-measurements/`. Local Docker
+performance numbers are backend/sync-engine regression evidence only; they do
+not count as S21/S10 real-world sync measurements.
 > `GET /driver/local-record` and `GET /driver/change-log` are now REQUIRED for
 > SQLite and queue verification, but they do not replace visual verification.
 

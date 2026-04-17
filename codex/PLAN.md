@@ -160,6 +160,42 @@
   Final handoff tracker for the sync hardening plan after implementation and
   commit split, covering the remaining Phase 7 staging, nightly-soak,
   auto-issue, observability, CI-history, and pre-alpha tag gates.
+- `2026-04-17-sync-hardening-ui-rls-closeout-todo-spec.md`:
+  Comprehensive to-do style closeout spec combining sync hardening remaining
+  work with S21/S10 manual UI, role-boundary, RLS, sync-state, staging, and
+  release-gate defects from the April 16-17 test artifacts.
+- `2026-04-17-gocr-integration-branch-verification-remaining-work.md`:
+  Branch-level verification closeout tracker for `gocr-integration`, capturing
+  the hard blockers found after reviewing UI E2E, sync/auth hardening, Android
+  Codemagic/Firebase, local Docker soak, staging soak, and GitHub CI evidence.
+  Current state: workflow YAML parsing, Docker seed reset, staging harness
+  password wiring, branch-tracked UI flow validators, local matrix, and local
+  sync-engine performance are fixed/proven locally. Local Docker soak has been
+  hardened and proven only as a concurrent backend/RLS stress test
+  (`12368/12368` verified actions, 8 workers, 20 virtual users, 0 failures, 0
+  RLS denials). It does not prove device sync because it bypasses local SQLite
+  `change_log`, `SyncEngine`, storage bytes, app auth switching, and
+  multi-device behavior. A host-side driver-app soak wrapper now exists for
+  local SQLite/change-log evidence, but it still needs real S21/S10 execution
+  and expansion into an enterprise device-sync soak. Remaining work is GitHub
+  run proof after push, staging soak/perf proof, device/app `change_log` soak,
+  real S21/S10 UI-triggered sync measurements, and beta-tag distribution proof.
+- `2026-04-17-enterprise-sync-soak-hardening-spec.md`:
+  To-do style implementation spec for replacing generic soak confidence with a
+  realistic multi-day sync testing system. It splits backend/RLS soak from
+  device-sync soak, starts with the current one-device blocked queue failure,
+  then builds toward S21/S10 multi-device actors, remote actors, real local
+  `change_log` writes, file/storage bytes, role revocation, auth switching,
+  realtime dirty scopes, failure injection, and complete triage artifacts.
+
+## Active Codex Research In `.codex/research/`
+
+- `2026-04-17-sync-soak-gap-research.md`:
+  Research and code-audit memo explaining why the clean 12,368-action
+  backend/RLS soak does not prove device sync. It records external references
+  from Microsoft load-testing docs, Android testing strategy, SQLite WAL,
+  Supabase RLS, Supabase Storage RLS, and Supabase Realtime limits, then maps
+  those expectations to the current app sync gaps.
 
 ## Archived Codex Plans
 
