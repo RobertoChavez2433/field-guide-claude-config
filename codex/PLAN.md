@@ -176,10 +176,13 @@
   RLS denials). It does not prove device sync because it bypasses local SQLite
   `change_log`, `SyncEngine`, storage bytes, app auth switching, and
   multi-device behavior. A host-side driver-app soak wrapper now exists for
-  local SQLite/change-log evidence, but it still needs real S21/S10 execution
-  and expansion into an enterprise device-sync soak. Remaining work is GitHub
-  run proof after push, staging soak/perf proof, device/app `change_log` soak,
-  real S21/S10 UI-triggered sync measurements, and beta-tag distribution proof.
+  local SQLite/change-log evidence. Current S21/S10 one-device UI sync and the
+  S21+S10 local device-lab wrapper passed on 2026-04-17 after fixing harness
+  seed residue, fresh-backlog circuit breaker behavior, bounded full-sync push
+  draining, and previous-user consent residue. Remaining work is GitHub run
+  proof after push, staging soak/perf proof, expanded UI-driven device
+  mutations, enterprise-scale actor/file/failure soak, and beta-tag
+  distribution proof.
 - `2026-04-17-enterprise-sync-soak-hardening-spec.md`:
   To-do style implementation spec for replacing generic soak confidence with a
   realistic multi-day sync testing system. It splits backend/RLS soak from
@@ -187,6 +190,21 @@
   then builds toward S21/S10 multi-device actors, remote actors, real local
   `change_log` writes, file/storage bytes, role revocation, auth switching,
   realtime dirty scopes, failure injection, and complete triage artifacts.
+- `2026-04-17-sync-soak-ui-rls-implementation-todo.md`:
+  Live implementation checklist for the two April 17 sync specs. Current state:
+  backend/RLS soak summaries and CI artifacts are explicitly labeled, the
+  backend/RLS soak now uses the enterprise weighted action taxonomy with
+  fixture version/hash, actor reports, and burst-window fields, the
+  device-lab runner captures per-device UI-sync artifacts without
+  `POST /driver/sync`, best-effort debug-log snippets and actor context
+  snapshots are captured for local device-lab actors, driver change-log
+  diagnostics now group blocked rows by table/operation/retry
+  count/project/error, and the lab runner has optional true UI daily-entry
+  activity mutation, host-side failure-injection, and Supabase Storage
+  object-proof inputs. Remaining work starts with UI-driven quantities/photos/
+  forms/signatures/personnel mutations, role churn, actually running the
+  storage/failure modes on S21/S10, staging proof, and backend actors running
+  concurrently with device actors.
 
 ## Active Codex Research In `.codex/research/`
 
@@ -196,6 +214,14 @@
   from Microsoft load-testing docs, Android testing strategy, SQLite WAL,
   Supabase RLS, Supabase Storage RLS, and Supabase Realtime limits, then maps
   those expectations to the current app sync gaps.
+
+## Active Codex Checkpoints In `.codex/checkpoints/`
+
+- `2026-04-17-sync-soak-implementation-checkpoints.md`:
+  Append-only checkpoint log for the enterprise sync soak and UI/RLS closeout
+  implementation. Use this for slice-by-slice notes about what was found, what
+  changed, what was verified, and what must stay open while the specs remain
+  the actual verification gates.
 
 ## Archived Codex Plans
 

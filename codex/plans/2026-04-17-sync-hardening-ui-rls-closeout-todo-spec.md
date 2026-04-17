@@ -64,6 +64,10 @@ Completed in this pass:
   Docker, and rejects staging use of the local-only password.
 - [x] GitHub auto-issue policy suppresses new issues for fingerprints closed in
   the last 24 hours while preserving open-issue updates.
+- [x] Quantities app-bar PDF import and pay-app export controls now require
+  project-management permission instead of broad field-edit permission, so
+  inspector-level access cannot start those management flows from the
+  Quantities screen.
 
 Still open after this repo-side pass:
 
@@ -75,9 +79,11 @@ Still open after this repo-side pass:
   sessions with no `MOCK_AUTH`.
 - [ ] Trash cross-role record isolation proof with seeded cross-role trash
   records and real sessions.
-- [ ] Stale sync state/circuit-breaker investigation, company mismatch fix,
-  Sync Dashboard `/sync/status` reconciliation, and remaining runtime sync-noise
-  triage.
+- [x] Stale S21/S10 sync state, fresh-backlog circuit-breaker behavior, and
+  harness-company mismatch were investigated and fixed for the captured device
+  failures.
+- [ ] Sync Dashboard `/sync/status` reconciliation and remaining runtime
+  sync-noise triage.
 - [ ] Broader stranded-route/back-shell sweep beyond the review/draft routes
   touched in this pass.
 - [ ] Full project download/import graph assertion after sync, not just import
@@ -95,34 +101,34 @@ Still open after this repo-side pass:
 
 ### 1. Product-Intent Blockers
 
-- [ ] Rework Daily Entry activities so locations are owned by the Activities
+- [x] Rework Daily Entry activities so locations are owned by the Activities
   tab, not the Header card.
-- [ ] Render and export activities grouped under location headings across
+- [x] Render and export activities grouped under location headings across
   editor, preview, review/list cards, and PDFs.
-- [ ] Preserve safe rendering for legacy plain-text `daily_entries.activities`.
-- [ ] Update tablet layout so Activities uses the available left-side width
+- [x] Preserve safe rendering for legacy plain-text `daily_entries.activities`.
+- [x] Update tablet layout so Activities uses the available left-side width
   instead of leaving dead horizontal space.
-- [ ] Change weather auto-fetch so it runs only once for newly created entries;
+- [x] Change weather auto-fetch so it runs only once for newly created entries;
   editing/viewing existing entries with missing weather must not fetch or append.
-- [ ] Fix project import confidence-screen `Import` so it calls the real apply
+- [x] Fix project import confidence-screen `Import` so it calls the real apply
   path, exposes loading/error/disabled states, and leaves observable imported
   project graph data after success.
 
 ### 2. Fixture + Harness Corrections
 
-- [ ] Scale local Docker and staging fixture data to realistic graph size:
+- [x] Scale local Docker and staging fixture data to realistic graph size:
   4 contractors/project, 5 equipment/contractor, 50 bid items/project,
   4-5 personnel types/project, 20 daily entries/project, and at least 1 photo
   per daily entry.
-- [ ] Seed activities as location-grouped JSON, not flat activity strings.
-- [ ] Add entry-linked `form_responses` for 0582B, 1174R, 1126, and IDR using
+- [x] Seed activities as location-grouped JSON, not flat activity strings.
+- [x] Add entry-linked `form_responses` for 0582B, 1174R, 1126, and IDR using
   `entry_id` plus `project_id`.
-- [ ] Update `scripts/validate_harness_fixture_parity.py` and SQL probes to
+- [x] Update `scripts/validate_harness_fixture_parity.py` and SQL probes to
   enforce the expanded fixture counts and entry-linked form coverage.
 - [ ] Re-run local reset, matrix, soak, and performance proof after fixture
   expansion; update `scripts/perf_baseline.json` only after the larger fixture
   is accepted.
-- [ ] Add `HARNESS_SUPABASE_PASSWORD` support to harness auth config: default to
+- [x] Add `HARNESS_SUPABASE_PASSWORD` support to harness auth config: default to
   `HarnessPass!1` only for local Docker, require staging secret override for
   staging.
 - [ ] Add a guarded staging fixture provisioning path that reuses deterministic
@@ -140,7 +146,7 @@ Still open after this repo-side pass:
 - [ ] Hide and block Trash tile and `/settings/trash` route for inspector,
   engineer, and office technician; only admin may access account-wide trash
   unless product policy changes.
-- [ ] Add route-level guards, not just widget hiding, for all denied surfaces.
+- [x] Add route-level guards, not just widget hiding, for all denied surfaces.
 - [ ] Prove trash cross-role record isolation with real sessions and seeded
   cross-role trash records; current runs only proved tile/route visibility and
   left record isolation blocked.
@@ -149,12 +155,12 @@ Still open after this repo-side pass:
 
 ### 4. Sync State + Observability Repairs
 
-- [ ] Investigate and fix stale sync state from both runs: S10
+- [x] Investigate and fix stale sync state from both runs: S10
   `pending/unprocessed ~1680`, S21 role rerun `pending/unprocessed` counts with
   blocked rows, and `change_log exceeds 1000` circuit breaker.
-- [ ] Fix harness/company mismatch where seeded `harness-company-001` rows push
+- [x] Fix harness/company mismatch where seeded `harness-company-001` rows push
   under a real user company and poison sync.
-- [ ] Fix realtime hint subscription leak:
+- [x] Fix realtime hint subscription leak:
   `register_sync_hint_channel: too many active subscriptions (max 10)`.
 - [ ] Reconcile Sync Dashboard UI with `/sync/status`; UI must not show
   repair/blocked items when debug status reports clean, or debug status must
@@ -177,12 +183,12 @@ Still open after this repo-side pass:
 - [ ] Fix Projects -> Dashboard bottom-nav switch from `/projects`.
 - [ ] Fix dashboard seeded-project state so feature cards render without
   requiring manual project recovery.
-- [ ] Fix `/review-summary` so it renders the review summary instead of
+- [x] Fix `/review-summary` so it renders the review summary instead of
   redirecting to dashboard.
 - [ ] Decide and encode the correct form deep-link target: if
   `/form/:responseId` should open `form_viewer_screen`, update flows; if it
   should open `mdot_hub_screen`, fix routing.
-- [ ] Add or correct driver-visible sentinels for real visible screens/dialogs:
+- [x] Add or correct driver-visible sentinels for real visible screens/dialogs:
   `entry_editor_screen`, `form_pdf_preview_screen`, `form_export_dialog` and
   actions, `edit_profile_screen`, `admin_dashboard_screen`.
 - [ ] Fix Saved Exports tile/deep link so it opens `/settings/saved-exports`,
@@ -202,9 +208,9 @@ Still open after this repo-side pass:
   context is expected.
 - [ ] Fix Quantities export action from no-project state: either disable with
   clear explanation or open the intended export hub when context exists.
-- [ ] Fix Gallery thumbnails so seeded photos render real previews or an
+- [x] Fix Gallery thumbnails so seeded photos render real previews or an
   explicit missing-image state, not generic placeholders for all items.
-- [ ] Fix To-Do add/edit dialog clipping on S21.
+- [x] Fix To-Do add/edit dialog clipping on S21.
 - [ ] Fix S21 role-boundary overflow:
   `RenderFlex overflowed by 139 pixels on the right`.
 - [ ] Clean form viewer action labels so plus/copy is not duplicated and labels
@@ -212,10 +218,10 @@ Still open after this repo-side pass:
 
 ### 7. Phase 7 CI, Staging, and Release Gates
 
-- [ ] Retarget `.github/workflows/nightly-soak.yml` fully to staging: no local
+- [x] Retarget `.github/workflows/nightly-soak.yml` fully to staging: no local
   reset, staging URL/anon key only for Flutter steps, no service-role key
   exposure.
-- [ ] Extend `scripts/github_auto_issue_policy.py` to enforce
+- [x] Extend `scripts/github_auto_issue_policy.py` to enforce
   1 issue/fingerprint/24h across recently closed issues.
 - [ ] Provision dedicated staging Supabase, apply migrations, seed corrected
   fixture with staging-only password, and verify admin + inspector sign-in.

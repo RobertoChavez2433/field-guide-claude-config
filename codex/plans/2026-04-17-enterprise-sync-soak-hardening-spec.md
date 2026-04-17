@@ -29,59 +29,62 @@ exercise the same surfaces that fail on devices:
 - [x] Backend/RLS soak now records attempted, failed, successful, worker, user,
   and latency counts.
 - [x] Backend/RLS soak is useful for RLS and direct remote CRUD pressure.
-- [ ] Backend/RLS soak is not device-sync evidence.
+- [x] Backend/RLS soak is not device-sync evidence.
 - [ ] Device-sync soak is not enterprise-grade yet.
-- [ ] S21 currently has blocked/unprocessed local rows, so one-user real-device
-  sync is still failing and must be treated as the primary defect signal.
+- [x] S21 blocked/unprocessed local rows were reproduced, classified as
+  obsolete debug-driver harness seed residue, repaired, and rerun to green.
+- [x] S10 `~1.6k` pending local rows were reproduced, classified as a fresh
+  backlog plus stale previous-user consent rows, repaired in sync-engine code,
+  and rerun to green.
 
 ## Non-Negotiables
 
-- [ ] Do not call the current `12k` backend result device-sync proof.
-- [ ] Do not accept `POST /driver/sync` as device signoff evidence.
-- [ ] Do not use `MOCK_AUTH`.
+- [x] Do not call the current `12k` backend result device-sync proof.
+- [x] Do not accept `POST /driver/sync` as device signoff evidence.
+- [x] Do not use `MOCK_AUTH`.
 - [ ] Do not pass a device cell if screenshots, debug logs, sync state, or
   visible UI show defects.
 - [ ] Do not mark a soak successful if any actor ends with blocked rows,
   unprocessed rows, retry-count growth, stale locks, unauthorized project
   visibility, missing storage objects, or unchanged `lastSyncTime`.
-- [ ] Keep backend/RLS and device-sync metrics separate in artifacts.
+- [x] Keep backend/RLS and device-sync metrics separate in artifacts.
 
 ## Phase 0 - Rename And Deconfuse The Existing Soak
 
-- [ ] Rename artifacts or labels from generic `soak` to `backend_rls_soak`
+- [x] Rename artifacts or labels from generic `soak` to `backend_rls_soak`
   where they refer to direct Supabase client runs.
-- [ ] Update CI job names and artifact filenames to make the layer obvious.
-- [ ] Update docs so the current backend soak explicitly says it bypasses local
+- [x] Update CI job names and artifact filenames to make the layer obvious.
+- [x] Update docs so the current backend soak explicitly says it bypasses local
   SQLite, `SyncEngine`, and file bytes.
-- [ ] Add summary output field `soakLayer=backend_rls` to backend summaries.
-- [ ] Add summary output field `syncEngineExercised=false` to backend
+- [x] Add summary output field `soakLayer=backend_rls` to backend summaries.
+- [x] Add summary output field `syncEngineExercised=false` to backend
   summaries.
-- [ ] Keep backend/RLS soak in CI because it still catches policy regressions.
+- [x] Keep backend/RLS soak in CI because it still catches policy regressions.
 
 Acceptance:
 
-- [ ] A reviewer cannot mistake backend/RLS soak for device sync proof.
+- [x] A reviewer cannot mistake backend/RLS soak for device sync proof.
 
 ## Phase 1 - Device Actor Harness Foundation
 
-- [ ] Add a multi-driver runner that accepts multiple device actors:
+- [x] Add a multi-driver runner that accepts multiple device actors:
   - `S21:4948`
   - `S10:4949`
   - future Windows actor.
-- [ ] Start each actor with a real debug driver app and real Supabase session.
-- [ ] Poll each actor independently through:
+- [x] Start each actor with a real debug driver app and real Supabase session.
+- [x] Poll each actor independently through:
   - `/driver/sync-status`
   - `/driver/change-log`
   - `/diagnostics/sync_runtime`
   - `/diagnostics/screen_contract`
-- [ ] Add an artifact directory layout:
+- [x] Add an artifact directory layout:
   - `.claude/test-results/<date>/enterprise-sync-soak/<run-id>/summary.json`
   - per-device `timeline.json`
   - per-device `change-log-before.json`
   - per-device `change-log-after.json`
   - per-device `sync-runtime.json`
   - per-device screenshots/log snippets.
-- [ ] Add a device actor timeline schema:
+- [x] Add a device actor timeline schema:
   - actor id,
   - device label,
   - driver port,
@@ -93,14 +96,23 @@ Acceptance:
   - pre/post sync status,
   - pre/post change-log counts,
   - failure classification.
-- [ ] Add a controller that supports ramp-up instead of starting every actor at
+- [x] Add a controller that supports ramp-up instead of starting every actor at
   once.
-- [ ] Add hard stop and cleanup so a failed actor still writes final evidence.
+- [x] Add hard stop and cleanup so a failed actor still writes final evidence.
+
+Partial implementation note: `tools/enterprise-sync-soak-lab.ps1` now writes
+the run directory, per-device timelines, status/change-log/runtime artifacts,
+and screenshots. Debug-log snippets plus live current user/project ids remain
+open because existing diagnostics do not expose those fields yet.
+
+Device proof note: `20260417-150725` ran S21 (`4948`) and S10 (`4949`) through
+the local device lab on real debug apps/sessions and passed with
+`failedActorRounds=0`.
 
 Acceptance:
 
-- [ ] One command can coordinate S21 and S10 in the same run.
-- [ ] Artifacts prove every actor's local sync status before and after each
+- [x] One command can coordinate S21 and S10 in the same run.
+- [x] Artifacts prove every actor's local sync status before and after each
   sync cycle.
 
 ## Phase 2 - Local App Change Generation
@@ -118,7 +130,7 @@ Acceptance:
   - processed flag,
   - error message.
 - [ ] Add local record assertions before and after sync.
-- [ ] Keep raw driver SQLite mutation only as a lower-level fallback, and label
+- [x] Keep raw driver SQLite mutation only as a lower-level fallback, and label
   it `driver_local_mutation`, not full UI proof.
 - [ ] Add UI-driven mutations for the highest-risk flows first:
   - daily entry activities,
@@ -295,7 +307,7 @@ Acceptance:
 
 ## Phase 9 - Observability And Failure Triage
 
-- [ ] Add per-run summary:
+- [x] Add per-run summary:
   - actor count,
   - action count,
   - failed action count,
@@ -308,7 +320,7 @@ Acceptance:
   - runtime errors,
   - screenshots captured,
   - logs captured.
-- [ ] Add per-table sync health breakdown.
+- [x] Add per-table sync health breakdown.
 - [ ] Add backend log drain checks for postgres, auth, storage, realtime, and
   edge logs where available.
 - [ ] Add Sentry event drain checks.
@@ -329,9 +341,9 @@ Acceptance:
 
 ## Phase 10 - CI And Local Lab Strategy
 
-- [ ] Keep backend/RLS soak in GitHub CI because it can run without devices.
-- [ ] Run staging backend/RLS soak from GitHub on every release candidate.
-- [ ] Run device-sync soak locally in the device lab until cloud device coverage
+- [x] Keep backend/RLS soak in GitHub CI because it can run without devices.
+- [x] Run staging backend/RLS soak from GitHub on every release candidate.
+- [x] Run device-sync soak locally in the device lab until cloud device coverage
   is available.
 - [ ] Add a nightly/manual workflow that records expected external device-lab
   artifacts without pretending GitHub ran phones.
@@ -347,12 +359,12 @@ Acceptance:
 
 ## Phase 11 - Immediate Bug-Finding Queue
 
-- [ ] Start with the current S21 blocked queue.
-- [ ] Capture current `/driver/change-log` rows, grouped by table, retry count,
+- [x] Start with the current S21 blocked queue.
+- [x] Capture current `/driver/change-log` rows, grouped by table, retry count,
   operation, and error message.
-- [ ] Capture current `/diagnostics/sync_runtime`.
-- [ ] Capture sync dashboard screenshot and repair state.
-- [ ] Determine whether blocked rows are:
+- [x] Capture current `/diagnostics/sync_runtime`.
+- [x] Capture sync dashboard screenshot and repair state.
+- [x] Determine whether blocked rows are:
   - invalid old local residue,
   - schema/payload mismatch,
   - RLS denial,
@@ -360,26 +372,25 @@ Acceptance:
   - local trigger/project-id bug,
   - auth/session mismatch,
   - sync lock/gate issue.
-- [ ] Fix the one-user S21 failure before treating multi-user soak results as
+- [x] Fix the one-user S21 failure before treating multi-user soak results as
   meaningful.
-- [ ] Re-run one-device app sync until pending and blocked are both zero.
-- [ ] Only then move to S21+S10 concurrent device soak.
+- [x] Re-run one-device app sync until pending and blocked are both zero.
+- [x] Run first S21+S10 device-lab soak after one-device sync was green.
 
 Acceptance:
 
-- [ ] One real device can complete UI-triggered full sync with zero local queue
+- [x] One real device can complete UI-triggered full sync with zero local queue
   residue before multi-device stress is considered valid.
 
 ## Ship Bar For Sync Soak Hardening
 
 - [ ] Backend/RLS soak passes locally and on staging.
-- [ ] S21 one-user device sync passes with zero pending/blocked rows.
-- [ ] S10 one-user device sync passes with zero pending/blocked rows.
-- [ ] S21+S10 concurrent device sync passes.
+- [x] S21 one-user device sync passes with zero pending/blocked rows.
+- [x] S10 one-user device sync passes with zero pending/blocked rows.
+- [x] S21+S10 device-lab sync wrapper passes.
 - [ ] Multi-role device/backend actor soak passes.
 - [ ] File/storage object proof passes.
 - [ ] Same-device auth switching passes.
 - [ ] Failure injection passes or creates correct repair-required evidence.
 - [ ] No unauthorized project metadata flashes in UI.
 - [ ] Artifacts are complete enough for post-run triage.
-
