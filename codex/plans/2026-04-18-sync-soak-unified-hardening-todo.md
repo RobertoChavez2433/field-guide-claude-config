@@ -160,6 +160,80 @@ No lane is complete until the artifact proves all applicable items:
   defect.
 - [ ] Docs/checkpoints are updated only after the artifact exists.
 
+## Completion Model And Ending Parameters
+
+The ending parameters are not active until the P0, P1, and proposed P2 work in
+this spec is implemented and artifact-backed. P2 is part of the planned
+hardening scope, not optional stretch work for this wave.
+
+Do not start a final "are we done?" assessment while any proposed P2 section
+below remains open:
+
+- Device-Soak Jepsen-Style Workload Layer;
+- Failure Injection And Liveness;
+- Backend/Device Overlap;
+- Staging And Release Gates;
+- 15-20 Actor Scale Model;
+- Operational Diagnostics And Alerts;
+- Consistency Contract Docs.
+
+Once every P0, P1, and proposed P2 item is closed with evidence, this
+hardening wave can be considered complete only after Field Guide records three
+consecutive green full-system sync-soak runs on staging or staging-equivalent
+backend state.
+
+Each full-system run must include:
+
+- S21 as the primary real-device actor;
+- S10 as the regression real-device actor;
+- 10-20 total real-session actors through real devices, headless app-sync
+  actors, and/or backend pressure actors;
+- at least 15 seeded projects;
+- daily entries, quantities, photos, signatures, form responses, form exports,
+  saved-form/gallery lifecycle, and at least one storage-backed export family;
+- role/account switching or revocation;
+- at least one fault window followed by explicit quiescence.
+
+Each accepted final run must prove:
+
+- `directDriverSyncEndpointUsed=false`;
+- `runtimeErrors=0`;
+- `loggingGaps=0`;
+- `blockedRowCount=0`;
+- `unprocessedRowCount=0`;
+- `maxRetryCount=0`;
+- final `/driver/change-log` empty on participating devices;
+- local/remote reconciliation hashes match for required tables;
+- storage row/object consistency passes;
+- no unauthorized reads or stale role/project scope;
+- no lost acknowledged writes.
+
+Liveness thresholds:
+
+- after faults stop, all actors reach quiescence within 10 minutes;
+- p95 sync-to-visible-local convergence is <= 2 minutes for row data;
+- p95 file-backed object availability is <= 5 minutes.
+
+Artifact requirements:
+
+- summary JSON;
+- operation history;
+- actor list;
+- fixture hash;
+- app build and schema version;
+- screenshots;
+- debug-log extracts;
+- reconciliation output;
+- retained first-failure artifacts for any failed attempt in the streak window.
+
+Track progress toward completion with:
+
+- `Sync Soak Exit Score = accepted required gates / required gates`;
+- target exit score: `100%`, plus three consecutive green full-system runs;
+- `Safety Violations = lost acknowledged writes + unauthorized reads +
+  unreconciled local/remote mismatches + storage row/object mismatches`;
+- target safety violations: `0`.
+
 ## Ordered Todo
 
 ### P0 - Stabilize Current Device State And Harness Hygiene
