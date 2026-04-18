@@ -201,10 +201,125 @@
   diagnostics now group blocked rows by table/operation/retry
   count/project/error, and the lab runner has optional true UI daily-entry
   activity mutation, host-side failure-injection, and Supabase Storage
-  object-proof inputs. Remaining work starts with UI-driven quantities/photos/
-  forms/signatures/personnel mutations, role churn, actually running the
-  storage/failure modes on S21/S10, staging proof, and backend actors running
-  concurrently with device actors.
+  object-proof inputs. The S21 refactored `combined` gate is now green through
+  daily-entry, quantity, and photo sequential mutate/sync/cleanup phases, S21
+  `contractors-only` now proves the contractor/personnel/equipment graph, S10
+  refactored regression is green through isolated daily-entry, quantity,
+  photo, contractor, combined, and MDOT 1126 typed-signature flows, and S21
+  `cleanup-only` live replay is green against accepted combined, contractor,
+  and MDOT signature ledgers. The MDOT 1126 typed-signature and expanded
+  fields/rows form-backed lanes are accepted on S21. The MDOT 0582B
+  form-response mutation lane is also accepted on S21; export/storage proof for
+  MDOT 0582B remains open. The MDOT 1174R lane is implemented/wired but not
+  accepted; latest S21 diagnostics are blocked on compact workflow
+  section/body proof while opening Quantities after QA edits, with cleanup and
+  final queue drain proven.
+  Remaining work starts with accepting MDOT 1174R, builtin form exports,
+  saved-form/gallery lifecycles, S10 regression for newly accepted form lanes,
+  role churn, broader storage/failure modes on S21/S10, staging proof, and
+  backend actors running concurrently with device actors. Latest
+  hardening: MDOT signature cleanup now fails closed on missing
+  or mismatched storage `remotePath`, local database v61 makes
+  `signature_files.local_path` nullable to match Supabase so cross-device
+  signature metadata can pull, and S21 post-v61 signature backlog sync-only
+  proof is green. MDOT 1126 expanded fields/rows are now S21-accepted through
+  `20260418-s21-mdot1126-expanded-after-signature-ready-or-nav`, covering
+  rainfall, SESC measures/status/corrective action, remarks, typed signature,
+  storage proof, ledger cleanup, storage absence, and final empty queue.
+- `2026-04-17-s21-soak-harness-audit-and-recovery-plan.md`:
+  Focused pause-and-recover plan after repeated S21 all-modes failures. It
+  audits the 2026-04-17 device-lab failure groups, records that the current
+  monolithic soak script is too long and too generic for acceptance work, and
+  defines the S21-first path: strict fail-loud harness gates, flow-level
+  artifacts, mutation ledger/cleanup proof, single-flow S21 gates, then only
+  later S10 and scale-up. The latest addendum audits the existing app-side HTTP
+  driver server and host debug log server and records the no-third-server
+  decision: the refactor should build thin client/orchestrator modules around
+  the existing driver/debug surfaces, startup scripts, sync measurement script,
+  and Dart soak/harness models. The scale-up model is S21 + S10 real-device
+  proof, optional emulator if stable, headless app-sync actors for 10-20 app
+  users, and backend/RLS virtual actors for remote pressure. Latest progress:
+  the module split is live under `tools/sync-soak/`; the S21 `sync-only`,
+  `daily-entry-only`, `quantity-only`, and `photo-only` state-machine paths are
+  green as isolated single-flow gates; quantity and photo both use
+  ledger-owned cleanup with UI-triggered cleanup sync; and photo now proves
+  storage object download, delete, and absence against Supabase Storage.
+  Cleanup hardening attempts ledger-owned restore/delete after post-mutation
+  failures before recording a failed round, and the harness has reusable state
+  sentinels for exact local/remote cleanup proof. Three-pass S21 confidence is
+  now closed for `quantity-only` and `photo-only`; the refactored S21
+  `combined` gate is green through the new module; S10 refactored regression is
+  now green through the implemented flows; S21 cleanup-only replay is green
+  against accepted ledgers; MDOT 1126 typed-signature form proof is green on
+  S21, cleanup-only replay, and S10; and MDOT 1126 expanded fields/rows are
+  green on S21. The MDOT 0582B mutation gate is now green on S21, with
+  export/storage proof still open. The MDOT 1174R flow is wired and has live
+  non-acceptance diagnostics. Current hardening moved the expanded-section
+  sentinel onto the mounted body, made driver text entry visible/editable-only,
+  removed the section-body `AnimatedSize`, kept repeated-row composer state
+  alive while mounted, and added `Scrollable.ensureVisible` to the driver
+  scroll route. That scroll-route patch is not accepted yet:
+  `20260418-s21-mdot1174r-after-ensure-visible-scroll` failed loudly on a red
+  screen during `mdot1174r-fields-and-rows` with duplicate GlobalKey/detached
+  render-object runtime errors and local `form_responses` queue residue. The
+  next mutation gate is recovering S21 through UI-triggered sync only, then
+  fixing MDOT 1174R row-section key/state ownership before another S21
+  acceptance attempt. After 1174R acceptance, continue to form exports and
+  saved form/gallery lifecycles. The legacy all-modes runner is not a
+  substitute.
+- `2026-04-18-sync-soak-spec-audit-agent-task-list.md`:
+  Current audit/task-list addendum mapping the remaining sync-soak and UI/RLS
+  spec intent into parallel implementation-agent lanes. S10 regression, S21
+  cleanup replay, and the first MDOT 1126 typed-signature form/signature lane
+  are now artifact-backed; signature integrity-drift root cause is fixed in
+  local schema v61 and S21 post-v61 backlog drain proof is artifact-backed,
+  while S10 post-v61 cross-device proof remains open. MDOT 1126 expanded
+  fields/rows and the MDOT 0582B mutation lane are accepted on S21; MDOT 1174R
+  is implemented/wired but awaiting S21 acceptance after compact section/body
+  and row-section state failures. Latest status: `visible-text-only` failed
+  cleanly on Air/Slump scroll visibility and the follow-up
+  `after-ensure-visible-scroll` failed loudly on duplicate GlobalKey/detached
+  render-object runtime errors with queue residue. S21 was recovered afterward
+  through the refactored Sync Dashboard `sync-only` flow and the live queue was
+  empty. Current architectural guardrail work added custom lints for mounted
+  form-section sentinels and for banning animated form body wrappers around
+  keyed editable content. Next form-backed work is accepting MDOT 1174R,
+  exports/gallery, role/account sweeps, storage/failure expansion, S10
+  regression for newly accepted form lanes, and release/staging/scale gates.
+- `reports/2026-04-18-enterprise-sync-soak-result-index.md` and
+  `reports/2026-04-18-enterprise-sync-soak-result-index.json`:
+  Compact human/machine audit of the 2026-04-18 enterprise sync-soak raw
+  artifacts before cleanup. The index covers 55 runs, 15 passes, 40 failures,
+  the MDOT 1174R red-screen/runtime failure, and the UI-only recovery run that
+  drained the S21 queue.
+- `reports/2026-04-18-all-test-results-result-index.md` and
+  `reports/2026-04-18-all-test-results-result-index.json`:
+  Full raw test-results audit before pruning. The index covers 165 runs, 76
+  passes, 89 failures, and records every distinct failure class that must stay
+  on the regression checklist. After this index was written, duplicate ignored
+  raw `.claude/test-results/2026-04-18` output, local build caches, debug APKs,
+  and exact generated S21 Download artifacts were cleaned. Tracked historical
+  evidence remains; S10 app data/Downloads were not bulk-cleared.
+- `2026-04-18-mdot-1126-typed-signature-sync-soak-plan.md`:
+  Active implementation plan for the MDOT 1126 typed-signature sync-soak lane.
+  It defines the isolated `mdot1126-signature-only` refactored flow, report
+  attached form creation, local `change_log` proof for `form_responses`,
+  `signature_files`, and `signature_audit_log`, signature storage download,
+  ledger-owned cleanup, cleanup-only replay readiness, and the S21/S10
+  acceptance sequence before role, RLS, failure-injection, staging, and scale
+  expansion. Latest evidence: S21 isolated MDOT 1126, S21 cleanup-only replay
+  of the accepted MDOT ledger, S10 isolated MDOT 1126, and S21 MDOT 1126
+  expanded fields/rows and MDOT 0582B form-response mutation lanes are green.
+  The next form-backed lane is accepting the already-wired MDOT 1174R flow,
+  then builtin form exports and saved-form/gallery lifecycle sweeps.
+- `2026-04-18-sync-engine-external-hardening-todo.md`:
+  External sync-engine review addendum translating the PowerSync/Electric/
+  WatermelonDB/RxDB/CouchDB/Syncable and local-first survey findings into a
+  Field Guide hardening todo list. Current decision: do not replace the custom
+  sync engine before the current release gates; run a bounded PowerSync spike
+  later, with likely near-term adoption focused on checkpoints, scoped
+  reconciliation, attachment queues, idempotent replay, and consistency
+  contract documentation.
 
 ## Active Codex Research In `.codex/research/`
 

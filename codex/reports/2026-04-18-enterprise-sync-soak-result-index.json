@@ -1,0 +1,1707 @@
+{
+  "generatedAtUtc": "2026-04-18T15:21:06.0084751Z",
+  "inputRoot": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak",
+  "runCount": 55,
+  "passedCount": 15,
+  "failedCount": 40,
+  "failureGroups": [
+    {
+      "classification": "change_log_proof_failed",
+      "count": 2,
+      "latestRunId": "20260418-s21-mdot1126-signature-accepted-after-deletedby-fix",
+      "latestSummaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-signature-accepted-after-deletedby-fix\\summary.json",
+      "latestQueueDrainResult": "residue_detected",
+      "latestRuntimeErrors": 0.0
+    },
+    {
+      "classification": "driver_or_sync_error",
+      "count": 17,
+      "latestRunId": "20260418-s21-mdot0582b-after-remote-json-proof",
+      "latestSummaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot0582b-after-remote-json-proof\\summary.json",
+      "latestQueueDrainResult": "drained",
+      "latestRuntimeErrors": 0.0
+    },
+    {
+      "classification": "runtime_log_error",
+      "count": 4,
+      "latestRunId": "20260418-s21-mdot1174r-after-ensure-visible-scroll",
+      "latestSummaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-ensure-visible-scroll\\summary.json",
+      "latestQueueDrainResult": "residue_detected",
+      "latestRuntimeErrors": 27.0
+    },
+    {
+      "classification": "unprocessed_change_log_rows",
+      "count": 1,
+      "latestRunId": "20260418-s21-mdot1126-cleanup-residue-retry-sync",
+      "latestSummaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-cleanup-residue-retry-sync\\summary.json",
+      "latestQueueDrainResult": "residue_detected",
+      "latestRuntimeErrors": 0.0
+    },
+    {
+      "classification": "widget_tap_not_found",
+      "count": 3,
+      "latestRunId": "20260418-s21-mdot1126-expanded-after-direct-field-entry",
+      "latestSummaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-direct-field-entry\\summary.json",
+      "latestQueueDrainResult": "drained",
+      "latestRuntimeErrors": 0.0
+    },
+    {
+      "classification": "widget_wait_timeout",
+      "count": 13,
+      "latestRunId": "20260418-s21-mdot1126-expanded-after-center-visible-tap",
+      "latestSummaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-center-visible-tap\\summary.json",
+      "latestQueueDrainResult": "drained",
+      "latestRuntimeErrors": 0.0
+    }
+  ],
+  "runs": [
+    {
+      "runId": "20260418-s10-mdot1126-signature-regression-with-cleanup-sync-retry",
+      "startedAtUtc": "04/18/2026 04:42:41",
+      "flow": "mdot1126-signature-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": "summary.json",
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s10-mdot1126-signature-regression-with-cleanup-sync-retry\\summary.json",
+      "fileCount": 108,
+      "bytes": 20463492
+    },
+    {
+      "runId": "20260418-s21-mdot1126-signature-cleanup-only-replay-accepted-ledger",
+      "startedAtUtc": "04/18/2026 04:40:47",
+      "flow": "cleanup-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-signature-cleanup-only-replay-accepted-ledger\\summary.json",
+      "fileCount": 20,
+      "bytes": 528304
+    },
+    {
+      "runId": "20260418-s21-mdot1126-signature-nav-select-submit",
+      "startedAtUtc": "04/18/2026 04:17:48",
+      "flow": "mdot1126-signature-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "residue_detected",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 3.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "change_log_proof_failed"
+      ],
+      "failureMessages": [
+        "MDOT 1126 signature cleanup failed: MDOT 1126 cleanup sync failed: unprocessed_change_log_rows"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-signature-nav-select-submit\\summary.json",
+      "fileCount": 105,
+      "bytes": 17201346
+    },
+    {
+      "runId": "20260418-s21-mdot1126-signature-section-fallback",
+      "startedAtUtc": "04/18/2026 04:02:06",
+      "flow": "mdot1126-signature-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "residue_detected",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 2.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "Timed out waiting for MDOT 1126 signature rows for form_responses/8a2fb439-6564-4361-a3fb-32b6917708be: form_responses/8a2fb439-6564-4361-a3fb-32b6917708be has no response_data.signature_audit_id yet."
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-signature-section-fallback\\summary.json",
+      "fileCount": 49,
+      "bytes": 11508139
+    },
+    {
+      "runId": "20260418-s21-mdot1126-signature-visible-submit",
+      "startedAtUtc": "04/18/2026 04:11:11",
+      "flow": "mdot1126-signature-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "residue_detected",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 2.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot1126-signature-mutate-type-signature' failed for S21: [driver_or_sync_error] step 'mdot1126-signature-mutate-type-signature' failed for S21: POST /driver/scroll-to-key failed for S21 body={\"scrollable\":\"mdot1126_form_screen\",\"target\":\"mdot1126_typed_signature_field\",\"maxScrolls\":20}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1126_typed_signature_field\",\r\n  \"scrolls\": 20,\r\n  \"error\": \"Target not found after 20 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-signature-visible-submit\\summary.json",
+      "fileCount": 48,
+      "bytes": 11197508
+    },
+    {
+      "runId": "20260418-s21-mdot1126-signed-ledger-cleanup-replay-after-deletedby-fix",
+      "startedAtUtc": "04/18/2026 04:33:33",
+      "flow": "cleanup-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-signed-ledger-cleanup-replay-after-deletedby-fix\\summary.json",
+      "fileCount": 21,
+      "bytes": 1957948
+    },
+    {
+      "runId": "20260418-s21-mdot1126-visible-submit-draft-cleanup-sync",
+      "startedAtUtc": "04/18/2026 04:12:54",
+      "flow": "sync-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-visible-submit-draft-cleanup-sync\\summary.json",
+      "fileCount": 41,
+      "bytes": 4409009
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-auto-advance",
+      "startedAtUtc": "04/18/2026 14:03:46",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot1174r-fields-and-rows' failed for S21: [driver_or_sync_error] step 'mdot1174r-fields-and-rows' failed for S21: POST /driver/scroll-to-key failed for S21 body={\"maxScrolls\":40,\"scrollable\":\"form_workflow_scroll_view\",\"target\":\"mdot1174_field_maximum_time\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_field_maximum_time\",\r\n  \"scrolls\": 40,\r\n  \"error\": \"Target not found after 40 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-auto-advance\\summary.json",
+      "fileCount": 72,
+      "bytes": 10595697
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-bidirectional-scroll",
+      "startedAtUtc": "04/18/2026 14:13:46",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot1174r-fields-and-rows' failed for S21: [driver_or_sync_error] step 'mdot1174r-fields-and-rows' failed for S21: POST /driver/scroll-to-key failed for S21 body={\"maxScrolls\":50,\"target\":\"mdot1174_workflow_nav_qa\",\"scrollable\":\"form_workflow_scroll_view\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_workflow_nav_qa\",\r\n  \"scrolls\": 50,\r\n  \"error\": \"Target not found after 50 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-bidirectional-scroll\\summary.json",
+      "fileCount": 72,
+      "bytes": 9677312
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-ensure-visible-scroll",
+      "startedAtUtc": "04/18/2026 15:05:13",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "residue_detected",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 33.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 27.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "runtime_log_error"
+      ],
+      "failureMessages": [
+        "[runtime_log_error] state transition 'mdot1174r-fields-and-rows' failed for S21: [runtime_log_error] step 'mdot1174r-fields-and-rows' failed for S21: Runtime failure evidence captured during step 'mdot1174r-fields-and-rows'."
+      ],
+      "runtimeErrorFingerprints": [
+        {
+          "category": "flutter_runtime",
+          "message": "15:05:53 [app ] FlutterError: 'package:flutter/src/widgets/framework.dart': Failed assertion: line 6417 pos 14: '() {"
+        },
+        {
+          "category": "flutter_runtime",
+          "message": "15:05:53 [app ] FlutterError: 'package:flutter/src/rendering/object.dart': Failed assertion: line 3536 pos 12: 'attached': is not true."
+        },
+        {
+          "category": "duplicate_global_key",
+          "message": "15:05:53 [app ] FlutterError: Duplicate GlobalKey detected in widget tree."
+        },
+        {
+          "category": "duplicate_global_key",
+          "message": "15:06:33 [app ] FlutterError: Multiple widgets used the same GlobalKey."
+        },
+        {
+          "category": "duplicate_global_key",
+          "message": "04-18 11:06:33.335 1941 1941 I flutter : [11:06:33.331] [ERROR] FlutterError: Multiple widgets used the same GlobalKey."
+        }
+      ],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-ensure-visible-scroll\\summary.json",
+      "fileCount": 56,
+      "bytes": 8002422
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-expanded-body-sentinel",
+      "startedAtUtc": "04/18/2026 14:45:55",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_wait_timeout"
+      ],
+      "failureMessages": [
+        "[widget_wait_timeout] state transition 'mdot1174r-fields-and-rows' failed for S21: [widget_wait_timeout] step 'mdot1174r-fields-and-rows' failed for S21: MDOT 1174R section 'qa' could not be opened. header key mdot1174_section_header_qa failed: POST /driver/scroll-to-key failed for S21 body={\"maxScrolls\":60,\"target\":\"mdot1174_qa_rows_composer_lot_number\",\"scrollable\":\"form_workflow_scroll_view\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_qa_rows_composer_lot_number\",\r\n  \"scrolls\": 60,\r\n  \"error\": \"Target not found after 60 scrolls\"\r\n} | title 'QA Cylinder Table' failed: POST /driver/scroll-to-key failed for S21 body={\"maxScrolls\":60,\"target\":\"mdot1174_section_header_qa\",\"scrollable\":\"form_workflow_scroll_view\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_section_header_qa\",\r\n  \"scrolls\": 60,\r\n  \"error\": \"Target not found after 60 scrolls\"\r\n} | nav key mdot1174_workflow_nav_qa failed: POST /driver/wait failed for S21 body={\"key\":\"mdot1174_section_expanded_qa\",\"timeoutMs\":8000}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1174_section_expanded_qa\",\r\n  \"error\": \"Widget not found within 8000ms\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-expanded-body-sentinel\\summary.json",
+      "fileCount": 72,
+      "bytes": 9357164
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-expanded-sentinel",
+      "startedAtUtc": "04/18/2026 14:34:31",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_wait_timeout"
+      ],
+      "failureMessages": [
+        "[widget_wait_timeout] state transition 'mdot1174r-fields-and-rows' failed for S21: [widget_wait_timeout] step 'mdot1174r-fields-and-rows' failed for S21: MDOT 1174R section 'quantities' could not be opened. header key mdot1174_section_header_quantities failed: POST /driver/wait failed for S21 body={\"timeoutMs\":8000,\"key\":\"mdot1174_section_expanded_quantities\"}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1174_section_expanded_quantities\",\r\n  \"error\": \"Widget not found within 8000ms\"\r\n} | title 'Item / Quantity Table' failed: POST /driver/scroll-to-key failed for S21 body={\"target\":\"mdot1174_quantity_rows_composer_item_or_code_number\",\"maxScrolls\":60,\"scrollable\":\"form_workflow_scroll_view\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_quantity_rows_composer_item_or_code_number\",\r\n  \"scrolls\": 60,\r\n  \"error\": \"Target not found after 60 scrolls\"\r\n} | nav key mdot1174_workflow_nav_quantities failed: POST /driver/scroll-to-key failed for S21 body={\"target\":\"mdot1174_workflow_nav_quantities\",\"maxScrolls\":50,\"scrollable\":\"form_workflow_scroll_view\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_workflow_nav_quantities\",\r\n  \"scrolls\": 50,\r\n  \"error\": \"Target not found after 50 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-expanded-sentinel\\summary.json",
+      "fileCount": 72,
+      "bytes": 9598382
+    },
+    {
+      "runId": "20260418-s21-mdot1126-signature-canonical-form-route",
+      "startedAtUtc": "04/18/2026 04:15:57",
+      "flow": "mdot1126-signature-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot1126-signature-submit-type-signature' failed for S21: [driver_or_sync_error] step 'mdot1126-signature-submit-type-signature' failed for S21: POST /driver/scroll-to-key failed for S21 body={\"maxScrolls\":20,\"target\":\"mdot1126_typed_signature_field\",\"scrollable\":\"mdot1126_form_screen\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1126_typed_signature_field\",\r\n  \"scrolls\": 20,\r\n  \"error\": \"Target not found after 20 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-signature-canonical-form-route\\summary.json",
+      "fileCount": 79,
+      "bytes": 13901651
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-first-field-scroll-selection",
+      "startedAtUtc": "04/18/2026 14:25:09",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot1174r-fields-and-rows' failed for S21: [driver_or_sync_error] step 'mdot1174r-fields-and-rows' failed for S21: MDOT 1174R section 'quantities' could not be opened. header key mdot1174_section_header_quantities failed: POST /driver/scroll-to-key failed for S21 body={\"target\":\"mdot1174_quantity_rows_composer_item_or_code_number\",\"maxScrolls\":60,\"scrollable\":\"form_workflow_scroll_view\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_quantity_rows_composer_item_or_code_number\",\r\n  \"scrolls\": 60,\r\n  \"error\": \"Target not found after 60 scrolls\"\r\n} | nav key mdot1174_workflow_nav_quantities failed: POST /driver/scroll-to-key failed for S21 body={\"target\":\"mdot1174_workflow_nav_quantities\",\"maxScrolls\":50,\"scrollable\":\"form_workflow_scroll_view\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_workflow_nav_quantities\",\r\n  \"scrolls\": 50,\r\n  \"error\": \"Target not found after 50 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-first-field-scroll-selection\\summary.json",
+      "fileCount": 72,
+      "bytes": 8257561
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-header-nav-skip",
+      "startedAtUtc": "04/18/2026 14:02:22",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot1174r-fields-and-rows' failed for S21: [driver_or_sync_error] step 'mdot1174r-fields-and-rows' failed for S21: POST /driver/scroll-to-key failed for S21 body={\"scrollable\":\"form_workflow_scroll_view\",\"maxScrolls\":40,\"target\":\"mdot1174_workflow_nav_placement\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_workflow_nav_placement\",\r\n  \"scrolls\": 40,\r\n  \"error\": \"Target not found after 40 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-header-nav-skip\\summary.json",
+      "fileCount": 72,
+      "bytes": 8279135
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-mounted-text",
+      "startedAtUtc": "04/18/2026 14:05:13",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "residue_detected",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 25.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 35.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "runtime_log_error"
+      ],
+      "failureMessages": [
+        "[runtime_log_error] state transition 'mdot1174r-fields-and-rows' failed for S21: [runtime_log_error] step 'mdot1174r-fields-and-rows' failed for S21: POST /driver/wait failed for S21 body={\"key\":\"mdot1174_qa_rows_composer_lot_number\",\"timeoutMs\":20000}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1174_qa_rows_composer_lot_number\",\r\n  \"error\": \"Widget not found within 20000ms\"\r\n}; Runtime failure evidence captured during step 'mdot1174r-fields-and-rows'."
+      ],
+      "runtimeErrorFingerprints": [
+        {
+          "category": "flutter_runtime",
+          "message": "14:05:45 [app ] FlutterError: 'package:flutter/src/widgets/framework.dart': Failed assertion: line 6417 pos 14: '() {"
+        },
+        {
+          "category": "flutter_runtime",
+          "message": "14:05:45 [app ] FlutterError: 'package:flutter/src/rendering/object.dart': Failed assertion: line 3536 pos 12: 'attached': is not true."
+        },
+        {
+          "category": "duplicate_global_key",
+          "message": "14:05:45 [app ] FlutterError: Duplicate GlobalKey detected in widget tree."
+        },
+        {
+          "category": "flutter_runtime",
+          "message": "04-18 10:05:44.992 24534 24534 I flutter : [10:05:44.982] [ERROR] FlutterError: 'package:flutter/src/widgets/framework.dart': Failed assertion: line 6417 pos 14: '() {"
+        },
+        {
+          "category": "flutter_runtime",
+          "message": "04-18 10:05:45.053 24534 24534 I flutter : [10:05:45.050] [ERROR] FlutterError: 'package:flutter/src/rendering/object.dart': Failed assertion: line 3536 pos 12: 'attached': is not true."
+        }
+      ],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-mounted-text\\summary.json",
+      "fileCount": 56,
+      "bytes": 6034327
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-no-animated-size-keepalive",
+      "startedAtUtc": "04/18/2026 14:55:36",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "residue_detected",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 32.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 27.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "runtime_log_error"
+      ],
+      "failureMessages": [
+        "[runtime_log_error] state transition 'mdot1174r-fields-and-rows' failed for S21: [runtime_log_error] step 'mdot1174r-fields-and-rows' failed for S21: Runtime failure evidence captured during step 'mdot1174r-fields-and-rows'."
+      ],
+      "runtimeErrorFingerprints": [
+        {
+          "category": "flutter_runtime",
+          "message": "14:56:49 [app ] FlutterError: 'package:flutter/src/widgets/framework.dart': Failed assertion: line 6417 pos 14: '() {"
+        },
+        {
+          "category": "flutter_runtime",
+          "message": "14:56:49 [app ] FlutterError: 'package:flutter/src/rendering/object.dart': Failed assertion: line 3536 pos 12: 'attached': is not true."
+        },
+        {
+          "category": "duplicate_global_key",
+          "message": "14:56:49 [app ] FlutterError: Duplicate GlobalKey detected in widget tree."
+        },
+        {
+          "category": "duplicate_global_key",
+          "message": "14:57:21 [app ] FlutterError: Multiple widgets used the same GlobalKey."
+        },
+        {
+          "category": "duplicate_global_key",
+          "message": "04-18 10:57:21.366 31944 31944 I flutter : [10:57:21.359] [ERROR] FlutterError: Multiple widgets used the same GlobalKey."
+        }
+      ],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-no-animated-size-keepalive\\summary.json",
+      "fileCount": 56,
+      "bytes": 7998252
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-open-created-form",
+      "startedAtUtc": "04/18/2026 14:00:21",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot1174r-fields-and-rows' failed for S21: [driver_or_sync_error] step 'mdot1174r-fields-and-rows' failed for S21: POST /driver/scroll-to-key failed for S21 body={\"target\":\"mdot1174_field_contractor_name\",\"maxScrolls\":40,\"scrollable\":\"form_workflow_scroll_view\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_field_contractor_name\",\r\n  \"scrolls\": 40,\r\n  \"error\": \"Target not found after 40 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-open-created-form\\summary.json",
+      "fileCount": 72,
+      "bytes": 7384019
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-section-headers",
+      "startedAtUtc": "04/18/2026 14:10:44",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_wait_timeout"
+      ],
+      "failureMessages": [
+        "[widget_wait_timeout] state transition 'mdot1174r-fields-and-rows' failed for S21: [widget_wait_timeout] step 'mdot1174r-fields-and-rows' failed for S21: POST /driver/wait failed for S21 body={\"key\":\"mdot1174_field_maximum_time\",\"timeoutMs\":20000}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1174_field_maximum_time\",\r\n  \"error\": \"Widget not found within 20000ms\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-section-headers\\summary.json",
+      "fileCount": 72,
+      "bytes": 9527316
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-section-open-only",
+      "startedAtUtc": "04/18/2026 14:49:09",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "residue_detected",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 31.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 27.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "runtime_log_error"
+      ],
+      "failureMessages": [
+        "[runtime_log_error] state transition 'mdot1174r-fields-and-rows' failed for S21: [runtime_log_error] step 'mdot1174r-fields-and-rows' failed for S21: Runtime failure evidence captured during step 'mdot1174r-fields-and-rows'."
+      ],
+      "runtimeErrorFingerprints": [
+        {
+          "category": "flutter_runtime",
+          "message": "14:50:11 [app ] FlutterError: 'package:flutter/src/widgets/framework.dart': Failed assertion: line 6417 pos 14: '() {"
+        },
+        {
+          "category": "flutter_runtime",
+          "message": "14:50:11 [app ] FlutterError: 'package:flutter/src/rendering/object.dart': Failed assertion: line 3536 pos 12: 'attached': is not true."
+        },
+        {
+          "category": "duplicate_global_key",
+          "message": "14:50:11 [app ] FlutterError: Duplicate GlobalKey detected in widget tree."
+        },
+        {
+          "category": "duplicate_global_key",
+          "message": "14:50:52 [app ] FlutterError: Multiple widgets used the same GlobalKey."
+        },
+        {
+          "category": "duplicate_global_key",
+          "message": "04-18 10:50:51.489 30244 30244 I flutter : [10:50:51.484] [ERROR] FlutterError: Multiple widgets used the same GlobalKey."
+        }
+      ],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-section-open-only\\summary.json",
+      "fileCount": 56,
+      "bytes": 6632198
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-title-fallback-selection",
+      "startedAtUtc": "04/18/2026 14:28:21",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot1174r-fields-and-rows' failed for S21: [driver_or_sync_error] step 'mdot1174r-fields-and-rows' failed for S21: MDOT 1174R section 'remarks' could not be opened. header key mdot1174_section_header_remarks failed: POST /driver/scroll-to-key failed for S21 body={\"target\":\"mdot1174_remarks_page1_lines_line_0\",\"maxScrolls\":60,\"scrollable\":\"form_workflow_scroll_view\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_remarks_page1_lines_line_0\",\r\n  \"scrolls\": 60,\r\n  \"error\": \"Target not found after 60 scrolls\"\r\n} | title 'Remarks / Computations' failed: POST /driver/scroll-to-key failed for S21 body={\"target\":\"mdot1174_remarks_page1_lines_line_0\",\"maxScrolls\":60,\"scrollable\":\"form_workflow_scroll_view\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_remarks_page1_lines_line_0\",\r\n  \"scrolls\": 60,\r\n  \"error\": \"Target not found after 60 scrolls\"\r\n} | nav key mdot1174_workflow_nav_remarks failed: POST /driver/scroll-to-key failed for S21 body={\"target\":\"mdot1174_workflow_nav_remarks\",\"maxScrolls\":50,\"scrollable\":\"form_workflow_scroll_view\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_workflow_nav_remarks\",\r\n  \"scrolls\": 50,\r\n  \"error\": \"Target not found after 50 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-title-fallback-selection\\summary.json",
+      "fileCount": 72,
+      "bytes": 8019507
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-initial",
+      "startedAtUtc": "04/18/2026 13:58:47",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot1174r-fields-and-rows' failed for S21: [driver_or_sync_error] step 'mdot1174r-fields-and-rows' failed for S21: POST /driver/scroll-to-key failed for S21 body={\"maxScrolls\":40,\"scrollable\":\"form_workflow_scroll_view\",\"target\":\"mdot1174_field_contractor_name\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_field_contractor_name\",\r\n  \"scrolls\": 40,\r\n  \"error\": \"Target not found after 40 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-initial\\summary.json",
+      "fileCount": 65,
+      "bytes": 10263273
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-redscreen-residue-recovery-sync-only",
+      "startedAtUtc": "04/18/2026 15:14:26",
+      "flow": "sync-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-redscreen-residue-recovery-sync-only\\summary.json",
+      "fileCount": 41,
+      "bytes": 4206707
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-residue-recovery-sync-only",
+      "startedAtUtc": "04/18/2026 14:52:53",
+      "flow": "sync-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-residue-recovery-sync-only\\summary.json",
+      "fileCount": 41,
+      "bytes": 3359044
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-visible-text-only",
+      "startedAtUtc": "04/18/2026 15:00:01",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot1174r-fields-and-rows' failed for S21: [driver_or_sync_error] step 'mdot1174r-fields-and-rows' failed for S21: POST /driver/scroll-to-key failed for S21 body={\"scrollable\":\"form_workflow_scroll_view\",\"maxScrolls\":40,\"target\":\"mdot1174_air_slump_pairs_composer_left_time\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_air_slump_pairs_composer_left_time\",\r\n  \"scrolls\": 40,\r\n  \"error\": \"Target not found after 40 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-visible-text-only\\summary.json",
+      "fileCount": 72,
+      "bytes": 9745677
+    },
+    {
+      "runId": "20260418-s21-mdot1174r-after-header-first-selection",
+      "startedAtUtc": "04/18/2026 14:21:42",
+      "flow": "mdot1174r-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_wait_timeout"
+      ],
+      "failureMessages": [
+        "[widget_wait_timeout] state transition 'mdot1174r-fields-and-rows' failed for S21: [widget_wait_timeout] step 'mdot1174r-fields-and-rows' failed for S21: MDOT 1174R section 'placement' could not be opened. header key mdot1174_section_header_placement failed: POST /driver/wait failed for S21 body={\"timeoutMs\":8000,\"key\":\"mdot1174_field_maximum_time\"}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1174_field_maximum_time\",\r\n  \"error\": \"Widget not found within 8000ms\"\r\n} | nav key mdot1174_workflow_nav_placement failed: POST /driver/scroll-to-key failed for S21 body={\"scrollable\":\"form_workflow_scroll_view\",\"target\":\"mdot1174_workflow_nav_placement\",\"maxScrolls\":50}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1174_workflow_nav_placement\",\r\n  \"scrolls\": 50,\r\n  \"error\": \"Target not found after 50 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/final-debug-summary.json",
+        "S21/final-debug-errors.txt",
+        "S21/change-log-final.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1174r-after-header-first-selection\\summary.json",
+      "fileCount": 72,
+      "bytes": 7758889
+    },
+    {
+      "runId": "20260418-s21-post-s10-mdot-residue-sync-only",
+      "startedAtUtc": "04/18/2026 04:46:26",
+      "flow": "sync-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-post-s10-mdot-residue-sync-only\\summary.json",
+      "fileCount": 41,
+      "bytes": 3383222
+    },
+    {
+      "runId": "20260418-s21-mdot1126-signature-body-ready-submit",
+      "startedAtUtc": "04/18/2026 04:13:24",
+      "flow": "mdot1126-signature-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot1126-signature-mutate-type-signature' failed for S21: [driver_or_sync_error] step 'mdot1126-signature-mutate-type-signature' failed for S21: POST /driver/scroll-to-key failed for S21 body={\"target\":\"mdot1126_typed_signature_field\",\"scrollable\":\"mdot1126_form_screen\",\"maxScrolls\":20}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1126_typed_signature_field\",\r\n  \"scrolls\": 20,\r\n  \"error\": \"Target not found after 20 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-signature-body-ready-submit\\summary.json",
+      "fileCount": 72,
+      "bytes": 12815539
+    },
+    {
+      "runId": "20260418-s21-mdot1126-signature-accepted-after-deletedby-fix",
+      "startedAtUtc": "04/18/2026 04:34:03",
+      "flow": "mdot1126-signature-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "residue_detected",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 3.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "change_log_proof_failed"
+      ],
+      "failureMessages": [
+        "MDOT 1126 signature cleanup failed: MDOT 1126 cleanup sync failed: unprocessed_change_log_rows"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-signature-accepted-after-deletedby-fix\\summary.json",
+      "fileCount": 105,
+      "bytes": 16216017
+    },
+    {
+      "runId": "20260418-s10-pre-mdot-residue-sync-only",
+      "startedAtUtc": "04/18/2026 04:42:11",
+      "flow": "sync-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": "summary.json",
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s10-pre-mdot-residue-sync-only\\summary.json",
+      "fileCount": 41,
+      "bytes": 5666352
+    },
+    {
+      "runId": "20260418-s21-mdot0582b-accepted-initial",
+      "startedAtUtc": "04/18/2026 13:42:12",
+      "flow": "mdot0582b-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot0582b-accepted-initial\\summary.json",
+      "fileCount": 84,
+      "bytes": 11433610
+    },
+    {
+      "runId": "20260418-s21-mdot0582b-after-remote-json-proof",
+      "startedAtUtc": "04/18/2026 13:40:43",
+      "flow": "mdot0582b-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "The property 'Count' cannot be found on this object. Verify that the property exists."
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot0582b-after-remote-json-proof\\summary.json",
+      "fileCount": 84,
+      "bytes": 11690162
+    },
+    {
+      "runId": "20260418-s21-mdot0582b-after-test-section-fix",
+      "startedAtUtc": "04/18/2026 13:39:11",
+      "flow": "mdot0582b-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "Failed to parse MDOT 0582B JSON payload: Conversion from JSON failed with error: Unexpected character encountered while parsing value: @. Path '', line 0, position 0."
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot0582b-after-test-section-fix\\summary.json",
+      "fileCount": 84,
+      "bytes": 11456052
+    },
+    {
+      "runId": "20260418-s21-mdot0582b-initial",
+      "startedAtUtc": "04/18/2026 13:36:16",
+      "flow": "mdot0582b-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot0582b-header-proctor-test' failed for S21: [driver_or_sync_error] step 'mdot0582b-header-proctor-test' failed for S21: POST /driver/scroll-to-key failed for S21 body={\"target\":\"hub_test_field_wet_density_pcf\",\"maxScrolls\":30,\"scrollable\":\"mdot_hub_scroll_view\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"hub_test_field_wet_density_pcf\",\r\n  \"scrolls\": 30,\r\n  \"error\": \"Target not found after 30 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot0582b-initial\\summary.json",
+      "fileCount": 59,
+      "bytes": 8759572
+    },
+    {
+      "runId": "20260418-s21-mdot1126-cleanup-residue-retry-sync",
+      "startedAtUtc": "04/18/2026 04:25:52",
+      "flow": "sync-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "residue_detected",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 4.0,
+      "maxRetryCount": 1.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "unprocessed_change_log_rows"
+      ],
+      "failureMessages": [
+        "Sync-only measurement failed: unprocessed_change_log_rows"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-cleanup-residue-retry-sync\\summary.json",
+      "fileCount": 41,
+      "bytes": 2333908
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-center-visible-tap",
+      "startedAtUtc": "04/18/2026 12:52:08",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_wait_timeout"
+      ],
+      "failureMessages": [
+        "[widget_wait_timeout] state transition 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: [widget_wait_timeout] step 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: POST /driver/wait failed for S21 body={\"key\":\"mdot1126_rainfall_0_inches\",\"timeoutMs\":15000}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1126_rainfall_0_inches\",\r\n  \"error\": \"Widget not found within 15000ms\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-center-visible-tap\\summary.json",
+      "fileCount": 73,
+      "bytes": 15051304
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-direct-field-entry",
+      "startedAtUtc": "04/18/2026 13:11:26",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_tap_not_found"
+      ],
+      "failureMessages": [
+        "[widget_tap_not_found] state transition 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: [widget_tap_not_found] step 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: POST /driver/tap-text failed for S21 body={\"contains\":false,\"text\":\"Needs action\",\"index\":0}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"error\": \"Visible text widget not found\",\r\n  \"text\": \"Needs action\",\r\n  \"contains\": false,\r\n  \"index\": 0\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-direct-field-entry\\summary.json",
+      "fileCount": 80,
+      "bytes": 11886727
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-direct-form-route",
+      "startedAtUtc": "04/18/2026 13:03:24",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_wait_timeout"
+      ],
+      "failureMessages": [
+        "[widget_wait_timeout] state transition 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: [widget_wait_timeout] step 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: POST /driver/wait failed for S21 body={\"key\":\"mdot1126_rainfall_0_inches\",\"timeoutMs\":15000}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1126_rainfall_0_inches\",\r\n  \"error\": \"Widget not found within 15000ms\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-direct-form-route\\summary.json",
+      "fileCount": 80,
+      "bytes": 14530963
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-material-button-target",
+      "startedAtUtc": "04/18/2026 12:49:56",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_wait_timeout"
+      ],
+      "failureMessages": [
+        "[widget_wait_timeout] state transition 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: [widget_wait_timeout] step 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: POST /driver/wait failed for S21 body={\"key\":\"mdot1126_rainfall_0_inches\",\"timeoutMs\":15000}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1126_rainfall_0_inches\",\r\n  \"error\": \"Widget not found within 15000ms\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-material-button-target\\summary.json",
+      "fileCount": 73,
+      "bytes": 15154435
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-preferred-text-target",
+      "startedAtUtc": "04/18/2026 13:00:43",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_wait_timeout"
+      ],
+      "failureMessages": [
+        "[widget_wait_timeout] state transition 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: [widget_wait_timeout] step 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: POST /driver/wait failed for S21 body={\"key\":\"mdot1126_rainfall_0_inches\",\"timeoutMs\":15000}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1126_rainfall_0_inches\",\r\n  \"error\": \"Widget not found within 15000ms\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-preferred-text-target\\summary.json",
+      "fileCount": 73,
+      "bytes": 15116786
+    },
+    {
+      "runId": "20260418-s21-mdot1126-signature-accepted-with-cleanup-sync-retry",
+      "startedAtUtc": "04/18/2026 04:39:37",
+      "flow": "mdot1126-signature-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-signature-accepted-with-cleanup-sync-retry\\summary.json",
+      "fileCount": 108,
+      "bytes": 14144641
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-rainfall-ui",
+      "startedAtUtc": "04/18/2026 12:37:40",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_wait_timeout"
+      ],
+      "failureMessages": [
+        "[widget_wait_timeout] state transition 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: [widget_wait_timeout] step 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: POST /driver/wait failed for S21 body={\"timeoutMs\":15000,\"key\":\"mdot1126_rainfall_0_inches\"}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1126_rainfall_0_inches\",\r\n  \"error\": \"Widget not found within 15000ms\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-rainfall-ui\\summary.json",
+      "fileCount": 73,
+      "bytes": 13595354
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-section-scroll-fallback",
+      "startedAtUtc": "04/18/2026 13:08:00",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: [driver_or_sync_error] step 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: POST /driver/scroll-to-key failed for S21 body={\"maxScrolls\":20,\"target\":\"mdot1126_measure_0_measure_type\",\"scrollable\":\"mdot1126_form_screen\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1126_measure_0_measure_type\",\r\n  \"scrolls\": 20,\r\n  \"error\": \"Target not found after 20 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-section-scroll-fallback\\summary.json",
+      "fileCount": 80,
+      "bytes": 14375785
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-signature-ready-or-nav",
+      "startedAtUtc": "04/18/2026 13:18:35",
+      "flow": "mdot1126-expanded-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-signature-ready-or-nav\\summary.json",
+      "fileCount": 124,
+      "bytes": 15950617
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-starter-rainfall-row",
+      "startedAtUtc": "04/18/2026 13:06:12",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_tap_not_found"
+      ],
+      "failureMessages": [
+        "[widget_tap_not_found] state transition 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: [widget_tap_not_found] step 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: POST /driver/tap-text failed for S21 body={\"index\":0,\"text\":\"Measures\",\"contains\":false}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"error\": \"Visible text widget not found\",\r\n  \"text\": \"Measures\",\r\n  \"contains\": false,\r\n  \"index\": 0\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-starter-rainfall-row\\summary.json",
+      "fileCount": 80,
+      "bytes": 13593412
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-status-before-location",
+      "startedAtUtc": "04/18/2026 13:16:14",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_wait_timeout"
+      ],
+      "failureMessages": [
+        "[widget_wait_timeout] state transition 'mdot1126-expanded-signature-submit-open-created-form' failed for S21: [widget_wait_timeout] step 'mdot1126-expanded-signature-submit-open-created-form' failed for S21: POST /driver/wait failed for S21 body={\"timeoutMs\":30000,\"key\":\"mdot1126_workflow_nav_header\"}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1126_workflow_nav_header\",\r\n  \"error\": \"Widget not found within 30000ms\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-status-before-location\\summary.json",
+      "fileCount": 88,
+      "bytes": 15262348
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-status-key-tap",
+      "startedAtUtc": "04/18/2026 13:13:46",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_tap_not_found"
+      ],
+      "failureMessages": [
+        "[widget_tap_not_found] state transition 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: [widget_tap_not_found] step 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: POST /driver/tap failed for S21 body={\"key\":\"mdot1126_measure_0_status_needs_action\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"error\": \"Widget not found\",\r\n  \"key\": \"mdot1126_measure_0_status_needs_action\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-status-key-tap\\summary.json",
+      "fileCount": 80,
+      "bytes": 14227090
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-tap-target-fix",
+      "startedAtUtc": "04/18/2026 12:47:54",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_wait_timeout"
+      ],
+      "failureMessages": [
+        "[widget_wait_timeout] state transition 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: [widget_wait_timeout] step 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: POST /driver/wait failed for S21 body={\"key\":\"mdot1126_rainfall_0_inches\",\"timeoutMs\":15000}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1126_rainfall_0_inches\",\r\n  \"error\": \"Widget not found within 15000ms\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-tap-target-fix\\summary.json",
+      "fileCount": 73,
+      "bytes": 15087506
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-text-tap",
+      "startedAtUtc": "04/18/2026 12:53:55",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_wait_timeout"
+      ],
+      "failureMessages": [
+        "[widget_wait_timeout] state transition 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: [widget_wait_timeout] step 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: POST /driver/wait failed for S21 body={\"key\":\"mdot1126_rainfall_0_inches\",\"timeoutMs\":15000}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1126_rainfall_0_inches\",\r\n  \"error\": \"Widget not found within 15000ms\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-text-tap\\summary.json",
+      "fileCount": 73,
+      "bytes": 13477062
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-initial",
+      "startedAtUtc": "04/18/2026 12:33:02",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "driver_or_sync_error"
+      ],
+      "failureMessages": [
+        "[state_sentinel_failed] state transition 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: [driver_or_sync_error] step 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: POST /driver/scroll-to-key failed for S21 body={\"maxScrolls\":20,\"scrollable\":\"mdot1126_form_screen\",\"target\":\"mdot1126_next_rainfall_button\"}: Response status code does not indicate success: 404 (Not Found). \r\n{\r\n  \"found\": false,\r\n  \"target\": \"mdot1126_next_rainfall_button\",\r\n  \"scrolls\": 20,\r\n  \"error\": \"Target not found after 20 scrolls\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-initial\\summary.json",
+      "fileCount": 73,
+      "bytes": 13036493
+    },
+    {
+      "runId": "20260418-s21-mdot1126-fresh-failed-ledger-cleanup-replay-with-sync-retry",
+      "startedAtUtc": "04/18/2026 04:38:57",
+      "flow": "cleanup-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-fresh-failed-ledger-cleanup-replay-with-sync-retry\\summary.json",
+      "fileCount": 45,
+      "bytes": 2381291
+    },
+    {
+      "runId": "20260418-s21-mdot1126-nav-fix-draft-cleanup-sync",
+      "startedAtUtc": "04/18/2026 04:01:36",
+      "flow": "sync-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-nav-fix-draft-cleanup-sync\\summary.json",
+      "fileCount": 41,
+      "bytes": 4540348
+    },
+    {
+      "runId": "20260418-s21-mdot1126-section-fallback-draft-cleanup-sync",
+      "startedAtUtc": "04/18/2026 04:06:06",
+      "flow": "sync-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-section-fallback-draft-cleanup-sync\\summary.json",
+      "fileCount": 41,
+      "bytes": 4616211
+    },
+    {
+      "runId": "20260418-s21-mdot1126-expanded-after-scroll-fix",
+      "startedAtUtc": "04/18/2026 12:44:37",
+      "flow": "mdot1126-expanded-only",
+      "passed": false,
+      "failedActorRounds": 1.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [
+        "widget_wait_timeout"
+      ],
+      "failureMessages": [
+        "[widget_wait_timeout] state transition 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: [widget_wait_timeout] step 'mdot1126-expanded-edit-header-rainfall-measures-remarks' failed for S21: POST /driver/wait failed for S21 body={\"timeoutMs\":15000,\"key\":\"mdot1126_rainfall_0_inches\"}: Response status code does not indicate success: 408 (Request Time-out). \r\n{\r\n  \"found\": false,\r\n  \"key\": \"mdot1126_rainfall_0_inches\",\r\n  \"error\": \"Widget not found within 15000ms\"\r\n}"
+      ],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json",
+        "S21/round-1-mutation-ledger.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-mdot1126-expanded-after-scroll-fix\\summary.json",
+      "fileCount": 73,
+      "bytes": 13585069
+    },
+    {
+      "runId": "20260418-s21-post-v61-signature-backlog-sync-only",
+      "startedAtUtc": "04/18/2026 12:36:44",
+      "flow": "sync-only",
+      "passed": true,
+      "failedActorRounds": 0.0,
+      "queueDrainResult": "drained",
+      "blockedRowCount": 0.0,
+      "unprocessedRowCount": 0.0,
+      "maxRetryCount": 0.0,
+      "runtimeErrors": 0.0,
+      "loggingGaps": 0.0,
+      "directDriverSyncEndpointUsed": false,
+      "failureClassifications": [],
+      "failureMessages": [],
+      "runtimeErrorFingerprints": [],
+      "recommendedEvidence": [
+        "summary.json",
+        "S21/timeline.json"
+      ],
+      "summaryPath": ".claude\\test-results\\2026-04-18\\enterprise-sync-soak\\20260418-s21-post-v61-signature-backlog-sync-only\\summary.json",
+      "fileCount": 41,
+      "bytes": 3494475
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+Enterprise device-sync soak artifacts written to C:\Users\rseba\Projects\Field_Guide_App\.claude\test-results\2026-04-17\enterprise-sync-soak\20260417-181106-concurrent\device-sync
+passed=False failedActorRounds=2

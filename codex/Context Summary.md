@@ -21,7 +21,62 @@
 - Latest session handoff source: `.claude/autoload/_state.md`
 - Durable project patterns: `.claude/memory/MEMORY.md`
 - Auto-load testing preference reference: `.codex/testing-principles.md`
-- Highest-priority active Codex tracker: `.codex/plans/2026-04-13-pay-app-export-tablet-analytics-spec.md`
+- Highest-priority active Codex tracker: `.codex/plans/2026-04-17-s21-soak-harness-audit-and-recovery-plan.md`
+- Current sync-soak lane: S21-first refactored state-machine hardening. The
+  S21 `sync-only`, `daily-entry-only`, `quantity-only`, `photo-only`, and
+  `combined` flows are green; quantity and photo each have three accepted
+  isolated passes with `runtimeErrors=0`, `loggingGaps=0`, drained queue, and
+  no direct `/driver/sync`. Photo also proves Supabase Storage object download,
+  ledger-owned cleanup, storage delete, and storage absence. The combined
+  gate proves daily-entry, quantity, and photo as sequential
+  mutate/sync/cleanup phases through the refactored module, not the legacy
+  all-modes runner. S10 regression is now green through the implemented
+  refactored flows, S21 cleanup-only replay is green against accepted ledgers,
+  and MDOT 1126 typed-signature is accepted on S21, S21 cleanup-only replay,
+  and S10. Latest hardening closes missing/mismatched signature storage
+  `remotePath` contracts and local schema v61 makes
+  `signature_files.local_path` nullable to match Supabase. S21 post-v61
+  signature backlog sync-only proof is green with schemaVersion 61 and a final
+  empty queue; S10 post-v61 cross-device proof remains open. The MDOT 1126
+  expanded fields/rows flow is now accepted on S21 via
+  `20260418-s21-mdot1126-expanded-after-signature-ready-or-nav`: it proves
+  header markers, rainfall row, SESC measure status/corrective action,
+  remarks, typed signature, local pre-sync `change_log`, remote
+  `form_responses` / `signature_files` / `signature_audit_log`, signature
+  storage download, ledger-owned cleanup, storage delete/absence, UI-triggered
+  cleanup sync, and final empty queue. The MDOT 0582B mutation lane is now
+  accepted on S21 via `20260418-s21-mdot0582b-accepted-initial`: it proves
+  report-attached creation, header markers, chart/operating standards, HMA
+  proctor row, quick-test row, local pre-sync `change_log`, post-sync remote
+  `form_responses`, ledger-owned cleanup, UI-triggered cleanup sync, remote
+  soft-delete, and final empty queue. MDOT 0582B export/storage proof remains
+  open. The MDOT 1174R `mdot1174r-only` lane is implemented and wired through
+  the refactored harness, but it is not accepted yet. Latest S21 evidence:
+  `20260418-s21-mdot1174r-visible-text-only` failed cleanly on Air/Slump
+  scroll-to-key with cleanup and final queue drained; the follow-up
+  `20260418-s21-mdot1174r-after-ensure-visible-scroll` correctly failed loudly
+  on a red screen during `mdot1174r-fields-and-rows` with `runtimeErrors=27`,
+  duplicate GlobalKey plus detached render-object assertions, and local
+  `form_responses` queue residue. Current patch work moved the expanded-section
+  sentinel from the chevron icon onto the mounted section body, made driver text
+  entry fail loudly on non-visible/non-editable targets, removed `AnimatedSize`
+  from the section body, kept repeated-row composer state alive while mounted,
+  and added `Scrollable.ensureVisible` to `/driver/scroll-to-key`; that last
+  scroll hardening is not accepted because it re-exposed the GlobalKey/runtime
+  failure. S21 residue was recovered through the refactored Sync Dashboard
+  `sync-only` flow
+  (`20260418-s21-mdot1174r-redscreen-residue-recovery-sync-only`) and the live
+  `/driver/change-log` was empty afterward. Post-debug cleanup is complete:
+  compact `.codex/reports/*result-index.*` reports preserved the failure
+  audit, duplicate ignored `.claude/test-results/2026-04-18` raw output was
+  pruned, local generated build/debug caches were removed, and only exact
+  generated S21 Download artifacts (`device-ci.db` plus `conflict_*` DB files)
+  were deleted. Next work is to fix MDOT 1174R row-section key/state ownership
+  before another S21 acceptance attempt. After 1174R acceptance, move
+  to form exports,
+  saved-form/gallery lifecycles, S10 regression for newly accepted form lanes,
+  role churn, storage/RLS denial, failure injection, backend/device overlap,
+  staging, emulator/headless app-sync, and 15-20 user scale-up.
 - Current build lane: CodeMagic `ios-testflight` build `69dc8febbe1c98fae68a2cc7` passed and produced signed IPA artifact `construction_inspector.ipa` for iPad testing
 - PR status: PR #290 merged `sync-engine-refactor` into `main` at `d97066540c53d9ca97c0030aacf7fb7e21b9916f`
 - CodeMagic build status: `ios-testflight` build `69dc8febbe1c98fae68a2cc7` passed on commit `f2133ea248d10bb6824c9403ef40b5f2d19ae494`

@@ -30,7 +30,10 @@ exercise the same surfaces that fail on devices:
   and latency counts.
 - [x] Backend/RLS soak is useful for RLS and direct remote CRUD pressure.
 - [x] Backend/RLS soak is not device-sync evidence.
-- [ ] Device-sync soak is not enterprise-grade yet.
+- [ ] Device-sync soak is not enterprise-grade yet. Current status: S21
+  refactored gates are green for `sync-only`, `daily-entry-only`,
+  `quantity-only`, `photo-only`, and `combined`; the next device-sync gate is
+  S10 regression through the refactored path.
 - [x] S21 blocked/unprocessed local rows were reproduced, classified as
   obsolete debug-driver harness seed residue, repaired, and rerun to green.
 - [x] S10 `~1.6k` pending local rows were reproduced, classified as a fresh
@@ -117,10 +120,14 @@ Acceptance:
 
 ## Phase 2 - Local App Change Generation
 
-- [ ] Replace raw remote-only mutations in the device path with app-side local
-  changes.
-- [ ] For each app-side mutation, assert that a local `change_log` row appears
-  before sync.
+- [x] Replace raw remote-only mutations in the implemented S21 daily-entry,
+  quantity, and photo device paths with app-side local changes.
+- [ ] Continue replacing raw remote-only mutations for personnel, equipment,
+  contractor, forms, signatures, and other file-backed rows.
+- [x] For implemented daily-entry, quantity, and photo app-side mutations,
+  assert that a local `change_log` row appears before sync.
+- [ ] For remaining app-side mutation families, assert that a local
+  `change_log` row appears before sync.
 - [ ] Add per-table change-log assertions:
   - table name,
   - record id,
@@ -129,14 +136,18 @@ Acceptance:
   - retry count,
   - processed flag,
   - error message.
-- [ ] Add local record assertions before and after sync.
+- [x] Add local record assertions before and after sync for implemented
+  daily-entry, quantity, and photo flows.
+- [ ] Add local record assertions before and after sync for remaining mutation
+  families.
 - [x] Keep raw driver SQLite mutation only as a lower-level fallback, and label
   it `driver_local_mutation`, not full UI proof.
 - [ ] Add UI-driven mutations for the highest-risk flows first:
-  - daily entry activities,
-  - quantities,
+  - daily entry activities, (implemented/proven on S21 isolated gate)
+  - quantities, (implemented/proven on S21 isolated gate)
   - personnel/equipment/contractor rows,
-  - photo capture/import,
+  - photo capture/import, (implemented/proven on S21 isolated gate with
+    storage proof and cleanup)
   - forms,
   - project assignment visibility.
 
@@ -155,9 +166,11 @@ Acceptance:
   - inspector A,
   - inspector B,
   - inspector C.
-- [ ] Support 10-20 virtual users across backend and device actors:
-  - 2-4 device app actors,
-  - 8-16 backend remote actors.
+- [ ] Support 10-20 workload actors with layer-specific evidence:
+  - 2-4 real UI device app actors,
+  - 8-16 backend remote actors for RLS/remote pressure,
+  - a future headless app-sync actor lane before claiming 10-20 app users are
+    proven through local SQLite/change-log/SyncEngine behavior.
 - [ ] Seed or generate 15 projects.
 - [ ] Assign inspectors to overlapping but not identical project sets.
 - [ ] Use ramp-up:
@@ -216,9 +229,11 @@ Acceptance:
   - normal field photo,
   - large photo,
   - image with GPS EXIF metadata.
-- [ ] Create photo rows from the app/device with real local `file_path`.
-- [ ] Assert storage upload occurs.
-- [ ] Assert `remote_path` is bookmarked locally.
+- [x] Create photo rows from the app/device with real local `file_path` in the
+  S21 `photo-only` gate.
+- [x] Assert storage upload occurs in the S21 `photo-only` gate by downloading
+  the generated object from Supabase Storage after UI-triggered sync.
+- [x] Assert `remote_path` is bookmarked locally in the S21 `photo-only` gate.
 - [ ] Assert another device can download/preview the uploaded object.
 - [ ] Assert storage RLS blocks unauthorized role/project access.
 - [ ] Assert EXIF GPS stripping where configured.
@@ -233,9 +248,12 @@ Acceptance:
 
 Acceptance:
 
-- [ ] File-backed rows require row proof and object proof.
-- [ ] Device soak fails on missing object, bad storage access, failed download,
-  or orphaned cleanup queue state.
+- [x] Implemented photo rows require row proof and object proof.
+- [ ] Remaining file-backed rows require row proof and object proof.
+- [x] Implemented photo device soak fails on missing object, bad storage
+  access, failed download, or failed storage cleanup proof.
+- [ ] Extend missing-object/bad-access/failed-download/orphaned-cleanup failure
+  gates to remaining file-backed rows.
 
 ## Phase 6 - Failure Injection
 
@@ -337,7 +355,11 @@ Acceptance:
 
 Acceptance:
 
-- [ ] A failure can be triaged from artifacts without rerunning immediately.
+- [x] Refactored S21 single-flow failures can be triaged from artifacts without
+  rerunning immediately.
+- [ ] Extend the same artifact completeness to S10 regression,
+  headless app-sync, and backend/device overlap runs. `combined` now has
+  accepted parent/child summary, queue, runtime/log, and photo storage proof.
 
 ## Phase 10 - CI And Local Lab Strategy
 
@@ -389,7 +411,10 @@ Acceptance:
 - [x] S10 one-user device sync passes with zero pending/blocked rows.
 - [x] S21+S10 device-lab sync wrapper passes.
 - [ ] Multi-role device/backend actor soak passes.
-- [ ] File/storage object proof passes.
+- [x] S21 implemented photo file/storage object proof passes as an isolated
+  gate.
+- [ ] Full file/storage object proof across remaining file-backed rows and
+  cross-device access passes.
 - [ ] Same-device auth switching passes.
 - [ ] Failure injection passes or creates correct repair-required evidence.
 - [ ] No unauthorized project metadata flashes in UI.

@@ -34,14 +34,59 @@ Companion implementation checkpoint log:
 - [x] Multi-device S21+S10 sync soak wrapper has real execution evidence.
 - [x] The first blocked-row root causes are fixed: debug harness seed residue,
   fresh-backlog circuit-breaker deadlock, and previous-user consent RLS residue.
+- [x] The S21 red-screen class exposed by the all-modes run has been isolated
+  through focused state-machine flows. S21 `sync-only`, `daily-entry-only`,
+  `quantity-only`, and `photo-only` are green in the refactored harness with
+  strict log gates.
+- [x] S10 stayed parked until the refactored S21 `combined` gate was
+  implemented and green. The next device-sync gate is reintroducing S10 as a
+  regression actor, not returning to legacy all-modes acceptance.
+- [x] The refactored `combined` S21 flow is implemented and has accepted S21
+  evidence. Do not use the legacy all-modes path as a substitute for future
+  combined or regression proof.
+- [x] S10 refactored regression is green for daily-entry, quantity, photo,
+  contractor/personnel/equipment, and combined flows. Accepted combined
+  artifact:
+  `.claude/test-results/2026-04-17/enterprise-sync-soak/20260418-s10-state-machine-combined-initial/summary.json`.
+- [x] S21 `cleanup-only` live replay is green against accepted S21 combined and
+  contractor ledgers:
+  `.claude/test-results/2026-04-17/enterprise-sync-soak/20260418-s21-cleanup-only-replay-accepted-ledgers-idempotent/summary.json`.
 
 ## Still Open
 
-- [ ] true UI-driven mutations across daily entries, quantities, photos/files, forms, signatures;
+- [ ] true UI-driven mutations across daily entries, quantities, photos/files,
+  forms, and signatures;
+  daily-entry, quantity, and photo paths are implemented and proven on S21 as
+  isolated refactored state-machine gates and as the refactored S21
+  `combined` gate. The contractor/personnel/equipment graph is also proven on
+  S21 through `-Flow contractors-only`, S10 regression is green for the
+  implemented flows, and the first form/signature/file-backed lane is proven
+  through MDOT 1126 typed signature on S21, S21 cleanup-only replay, and S10.
+  MDOT 1126 expanded fields/rows are also accepted on S21. The MDOT 0582B
+  form-response mutation lane is accepted on S21; its export/storage proof
+  remains open. MDOT 1174R is implemented/wired but not accepted; latest S21
+  diagnostics are blocked on compact section/body proof while opening
+  Quantities after QA edits.
+  The remaining near-term form work is accepting MDOT 1174R, builtin form
+  exports, saved-form/gallery lifecycle sweeps, and S10 regression for the
+  newly accepted form lanes;
 - [ ] real role churn and same-device account switching sweeps;
-- [ ] backend actors running concurrently with device actors;
-- [ ] 10-20 users across 15 projects with weighted action mix and jitter;
-- [ ] file/storage object proof;
+- [ ] backend/RLS virtual actors running concurrently with the limited
+  real-device lane;
+- [ ] 10-20 user workload across 15 projects with weighted action mix and
+  jitter; this does not require 10-20 physical devices. Final app-user scale
+  needs a headless app-sync actor lane with real sessions and isolated local
+  stores before this can be called 10-20 app users. Backend actors remain
+  RLS/remote-pressure evidence, not local app sync evidence;
+- [x] S21 photo storage object proof for the implemented photo lane:
+  three S21 `photo-only` runs proved storage download, ledger-owned row
+  cleanup, storage delete, and storage absence.
+- [x] Extend file/storage object proof to MDOT 1126 typed signatures:
+  accepted S21/S10 MDOT runs prove signature storage download, ledger-owned
+  cleanup, storage delete, and storage absence.
+- [ ] Extend file/storage object proof to form exports, entry documents, entry
+  exports, pay-app exports, cross-device download/preview, and additional
+  signature/export paths;
 - [ ] failure injection;
 - [ ] staging/GitHub proof and repeated green soak history.
 
@@ -86,30 +131,73 @@ Companion implementation checkpoint log:
 
 ### Phase 2 - Local App Change Generation
 
+- [x] Run the immediate hardening loop S21-only, one focused refactored flow at
+  a time:
+  - `-Flow sync-only`
+  - `-Flow daily-entry-only`
+  - `-Flow quantity-only`
+  - `-Flow photo-only`
+- [x] Implement and run the refactored S21 `combined` flow after the isolated
+  gates, rather than falling back to legacy `-UiMutationModes`.
 - [x] Preserve lower-level driver local mutation as
   `driver_local_mutation`, not full UI proof.
 - [x] Add optional device-lab local mutation mode that asserts a local
   `change_log` row appears before UI sync.
 - [x] Build true UI-driven daily-entry activity mutation.
 - [x] Build true UI-driven quantity mutation.
-- [ ] Build true UI-driven personnel/equipment/contractor mutation.
+- [x] Build true UI-driven personnel/equipment/contractor mutation.
+  Accepted S21 artifact:
+  `.claude/test-results/2026-04-17/enterprise-sync-soak/20260418-s21-state-machine-contractors-fourth/summary.json`.
 - [x] Build true UI-driven photo capture/import mutation with bytes.
-- [ ] Build true UI-driven form/signature mutation.
+- [x] Fix the report/photo runtime red screen exposed by the all-modes S21/S10
+  soak for the focused S21 photo path. Root cause was the photo name dialog
+  opening with autofocus immediately after the source/picker route transition.
+- [x] Build true UI-driven MDOT 1126 typed-signature mutation with storage
+  proof. Accepted S21 artifact:
+  `.claude/test-results/2026-04-18/enterprise-sync-soak/20260418-s21-mdot1126-signature-accepted-with-cleanup-sync-retry/summary.json`.
+- [x] Build true UI-driven MDOT 1126 expanded field/row mutation proof.
+  Accepted S21 artifact:
+  `.claude/test-results/2026-04-18/enterprise-sync-soak/20260418-s21-mdot1126-expanded-after-signature-ready-or-nav/summary.json`.
+- [x] Build true UI-driven MDOT 0582B form-response mutation proof.
+  Accepted S21 artifact:
+  `.claude/test-results/2026-04-18/enterprise-sync-soak/20260418-s21-mdot0582b-accepted-initial/summary.json`.
+- [ ] Build remaining true UI-driven form/signature mutations:
+  MDOT 1174R is implemented/wired but not S21-accepted yet; latest diagnostics
+  are blocked on compact section/body proof while opening Quantities after QA
+  edits. Cleanup and final queue drain passed after the latest diagnostics.
+  Current hardening moves the expanded-section sentinel onto the mounted body
+  and makes driver text entry fail loudly on non-editable targets. Builtin
+  form exports and saved-form/gallery lifecycle sweeps remain unimplemented.
 - [ ] Assert every UI-driven mutation has the expected local record before
-  sync.
+  sync. Implemented daily-entry, quantity, photo, contractor graph,
+  MDOT 1126 typed-signature/expanded, and MDOT 0582B mutation flows already do
+  this; keep this open for the remaining MDOT 1174R/export/gallery families.
 - [x] Fail device soak if the matching local `change_log` row remains
   unprocessed after a successful sync.
 
 ### Phase 3 - Realistic Multi-Actor Workload
 
+- [x] Keep Phase 3 blocked until S10 regression is green through the
+  refactored path, with no Flutter red screens and no local queue residue.
+  The refactored S21 `combined` prerequisite and S10 implemented-flow
+  regression are now green.
 - [ ] Model named actors: admin, engineer, office technician, inspector A,
   inspector B, inspector C.
 - [x] Support 2-4 device app actors plus 8-16 backend actors in one run.
 - [x] Add a parent host-side concurrent wrapper that keeps backend/RLS and
-  device-sync child summaries separate.
+  device-sync child summaries separate. The wrapper now forwards `-Flow` to
+  the device runner so future backend/device overlap can use the refactored
+  `combined` path instead of legacy `-UiMutationModes`; real execution proof
+  is still open.
 - [ ] Use the full 15-project fixture, not just projects 1-3.
 - [ ] Expand the harness to 10-20 distinct active user accounts if the fixture
   still only has 12 real personas.
+- [ ] Add headless app-sync actors with isolated SQLite stores and real
+  Supabase sessions before claiming 10-20 app users; the current backend actor
+  lane remains RLS/remote-pressure evidence, not local app sync evidence.
+- [ ] Keep physical device expectations to the actual lab: S21 primary, S10
+  regression after S21 is clean, and at most an optional emulator if it is
+  stable enough to add signal.
 - [ ] Add weighted actions for quantities/pay items.
 - [ ] Add weighted actions for forms/signatures.
 - [ ] Add weighted actions for auth/session switching.
@@ -137,16 +225,19 @@ Companion implementation checkpoint log:
 ### Phase 5 - File And Storage Soak
 
 - [ ] Add small, normal, large, and GPS-EXIF image fixtures.
-- [ ] Create photo rows with real local `file_path`.
-- [ ] Assert Supabase Storage upload occurs.
-- [ ] Assert local `remote_path` is bookmarked.
+- [x] Create S21 photo rows with real local `file_path` in the implemented
+  photo lane.
+- [x] Assert Supabase Storage upload occurs for the implemented S21 photo lane.
+- [x] Assert local `remote_path` is bookmarked for the implemented S21 photo
+  lane.
 - [ ] Assert another device downloads/previews the object.
 - [ ] Assert Storage RLS blocks unauthorized role/project access.
 - [ ] Assert EXIF GPS stripping where configured.
 - [ ] Assert stale remote path replacement and cleanup.
 - [ ] Assert `storage_cleanup_queue` for delete/restore/purge.
+- [x] Extend object proof to MDOT 1126 typed-signature signatures.
 - [ ] Extend object proof to form exports, entry documents, entry exports,
-  pay-app exports, and signatures.
+  pay-app exports, and additional signature/export paths.
 
 ### Phase 6 - Failure Injection
 
@@ -192,12 +283,109 @@ Companion implementation checkpoint log:
 - [x] `/driver/change-log` now returns grouped blocked/unprocessed counts by
   table, operation, retry count, project id, and error message for triage.
 - [x] Add per-table sync health breakdown to soak summaries.
+- [x] Add strict device-log runtime scanning for Flutter/runtime failure
+  signatures and fail the round when they appear.
+- [x] Treat missing log capture as a `loggingGaps` pass/fail blocker for strict
+  device-lab acceptance runs.
+- [ ] Scan failure-capture logs in catch blocks with the same runtime scanner
+  used for normal round logs.
+- [ ] Deduplicate repeated Flutter runtime log signatures into a compact
+  failure fingerprint.
+- [ ] Add screenshot/widget-tree red-screen classification so visible red
+  screens fail even when logcat misses the corresponding Flutter signature.
+- [ ] Replace broad `driver_or_sync_error` classification with specific
+  categories: `driver_preflight_failed`, `widget_wait_timeout`,
+  `widget_tap_not_found`, `route_mismatch`, `picker_not_completed`,
+  `runtime_log_error`, `logging_gap`, `cleanup_failed`, and
+  `queue_residue_detected`.
 - [ ] Add backend log drain checks for postgres, auth, storage, realtime, and
   edge logs.
 - [ ] Add Sentry event drain checks.
 - [ ] Add storage object status into failure bundles.
 - [ ] Add debug-log snippets into failure bundles.
 - [ ] Add fail-fast for catastrophic failures while preserving final evidence.
+- [ ] A user-observed red screen can be tied to either a log signature,
+  screenshot/widget-tree classification, or an explicit logging gap.
+- [x] Implemented failed mutation runs record generated row IDs or original
+  values, cleanup obligations, cleanup attempts, and cleanup outcome.
+- [x] Extend mutation-ledger guarantees to `combined` by composing the
+  ledger-owned daily-entry, quantity, and photo child phases.
+- [x] Extend mutation-ledger guarantees to `cleanup-only` for the implemented
+  daily-entry, quantity, and photo ledger families. It requires explicit
+  ledger paths, copies source ledgers into the new artifact tree, and reuses
+  ledger-owned cleanup helpers with UI-triggered sync.
+- [x] Extend the same mutation-ledger guarantees to S10 regression for the
+  implemented mutation flows.
+- [x] Extend the same mutation-ledger guarantees to MDOT 1126 typed-signature
+  form/signature flow, including `form_responses`, `signature_files`,
+  `signature_audit_log`, signature storage download, cleanup sync, storage
+  delete, and storage absence.
+- [ ] Extend the same mutation-ledger guarantees to remaining mutation-family
+  flows.
+
+### Phase 9A - Device-Lab Harness Refactor
+
+- [ ] Keep `tools/enterprise-sync-soak-lab.ps1` as a thin CLI wrapper.
+  Refactored `-Flow sync-only`, `daily-entry-only`, `quantity-only`, and
+  `photo-only` are wired through `tools/sync-soak/`; legacy mutation modes
+  remain in the monolith and must not be used as the acceptance path.
+- [x] Do not create a third HTTP server. Reuse the existing app-side
+  `DriverServer` for UI/device control and the host-side `tools/debug-server`
+  for structured logs, sync status, artifacts, and service-role verification
+  utilities.
+- [ ] Reuse `tools/start-driver.ps1` and `tools/wait-for-driver.ps1` for
+  debug-server/app-driver startup and readiness checks instead of duplicating
+  ADB port wiring in the soak wrapper.
+- [x] Move actor parsing and summary models to a dedicated soak model module.
+  First slice: `tools/sync-soak/SoakModels.ps1`.
+- [x] Move driver HTTP calls to a dedicated driver client module.
+  First slice: `tools/sync-soak/DriverClient.ps1`.
+- [x] Move screenshot/logcat/JSON artifact handling to an artifact writer
+  module.
+- [x] Add a shared step runner used by every UI flow.
+  First slice: `tools/sync-soak/StepRunner.ps1`; remaining legacy mutation
+  flows still need to be migrated onto it.
+- [x] Step runner must query both debug-server `/logs/errors` or
+  `/logs/summary` and bounded ADB logcat for the operation window; missing
+  either evidence channel is a visible logging gap.
+- [x] Split implemented S21 UI flows into focused modules:
+  - daily-entry activity,
+  - quantity,
+  - photo,
+  - Sync Dashboard sync.
+- [x] Add a dedicated `cleanup-only` module.
+- [x] Add a dedicated `combined` module.
+- [x] Add a mutation ledger for original values, generated IDs, remote paths,
+  and cleanup status in the implemented daily-entry, quantity, and photo flows.
+- [x] Reuse `tools/measure-device-sync.ps1` behavior for the Sync Dashboard
+  flow: UI-trigger only, status polling, screenshots, no `POST /driver/sync`.
+- [ ] Reuse `integration_test/sync/harness/harness_driver_client.dart`,
+  `integration_test/sync/soak/soak_driver.dart`, and
+  `integration_test/sync/soak/soak_metrics_collector.dart` semantics for typed
+  driver calls, 15-project fixture metadata, action taxonomy, actor reports,
+  and backend/device layer summaries.
+- [ ] Treat direct driver mutation/file-injection endpoints as setup or
+  recovery seams unless the flow first enters the real UI path; do not count
+  direct endpoint mutations as UI mutation proof.
+- [x] Add `sync-only`, `daily-entry-only`, `quantity-only`, `photo-only`, and
+  `combined` modes so S21 can be hardened one flow at a time or as the
+  accepted combined parent. These modes are implemented and proven on S21
+  through the refactored path.
+- [x] Add `cleanup-only`; it requires explicit `-CleanupLedgerPaths`, supports
+  semicolon-delimited path lists for `pwsh -File`, replays only ledger-owned
+  daily-entry/quantity/photo/contractor cleanup obligations, treats
+  already-clean accepted ledgers as idempotent proof, and still fails closed
+  instead of falling through to legacy all-modes behavior.
+- [ ] Add harness self-tests for sample `FlutterError` log input, missing
+  logcat capture, widget wait timeout bundles, cleanup failure, and direct
+  `/driver/sync` recovery being labeled non-acceptance.
+  First slice exists at `tools/test-sync-soak-harness.ps1` for runtime
+  signatures, widget wait timeout classification, logging-gap classification,
+  visible `ErrorWidget` classification, direct-sync non-acceptance labels,
+  ordered mutation-ledger access, state sentinels, combined aggregation,
+  cleanup-only ledger assignment/replay filtering, S10 gate catalog/run-guide,
+  and specific cleanup-ledger/storage/change-log/unsupported-flow
+  classifications.
 
 ### Phase 10 - CI And Local Lab Strategy
 
@@ -226,6 +414,71 @@ Companion implementation checkpoint log:
 - [x] Rerun S21 until pending, blocked, and unprocessed are zero.
 - [x] Repeat on S10.
 - [x] Run first S21+S10 device-lab wrapper after one-device green proof.
+- [x] Pause full all-modes device soaks until the S21-focused harness refactor
+  and single-flow gates are complete.
+- [x] Keep S10 parked until S21 sync-only, daily-entry-only, quantity-only, and
+  photo-only flows are each green with cleanup proof.
+- [x] Keep S10 parked until the refactored S21 `combined` flow is implemented
+  and green.
+- [x] Keep 15-20 user simulation parked until S21 combined
+  daily-entry/quantity/photo is green under strict logs; when resumed, use
+  headless app-sync actors plus backend/RLS virtual actors rather than assuming
+  additional physical devices.
+- [x] One real S21 can complete each implemented write flow independently with
+  zero runtime log errors, zero logging gaps, zero queue residue, storage proof
+  where applicable, and cleanup proof.
+  Current progress: the non-mutating S21 `sync-only` gate passed three serial
+  times through the refactored harness with zero runtime errors, zero logging
+  gaps, and zero queue residue. S21 `daily-entry-only` passed three serial
+  write-flow runs after the cleanup fix:
+  `20260417-s21-refactor-daily-entry-only-serial-2b`,
+  `20260417-s21-refactor-daily-entry-only-serial-3`, and
+  `20260417-s21-refactor-daily-entry-only-serial-4`. The daily-entry cleanup
+  proof now includes exact local and remote ledger-value sentinels. S21
+  `quantity-only` and `photo-only` each have three accepted passes; all six
+  quantity/photo summaries report `passed=true`, `runtimeErrors=0`,
+  `loggingGaps=0`, `queueDrainResult=drained`, and no direct `/driver/sync`.
+  Photo runs additionally prove storage download, storage delete, and storage
+  absence. This closes the implemented S21 daily-entry, quantity, and photo
+  write-flow gate. S21 `contractors-only` also passed at
+  `.claude/test-results/2026-04-17/enterprise-sync-soak/20260418-s21-state-machine-contractors-fourth/summary.json`,
+  including contractor, entry-contractor, default/custom personnel types,
+  equipment, entry personnel count, entry equipment, cleanup sync, remote
+  soft-delete proof, and final live S21 `/driver/change-log` empty. This does
+  did not close the still-missing form/signature/file-backed families at that
+  point. The refactored S21 `combined` gate also
+  passed at
+  `.claude/test-results/2026-04-17/enterprise-sync-soak/20260418-s21-state-machine-combined-final/summary.json`
+  with daily-entry, quantity, and photo child phases all green under strict
+  logs and final live S21 `/driver/change-log` empty.
+- S21 MDOT 1126 typed-signature now closes the first form/signature/file-backed
+  write lane:
+  `.claude/test-results/2026-04-18/enterprise-sync-soak/20260418-s21-mdot1126-signature-accepted-with-cleanup-sync-retry/summary.json`.
+  S21 cleanup-only replay of that accepted MDOT ledger and S10 MDOT regression
+  are also green:
+  `.claude/test-results/2026-04-18/enterprise-sync-soak/20260418-s21-mdot1126-signature-cleanup-only-replay-accepted-ledger/summary.json`
+  and
+  `.claude/test-results/2026-04-18/enterprise-sync-soak/20260418-s10-mdot1126-signature-regression-with-cleanup-sync-retry/summary.json`.
+  This did not close MDOT 1126 expanded fields/rows at that point; the expanded
+  lane later passed on S21. MDOT 0582B form-response mutation later passed on
+  S21. MDOT 1174R is now implemented/wired but not accepted; latest S21
+  diagnostics are blocked on compact section/body proof while opening
+  Quantities after QA edits, with cleanup and final queue drain proven.
+  Builtin form exports,
+  saved-form/gallery lifecycle sweeps, MDOT 0582B export/storage proof, and
+  cross-device file-backed proof remain open.
+- S10 refactored regression passed:
+  - `20260418-s10-state-machine-daily-entry-only-initial`
+  - `20260418-s10-state-machine-quantity-only-initial`
+  - `20260418-s10-state-machine-photo-only-initial`
+  - `20260418-s10-state-machine-contractors-only-initial`
+  - `20260418-s10-state-machine-combined-initial`
+  All report `passed=true`, zero runtime errors, zero logging gaps, drained
+  queue, and `directDriverSyncEndpointUsed=false`.
+- S21 cleanup-only replay passed at
+  `.claude/test-results/2026-04-17/enterprise-sync-soak/20260418-s21-cleanup-only-replay-accepted-ledgers-idempotent/summary.json`.
+  It replays accepted S21 combined and contractor ledgers and ends with S21 and
+  S10 live `/driver/change-log` empty.
 
 ## Sync Hardening UI/RLS Closeout
 
@@ -273,7 +526,18 @@ Companion implementation checkpoint log:
 - [ ] Verify realtime subscription leak fix on devices.
 - [ ] Reconcile Sync Dashboard UI with `/sync/status`.
 - [ ] Investigate widget-tree locked runtime sync noise.
-- [ ] Investigate signature integrity-drift counts.
+- [x] Investigate signature integrity-drift counts. Latest MDOT runs accepted
+  because per-ledger rows and storage objects proved correctly, but logs still
+  showed broader `signature_files` / `signature_audit_log` count drift
+  (`local=1`, `remote=25`). Root cause was a local/remote schema mismatch:
+  local SQLite required `signature_files.local_path NOT NULL`, while Supabase
+  allows null local paths for rows created on other devices. Local schema v61
+  rebuilds `signature_files` with nullable `local_path`.
+- [ ] Prove the signature integrity drift is gone on live S21/S10 after both
+  devices upgrade to v61 and pull signature rows created by the other device.
+  S21 post-v61 backlog drain is now artifact-backed at
+  `.claude/test-results/2026-04-18/enterprise-sync-soak/20260418-s21-post-v61-signature-backlog-sync-only/summary.json`;
+  keep this open for S10 post-v61 cross-device proof.
 - [ ] Investigate BaseListProvider daily-entry update failures.
 
 ### Navigation And UI Bug Closeout
@@ -308,6 +572,93 @@ Companion implementation checkpoint log:
 
 Latest local verification:
 
+- `pwsh -NoProfile -File tools/test-sync-soak-harness.ps1`
+- `flutter test test/features/sync/engine/supabase_sync_contract_test.dart test/features/sync/adapters/adapter_config_test.dart`
+- `flutter test test/core/driver/driver_data_sync_policy_test.dart`
+- `flutter test test/features/sync/engine/push_handler_test.dart test/features/sync/engine/sync_engine_delete_test.dart`
+- S21 MDOT 1126 typed-signature:
+  - `20260418-s21-mdot1126-signature-accepted-with-cleanup-sync-retry`
+- S21 MDOT 1126 cleanup-only replay:
+  - `20260418-s21-mdot1126-signature-cleanup-only-replay-accepted-ledger`
+- S10 MDOT 1126 typed-signature regression:
+  - `20260418-s10-mdot1126-signature-regression-with-cleanup-sync-retry`
+- S21 post-v61 signature backlog sync-only:
+  - `20260418-s21-post-v61-signature-backlog-sync-only`
+- S21 MDOT 1126 expanded fields/rows:
+  - `20260418-s21-mdot1126-expanded-after-signature-ready-or-nav`
+    (`passed=true`, `failedActorRounds=0`, `runtimeErrors=0`,
+    `loggingGaps=0`, `queueDrainResult=drained`, `blockedRowCount=0`,
+    `unprocessedRowCount=0`, `maxRetryCount=0`,
+    `directDriverSyncEndpointUsed=false`, final S21 queue empty).
+  - Mutation sync was triggered through the Sync Dashboard UI and proved
+    pre-sync `change_log` rows for `form_responses`, `signature_files`, and
+    `signature_audit_log`.
+  - The accepted ledger proves signature storage download, ledger-owned
+    cleanup, storage delete, and storage absence.
+  - Non-acceptance diagnostics are preserved in
+    `20260418-s21-mdot1126-expanded-initial` and
+    `20260418-s21-mdot1126-expanded-after-rainfall-ui`; both cleaned up through
+    UI sync and ended with an empty S21 queue.
+- S21 MDOT 0582B form-response mutation:
+  - `20260418-s21-mdot0582b-accepted-initial`
+    (`passed=true`, `failedActorRounds=0`, `runtimeErrors=0`,
+    `loggingGaps=0`, `queueDrainResult=drained`, `blockedRowCount=0`,
+    `unprocessedRowCount=0`, `maxRetryCount=0`,
+    `directDriverSyncEndpointUsed=false`, final S21 queue empty).
+  - Mutation sync was triggered through the Sync Dashboard UI and proved
+    pre-sync `change_log` rows for `form_responses`.
+  - The accepted ledger proves report-attached creation, header markers,
+    chart/operating standards, HMA proctor row, quick-test row, post-sync
+    remote `form_responses`, ledger-owned cleanup, UI-triggered cleanup sync,
+    and remote soft-delete.
+  - Non-acceptance diagnostics are preserved in
+    `20260418-s21-mdot0582b-initial`,
+    `20260418-s21-mdot0582b-after-test-section-fix`, and
+    `20260418-s21-mdot0582b-after-remote-json-proof`; each cleaned up through
+    UI sync and ended with an empty S21 queue.
+- S21 MDOT 1174R implementation diagnostics:
+  - `20260418-s21-mdot1174r-after-bidirectional-scroll` is non-acceptance
+    evidence. It failed switching from Air/Slump to QA because
+    `mdot1174_workflow_nav_qa` was not mounted while
+    `mdot1174_section_header_qa` was present; cleanup passed and the final S21
+    queue drained.
+  - `20260418-s21-mdot1174r-after-expanded-sentinel` is still
+    non-acceptance evidence. It progressed to QA/comments, then failed opening
+    Quantities; cleanup passed, no runtime/logging gaps were captured, no
+    direct `/driver/sync` was used, and the final S21 queue drained.
+  - The current patch moves `mdot1174_section_expanded_*` proof from the
+    chevron icon onto the mounted section body and makes `/driver/text` fail
+    loudly when the key has no editable descendant. Live S21 acceptance
+    remains open until a rerun proves local `change_log`, remote
+    `form_responses`, ledger cleanup, zero runtime/logging gaps, and final
+    empty queue.
+  - `20260418-s21-mdot1174r-visible-text-only` is clean non-acceptance
+    evidence: runtime/logging/queue/cleanup/direct-sync gates were clean, but
+    `/driver/scroll-to-key` could not make the mounted Air/Slump composer field
+    visible.
+  - `20260418-s21-mdot1174r-after-ensure-visible-scroll` is the latest
+    red-screen stop. It failed loudly with `runtime_log_error`,
+    `runtimeErrors=27`, duplicate GlobalKey/detached render-object assertions,
+    `queueDrainResult=residue_detected`, and local `form_responses` queue
+    residue. `20260418-s21-mdot1174r-redscreen-residue-recovery-sync-only`
+    recovered through UI-triggered `sync-only`, passed with zero runtime/logging
+    gaps, drained the queue, and a live `/driver/change-log` check was empty.
+    Do not retry 1174R until MDOT 1174R row-section key/state ownership is
+    reviewed.
+  - Artifact hygiene: `.claude/test-results/2026-04-18/enterprise-sync-soak`
+    had 54 run folders, 3,676 files, and about 523 MB of generated evidence at
+    this handoff. Keep raw artifacts only for accepted runs, the latest blocker,
+    and one representative run per distinct failure class after summaries are
+    recorded here.
+- `dart analyze lib/features/photos/presentation/widgets/photo_name_dialog.dart lib/features/entries/presentation/widgets/entry_photos_section_actions.dart`
+- `pwsh -NoProfile -File tools/test-sync-soak-harness.ps1`
+- S21 refactored combined gate:
+  - `20260418-s21-state-machine-combined-final`
+- S21 refactored single-flow gates:
+  - `20260418-s21-state-machine-sync-only-final-single-gate`
+  - `20260418-s21-state-machine-daily-entry-final-single-gate`
+  - `20260418-s21-state-machine-quantity-confidence-3`
+  - `20260418-s21-state-machine-photo-confidence-3`
 - `dart analyze lib/core/driver/driver_diagnostics_handler.dart lib/core/driver/driver_server.dart test/core/driver/driver_diagnostics_routes_test.dart`
 - `flutter test test/core/driver/driver_diagnostics_routes_test.dart`
 - PowerShell parser check for `tools\enterprise-sync-soak-lab.ps1`

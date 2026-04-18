@@ -21,6 +21,14 @@ Trusted evidence:
 - Treat the role rerun as authoritative for role-boundary retest status. The
   S10/S21 toolbox/gallery/calculator crash is fixed and should not be reopened
   unless it reproduces again.
+- Sync-soak harness addendum: the S21 refactored state-machine lane is now
+  green for `sync-only`, `daily-entry-only`, `quantity-only`, and `photo-only`.
+  Quantity and photo each have three accepted S21 passes with strict log gates,
+  drained queue, ledger-owned cleanup, and no direct `/driver/sync`; photo also
+  proves Supabase Storage download/delete/absence. The refactored S21
+  `combined` gate is now implemented and green; S10 regression is the next
+  device-sync gate, while broader role/device sweeps remain parked until that
+  regression is clean.
 
 ## 2026-04-17 Repo-Side Implementation Pass Status
 
