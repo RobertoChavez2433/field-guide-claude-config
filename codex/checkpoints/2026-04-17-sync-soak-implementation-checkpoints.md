@@ -1914,3 +1914,52 @@ Still open at this checkpoint:
   `change_log`, post-sync remote `form_responses`, ledger-owned cleanup,
   UI-triggered cleanup sync, final empty queue, zero runtime/log gaps, and no
   direct `/driver/sync`.
+
+## 2026-04-21 - Form Lifecycle UI Flow Hardening Before Tablet Sweep
+
+### What We Found
+
+- The four failing S21 form lifecycle UI flows were not one bug. The failures
+  split across route-contract drift, stale route ownership under driver
+  navigation, workflow section-nav scroll reachability, export postconditions,
+  and cleanup assertions that treated hidden-after-delete local rows as hard
+  failures.
+- The Android driver build path was too heavy for interactive UI sweeps. A
+  full driver APK build could make the host sluggish enough to distort testing,
+  so the tablet run should move to the lighter `flutter run` lane.
+
+### What We Did
+
+- Hardened current-route inspection and driver visibility/editability checks so
+  the harness stops matching stale underlying routes and non-editable targets.
+- Added mounted workflow section-nav scroll keys, fixed MDOT 1126/1174R section
+  re-selection behavior, and updated the MDOT 1126 flow helpers to drive the
+  real horizontal nav plus the form scroll view.
+- Changed driver deep-link navigation to replace the active route rather than
+  stack another route underneath it.
+- Relaxed route sentinels to accept contract-approved extra query parameters,
+  and treated local 404-after-delete as valid cleanup proof for form rows and
+  export rows.
+- Updated form export proof to accept the real standalone export dialog instead
+  of incorrectly requiring the form root to remain visible.
+- Added the lighter `tools/start-driver-flutter-run.ps1` launcher plus cleanup
+  support in `tools/stop-driver.ps1`.
+
+### Evidence Preserved Before Runtime Cleanup
+
+- S21 reruns that previously failed now pass individually:
+  - `tools/testing/test-results/2026-04-21/rerun12-20260421-forms-save-reload-ui-flow/summary.json`
+  - `tools/testing/test-results/2026-04-21/rerun12-20260421-forms-pdf-preview-ui-flow/summary.json`
+  - `tools/testing/test-results/2026-04-21/rerun12-20260421-forms-export-proof-ui-flow/summary.json`
+  - `tools/testing/test-results/2026-04-21/rerun12-20260421-forms-supported-forms-proof-ui-flow/summary.json`
+- The isolated MDOT 1126 gallery lifecycle rerun passed end to end before
+  deleting `tools/testing/runtime/`. The ephemeral runtime artifact was
+  `tools/testing/runtime/mdot1126-single-after-export-sentinel-fix/summary.json`;
+  the key preserved fact is that the mutation, preview, export, cleanup, and
+  final queue-drain path all passed on S21 after the route/export fixes.
+
+### Next Step
+
+- Run the tablet serially through the `flutter run` driver lane, now that the
+  S21 single-flow gates are clean and the heavy APK-build path is no longer
+  required for this sweep.
