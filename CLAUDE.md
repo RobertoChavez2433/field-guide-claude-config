@@ -42,7 +42,9 @@ Cross-platform Flutter app for construction inspectors. Offline-first SQLite app
 - Use the design-system owners where the repo already provides them.
 - Use theme tokens and color-scheme accessors instead of hardcoded presentation values.
 - Check `mounted` after async gaps before using `context`.
-- Prefer `go_router` flows over raw navigator routing for normal app navigation.
+- Prefer `AppNavigator` / `context.appGo` / `context.appPush` over raw
+  `Navigator`. Route definitions live in `lib/core/router/autoroute/` and
+  `lib/core/navigation/`.
 - Keep presentation files thin and aligned with the existing controller/provider split.
 
 ## Testing

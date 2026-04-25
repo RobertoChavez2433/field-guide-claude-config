@@ -12,4 +12,5 @@ projects/
 worktrees/
 *.secret
 codex/tmp/
+codex/run-logs/*.log
 brainstorm/

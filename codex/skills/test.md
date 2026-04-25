@@ -70,3 +70,8 @@ surface without inventing wave agents or fixer agents.
   warnings, and small feature/device samples
 - "stress test sync" maps to `sync-flow`
 - navigation/layout requests map to `ui-flow`
+- "run prerelease verification", "run pre-update verification", and
+  "final verification before merge" map to
+  `tools/testing/Invoke-PreUpdateVerification.ps1`
+- prerelease device scope is caller-selected per run; phone, tablet,
+  emulator, and mixed actor sets are all valid

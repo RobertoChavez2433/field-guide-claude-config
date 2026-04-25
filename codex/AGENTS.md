@@ -72,6 +72,7 @@ library:
 - Keep E2E flows concise: seed feature preconditions through `/driver/seed`;
   auth/setup stays in auth flows only.
 - Keep S21 primary; prefer `flutter run` hot reload/restart for Dart/UI iteration.
+- On Android labs, reuse remote driver port `4948` across devices; only vary local forwarded ports.
 - Prefer `scripts/flutter_run_endpoint.ps1` for S21 `flutter run`; use
   `POST http://127.0.0.1:4950/reload` before restart/rebuild.
 - Use the debug/driver server for live S21 automation when available.

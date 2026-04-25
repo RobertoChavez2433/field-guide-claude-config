@@ -12,6 +12,6 @@ paths:
 - Use the design-system owners instead of raw Material widgets where the repo already provides one.
 - Use provider-based access patterns (`read`, `watch`, `Consumer`) in UI code. Do not introduce Riverpod.
 - Check `mounted` after async gaps before using `context`.
-- Prefer `go_router` navigation over raw navigator flows for routed screens.
+- Prefer `AppNavigator` / `context.appGo` / `context.appPush` over raw `Navigator`. Route definitions live in `lib/core/router/autoroute/` and `lib/core/navigation/`.
 - Keep presentation files thin and aligned with the existing controller/provider split.
 - Preserve responsive behavior across phone, tablet, and desktop widths.
